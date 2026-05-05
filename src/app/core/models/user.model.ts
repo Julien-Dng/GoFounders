@@ -1,6 +1,6 @@
 import { Timestamp } from '@angular/fire/firestore';
 
-export type ProfileType = 'entrepreneur' | 'talent' | 'both' | 'buyer';
+export type ProfileType = 'entrepreneur' | 'talent' | 'buyer' | 'seller';
 export type Plan = 'FREE' | 'PRO' | 'PREMIUM';
 
 export interface User {

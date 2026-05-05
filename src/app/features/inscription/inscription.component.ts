@@ -90,8 +90,8 @@ export class InscriptionComponent {
   readonly profileTypes: ProfileType[] = [
     { id: 'porteur', icon: '🚀', title: 'Porteur de projet', description: "J'ai une idée ou un business à développer" },
     { id: 'talent', icon: '🧑‍💻', title: 'Talent / Expert', description: 'Je propose mes compétences' },
-    { id: 'both', icon: '🤝', title: 'Les deux', description: 'Je cherche et je propose' },
-    { id: 'acheteur', icon: '🏢', title: 'Acheteur / Repreneur', description: "Je cherche une entreprise à acquérir" },
+    { id: 'buyer', icon: '🏢', title: 'Acheteur / Repreneur', description: "Je cherche une entreprise à acquérir" },
+    { id: 'seller', icon: '💼', title: 'Vendeur / Cédant', description: "Je souhaite céder mon entreprise" },
   ];
 
   selectType(id: string): void {
