@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
-import { planGuard } from './core/guards/plan.guard';
 import { maAccessGuard } from './core/guards/ma-access.guard';
+import { planGuard } from './core/guards/plan.guard';
 
 export const routes: Routes = [
   // Routes publiques (avec navbar)
@@ -17,6 +17,18 @@ export const routes: Routes = [
       {
         path: 'tarifs',
         loadComponent: () => import('./features/tarifs/tarifs.component').then(m => m.TarifsComponent)
+      },
+      {
+        path: 'conditions-generales',
+        loadComponent: () => import('./features/legal/cgu.component').then(m => m.CguComponent)
+      },
+      {
+        path: 'confidentialite',
+        loadComponent: () => import('./features/legal/confidentialite.component').then(m => m.ConfidentialiteComponent)
+      },
+      {
+        path: 'mentions-legales',
+        loadComponent: () => import('./features/legal/mentions-legales.component').then(m => m.MentionsLegalesComponent)
       },
       {
         path: 'inscription',
@@ -37,14 +49,14 @@ export const routes: Routes = [
         loadComponent: () => import('./features/recherche/recherche.component').then(m => m.RechercheComponent)
       },
       {
-        path: 'profil/:id',
-        canActivate: [authGuard],
-        loadComponent: () => import('./features/profil/profil.component').then(m => m.ProfilComponent)
-      },
-      {
         path: 'profil/modifier',
         canActivate: [authGuard],
         loadComponent: () => import('./features/profil/modifier/modifier.component').then(m => m.ModifierComponent)
+      },
+      {
+        path: 'profil/:id',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/profil/profil.component').then(m => m.ProfilComponent)
       },
       {
         path: 'messages',
@@ -53,8 +65,8 @@ export const routes: Routes = [
       },
       {
         path: 'messages/:id',
-        canActivate: [authGuard],
-        loadComponent: () => import('./features/messages/conversation/conversation.component').then(m => m.ConversationComponent)
+        redirectTo: '/messages',
+        pathMatch: 'full'
       },
       {
         path: 'coaching-ia',
@@ -70,11 +82,12 @@ export const routes: Routes = [
       },
       {
         path: 'ma/deposer',
-        canActivate: [authGuard, maAccessGuard],
+        canActivate: [authGuard],
         loadComponent: () => import('./features/ma/ma-deposer/ma-deposer.component').then(m => m.MaDeposerComponent)
       },
       {
         path: 'ma/annonce/:id',
+        canActivate: [authGuard, maAccessGuard],
         loadComponent: () => import('./features/ma/ma-detail/ma-detail.component').then(m => m.MaDetailComponent)
       },
       {

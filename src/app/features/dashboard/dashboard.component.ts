@@ -1,38 +1,118 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { NotificationMenuComponent } from '../../shared/components/notification-menu/notification-menu.component';
 import { UserMenuComponent } from '../../shared/components/user-menu/user-menu.component';
+
+type SidebarIcon = 'home' | 'search' | 'user' | 'messages' | 'ma' | 'sparkles' | 'credit-card' | 'settings';
+type StatIcon = 'views' | 'messages' | 'target';
+type QuickActionIcon = 'target' | 'user' | 'chart';
+
+interface SidebarItem {
+  id: string;
+  label: string;
+  icon: SidebarIcon;
+  path: string;
+  badge: number | null;
+}
+
+interface StatItem {
+  label: string;
+  value: string;
+  icon: StatIcon;
+}
+
+interface QuickActionItem {
+  label: string;
+  icon: QuickActionIcon;
+}
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, UserMenuComponent],
+  imports: [RouterLink, RouterLinkActive, NotificationMenuComponent, UserMenuComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-secondary flex">
-
-      <aside class="w-60 bg-primary text-primary-foreground fixed left-0 top-0 bottom-0 flex flex-col border-r border-primary-foreground/10">
-        <div class="p-6 border-b border-primary-foreground/10">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-accent rounded-lg flex items-center justify-center shadow-lg">
-              <span class="text-white font-bold text-lg">G</span>
+    <div class="flex min-h-screen bg-secondary">
+      <aside class="fixed bottom-0 left-0 top-0 flex w-60 flex-col border-r border-primary-foreground/10 bg-primary text-primary-foreground">
+        <div class="border-b border-primary-foreground/10 p-6">
+          <a routerLink="/dashboard" class="flex items-center gap-3">
+            <div class="brand-logo-mark h-11 w-11">
+              <img
+                src="/assets/images/gofounders-logo.png"
+                alt="Logo GoFounders"
+                class="h-full w-full object-contain"
+              >
             </div>
             <span class="text-xl font-bold">GoFounders</span>
-          </div>
+          </a>
         </div>
 
-        <nav class="flex-1 p-4 space-y-1">
+        <nav class="flex-1 space-y-1 p-4">
           @for (item of sidebarItems(); track item.id) {
             <a
               [routerLink]="item.path"
               routerLinkActive="!bg-primary-foreground/20 !text-primary-foreground"
               [routerLinkActiveOptions]="{ exact: true }"
-              class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground transition-all relative group"
+              class="group relative flex w-full items-center gap-3 rounded-lg px-4 py-3 text-primary-foreground/70 transition-all hover:bg-primary-foreground/10 hover:text-primary-foreground"
             >
-              <span class="text-lg">{{ item.emoji }}</span>
+              <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 text-current transition-colors group-hover:bg-white/10" aria-hidden="true">
+                @switch (item.icon) {
+                  @case ('home') {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 10.5 12 3l9 7.5"/>
+                      <path d="M5 9.5V21h14V9.5"/>
+                    </svg>
+                  }
+                  @case ('search') {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="11" cy="11" r="7"/>
+                      <path d="m20 20-3.5-3.5"/>
+                    </svg>
+                  }
+                  @case ('user') {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 21a8 8 0 0 0-16 0"/>
+                      <circle cx="12" cy="8" r="4"/>
+                    </svg>
+                  }
+                  @case ('messages') {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                  }
+                  @case ('ma') {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 3v18h18"/>
+                      <path d="m7 14 4-4 3 3 5-7"/>
+                    </svg>
+                  }
+                  @case ('sparkles') {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m12 3-1.9 5.1L5 10l5.1 1.9L12 17l1.9-5.1L19 10l-5.1-1.9z"/>
+                      <path d="M5 3v4"/>
+                      <path d="M19 17v4"/>
+                      <path d="M3 5h4"/>
+                      <path d="M17 19h4"/>
+                    </svg>
+                  }
+                  @case ('credit-card') {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="2" y="5" width="20" height="14" rx="2"/>
+                      <path d="M2 10h20"/>
+                    </svg>
+                  }
+                  @case ('settings') {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="3"/>
+                      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09A1.65 1.65 0 0 0 10.09 3H10a2 2 0 1 1 4 0h-.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09A1.65 1.65 0 0 0 21 10.09V10a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                  }
+                }
+              </span>
               <span class="text-sm font-medium">{{ item.label }}</span>
               @if (item.badge) {
-                <span class="ml-auto w-5 h-5 bg-accent text-white rounded-full flex items-center justify-center text-xs font-bold">
+                <span class="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
                   {{ item.badge }}
                 </span>
               }
@@ -40,50 +120,46 @@ import { UserMenuComponent } from '../../shared/components/user-menu/user-menu.c
           }
         </nav>
 
-        <div class="p-4 border-t border-primary-foreground/10">
-          <div class="flex items-center gap-3 p-3 rounded-lg bg-primary-foreground/5 hover:bg-primary-foreground/10 transition-colors cursor-pointer">
-            @if (photoUrl()) {
-              <img
-                [src]="photoUrl()"
-                [alt]="'Photo de profil de ' + displayName()"
-                class="w-10 h-10 rounded-full object-cover border border-primary-foreground/10 shadow-sm flex-shrink-0"
-              >
-            } @else {
-              <div class="w-10 h-10 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
-                {{ initials() }}
-              </div>
-            }
+        <div class="border-t border-primary-foreground/10 p-4">
+          <div class="cursor-pointer rounded-lg bg-primary-foreground/5 p-3 transition-colors hover:bg-primary-foreground/10">
+            <div class="flex items-center gap-3">
+              @if (photoUrl()) {
+                <img
+                  [src]="photoUrl()"
+                  [alt]="'Photo de profil de ' + displayName()"
+                  class="h-10 w-10 flex-shrink-0 rounded-full border border-primary-foreground/10 object-cover shadow-sm"
+                >
+              } @else {
+                <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary font-bold text-white">
+                  {{ initials() }}
+                </div>
+              }
 
-            <div class="flex-1 min-w-0">
-              <div class="font-semibold text-sm truncate">{{ displayName() }}</div>
-              <div class="flex items-center gap-1.5">
-                <span class="text-xs px-2 py-0.5 bg-muted/20 text-muted rounded">{{ planLabel() }}</span>
+              <div class="min-w-0 flex-1">
+                <div class="truncate text-sm font-semibold">{{ displayName() }}</div>
+                <div class="flex items-center gap-1.5">
+                  <span class="rounded bg-muted/20 px-2 py-0.5 text-xs text-muted">{{ planLabel() }}</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </aside>
 
-      <div class="ml-60 flex-1 flex flex-col">
-
-        <header class="bg-white border-b border-border sticky top-0 z-40">
-          <div class="px-8 h-16 flex items-center justify-between">
-            <div class="flex-1 max-w-xl">
+      <div class="ml-60 flex flex-1 flex-col">
+        <header class="sticky top-0 z-40 border-b border-border bg-white">
+          <div class="flex h-16 items-center justify-between px-8">
+            <div class="max-w-xl flex-1">
               <div class="relative">
                 <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
-                <input type="text" placeholder="Rechercher des profils, compétences..." class="w-full pl-10 pr-4 py-2 bg-secondary rounded-lg border border-transparent focus:border-accent outline-none transition-colors">
+                <input type="text" placeholder="Rechercher des profils, compétences..." class="w-full rounded-lg border border-transparent bg-secondary py-2 pl-10 pr-4 outline-none transition-colors focus:border-accent">
               </div>
             </div>
             <div class="flex items-center gap-4">
-              <button class="relative p-2 hover:bg-secondary rounded-lg transition-colors">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
-                  <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
-                </svg>
-                <span class="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full"></span>
-              </button>
+              <app-notification-menu />
               <app-user-menu avatarClass="h-10 w-10" />
             </div>
           </div>
@@ -91,87 +167,90 @@ import { UserMenuComponent } from '../../shared/components/user-menu/user-menu.c
 
         <div class="p-8">
           <div class="grid grid-cols-12 gap-6">
-
             <div class="col-span-3 space-y-6">
-              <div class="bg-white rounded-2xl border border-border p-6 shadow-sm animate-fade-in-up">
-                <h3 class="text-lg font-bold mb-4">Mon profil</h3>
+              <div class="animate-fade-in-up rounded-2xl border border-border bg-white p-6 shadow-sm">
+                <h3 class="mb-4 text-lg font-bold">Mon profil</h3>
                 <div class="mb-4">
-                  <div class="flex items-center justify-between mb-2">
+                  <div class="mb-2 flex items-center justify-between">
                     <span class="text-sm text-muted-foreground">Complétion</span>
                     <span class="text-sm font-bold text-accent">65%</span>
                   </div>
-                  <div class="h-2 bg-secondary rounded-full overflow-hidden">
-                    <div class="h-full bg-accent rounded-full" style="width: 65%"></div>
+                  <div class="h-2 overflow-hidden rounded-full bg-secondary">
+                    <div class="h-full rounded-full bg-accent" style="width: 65%"></div>
                   </div>
                 </div>
-                <p class="text-sm text-muted-foreground mb-4">Complétez votre profil pour augmenter vos chances de match</p>
-                <button class="w-full py-2 border-2 border-border rounded-lg text-sm font-semibold hover:border-accent transition-colors">Compléter mon profil</button>
+                <p class="mb-4 text-sm text-muted-foreground">Complétez votre profil pour augmenter vos chances de match.</p>
+                <a routerLink="/profil/modifier" class="block w-full rounded-lg border-2 border-border py-2 text-center text-sm font-semibold transition-colors hover:border-accent">
+                  Compléter mon profil
+                </a>
               </div>
 
-              <div class="bg-gradient-to-br from-accent to-primary rounded-2xl p-6 text-white shadow-lg animate-fade-in-up delay-100">
-                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
+              <div class="animate-fade-in-up delay-100 rounded-2xl bg-gradient-to-br from-accent to-primary p-6 text-white shadow-lg">
+                <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/20">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="m2 4 3 12h14l3-12-6 5-4-5-4 5-6-5z"/>
                     <path d="M5 20h14"/>
                   </svg>
                 </div>
-                <h3 class="text-lg font-bold mb-2">Passez en PRO</h3>
-                <p class="text-sm opacity-90 mb-4 leading-relaxed">Débloquez l'IA matching, les messages illimités et bien plus</p>
-                <button class="w-full py-2.5 bg-white text-accent rounded-lg font-semibold hover:bg-white/95 transition-colors shadow-md">Découvrir PRO</button>
+                <h3 class="mb-2 text-lg font-bold">Passez en PRO</h3>
+                <p class="mb-4 text-sm leading-relaxed opacity-90">Débloquez l'IA de matching, les messages illimités et davantage de visibilité.</p>
+                <a routerLink="/tarifs" class="block w-full rounded-lg bg-white py-2.5 text-center font-semibold text-accent shadow-md transition-colors hover:bg-white/95">Découvrir PRO</a>
               </div>
             </div>
 
             <div class="col-span-6 space-y-6">
-              <div class="bg-white rounded-2xl border border-border p-6 shadow-sm animate-fade-in-up delay-100">
-                <div class="flex items-center justify-between mb-6">
+              <div class="animate-fade-in-up delay-100 rounded-2xl border border-border bg-white p-6 shadow-sm">
+                <div class="mb-6 flex items-center justify-between">
                   <div class="flex items-center gap-2">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
                     </svg>
                     <h2 class="text-xl font-bold">Vos matches du jour</h2>
                   </div>
-                  <button class="text-sm text-accent font-semibold hover:underline">Voir tous</button>
+                  <a routerLink="/recherche" class="text-sm font-semibold text-accent hover:underline">Voir tous</a>
                 </div>
 
                 <div class="space-y-4">
                   @for (match of matches; track $index) {
-                    <div class="flex items-center gap-4 p-4 bg-secondary rounded-xl hover:bg-accent/5 transition-colors border border-transparent hover:border-accent/20 group">
-                      <div class="w-14 h-14 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                    <div class="group flex items-center gap-4 rounded-xl border border-transparent bg-secondary p-4 transition-colors hover:border-accent/20 hover:bg-accent/5">
+                      <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary font-bold text-white">
                         {{ match.avatar }}
                       </div>
-                      <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 mb-1">
+                      <div class="min-w-0 flex-1">
+                        <div class="mb-1 flex items-center gap-2">
                           <h3 class="font-bold">{{ match.name }}</h3>
-                          <span class="px-2 py-0.5 bg-accent/10 text-accent text-xs rounded font-semibold">{{ match.stage }}</span>
+                          <span class="rounded bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">{{ match.stage }}</span>
                         </div>
-                        <div class="text-sm text-muted-foreground mb-1">{{ match.role }}</div>
-                        <div class="text-sm text-foreground/70 truncate">{{ match.project }}</div>
+                        <div class="mb-1 text-sm text-muted-foreground">{{ match.role }}</div>
+                        <div class="truncate text-sm text-foreground/70">{{ match.project }}</div>
                       </div>
-                      <div class="flex items-center gap-3 flex-shrink-0">
-                        <div class="flex items-center gap-1 px-3 py-1.5 bg-accent/10 text-accent rounded-full">
+                      <div class="flex flex-shrink-0 items-center gap-3">
+                        <div class="flex items-center gap-1 rounded-full bg-accent/10 px-3 py-1.5 text-accent">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
                           </svg>
                           <span class="text-sm font-bold">{{ match.compatibility }}%</span>
                         </div>
-                        <button class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/90">Voir le profil</button>
+                        <a [routerLink]="['/profil', match.id]" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white opacity-0 transition-opacity hover:bg-primary/90 group-hover:opacity-100">
+                          Voir le profil
+                        </a>
                       </div>
                     </div>
                   }
                 </div>
               </div>
 
-              <div class="bg-white rounded-2xl border border-border p-6 shadow-sm animate-fade-in-up delay-200">
-                <h2 class="text-xl font-bold mb-6">Activité récente</h2>
+              <div class="animate-fade-in-up delay-200 rounded-2xl border border-border bg-white p-6 shadow-sm">
+                <h2 class="mb-6 text-xl font-bold">Activité récente</h2>
                 <div class="space-y-4">
                   @for (activity of activities; track $index) {
-                    <div class="flex items-start gap-3 pb-4 border-b border-border last:border-0 last:pb-0">
-                      <div class="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+                    <div class="flex items-start gap-3 border-b border-border pb-4 last:border-0 last:pb-0">
+                      <div class="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-accent"></div>
                       <div class="flex-1">
                         <p class="text-sm font-medium text-foreground">{{ activity.text }}</p>
-                        <p class="text-xs text-muted-foreground mt-1">{{ activity.time }}</p>
+                        <p class="mt-1 text-xs text-muted-foreground">{{ activity.time }}</p>
                       </div>
-                      <svg width="16" height="16" class="text-muted-foreground mt-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <svg width="16" height="16" class="mt-1 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="9 18 15 12 9 6"/>
                       </svg>
                     </div>
@@ -181,36 +260,79 @@ import { UserMenuComponent } from '../../shared/components/user-menu/user-menu.c
             </div>
 
             <div class="col-span-3 space-y-6">
-              <div class="bg-gradient-to-br from-accent/10 to-primary/10 rounded-2xl border-2 border-accent/20 p-6 animate-fade-in-up delay-200">
-                <div class="flex items-center gap-2 mb-4">
-                  <div class="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
+              <div class="animate-fade-in-up delay-200 rounded-2xl border-2 border-accent/20 bg-gradient-to-br from-accent/10 to-primary/10 p-6">
+                <div class="mb-4 flex items-center gap-2">
+                  <div class="flex h-10 w-10 items-center justify-center rounded-full bg-accent">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
                     </svg>
                   </div>
                   <h3 class="font-bold">Assistant IA</h3>
                 </div>
-                <p class="text-sm text-foreground/80 mb-4">Bonjour Marc 👋<br>Que puis-je faire pour vous ?</p>
+                <p class="mb-4 text-sm text-foreground/80">Bonjour {{ firstName() }}.<br>Que puis-je faire pour vous aujourd'hui ?</p>
                 <div class="space-y-2">
                   @for (action of quickActions; track action.label) {
-                    <button class="w-full flex items-center gap-2 px-3 py-2.5 bg-white hover:bg-accent/5 border border-border hover:border-accent/30 rounded-lg text-sm font-medium transition-all text-left group">
-                      <span class="text-accent">{{ action.emoji }}</span>
+                    <a [routerLink]="action.path" class="group flex w-full items-center gap-3 rounded-lg border border-border bg-white px-3 py-2.5 text-left text-sm font-medium transition-all hover:border-accent/30 hover:bg-accent/5">
+                      <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-accent/10 text-accent" aria-hidden="true">
+                        @switch (action.icon) {
+                          @case ('target') {
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                              <circle cx="12" cy="12" r="8"/>
+                              <circle cx="12" cy="12" r="4"/>
+                              <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+                            </svg>
+                          }
+                          @case ('user') {
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M20 21a8 8 0 0 0-16 0"/>
+                              <circle cx="12" cy="8" r="4"/>
+                            </svg>
+                          }
+                          @case ('chart') {
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M3 3v18h18"/>
+                              <path d="m7 14 4-4 3 3 5-7"/>
+                            </svg>
+                          }
+                        }
+                      </span>
                       <span class="flex-1">{{ action.label }}</span>
-                      <svg width="14" height="14" class="text-muted-foreground group-hover:text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <svg width="14" height="14" class="text-muted-foreground transition-colors group-hover:text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="9 18 15 12 9 6"/>
                       </svg>
-                    </button>
+                    </a>
                   }
                 </div>
               </div>
 
-              <div class="bg-white rounded-2xl border border-border p-6 shadow-sm animate-fade-in-up delay-300">
-                <h3 class="text-lg font-bold mb-4">Statistiques</h3>
+              <div class="animate-fade-in-up delay-300 rounded-2xl border border-border bg-white p-6 shadow-sm">
+                <h3 class="mb-4 text-lg font-bold">Statistiques</h3>
                 <div class="space-y-4">
                   @for (stat of stats; track stat.label) {
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2">
-                        <span class="text-muted-foreground text-sm">{{ stat.emoji }}</span>
+                        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-muted-foreground" aria-hidden="true">
+                          @switch (stat.icon) {
+                            @case ('views') {
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                              </svg>
+                            }
+                            @case ('messages') {
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                              </svg>
+                            }
+                            @case ('target') {
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="8"/>
+                                <circle cx="12" cy="12" r="4"/>
+                                <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+                              </svg>
+                            }
+                          }
+                        </span>
                         <span class="text-sm text-muted-foreground">{{ stat.label }}</span>
                       </div>
                       <span class="text-lg font-bold text-accent">{{ stat.value }}</span>
@@ -219,69 +341,72 @@ import { UserMenuComponent } from '../../shared/components/user-menu/user-menu.c
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </div>
 
-      <button
-        (click)="toggleChat()"
-        class="fixed bottom-6 right-6 w-14 h-14 bg-accent rounded-full shadow-2xl shadow-accent/30 flex items-center justify-center text-white hover:bg-accent/90 transition-all hover:scale-110 active:scale-90 z-50"
+      <a
+        [routerLink]="floatingBubbleLink()"
+        class="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-white shadow-2xl shadow-accent/30 transition-all hover:scale-110 hover:bg-accent/90 active:scale-90"
+        [attr.aria-label]="floatingBubbleLabel()"
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
-        <span class="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-white rounded-full text-xs flex items-center justify-center font-bold">3</span>
-      </button>
+        <span class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs font-bold text-white">{{ floatingBubbleBadge() }}</span>
+      </a>
     </div>
   `
 })
 export class DashboardComponent {
   private readonly auth = inject(AuthService);
 
-  readonly isChatOpen = signal(false);
   readonly currentUser = this.auth.currentUser;
   readonly displayName = computed(() => this.currentUser()?.displayName ?? 'Mon compte');
+  readonly firstName = computed(() => this.displayName().split(' ')[0] || 'membre');
   readonly photoUrl = computed(() => this.currentUser()?.photoURL ?? '');
   readonly initials = this.auth.initials;
   readonly planLabel = computed(() => this.currentUser()?.plan ?? 'FREE');
+  readonly floatingBubbleLink = computed(() => '/messages');
+  readonly floatingBubbleLabel = computed(() => 'Ouvrir les messages');
+  readonly floatingBubbleBadge = computed(() => 3);
+  readonly ownProfilePath = computed(() => {
+    const uid = this.currentUser()?.uid ?? '';
+    return uid ? `/profil/${uid}` : '/dashboard';
+  });
 
-  toggleChat(): void {
-    this.isChatOpen.update(v => !v);
-  }
-
-  readonly sidebarItems = computed(() => [
-    { id: 'accueil', label: 'Accueil', emoji: '🏠', path: '/dashboard', badge: null },
-    { id: 'recherche', label: 'Recherche', emoji: '🔍', path: '/recherche', badge: null },
-    { id: 'profil', label: 'Mon profil', emoji: '👤', path: `/profil/${this.currentUser()?.uid ?? ''}`, badge: null },
-    { id: 'messages', label: 'Messages', emoji: '💬', badge: 3, path: '/messages' },
-    { id: 'ma', label: 'M&A', emoji: '📈', path: '/ma', badge: null },
-    { id: 'assistant', label: 'Assistant IA', emoji: '✨', path: '/coaching-ia', badge: null },
-    { id: 'abonnement', label: 'Abonnement', emoji: '💳', path: '/abonnement', badge: null },
-    { id: 'parametres', label: 'Paramètres', emoji: '⚙️', path: '/parametres', badge: null },
+  readonly sidebarItems = computed<SidebarItem[]>(() => [
+    { id: 'accueil', label: 'Accueil', icon: 'home', path: '/dashboard', badge: null },
+    { id: 'recherche', label: 'Recherche', icon: 'search', path: '/recherche', badge: null },
+    { id: 'profil', label: 'Mon profil', icon: 'user', path: this.ownProfilePath(), badge: null },
+    { id: 'messages', label: 'Messages', icon: 'messages', path: '/messages', badge: 3 },
+    { id: 'ma', label: 'M&A', icon: 'ma', path: '/ma', badge: null },
+    { id: 'assistant', label: 'Assistant IA', icon: 'sparkles', path: '/coaching-ia', badge: null },
+    { id: 'abonnement', label: 'Abonnement', icon: 'credit-card', path: '/abonnement', badge: null },
+    { id: 'parametres', label: 'Paramètres', icon: 'settings', path: '/parametres', badge: null },
   ]);
 
   readonly matches = [
-    { name: 'Sophie Bernard', role: 'CTO', avatar: 'SB', stage: 'MVP', compatibility: 94, project: 'SaaS B2B pour la logistique' },
-    { name: 'Marc Laurent', role: 'Développeur full-stack', avatar: 'ML', stage: 'Idée', compatibility: 87, project: 'Marketplace locale bio' },
+    { id: 'talent-sophie-martin', name: 'Sophie Martin', role: 'CTO freelance', avatar: 'SM', stage: 'MVP', compatibility: 94, project: 'SaaS B2B pour la logistique' },
+    { id: 'talent-marc-laurent', name: 'Marc Laurent', role: 'Développeur full-stack', avatar: 'ML', stage: 'Idée', compatibility: 87, project: 'Marketplace locale bio' },
   ];
 
   readonly activities = [
-    { text: '3 personnes ont consulté votre profil', time: 'Il y a 2h', type: 'view' },
-    { text: 'Nouveau match disponible', time: 'Il y a 5h', type: 'match' },
+    { text: '3 personnes ont consulté votre profil', time: 'Il y a 2 h', type: 'view' },
+    { text: 'Nouveau match disponible', time: 'Il y a 5 h', type: 'match' },
     { text: 'Sophie B. a répondu à votre message', time: 'Hier', type: 'message' },
-    { text: 'Votre profil a été mis en avant', time: 'Il y a 2j', type: 'boost' },
+    { text: 'Votre profil a été mis en avant', time: 'Il y a 2 j', type: 'boost' },
   ];
 
-  readonly stats = [
-    { label: 'Vues profil', value: '127', emoji: '👁' },
-    { label: 'Messages reçus', value: '18', emoji: '✉️' },
-    { label: 'Matches', value: '24', emoji: '🎯' },
+  readonly stats: StatItem[] = [
+    { label: 'Vues profil', value: '127', icon: 'views' },
+    { label: 'Messages reçus', value: '18', icon: 'messages' },
+    { label: 'Matches', value: '24', icon: 'target' },
   ];
 
-  readonly quickActions = [
-    { label: 'Analyser mes matches', emoji: '🎯' },
-    { label: 'Améliorer mon profil', emoji: '👤' },
-    { label: 'Comprendre mes statistiques', emoji: '📈' },
+  readonly quickActions: Array<QuickActionItem & { path: string }> = [
+    { label: 'Analyser mes matches', icon: 'target', path: '/recherche' },
+    { label: 'Améliorer mon profil', icon: 'user', path: '/profil/modifier' },
+    { label: 'Comprendre mes statistiques', icon: 'chart', path: '/dashboard' },
   ];
 }

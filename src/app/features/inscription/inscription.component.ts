@@ -7,7 +7,7 @@ import { ProfileType } from '../../core/models/user.model';
 
 interface ProfileOption {
   id: ProfileType;
-  icon: string;
+  icon: 'project' | 'talent' | 'buyer' | 'seller';
   title: string;
   description: string;
 }
@@ -18,39 +18,95 @@ interface ProfileOption {
   imports: [NgClass, ReactiveFormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-white flex items-center justify-center px-8 py-12">
-      <div class="w-full max-w-5xl">
-
-        <div class="mb-12 animate-fade-in-up">
-          <div class="flex items-center justify-between mb-3">
+    <div class="min-h-screen bg-white px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+      <div class="mx-auto w-full max-w-5xl">
+        <div class="mb-10 animate-fade-in-up sm:mb-12">
+          <div class="mb-3 flex items-center justify-between gap-4">
             <span class="text-sm font-semibold text-muted-foreground">Étape {{ currentStep() }} sur {{ totalSteps }}</span>
             <span class="text-sm font-semibold text-accent">{{ progressPercent() }}%</span>
           </div>
-          <div class="h-2 bg-secondary rounded-full overflow-hidden">
-            <div class="h-full bg-accent rounded-full transition-all duration-500" [style.width]="progressPercent() + '%'"></div>
+          <div class="h-2 overflow-hidden rounded-full bg-secondary">
+            <div class="h-full rounded-full bg-accent transition-all duration-500" [style.width]="progressPercent() + '%'"></div>
           </div>
         </div>
 
-        <div class="bg-white rounded-2xl border-2 border-border p-12 shadow-lg animate-fade-in-scale delay-100">
+        @if (currentStep() > 1) {
+          <div class="mb-8 hidden overflow-hidden rounded-3xl border border-accent/15 bg-secondary p-5 shadow-sm lg:block">
+            <div class="grid grid-cols-[18rem_minmax(0,1fr)] items-center gap-6">
+              <div class="relative h-36">
+                <div class="absolute inset-x-8 bottom-0 h-12 rounded-full bg-accent/10 blur-2xl"></div>
+                <img
+                  src="/assets/images/profile-coach.png"
+                  alt=""
+                  aria-hidden="true"
+                  class="absolute -bottom-16 left-0 h-56 w-auto object-contain drop-shadow-xl"
+                >
+              </div>
+              <div>
+                <div class="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-accent">Coach profil</div>
+                <h2 class="text-2xl font-bold text-primary">Quelques infos bien choisies suffisent</h2>
+                <p class="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  Le coach vous guide pour créer un profil clair : rôle, contexte, objectif et signaux de confiance.
+                </p>
+              </div>
+            </div>
+          </div>
+        }
+
+        <div class="animate-fade-in-scale delay-100 rounded-2xl border-2 border-border bg-white p-6 shadow-lg sm:p-8 lg:p-12">
           @if (currentStep() === 1) {
             <div>
-              <div class="text-center mb-10">
-                <h1 class="text-4xl font-bold text-primary mb-3">Vous êtes plutôt…</h1>
-                <p class="text-muted-foreground">Un seul rôle par compte pour garder la recherche claire des deux côtés.</p>
+              <div class="mb-8 text-center sm:mb-10">
+                <h1 class="mb-3 text-3xl font-bold text-primary sm:text-4xl">Vous êtes plutôt…</h1>
+                <p class="mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+                  Un seul rôle par compte pour garder une recherche claire et pertinente des deux côtés.
+                </p>
               </div>
 
-              <div class="grid grid-cols-2 gap-6 mb-10">
+              <div class="mb-8 grid grid-cols-1 gap-4 sm:mb-10 md:grid-cols-2 md:gap-6">
                 @for (type of profileTypes; track type.id) {
                   <button
                     type="button"
                     (click)="selectType(type.id)"
                     [ngClass]="selectedType() === type.id
-                      ? 'p-8 rounded-2xl border-2 border-accent bg-accent/5 shadow-lg text-left transition-all hover:scale-[1.02]'
-                      : 'p-8 rounded-2xl border-2 border-border bg-card text-left transition-all hover:scale-[1.02] hover:shadow-md'"
+                      ? 'rounded-2xl border-2 border-accent bg-accent/5 p-6 text-left shadow-lg transition-all hover:scale-[1.01] sm:p-8'
+                      : 'rounded-2xl border-2 border-border bg-card p-6 text-left transition-all hover:scale-[1.01] hover:shadow-md sm:p-8'"
                   >
-                    <div class="text-5xl mb-4">{{ type.icon }}</div>
-                    <h3 class="text-xl font-bold mb-2 text-primary">{{ type.title }}</h3>
-                    <p class="text-muted-foreground leading-relaxed">{{ type.description }}</p>
+                    <div class="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/5 text-primary">
+                      @switch (type.icon) {
+                        @case ('project') {
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M4.5 16.5 16 5" />
+                            <path d="m10 5 6 0 0 6" />
+                            <path d="M6 19h12" />
+                          </svg>
+                        }
+                        @case ('talent') {
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="7" width="18" height="13" rx="2" />
+                            <path d="M8 7V5a4 4 0 0 1 8 0v2" />
+                            <path d="M3 12h18" />
+                          </svg>
+                        }
+                        @case ('buyer') {
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M3 3v18h18"/>
+                            <path d="m7 14 4-4 3 3 5-7"/>
+                          </svg>
+                        }
+                        @case ('seller') {
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="4" width="18" height="16" rx="2"/>
+                            <path d="M7 8h10"/>
+                            <path d="M7 12h6"/>
+                            <path d="M7 16h4"/>
+                          </svg>
+                        }
+                      }
+                    </div>
+
+                    <h3 class="mb-2 text-xl font-bold text-primary">{{ type.title }}</h3>
+                    <p class="leading-relaxed text-muted-foreground">{{ type.description }}</p>
 
                     @if (selectedType() === type.id) {
                       <div class="mt-4 inline-flex items-center gap-2 rounded-full bg-accent px-3 py-1 text-sm font-semibold text-white animate-scale-in">
@@ -66,8 +122,8 @@ interface ProfileOption {
                 (click)="goToStep(2)"
                 [disabled]="!selectedType()"
                 [ngClass]="selectedType()
-                  ? 'w-full py-4 rounded-lg font-semibold text-lg bg-accent text-white shadow-lg cursor-pointer transition-all hover:bg-accent/90'
-                  : 'w-full py-4 rounded-lg font-semibold text-lg bg-muted text-muted-foreground cursor-not-allowed opacity-50'"
+                  ? 'w-full rounded-lg bg-accent py-4 text-lg font-semibold text-white shadow-lg transition-all hover:bg-accent/90'
+                  : 'w-full cursor-not-allowed rounded-lg bg-muted py-4 text-lg font-semibold text-muted-foreground opacity-50'"
               >
                 Continuer
               </button>
@@ -76,52 +132,54 @@ interface ProfileOption {
 
           @if (currentStep() === 2) {
             <div [formGroup]="basicsForm">
-              <div class="text-center mb-10">
-                <h2 class="text-4xl font-bold text-primary mb-3">Créez votre accès</h2>
-                <p class="text-muted-foreground">Quelques informations pour ouvrir votre compte {{ selectedTypeLabel() }}.</p>
+              <div class="mb-8 text-center sm:mb-10">
+                <h2 class="mb-3 text-3xl font-bold text-primary sm:text-4xl">Créez votre accès</h2>
+                <p class="text-sm text-muted-foreground sm:text-base">
+                  Quelques informations pour ouvrir votre compte {{ selectedTypeLabel() }}.
+                </p>
               </div>
 
-              <div class="grid grid-cols-2 gap-6">
+              <div class="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
                 <div>
-                  <label class="block text-sm font-semibold mb-2" for="signup-name">Nom complet</label>
+                  <label class="mb-2 block text-sm font-semibold" for="signup-name">Nom complet</label>
                   <input
                     id="signup-name"
                     type="text"
                     formControlName="displayName"
-                    class="w-full px-4 py-3 bg-secondary border border-border rounded-lg focus:border-accent outline-none transition-colors"
+                    class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
                     placeholder="Marie Dupont"
                   >
                 </div>
 
                 <div>
-                  <label class="block text-sm font-semibold mb-2" for="signup-location">Localisation</label>
+                  <label class="mb-2 block text-sm font-semibold" for="signup-location">Localisation</label>
                   <input
                     id="signup-location"
                     type="text"
                     formControlName="location"
-                    class="w-full px-4 py-3 bg-secondary border border-border rounded-lg focus:border-accent outline-none transition-colors"
+                    class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
                     placeholder="Paris, France"
                   >
                 </div>
 
                 <div>
-                  <label class="block text-sm font-semibold mb-2" for="signup-email">Email</label>
+                  <label class="mb-2 block text-sm font-semibold" for="signup-email">Email</label>
                   <input
                     id="signup-email"
                     type="email"
                     formControlName="email"
-                    class="w-full px-4 py-3 bg-secondary border border-border rounded-lg focus:border-accent outline-none transition-colors"
+                    class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
                     placeholder="vous@exemple.fr"
                   >
                 </div>
 
                 <div>
-                  <label class="block text-sm font-semibold mb-2" for="signup-password">Mot de passe</label>
+                  <label class="mb-2 block text-sm font-semibold" for="signup-password">Mot de passe</label>
                   <input
                     id="signup-password"
                     type="password"
                     formControlName="password"
-                    class="w-full px-4 py-3 bg-secondary border border-border rounded-lg focus:border-accent outline-none transition-colors"
+                    class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
                     placeholder="6 caractères minimum"
                   >
                 </div>
@@ -133,18 +191,18 @@ interface ProfileOption {
                 </p>
               }
 
-              <div class="mt-10 flex items-center gap-4">
+              <div class="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:items-center sm:gap-4">
                 <button
                   type="button"
                   (click)="goToStep(1)"
-                  class="px-6 py-3 rounded-lg border-2 border-border font-semibold hover:border-accent transition-colors"
+                  class="rounded-lg border-2 border-border px-6 py-3 font-semibold transition-colors hover:border-accent"
                 >
                   Retour
                 </button>
                 <button
                   type="button"
                   (click)="goToStep(3)"
-                  class="flex-1 py-4 rounded-lg font-semibold text-lg bg-accent text-white shadow-lg transition-colors hover:bg-accent/90"
+                  class="flex-1 rounded-lg bg-accent py-4 text-lg font-semibold text-white shadow-lg transition-colors hover:bg-accent/90"
                 >
                   Continuer
                 </button>
@@ -154,41 +212,41 @@ interface ProfileOption {
 
           @if (currentStep() === 3) {
             <div [formGroup]="detailsForm">
-              <div class="text-center mb-10">
-                <h2 class="text-4xl font-bold text-primary mb-3">Derniers détails</h2>
-                <p class="text-muted-foreground">{{ detailStepDescription() }}</p>
+              <div class="mb-8 text-center sm:mb-10">
+                <h2 class="mb-3 text-3xl font-bold text-primary sm:text-4xl">Derniers détails</h2>
+                <p class="mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">{{ detailStepPrompt() }}</p>
               </div>
 
               @if (selectedType() === 'entrepreneur') {
-                <div class="grid grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
                   <div>
-                    <label class="block text-sm font-semibold mb-2" for="project-name">Nom du projet</label>
+                    <label class="mb-2 block text-sm font-semibold" for="project-name">Nom du projet</label>
                     <input
                       id="project-name"
                       type="text"
                       formControlName="projectName"
-                      class="w-full px-4 py-3 bg-secondary border border-border rounded-lg focus:border-accent outline-none transition-colors"
+                      class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
                       placeholder="Nom du projet"
                     >
                   </div>
 
                   <div>
-                    <label class="block text-sm font-semibold mb-2" for="project-sector">Secteur</label>
+                    <label class="mb-2 block text-sm font-semibold" for="project-sector">Secteur</label>
                     <input
                       id="project-sector"
                       type="text"
                       formControlName="projectSector"
-                      class="w-full px-4 py-3 bg-secondary border border-border rounded-lg focus:border-accent outline-none transition-colors"
+                      class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
                       placeholder="SaaS, IA, e-commerce..."
                     >
                   </div>
 
-                  <div class="col-span-2">
-                    <label class="block text-sm font-semibold mb-2" for="project-stage">Stade du projet</label>
+                  <div class="md:col-span-2">
+                    <label class="mb-2 block text-sm font-semibold" for="project-stage">Stade du projet</label>
                     <select
                       id="project-stage"
                       formControlName="projectStage"
-                      class="w-full px-4 py-3 bg-secondary border border-border rounded-lg focus:border-accent outline-none transition-colors"
+                      class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
                     >
                       @for (stage of projectStages; track stage.value) {
                         <option [value]="stage.value">{{ stage.label }}</option>
@@ -199,36 +257,110 @@ interface ProfileOption {
               }
 
               @if (selectedType() === 'talent') {
-                <div class="grid grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
                   <div>
-                    <label class="block text-sm font-semibold mb-2" for="talent-headline">Rôle principal</label>
+                    <label class="mb-2 block text-sm font-semibold" for="talent-headline">Rôle principal</label>
                     <input
                       id="talent-headline"
                       type="text"
                       formControlName="talentHeadline"
-                      class="w-full px-4 py-3 bg-secondary border border-border rounded-lg focus:border-accent outline-none transition-colors"
+                      class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
                       placeholder="Développeur full-stack, sales, product..."
                     >
                   </div>
 
                   <div>
-                    <label class="block text-sm font-semibold mb-2" for="talent-skill">Compétence clé</label>
+                    <label class="mb-2 block text-sm font-semibold" for="talent-skill">Compétence clé</label>
                     <input
                       id="talent-skill"
                       type="text"
                       formControlName="talentSkill"
-                      class="w-full px-4 py-3 bg-secondary border border-border rounded-lg focus:border-accent outline-none transition-colors"
+                      class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
                       placeholder="Angular, closing, growth..."
                     >
                   </div>
 
-                  <label class="col-span-2 flex items-center justify-between rounded-xl border border-border bg-secondary px-4 py-4">
+                  <label class="flex items-center justify-between gap-4 rounded-xl border border-border bg-secondary px-4 py-4 md:col-span-2">
                     <span>
                       <span class="block font-semibold text-primary">Disponible rapidement</span>
                       <span class="text-sm text-muted-foreground">Les entrepreneurs verront si vous êtes joignable tout de suite.</span>
                     </span>
                     <input type="checkbox" formControlName="talentAvailability" class="h-5 w-5 accent-accent">
                   </label>
+                </div>
+              }
+
+              @if (selectedType() === 'buyer') {
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
+                  <div>
+                    <label class="mb-2 block text-sm font-semibold" for="buyer-sector">Type d'entreprise recherchée</label>
+                    <input
+                      id="buyer-sector"
+                      type="text"
+                      formControlName="maSector"
+                      class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
+                      placeholder="SaaS, commerce, services B2B..."
+                    >
+                  </div>
+
+                  <div>
+                    <label class="mb-2 block text-sm font-semibold" for="buyer-budget">Budget indicatif</label>
+                    <input
+                      id="buyer-budget"
+                      type="text"
+                      formControlName="maBudget"
+                      class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
+                      placeholder="Ex. 150 k€ - 500 k€"
+                    >
+                  </div>
+
+                  <div class="md:col-span-2">
+                    <label class="mb-2 block text-sm font-semibold" for="buyer-region">Zone ou région visée</label>
+                    <input
+                      id="buyer-region"
+                      type="text"
+                      formControlName="maRegion"
+                      class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
+                      placeholder="Toute la France, Île-de-France, Auvergne-Rhône-Alpes..."
+                    >
+                  </div>
+                </div>
+              }
+
+              @if (selectedType() === 'seller') {
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
+                  <div>
+                    <label class="mb-2 block text-sm font-semibold" for="seller-sector">Secteur de l'entreprise</label>
+                    <input
+                      id="seller-sector"
+                      type="text"
+                      formControlName="maSector"
+                      class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
+                      placeholder="Commerce, SaaS, restauration..."
+                    >
+                  </div>
+
+                  <div>
+                    <label class="mb-2 block text-sm font-semibold" for="seller-range">Ordre de grandeur</label>
+                    <input
+                      id="seller-range"
+                      type="text"
+                      formControlName="maBudget"
+                      class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
+                      placeholder="CA, prix cible ou taille de l'activité"
+                    >
+                  </div>
+
+                  <div class="md:col-span-2">
+                    <label class="mb-2 block text-sm font-semibold" for="seller-region">Région</label>
+                    <input
+                      id="seller-region"
+                      type="text"
+                      formControlName="maRegion"
+                      class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
+                      placeholder="Ville ou région de l'activité"
+                    >
+                  </div>
                 </div>
               }
 
@@ -250,11 +382,11 @@ interface ProfileOption {
                 </div>
               }
 
-              <div class="mt-10 flex items-center gap-4">
+              <div class="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:items-center sm:gap-4">
                 <button
                   type="button"
                   (click)="goToStep(2)"
-                  class="px-6 py-3 rounded-lg border-2 border-border font-semibold hover:border-accent transition-colors"
+                  class="rounded-lg border-2 border-border px-6 py-3 font-semibold transition-colors hover:border-accent"
                 >
                   Retour
                 </button>
@@ -262,8 +394,8 @@ interface ProfileOption {
                   type="button"
                   (click)="submitRegistration()"
                   [disabled]="isSubmitting()"
-                  [ngClass]="isSubmitting() ? 'opacity-70 cursor-wait' : ''"
-                  class="flex-1 py-4 rounded-lg font-semibold text-lg bg-accent text-white shadow-lg transition-colors hover:bg-accent/90"
+                  [ngClass]="isSubmitting() ? 'cursor-wait opacity-70' : ''"
+                  class="flex-1 rounded-lg bg-accent py-4 text-lg font-semibold text-white shadow-lg transition-colors hover:bg-accent/90"
                 >
                   {{ isSubmitting() ? 'Création du compte...' : 'Créer mon compte' }}
                 </button>
@@ -272,12 +404,12 @@ interface ProfileOption {
           }
         </div>
 
-        <p class="text-center text-sm text-muted-foreground mt-6 animate-fade-in delay-700">
+        <p class="mt-6 text-center text-sm text-muted-foreground animate-fade-in delay-700">
           Vous avez déjà un compte ?
           <a
             routerLink="/connexion"
             [queryParams]="returnUrl() ? { returnUrl: returnUrl() } : null"
-            class="text-accent font-semibold hover:underline"
+            class="font-semibold text-accent hover:underline"
           >Se connecter</a>
         </p>
       </div>
@@ -310,6 +442,9 @@ export class InscriptionComponent {
     talentHeadline: [''],
     talentSkill: [''],
     talentAvailability: [true],
+    maSector: [''],
+    maBudget: [''],
+    maRegion: [''],
   });
 
   readonly progressPercent = computed(() =>
@@ -318,7 +453,18 @@ export class InscriptionComponent {
 
   readonly selectedTypeLabel = computed(() => {
     const activeType = this.selectedType();
-    return activeType === 'entrepreneur' ? 'entrepreneur' : 'talent';
+    switch (activeType) {
+      case 'entrepreneur':
+        return 'entrepreneur';
+      case 'talent':
+        return 'talent';
+      case 'buyer':
+        return 'acheteur / repreneur';
+      case 'seller':
+        return 'vendeur M&A';
+      default:
+        return 'GoFounders';
+    }
   });
 
   readonly detailStepDescription = computed(() => {
@@ -327,18 +473,45 @@ export class InscriptionComponent {
       : 'Présentez votre expertise pour que les entrepreneurs trouvent le bon profil plus vite.';
   });
 
+  readonly detailStepPrompt = computed(() => {
+    switch (this.selectedType()) {
+      case 'entrepreneur':
+        return 'Présentez rapidement votre projet pour que les talents sachent ce que vous construisez.';
+      case 'talent':
+        return 'Présentez votre expertise pour que les entrepreneurs trouvent le bon profil plus vite.';
+      case 'buyer':
+        return 'Indiquez ce que vous souhaitez reprendre pour recevoir des opportunités M&A cohérentes.';
+      case 'seller':
+        return 'Cadrez votre projet de cession pour préparer une annonce claire et confidentielle.';
+      default:
+        return 'Complétez les informations utiles pour personnaliser votre parcours.';
+    }
+  });
+
   readonly profileTypes: ProfileOption[] = [
     {
       id: 'entrepreneur',
-      icon: '🚀',
+      icon: 'project',
       title: 'Je dépose un projet',
       description: 'Je construis un projet et je veux trouver des talents pour le faire avancer.',
     },
     {
       id: 'talent',
-      icon: '💼',
+      icon: 'talent',
       title: 'Je suis un talent',
       description: 'Je veux découvrir des projets et rejoindre une équipe entrepreneuriale.',
+    },
+    {
+      id: 'buyer',
+      icon: 'buyer',
+      title: 'Je veux reprendre une entreprise',
+      description: 'Je cherche une opportunité M&A à analyser ou acquérir avec un accès dédié.',
+    },
+    {
+      id: 'seller',
+      icon: 'seller',
+      title: 'Je veux céder mon entreprise',
+      description: 'Je souhaite préparer une annonce confidentielle et qualifier des repreneurs.',
     },
   ];
 
@@ -420,24 +593,33 @@ export class InscriptionComponent {
       projectSector,
       talentHeadline,
       talentSkill,
+      maSector,
+      maBudget,
     } = this.detailsForm.controls;
 
     projectName.clearValidators();
     projectSector.clearValidators();
     talentHeadline.clearValidators();
     talentSkill.clearValidators();
+    maSector.clearValidators();
+    maBudget.clearValidators();
 
     if (profileType === 'entrepreneur') {
       projectName.setValidators([Validators.required]);
       projectSector.setValidators([Validators.required]);
-    } else {
+    } else if (profileType === 'talent') {
       talentHeadline.setValidators([Validators.required]);
       talentSkill.setValidators([Validators.required]);
+    } else {
+      maSector.setValidators([Validators.required]);
+      maBudget.setValidators([Validators.required]);
     }
 
     projectName.updateValueAndValidity({ emitEvent: false });
     projectSector.updateValueAndValidity({ emitEvent: false });
     talentHeadline.updateValueAndValidity({ emitEvent: false });
     talentSkill.updateValueAndValidity({ emitEvent: false });
+    maSector.updateValueAndValidity({ emitEvent: false });
+    maBudget.updateValueAndValidity({ emitEvent: false });
   }
 }

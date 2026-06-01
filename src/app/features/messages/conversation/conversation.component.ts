@@ -1,12 +1,8 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
-
-interface ChatMsg {
-  id: string;
-  senderId: string;
-  content: string;
-  time: string;
-}
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { map } from 'rxjs/operators';
+import { ConversationMessage, findConversationById, findMarketplaceProfileById } from '../../../core/data/mock-platform.data';
 
 @Component({
   selector: 'app-conversation',
@@ -14,78 +10,117 @@ interface ChatMsg {
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-secondary pt-20 flex flex-col">
-      <div class="max-w-3xl mx-auto w-full px-8 py-8 flex flex-col flex-1">
-
-        <!-- Header -->
-        <div class="flex items-center gap-4 mb-6 animate-fade-in-up">
-          <a routerLink="/messages" class="p-2 rounded-lg hover:bg-border transition-colors">
+    <div class="min-h-screen bg-secondary pt-20">
+      <div class="mx-auto flex h-full w-full max-w-4xl flex-1 flex-col px-4 py-8 sm:px-6 lg:px-8">
+        <div class="mb-6 flex items-center gap-4">
+          <a routerLink="/messages" class="rounded-lg p-2 transition-colors hover:bg-border" aria-label="Retour aux messages">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6"/>
             </svg>
           </a>
-          <div class="w-10 h-10 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center text-white font-bold">SB</div>
-          <div>
-            <div class="font-bold">Sophie Bernard</div>
-            <div class="text-xs text-green-500 font-medium">En ligne</div>
+          <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary font-bold text-white">{{ participantInitials() }}</div>
+          <div class="min-w-0">
+            <div class="truncate font-bold">{{ participantName() }}</div>
+            <div class="text-xs font-medium" [class.text-green-500]="isOnline()" [class.text-muted-foreground]="!isOnline()">
+              {{ isOnline() ? 'En ligne' : 'Disponible sur la plateforme' }}
+            </div>
           </div>
         </div>
 
-        <!-- Messages -->
-        <div class="bg-white rounded-2xl border border-border shadow-lg flex flex-col h-[calc(100vh-280px)] animate-fade-in-up delay-100">
-          <div class="flex-1 overflow-y-auto p-6 space-y-4">
-            @for (msg of messages; track msg.id) {
-              <div class="flex" [class.justify-end]="msg.senderId === 'me'">
-                <div
-                  class="max-w-xs px-4 py-2.5 rounded-2xl text-sm leading-relaxed"
-                  [class.bg-accent]="msg.senderId === 'me'"
-                  [class.text-white]="msg.senderId === 'me'"
-                  [class.bg-secondary]="msg.senderId !== 'me'"
-                >
-                  {{ msg.content }}
-                  <div class="text-xs mt-1 opacity-60 text-right">{{ msg.time }}</div>
+        <div class="flex h-[calc(100vh-220px)] flex-col rounded-2xl border border-border bg-white shadow-lg">
+          <div class="flex-1 overflow-y-auto p-6">
+            @if (currentMessages().length > 0) {
+              <div class="space-y-4">
+                @for (msg of currentMessages(); track msg.id) {
+                  <div class="flex" [class.justify-end]="msg.senderId === 'me'">
+                    <div
+                      class="max-w-xs rounded-2xl px-4 py-2.5 text-sm leading-relaxed sm:max-w-md"
+                      [class.bg-accent]="msg.senderId === 'me'"
+                      [class.text-white]="msg.senderId === 'me'"
+                      [class.bg-secondary]="msg.senderId !== 'me'"
+                    >
+                      {{ msg.content }}
+                      <div class="mt-1 text-right text-xs opacity-60">{{ msg.time }}</div>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="flex h-full flex-col items-center justify-center text-center text-muted-foreground">
+                <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-secondary">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                  </svg>
                 </div>
+                <h3 class="mb-1 text-base font-semibold text-foreground/70">Commencez la conversation</h3>
+                <p class="max-w-md text-sm">Aucun message n'a encore été échangé avec ce profil. Envoyez le premier message pour lancer le contact.</p>
               </div>
             }
           </div>
 
-          <!-- Input -->
-          <div class="border-t border-border p-4 flex gap-3">
+          <div class="flex gap-3 border-t border-border p-4">
             <input
               type="text"
               [value]="newMessage()"
               (input)="newMessage.set($any($event.target).value)"
               (keyup.enter)="sendMessage()"
               placeholder="Votre message..."
-              class="flex-1 px-4 py-2.5 bg-secondary border border-border rounded-lg focus:border-accent outline-none transition-colors text-sm"
+              class="flex-1 rounded-lg border border-border bg-secondary px-4 py-2.5 text-sm outline-none transition-colors focus:border-accent"
             >
             <button
+              type="button"
               (click)="sendMessage()"
               [disabled]="!newMessage().trim()"
-              class="px-5 py-2.5 bg-accent text-white rounded-lg font-semibold text-sm hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              class="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Envoyer
             </button>
           </div>
         </div>
-
       </div>
     </div>
   `
 })
 export class ConversationComponent {
-  newMessage = signal('');
+  private readonly route = inject(ActivatedRoute);
 
-  readonly messages: ChatMsg[] = [
-    { id: '1', senderId: 'other', content: 'Bonjour ! Votre profil m\'intéresse beaucoup.', time: '14:30' },
-    { id: '2', senderId: 'me', content: 'Merci ! Je serais ravi d\'en discuter.', time: '14:31' },
-    { id: '3', senderId: 'other', content: 'Quand êtes-vous disponible pour un appel ?', time: '14:32' },
-  ];
+  readonly newMessage = signal('');
+  readonly localMessages = signal<ConversationMessage[]>([]);
+
+  private readonly conversationId = toSignal(
+    this.route.params.pipe(map((params: Record<string, string>) => params['id'] ?? '')),
+    { initialValue: '' }
+  );
+
+  readonly baseConversation = computed(() => findConversationById(this.conversationId()));
+  readonly fallbackProfile = computed(() => findMarketplaceProfileById(this.conversationId()));
+  readonly participantName = computed(() =>
+    this.baseConversation()?.participantName ?? this.fallbackProfile()?.displayName ?? 'Conversation'
+  );
+  readonly participantInitials = computed(() =>
+    this.baseConversation()?.participantInitials ?? this.fallbackProfile()?.initials ?? 'GF'
+  );
+  readonly isOnline = computed(() => this.baseConversation()?.isOnline ?? true);
+  readonly currentMessages = computed(() => [
+    ...(this.baseConversation()?.messages ?? []),
+    ...this.localMessages(),
+  ]);
 
   sendMessage(): void {
-    if (this.newMessage().trim()) {
-      console.log('Send:', this.newMessage());
-      this.newMessage.set('');
+    const content = this.newMessage().trim();
+
+    if (!content) {
+      return;
     }
+
+    const now = new Date();
+    const time = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+    this.localMessages.update(messages => [
+      ...messages,
+      { id: `local-${Date.now()}`, senderId: 'me', content, time },
+    ]);
+
+    this.newMessage.set('');
   }
 }

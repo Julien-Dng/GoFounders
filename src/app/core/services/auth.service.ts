@@ -14,6 +14,14 @@ interface StoredUserRecord {
   photoURL?: string;
   location: string;
   profileType: ProfileType;
+  profileTitle?: string;
+  bio?: string;
+  skills?: string[];
+  lookingFor?: string[];
+  availabilityLabel?: string;
+  githubUrl?: string;
+  linkedinUrl?: string;
+  websiteUrl?: string;
   plan: Plan;
   maAccess: boolean;
   stripeCustomerId?: string;
@@ -41,10 +49,23 @@ export interface AuthResult {
   message?: string;
 }
 
+export interface UpdateProfilePayload {
+  displayName: string;
+  location: string;
+  profileTitle: string;
+  bio: string;
+  skills: string[];
+  lookingFor: string[];
+  availabilityLabel: string;
+  githubUrl: string;
+  linkedinUrl: string;
+  websiteUrl: string;
+  photoURL?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly router = inject(Router);
-
   private readonly _currentUser = signal<User | null>(null);
 
   readonly currentUser = this._currentUser.asReadonly();
@@ -127,6 +148,104 @@ export class AuthService {
     this.writeUsers(users);
     this.setAuthenticatedUser(newUser);
     await this.router.navigateByUrl(this.resolvePostAuthUrl(returnUrl));
+
+    return { success: true };
+  }
+
+  async grantMaAccess(): Promise<boolean> {
+    const activeUser = this._currentUser();
+
+    if (!activeUser) {
+      return false;
+    }
+
+    const users = this.readUsers();
+    const userIndex = users.findIndex(user => user.uid === activeUser.uid);
+
+    if (userIndex < 0) {
+      return false;
+    }
+
+    const updatedUser: StoredUserRecord = {
+      ...users[userIndex],
+      maAccess: true,
+      lastActive: new Date().toISOString(),
+    };
+
+    users[userIndex] = updatedUser;
+    this.writeUsers(users);
+    this.setAuthenticatedUser(updatedUser);
+
+    return true;
+  }
+
+  async grantDemoPlan(plan: Exclude<Plan, 'FREE'> = 'PRO'): Promise<boolean> {
+    const activeUser = this._currentUser();
+
+    if (!activeUser) {
+      return false;
+    }
+
+    const users = this.readUsers();
+    const userIndex = users.findIndex(user => user.uid === activeUser.uid);
+
+    if (userIndex < 0) {
+      return false;
+    }
+
+    const updatedUser: StoredUserRecord = {
+      ...users[userIndex],
+      plan,
+      lastActive: new Date().toISOString(),
+    };
+
+    users[userIndex] = updatedUser;
+    this.writeUsers(users);
+    this.setAuthenticatedUser(updatedUser);
+
+    return true;
+  }
+
+  async updateProfile(payload: UpdateProfilePayload): Promise<AuthResult> {
+    const activeUser = this._currentUser();
+
+    if (!activeUser) {
+      return {
+        success: false,
+        message: 'Vous devez être connecté pour modifier votre profil.',
+      };
+    }
+
+    const users = this.readUsers();
+    const userIndex = users.findIndex(user => user.uid === activeUser.uid);
+
+    if (userIndex < 0) {
+      return {
+        success: false,
+        message: 'Profil introuvable.',
+      };
+    }
+
+    const updatedUser: StoredUserRecord = {
+      ...users[userIndex],
+      displayName: payload.displayName.trim(),
+      location: payload.location.trim(),
+      profileTitle: this.cleanOptionalText(payload.profileTitle),
+      bio: this.cleanOptionalText(payload.bio),
+      skills: this.cleanTags(payload.skills),
+      lookingFor: this.cleanTags(payload.lookingFor),
+      availabilityLabel: this.cleanOptionalText(payload.availabilityLabel),
+      githubUrl: this.cleanOptionalText(payload.githubUrl),
+      linkedinUrl: this.cleanOptionalText(payload.linkedinUrl),
+      websiteUrl: this.cleanOptionalText(payload.websiteUrl),
+      photoURL: payload.photoURL?.trim() || undefined,
+      lastActive: new Date().toISOString(),
+    };
+
+    updatedUser.profileComplete = this.computeProfileComplete(updatedUser);
+    users[userIndex] = updatedUser;
+    this.writeUsers(users);
+    this.setAuthenticatedUser(updatedUser);
 
     return { success: true };
   }
@@ -232,6 +351,14 @@ export class AuthService {
       photoURL: user.photoURL,
       location: user.location,
       profileType: user.profileType,
+      profileTitle: user.profileTitle,
+      bio: user.bio,
+      skills: user.skills,
+      lookingFor: user.lookingFor,
+      availabilityLabel: user.availabilityLabel,
+      githubUrl: user.githubUrl,
+      linkedinUrl: user.linkedinUrl,
+      websiteUrl: user.websiteUrl,
       plan: user.plan,
       maAccess: user.maAccess,
       stripeCustomerId: user.stripeCustomerId,
@@ -254,6 +381,36 @@ export class AuthService {
     }
 
     return parts.map(part => part[0]?.toUpperCase() ?? '').join('');
+  }
+
+  private cleanOptionalText(value: string): string | undefined {
+    const cleanedValue = value.trim();
+    return cleanedValue ? cleanedValue : undefined;
+  }
+
+  private cleanTags(tags: string[]): string[] | undefined {
+    const cleanedTags = tags
+      .map(tag => tag.trim())
+      .filter(Boolean)
+      .slice(0, 12);
+
+    return cleanedTags.length > 0 ? cleanedTags : undefined;
+  }
+
+  private computeProfileComplete(user: StoredUserRecord): number {
+    const fields: Array<string | string[] | undefined> = [
+      user.displayName,
+      user.location,
+      user.profileTitle,
+      user.bio,
+      user.photoURL,
+      user.skills,
+      user.lookingFor,
+      user.availabilityLabel,
+    ];
+
+    const completedFields = fields.filter(field => Array.isArray(field) ? field.length > 0 : Boolean(field?.trim())).length;
+    return Math.min(100, Math.round((completedFields / fields.length) * 100));
   }
 
   private createUid(): string {

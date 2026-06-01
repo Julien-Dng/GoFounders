@@ -4,6 +4,23 @@
 
 ---
 
+## Repères de suivi quotidien interne
+
+> Repères de reprise pour savoir quoi relire, tester ou continuer selon les jours. Cette section sert de guide d'avancement, l'historique détaillé reste dans les sessions ci-dessous.
+
+- **20 mai 2026** : cohérence profil, icônes de navigation, routes prioritaires et CTA principaux.
+- **21 mai 2026** : inscription, rôles utilisateur et textes visibles à relire pour garder un parcours clair.
+- **22 mai 2026** : navbar, menu avatar, cloche de notifications et navigation connectée à vérifier.
+- **23 mai 2026** : messagerie, conversation active, espacement et comportement de la bulle flottante.
+- **24 mai 2026** : recherche, visibilité par rôle et limites FREE/PRO à contrôler.
+- **25 mai 2026** : profils publics, CTA message, onglets profil et cohérence entre mon profil/profil externe.
+- **26 mai 2026** : marketplace M&A, teasers, verrouillage des détails sensibles et parcours one-shot.
+- **27 mai 2026** : tarifs, promesses commerciales, wording de confiance et pages légales.
+- **28 mai 2026** : notifications, menu déroulant, redirections et état des non-lus.
+- **29 mai 2026** : audit UX appliqué, nettoyage des démos visibles, build final et prochain focus Stripe/Firebase.
+
+---
+
 ## 📅 Session du 8 mai 2026 — Nettoyage de la stack
 
 ### 🎯 Contexte
@@ -166,6 +183,323 @@ npm install @stripe/stripe-js
 ### Verification
 
 - Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 1er juin 2026 - Correctifs dark mode
+
+### Correctifs appliqués
+
+- **Champs et menus déroulants** :
+  - Ajout d'un style global dark mode pour `select`, `option`, `input` et `textarea`
+  - Correction des menus natifs qui s'ouvraient en blanc avec un texte trop pâle
+
+- **Surfaces M&A / confidentialité** :
+  - Les fonds `amber` très clairs passent maintenant sur des surfaces sombres et lisibles en mode nuit
+  - Les textes amber des encarts gardent un contraste plus premium en dark mode
+
+- **Profil public** :
+  - Retouche ciblée de la carte `Détails confidentiels` pour éviter le rendu crème/blanc et le texte trop faible en mode nuit
+
+- **Overlays verrouillés** :
+  - Correction de l'overlay PRO de la recherche qui restait trop blanc en mode nuit
+  - Harmonisation du composant `LockedOverlay` partagé avec une surface sombre et un CTA contrasté
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 20 mai 2026 - Cohérence données, responsive et pages clés
+
+### Changements UX / produit
+
+- **Home reliftée** :
+  - suppression des derniers emojis visuels sur la landing au profit d'icônes SVG
+  - textes et accents corrigés
+  - sections rendues plus responsives sur mobile et tablette
+
+- **Recherche / Profil** :
+  - les cartes de recherche et les profils publics reposent maintenant sur une base mock commune
+  - ouvrir un profil affiche désormais un contenu cohérent avec la carte sélectionnée
+  - le bouton message depuis un profil ouvre une conversation dédiée via `/messages/:id`
+
+- **Messagerie** :
+  - la liste des conversations, le détail et la conversation dédiée utilisent les mêmes données mock
+  - envoi de message géré dans la vue principale avec mise à jour du dernier message
+  - layout amélioré sur petits écrans
+
+- **M&A** :
+  - les annonces M&A utilisent maintenant des données mock communes entre listing et détail
+  - `/ma/annonce/:id` affiche un vrai détail dynamique
+  - `/ma/deposer` n'est plus un simple placeholder : wizard mock en 5 étapes + activation de l'accès M&A
+  - ajout d'un déblocage mock `maAccess` dans `AuthService`
+
+- **Tarifs / Footer / Coaching IA** :
+  - tarifs nettoyés, CTA des cartes rendus cliquables via `PricingCardComponent`
+  - bloc M&A de la page tarifs branché vers `/ma`
+  - footer : liens morts neutralisés, sections "bientôt" explicites
+  - coaching IA nettoyé, overlay incohérent retiré, texte et responsive corrigés
+
+- **Dashboard** :
+  - CTA `Voir tous`, `Voir le profil` et actions rapides raccordés à de vraies routes
+
+### Technique
+
+- nouveau fichier partagé : `src/app/core/data/mock-platform.data.ts`
+  - profils marketplace
+  - conversations
+  - annonces M&A
+- `AuthService`
+  - correction des messages texte
+  - ajout de `grantMaAccess()` pour simuler l'achat one-shot
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 31 mai 2026 - Expert M&A
+
+### Correctifs appliqués
+
+- Ajout du visuel expert M&A dans `src/assets/images/ma-expert.png`
+- Intégration du personnage dans le hero de `/ma`, à droite du texte principal
+- Retrait du badge `Accès 149€` dans le hero pour éviter de mettre le prix trop fortement en avant
+- Simplification du CTA hero en `Déposer une annonce`
+- Repositionnement du bloc `M&A confidentiel` pour conserver le texte sans chevaucher les statistiques du hero
+- Vérification de la page `/tarifs` : elle contient bien une section M&A, désormais ciblable via `#ma-access`
+- Les CTA d'accès verrouillé renvoient vers `Découvrir l'offre M&A` au lieu d'envoyer directement vers le paiement
+- Validation par l'audit Sagan : les 4 personnages actuels sont cohérents et il recommande de s'arrêter là pour éviter un site trop illustré
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 30 mai 2026 - Coach profil
+
+### Correctifs appliqués
+
+- Ajout du visuel coach dans `src/assets/images/profile-coach.png`
+- Remplacement du visuel coach par la nouvelle version fournie le 31 mai
+- Intégration d'un bandeau coach sur `/profil/modifier` pour accompagner la complétion du profil
+- Ajout d'une présence discrète du coach pendant les étapes formulaire de `/inscription` sur grand écran
+- Conservation d'un affichage décoratif masqué aux lecteurs d'écran pour ne pas alourdir l'accessibilité
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 30 mai 2026 - Mascotte recherche
+
+### Correctif appliqué
+
+- Ajout de l'illustration loupe dans les assets sous `src/assets/images/search-mascot.png`
+- Intégration discrète de la mascotte dans le bandeau IA de la page `/recherche`
+- Taille limitée et affichage seulement sur grand écran pour garder un rendu professionnel
+- Ajout d'un halo léger et d'un libellé court pour intégrer l'image au design existant
+- Agrandissement de la mascotte et ajout d'une petite bulle d'aide pour mieux occuper la zone droite du bandeau
+- Remplacement par l'illustration analyste définitive `src/assets/images/search-analyst.png`
+- Ajout du duo entrepreneur / talent dans la hero landing via `src/assets/images/landing-founder-duo.png`
+- Suppression de l'ancienne animation de ronds et connexions derrière le duo landing pour préparer une future animation After Effects
+- Remplacement du PNG du duo landing par l'animation `src/assets/videos/landing-puzzle-animation.webm`
+- Remplacement de l'animation landing par une version optimisée et lecture unique sans boucle
+- Correction du lancement de l'animation landing : la vidéo n'est plus remplacée par un poster en réduction d'animations et un `play()` sécurisé est déclenché au chargement
+- Suppression du fallback PNG dans la balise vidéo hero : la landing affiche uniquement la vidéo WebM
+- Renforcement du lancement de la vidéo hero : référence directe au `<video>`, `muted/defaultMuted/playsInline` forcés côté Angular et URL versionnée pour éviter le cache navigateur
+- Sécurisation du cas cache/navigateur où la vidéo hero pouvait être restaurée directement sur sa dernière frame : retour à `currentTime = 0` avant lecture initiale
+- Habillage de la zone vidéo landing avec une scène glassmorphism, halos discrets et repères `Match qualifié`, `Talent disponible`, `Projet cadré` pour éviter l'effet vide autour de l'animation
+- Retrait du cadre fermé autour de la vidéo landing et espacement des étiquettes pour garder une composition plus ouverte
+- Remplacement du grand cercle visible derrière la vidéo landing par un halo flouté plus propre
+- Réorganisation des étiquettes de la vidéo landing en colonne structurée avec fond bleuté léger et fil discret, pour éviter l'effet placement aléatoire sur fond clair
+- Retour à une composition circulaire plus propre : anneau léger centré derrière le duo et étiquettes repositionnées sur trois points du cercle
+- Ajustement du cercle en mode jour : anneau parfaitement rond, halo moins gris et badges plus doux pour éviter l'effet étrange sur fond blanc
+- Agrandissement de l'anneau landing en mode jour et halo passé sur un bleu plus clair pour mieux respirer autour des personnages
+- Ajout d'un mini bloc d'orientation `Entrepreneurs`, `Talents`, `M&A` dans le hero
+- Remplacement du CTA secondaire par `Explorer les opportunités`
+- Retrait du prix M&A de la landing pour garder le tarif dans les pages dédiées
+- Remplacement des statistiques abstraites par des garanties concrètes
+- Témoignages rendus plus réalistes avec prénoms, rôles et situations précises
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 1 juin 2026 - Notifications lues
+
+### Correctif appliqué
+
+- Ajout d'un service partagé de notifications pour éviter que la navbar et le dashboard gardent chacun leur propre état
+- Ouverture du menu de notifications = notifications marquées comme vues
+- Persistance locale des notifications lues par utilisateur pour éviter qu'elles redeviennent non lues au changement de page
+- Animation de la cloche limitée aux notifications non lues : si le compteur est à zéro, la cloche reste fixe
+- Retour du bouton `Aperçu démo (pour ce test)` dans les zones verrouillées PRO, avec activation locale du plan de démo mock
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 30 mai 2026 - Modification du profil utilisateur
+
+### Correctifs appliqués
+
+- Création d'une vraie page `/profil/modifier` avec formulaire éditable
+- Ajout de la modification du nom, de la localisation, du titre, de la bio et de la disponibilité
+- Ajout de compétences et objectifs sous forme de tags séparés par virgules
+- Ajout d'une photo de profil avec aperçu, suppression possible et sauvegarde locale mock
+- Ajout de liens professionnels GitHub, LinkedIn et site/portfolio
+- Sauvegarde des données dans l'auth mock locale et recalcul de la complétion du profil
+- Affichage de la photo, de la bio, du titre, des tags et des liens sur le profil personnel
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 30 mai 2026 - Messagerie profil latéral et conversations
+
+### Correctifs appliqués
+
+- La mini card profil n'est plus empilée au-dessus de la liste des conversations
+- Sur grand écran, l'ordre devient : chat, liste des conversations, profil du contact à droite
+- La liste des conversations garde toute sa hauteur et reste visible sans être écrasée
+- Chaque conversation affiche maintenant ses propres messages mockés
+- L'envoi d'un message ajoute le contenu uniquement à la conversation active
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 30 mai 2026 - Dark mode adouci
+
+### Correctifs appliqués
+
+- Palette sombre moins contrastée : fond navy ardoise au lieu d'un quasi-noir
+- Cards, drawer et navbar rendus plus doux avec des bordures gris-bleu moins lumineuses
+- Réduction des halos bleus et de l'effet néon
+- Bulle de message envoyée moins brillante en dark mode
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 30 mai 2026 - Reveal au scroll sur la recherche
+
+### Correctifs appliqués
+
+- Ajout d'un effet d'apparition progressif sur les cards de la page `/recherche`
+- Déclenchement au scroll avec `IntersectionObserver`
+- Légère animation de montée + fondu avec décalage discret par colonne
+- Respect de `prefers-reduced-motion` : les cards restent visibles sans animation si l'utilisateur réduit les animations
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 30 mai 2026 - Bouton PRO tarifs visible
+
+### Correctif appliqué
+
+- Le CTA du pack PRO utilise maintenant une classe dédiée indépendante du `bg-white` global
+- Correction de la lisibilité du bouton en mode clair et en mode sombre
+- Harmonisation rapide des CTA FREE / PRO / PREMIUM dans `PricingCardComponent`
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 30 mai 2026 - Logo GoFounders intégré
+
+### Correctifs appliqués
+
+- Ajout du logo optimisé dans `src/assets/images/gofounders-logo.png`
+- Remplacement du carré `G` par le logo dans la navbar, la sidebar dashboard et le footer
+- Ajout de `src/assets` dans `angular.json` pour que le logo soit servi et inclus au build
+- Correction du chemin image en `/assets/images/gofounders-logo.png` pour éviter l'icône d'image cassée
+- Ajout d'un conteneur clair dédié au logo pour garder une bonne lisibilité en mode clair et sombre
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`
+- Logo présent dans `dist/gofounders/browser/assets/images/gofounders-logo.png`
+
+---
+
+## Session du 30 mai 2026 - Messagerie resserrée
+
+### Correctif appliqué
+
+- Zone messages recentrée avec une largeur maximale plus compacte
+- Réduction des espacements internes du chat et de la barre de conversation
+- Liste des conversations légèrement plus étroite et plus dense
+- Bulles de messages mieux cadrées pour éviter l'effet trop étalé
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 30 mai 2026 - Mini profil dans la messagerie
+
+### Correctif appliqué
+
+- Ajout d'une mini card profil à droite de la conversation sélectionnée
+- Affichage du nom, rôle, ville, score de compatibilité, disponibilité, bio courte et compétences
+- Réutilisation des données mock de profil existantes pour éviter les doublons
+- État vide prévu quand aucune conversation n'est sélectionnée
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 30 mai 2026 - Nettoyage emojis revenus
+
+### Correctifs appliqués
+
+- Remplacement des emojis revenus dans le drawer de navigation par des icônes SVG sobres
+- Remplacement des emojis décoratifs de la landing par des icônes SVG pour le badge, les étapes et les cas d'usage
+- Conservation volontaire de l'emoji picker dans les messages, car il sert à rédiger un message et n'est pas une icône de navigation
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 29 mai 2026 - Correction page blanche au lancement
+
+### Correctif appliqué
+
+- Correction du crash Angular `NG04012: Outlet is not activated`
+- L'animation de transition vérifie maintenant que le `RouterOutlet` est activé avant de lire la route active
+- Correctif appliqué dans le layout racine et le layout public avec navbar
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`
+- Vérification navigateur headless OK : landing + navbar visibles, aucune erreur JS bloquante
 
 ---
 
@@ -342,3 +676,161 @@ npm install @stripe/stripe-js
   - Bulles de message envoyées : classe `.bubble-me` avec dégradé `#2563EB → #3B82F6` (light) / `#1D4FBF → #4F8FF8` + glow bleu en dark
 
 - **Padding page Messages** : `pl-14 pr-10` sur le conteneur principal (56px à gauche, 40px à droite)
+
+---
+
+## Session du 20 mai 2026 - Icônes de navigation et cohérence profil
+
+### Changements UX
+
+- **Menus sans emojis** : remplacement des emojis du drawer, de la sidebar dashboard et du menu avatar par des icônes SVG sobres
+  - Menu utilisateur : `Voir le profil`, `Paramètres`, `Mode sombre`, `Se déconnecter`
+  - Drawer navbar : ajout de `Mon profil` avec un lien vers le profil du compte connecté
+  - Dashboard : sidebar, statistiques et actions rapides harmonisées visuellement
+
+- **Navigation connectée** :
+  - Le logo connecté renvoie maintenant vers `/dashboard`
+  - Le logo du dashboard renvoie aussi vers `/dashboard`
+  - La cloche de notifications reste visible dans la navbar quand l'utilisateur est connecté
+
+- **Parcours profil** :
+  - Le lien `Voir le profil` du menu avatar pointe vers le profil de l'utilisateur connecté
+  - L'ordre des routes a été corrigé pour déclarer `profil/modifier` avant `profil/:id`
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 20 mai 2026 - Audit routing et CTA
+
+### Correctifs appliqués
+
+- **Routes M&A rendues cliquables** :
+  - Hero `/ma` : `Voir les annonces` scrolle maintenant vers la grille des annonces
+  - Hero `/ma` : `Déposer une annonce — 149€` pointe vers `/ma/deposer`
+  - Grille `/ma` : chaque bouton `Voir l'annonce` pointe vers `/ma/annonce/:id`
+  - CTA de bas de page `/ma` : `Déposer mon annonce` pointe vers `/ma/deposer`
+
+- **Cohérence guards M&A** :
+  - `/ma/deposer` est désormais protégé par `AuthGuard` uniquement, pour laisser le paiement se faire dans le wizard
+  - `/ma/annonce/:id` est désormais protégé par `AuthGuard` + `MaAccessGuard`, pour réserver le détail complet aux comptes avec accès one-shot
+
+- **Profil public** :
+  - Le bouton `Envoyer un message` pointe maintenant vers `/messages`
+
+- **Dashboard** :
+  - Le bouton `Découvrir PRO` pointe maintenant vers `/tarifs`
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 20 mai 2026 - Nettoyage final inscription et pitch
+
+### Correctifs appliqués
+
+- **Inscription** :
+  - Remise à plat complète des accents et libellés cassés
+  - Suppression des emojis restants au profit d'icônes SVG plus sobres
+  - Mise en page plus responsive sur mobile et tablette
+  - Parcours 3 étapes conservé avec le flux `returnUrl`
+
+- **Générateur de pitch IA** :
+  - Suppression de l'overlay de démo incohérent avec la route déjà protégée en PRO
+  - Refonte des textes avec accents propres et ton plus premium
+  - Ajout de deux actions utiles en sortie : `Copier le texte` et `Télécharger le pitch`
+  - Mise en page responsive et plus propre sur petits écrans
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 28 mai 2026 - Notifications et bulle flottante
+
+### Correctifs appliqués
+
+- **Cloche de notifications** :
+  - Ajout d'un menu déroulant cliquable sur la cloche dans la navbar et le dashboard
+  - Affichage de notifications mock avec badges de non-lus
+  - Décrément visuel des non-lus quand on ouvre une notification
+
+- **Bulle flottante** :
+  - La bulle n'envoie plus automatiquement un compte FREE vers les tarifs
+  - Compte FREE : redirection vers `/messages`
+  - Compte PRO/PREMIUM : redirection vers `/coaching-ia`
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 29 mai 2026 - Messagerie, notifications et transitions
+
+### Correctifs appliqués
+
+- **Messagerie** :
+  - Suppression du parcours vers une page conversation dédiée : les anciennes URLs `/messages/:id` redirigent maintenant vers `/messages`
+  - Les conversations peuvent être ouvertes directement depuis `/messages?conversation=...`
+  - Ajout d'espace à gauche de la page messages et mise en page plus aérée avec panneaux arrondis
+
+- **Notifications** :
+  - La navbar utilise désormais le vrai menu déroulant de notifications
+  - Une notification de message renvoie vers `/messages` avec la conversation concernée ouverte automatiquement
+  - Les notifications conservent leur décrément visuel des non-lus au clic
+
+- **Dashboard** :
+  - La bulle bleue en bas à droite renvoie toujours vers `/messages` pour éviter les redirections ambiguës
+
+- **Navigation** :
+  - Suppression de la flèche flottante de retour au dashboard, jugée redondante avec le hamburger
+  - Ajout d'un fondu léger lors des changements de page Angular
+
+- **Tarifs** :
+  - Correction du bouton des cards de pricing : `app-pricing-card` accepte maintenant `href` et navigue via `RouterLink`
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 29 mai 2026 - Audit UX appliqué
+
+### Correctifs appliqués
+
+- **Routage et conversion** :
+  - Le CTA `Envoyer un message` depuis un profil ouvre désormais `/messages` avec la conversation ciblée en query param
+  - Les détails confidentiels d'un profil ouvrent aussi la conversation concernée
+  - `/coaching-ia` propose des liens visibles vers le dashboard et les messages pour éviter l'impasse de navigation
+
+- **M&A** :
+  - Suppression de l'aperçu démo et de l'accès gratuit côté marketplace M&A
+  - Les cartes M&A restent lisibles en teaser, seuls les détails sensibles et le dossier complet sont verrouillés
+  - Le dépôt d'annonce ne simule plus d'activation gratuite : il prépare un paiement sécurisé à brancher
+  - Le guard M&A redirige vers `/ma?access=required` avec un message explicite sur l'accès requis
+
+- **Inscription** :
+  - Ajout des profils `Acheteur / Repreneur` et `Vendeur M&A`
+  - Ajout de champs dédiés au parcours M&A dans l'étape de détails
+
+- **Confiance et crédibilité** :
+  - Remplacement des statistiques/promesses non prouvées sur la landing par des formulations de lancement
+  - CTA de recherche clarifié : la consultation se fait après connexion
+  - Ajout de routes légales provisoires : CGU, confidentialité, mentions légales
+  - Le lien `Mot de passe oublié ?` n'est plus mort et ouvre un contact support
+  - Suppression des boutons d'aperçu démo visibles dans les zones verrouillées Angular
+
+- **Responsive** :
+  - Grilles de la landing et du footer rendues mobile-first
+  - Footer légal branché vers de vraies pages au lieu de `#`
+
+### Vérification
+
+- Build Angular OK via `npm.cmd run build`

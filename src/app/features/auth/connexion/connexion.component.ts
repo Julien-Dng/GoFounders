@@ -49,8 +49,10 @@ import { AuthService } from '../../../core/services/auth.service';
             >
           </div>
 
-          <div class="text-right mb-6">
-            <a href="#" class="text-sm text-accent hover:underline">Mot de passe oublié ?</a>
+          <div class="mb-6 text-right">
+            <a href="mailto:support@gofounders.fr?subject=Mot%20de%20passe%20oublie" class="text-sm text-accent hover:underline">
+              Mot de passe oublié ? Contactez le support
+            </a>
           </div>
 
           @if (errorMessage()) {

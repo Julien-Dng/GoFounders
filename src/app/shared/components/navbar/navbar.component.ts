@@ -5,11 +5,14 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserMenuComponent } from '../user-menu/user-menu.component';
+import { NotificationMenuComponent } from '../notification-menu/notification-menu.component';
+
+type DrawerIcon = 'home' | 'search' | 'messages' | 'chart' | 'sparkles' | 'credit-card' | 'settings';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, UserMenuComponent],
+  imports: [RouterLink, RouterLinkActive, UserMenuComponent, NotificationMenuComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (!isHidden()) {
@@ -35,8 +38,12 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
 
           <!-- Logo -->
           <a [routerLink]="logoLink()" class="flex items-center gap-3 group px-4">
-            <div class="w-10 h-10 bg-accent rounded-lg flex items-center justify-center transition-transform group-hover:scale-105 shadow-md">
-              <span class="text-white font-bold text-lg">G</span>
+            <div class="brand-logo-mark h-11 w-11 transition-transform group-hover:scale-105">
+              <img
+                src="/assets/images/gofounders-logo.png"
+                alt="Logo GoFounders"
+                class="h-full w-full object-contain"
+              >
             </div>
             <span class="text-2xl font-bold text-primary">GoFounders</span>
           </a>
@@ -59,15 +66,7 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
               <a routerLink="/dashboard" class="px-5 py-2 text-foreground font-medium hover:text-accent transition-colors cursor-pointer">
                 Dashboard
               </a>
-              <button class="relative p-2 hover:bg-secondary rounded-lg transition-colors" aria-label="Notifications">
-                <svg class="bell-ring" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
-                  <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
-                </svg>
-                <span class="absolute -top-0.5 -right-0.5 min-w-[17px] h-[17px] bg-accent text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
-                  {{ notifCount }}
-                </span>
-              </button>
+              <app-notification-menu />
               <app-user-menu avatarClass="h-11 w-11" />
 
             } @else {
@@ -120,7 +119,54 @@ import { UserMenuComponent } from '../user-menu/user-menu.component';
               (click)="drawerOpen.set(false)"
               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-foreground/70 hover:bg-secondary hover:text-foreground transition-all"
             >
-              <span class="text-lg w-6 text-center">{{ item.emoji }}</span>
+              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-secondary text-muted-foreground transition-colors group-hover:text-accent" aria-hidden="true">
+                @switch (item.icon) {
+                  @case ('home') {
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 10.5 12 3l9 7.5"/>
+                      <path d="M5 9.5V21h14V9.5"/>
+                    </svg>
+                  }
+                  @case ('search') {
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="11" cy="11" r="7"/>
+                      <path d="m20 20-3.5-3.5"/>
+                    </svg>
+                  }
+                  @case ('messages') {
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                  }
+                  @case ('chart') {
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 3v18h18"/>
+                      <path d="m7 14 4-4 3 3 5-7"/>
+                    </svg>
+                  }
+                  @case ('sparkles') {
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m12 3-1.9 5.1L5 10l5.1 1.9L12 17l1.9-5.1L19 10l-5.1-1.9z"/>
+                      <path d="M5 3v4"/>
+                      <path d="M19 17v4"/>
+                      <path d="M3 5h4"/>
+                      <path d="M17 19h4"/>
+                    </svg>
+                  }
+                  @case ('credit-card') {
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="2" y="5" width="20" height="14" rx="2"/>
+                      <path d="M2 10h20"/>
+                    </svg>
+                  }
+                  @case ('settings') {
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="3"/>
+                      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33 1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82 1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                  }
+                }
+              </span>
               <span class="text-sm font-medium flex-1">{{ item.label }}</span>
               @if (item.badge) {
                 <span class="w-5 h-5 bg-accent text-white rounded-full flex items-center justify-center text-xs font-bold">
@@ -152,7 +198,6 @@ export class NavbarComponent {
   protected readonly auth = inject(AuthService);
 
   readonly drawerOpen = signal(false);
-  readonly notifCount = 3;
 
   constructor() {
     const saved = typeof localStorage !== 'undefined' && localStorage.getItem('gofounders.dark') === 'true';
@@ -165,14 +210,14 @@ export class NavbarComponent {
     { href: '/tarifs', label: 'Tarifs' },
   ];
 
-  readonly navItems = [
-    { id: 'accueil',    label: 'Accueil',     emoji: '🏠', path: '/dashboard',   badge: null, exact: true  },
-    { id: 'recherche',  label: 'Recherche',    emoji: '🔍', path: '/recherche',   badge: null, exact: true  },
-    { id: 'messages',   label: 'Messages',     emoji: '💬', path: '/messages',    badge: 3,    exact: false },
-    { id: 'ma',         label: 'M&A',          emoji: '📈', path: '/ma',          badge: null, exact: true  },
-    { id: 'assistant',  label: 'Assistant IA', emoji: '✨', path: '/coaching-ia', badge: null, exact: true  },
-    { id: 'abonnement', label: 'Abonnement',   emoji: '💳', path: '/abonnement',  badge: null, exact: true  },
-    { id: 'parametres', label: 'Paramètres',   emoji: '⚙️', path: '/parametres',  badge: null, exact: true  },
+  readonly navItems: Array<{ id: string; label: string; icon: DrawerIcon; path: string; badge: number | null; exact: boolean }> = [
+    { id: 'accueil',    label: 'Accueil',     icon: 'home', path: '/dashboard',   badge: null, exact: true  },
+    { id: 'recherche',  label: 'Recherche',    icon: 'search', path: '/recherche',   badge: null, exact: true  },
+    { id: 'messages',   label: 'Messages',     icon: 'messages', path: '/messages',    badge: 3,    exact: false },
+    { id: 'ma',         label: 'M&A',          icon: 'chart', path: '/ma',          badge: null, exact: true  },
+    { id: 'assistant',  label: 'Assistant IA', icon: 'sparkles', path: '/coaching-ia', badge: null, exact: true  },
+    { id: 'abonnement', label: 'Abonnement',   icon: 'credit-card', path: '/abonnement',  badge: null, exact: true  },
+    { id: 'parametres', label: 'Paramètres',   icon: 'settings', path: '/parametres',  badge: null, exact: true  },
   ];
 
   private readonly currentUrl = toSignal(
@@ -189,7 +234,7 @@ export class NavbarComponent {
   });
 
   readonly logoLink = computed(() =>
-    this.auth.isAuthenticated() ? '/recherche' : '/'
+    this.auth.isAuthenticated() ? '/dashboard' : '/'
   );
 
   @HostListener('document:keydown.escape')

@@ -10,5 +10,5 @@ export const maAccessGuard: CanActivateFn = () => {
     return true;
   }
 
-  return router.createUrlTree(['/ma']);
+  return router.createUrlTree(['/ma'], { queryParams: { access: 'required' } });
 };

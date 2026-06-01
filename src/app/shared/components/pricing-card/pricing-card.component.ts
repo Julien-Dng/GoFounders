@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { NgClass } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
 export interface PricingFeature {
   text: string;
@@ -9,7 +10,7 @@ export interface PricingFeature {
 @Component({
   selector: 'app-pricing-card',
   standalone: true,
-  imports: [NgClass],
+  imports: [NgClass, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div [ngClass]="cardClasses" class="relative rounded-2xl p-8 border-2 transition-all h-full flex flex-col hover:-translate-y-2 duration-300">
@@ -52,9 +53,9 @@ export interface PricingFeature {
         </ul>
       </div>
 
-      <button [ngClass]="buttonClasses" class="w-full py-4 rounded-full font-semibold transition-all hover:scale-105 active:scale-95">
+      <a [routerLink]="href" [ngClass]="buttonClasses" class="pricing-card-cta block w-full rounded-full py-4 text-center font-semibold transition-all hover:scale-105 active:scale-95">
         {{ cta }}
-      </button>
+      </a>
 
     </div>
   `
@@ -67,6 +68,7 @@ export class PricingCardComponent {
   @Input() badge = '';
   @Input() features: PricingFeature[] = [];
   @Input() cta = '';
+  @Input() href = '/inscription';
   @Input() variant: 'free' | 'pro' | 'premium' = 'free';
 
   get cardClasses(): Record<string, boolean> {
@@ -79,9 +81,9 @@ export class PricingCardComponent {
 
   get buttonClasses(): Record<string, boolean> {
     return {
-      'bg-white text-accent hover:bg-primary hover:text-white': this.variant === 'pro',
-      'bg-white text-primary hover:bg-accent hover:text-white': this.variant === 'premium',
-      'bg-background border-2 border-border hover:bg-primary hover:text-primary-foreground': this.variant === 'free',
+      'pricing-card-cta-pro': this.variant === 'pro',
+      'pricing-card-cta-premium': this.variant === 'premium',
+      'pricing-card-cta-free': this.variant === 'free',
     };
   }
 }

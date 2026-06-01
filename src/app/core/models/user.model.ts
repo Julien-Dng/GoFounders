@@ -1,6 +1,6 @@
 import { Timestamp } from '@angular/fire/firestore';
 
-export type ProfileType = 'entrepreneur' | 'talent';
+export type ProfileType = 'entrepreneur' | 'talent' | 'buyer' | 'seller';
 export type Plan = 'FREE' | 'PRO' | 'PREMIUM';
 
 export interface User {
@@ -10,6 +10,14 @@ export interface User {
   photoURL?: string;
   location: string;
   profileType: ProfileType;
+  profileTitle?: string;
+  bio?: string;
+  skills?: string[];
+  lookingFor?: string[];
+  availabilityLabel?: string;
+  githubUrl?: string;
+  linkedinUrl?: string;
+  websiteUrl?: string;
   plan: Plan;
   maAccess: boolean;
   stripeCustomerId?: string;

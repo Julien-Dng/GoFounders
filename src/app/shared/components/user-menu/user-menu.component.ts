@@ -24,12 +24,12 @@ import { AuthService } from '../../../core/services/auth.service';
             [src]="photoUrl()"
             [alt]="'Photo de profil de ' + displayName()"
             [ngClass]="avatarClass"
-            class="rounded-full object-cover border border-border shadow-sm"
+            class="rounded-full border border-border object-cover shadow-sm"
           >
         } @else {
           <div
             [ngClass]="avatarClass"
-            class="rounded-full bg-gradient-to-br from-accent to-primary text-white font-bold flex items-center justify-center shadow-md"
+            class="flex items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary font-bold text-white shadow-md"
           >
             {{ initials() }}
           </div>
@@ -38,54 +38,81 @@ import { AuthService } from '../../../core/services/auth.service';
 
       @if (isMenuOpen()) {
         <div
-          class="absolute right-0 mt-3 w-64 overflow-hidden rounded-2xl border border-border bg-white shadow-2xl z-50"
+          class="absolute right-0 z-50 mt-3 w-64 overflow-hidden rounded-2xl border border-border bg-white shadow-2xl"
           role="menu"
           (click)="$event.stopPropagation()"
         >
-          <div class="flex items-center gap-3 border-b border-border px-4 py-4 bg-secondary/60">
+          <div class="flex items-center gap-3 border-b border-border bg-secondary/60 px-4 py-4">
             @if (photoUrl()) {
               <img
                 [src]="photoUrl()"
                 [alt]="'Photo de profil de ' + displayName()"
-                class="h-11 w-11 rounded-full object-cover border border-border shadow-sm"
+                class="h-11 w-11 rounded-full border border-border object-cover shadow-sm"
               >
             } @else {
-              <div class="h-11 w-11 rounded-full bg-gradient-to-br from-accent to-primary text-white font-bold flex items-center justify-center shadow-md">
+              <div class="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary font-bold text-white shadow-md">
                 {{ initials() }}
               </div>
             }
 
             <div class="min-w-0">
-              <div class="font-semibold text-primary truncate">{{ displayName() }}</div>
-              <div class="text-xs text-muted-foreground mt-1">{{ planLabel() }}</div>
+              <div class="truncate font-semibold text-primary">{{ displayName() }}</div>
+              <div class="mt-1 text-xs text-muted-foreground">{{ planLabel() }}</div>
             </div>
           </div>
 
           <div class="p-2">
             <a
-              [routerLink]="['/profil', userId()]"
-              class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+              [routerLink]="profileLink()"
+              class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
               role="menuitem"
               (click)="closeMenu()"
             >
-              <span class="text-base">👤</span>
+              <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary text-muted-foreground" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21a8 8 0 0 0-16 0"/>
+                  <circle cx="12" cy="8" r="4"/>
+                </svg>
+              </span>
               <span>Voir le profil</span>
             </a>
 
             <a
               routerLink="/parametres"
-              class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+              class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
               role="menuitem"
               (click)="closeMenu()"
             >
-              <span class="text-base">⚙️</span>
+              <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary text-muted-foreground" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09A1.65 1.65 0 0 0 10.09 3H10a2 2 0 1 1 4 0h-.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09A1.65 1.65 0 0 0 21 10.09V10a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+              </span>
               <span>Paramètres</span>
             </a>
 
-            <!-- Dark mode toggle -->
-            <div class="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-secondary transition-colors">
+            <div class="flex items-center justify-between rounded-xl px-3 py-2.5 transition-colors hover:bg-secondary">
               <div class="flex items-center gap-3">
-                <span class="text-base leading-none">{{ isDark() ? '🌙' : '☀️' }}</span>
+                <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary text-muted-foreground" aria-hidden="true">
+                  @if (isDark()) {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>
+                    </svg>
+                  } @else {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="4"/>
+                      <path d="M12 2v2"/>
+                      <path d="M12 20v2"/>
+                      <path d="m4.93 4.93 1.41 1.41"/>
+                      <path d="m17.66 17.66 1.41 1.41"/>
+                      <path d="M2 12h2"/>
+                      <path d="M20 12h2"/>
+                      <path d="m6.34 17.66-1.41 1.41"/>
+                      <path d="m19.07 4.93-1.41 1.41"/>
+                    </svg>
+                  }
+                </span>
                 <span class="text-sm font-medium text-foreground">Mode sombre</span>
               </div>
               <button
@@ -93,13 +120,13 @@ import { AuthService } from '../../../core/services/auth.service';
                 (click)="toggleDarkMode($event)"
                 role="switch"
                 [attr.aria-checked]="isDark()"
-                aria-label="Activer/désactiver le mode sombre"
+                aria-label="Activer ou désactiver le mode sombre"
                 class="relative inline-flex h-5 w-9 flex-shrink-0 rounded-full transition-colors duration-300 focus:outline-none"
                 [class.bg-accent]="isDark()"
                 [class.bg-gray-200]="!isDark()"
               >
                 <span
-                  class="inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform duration-300 mt-0.5"
+                  class="mt-0.5 inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform duration-300"
                   [class.translate-x-4]="isDark()"
                   [class.translate-x-0.5]="!isDark()"
                 ></span>
@@ -110,11 +137,17 @@ import { AuthService } from '../../../core/services/auth.service';
 
             <button
               type="button"
-              class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-destructive hover:bg-destructive/5 transition-colors"
+              class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/5"
               role="menuitem"
               (click)="openLogoutConfirm()"
             >
-              <span class="text-base">↪</span>
+              <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-destructive/10 text-destructive" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <path d="m16 17 5-5-5-5"/>
+                  <path d="M21 12H9"/>
+                </svg>
+              </span>
               <span>Se déconnecter</span>
             </button>
           </div>
@@ -124,7 +157,7 @@ import { AuthService } from '../../../core/services/auth.service';
 
     @if (isLogoutConfirmOpen()) {
       <div
-        class="fixed inset-0 z-[80] flex items-center justify-center bg-primary/25 backdrop-blur-sm p-6"
+        class="fixed inset-0 z-[80] flex items-center justify-center bg-primary/25 p-6 backdrop-blur-sm"
         (click)="cancelLogout()"
       >
         <div
@@ -133,7 +166,11 @@ import { AuthService } from '../../../core/services/auth.service';
         >
           <div class="mb-5 flex items-center gap-3">
             <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
-              <span class="text-xl">↪</span>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <path d="m16 17 5-5-5-5"/>
+                <path d="M21 12H9"/>
+              </svg>
             </div>
             <div>
               <h3 class="text-xl font-bold text-primary">Se déconnecter ?</h3>
@@ -141,21 +178,21 @@ import { AuthService } from '../../../core/services/auth.service';
             </div>
           </div>
 
-          <p class="text-sm leading-relaxed text-foreground/80 mb-6">
+          <p class="mb-6 text-sm leading-relaxed text-foreground/80">
             Êtes-vous sûr de vouloir vous déconnecter maintenant ?
           </p>
 
           <div class="flex items-center justify-end gap-3">
             <button
               type="button"
-              class="px-4 py-2.5 rounded-xl border border-border text-sm font-semibold hover:border-accent transition-colors"
+              class="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold transition-colors hover:border-accent"
               (click)="cancelLogout()"
             >
               Annuler
             </button>
             <button
               type="button"
-              class="px-4 py-2.5 rounded-xl bg-destructive text-white text-sm font-semibold shadow-md hover:opacity-90 transition-opacity"
+              class="rounded-xl bg-destructive px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-opacity hover:opacity-90"
               (click)="confirmLogout()"
             >
               Oui, me déconnecter
@@ -174,7 +211,6 @@ export class UserMenuComponent {
   @Input() buttonClass = '';
 
   readonly isDark = signal(typeof localStorage !== 'undefined' && localStorage.getItem('gofounders.dark') === 'true');
-
   readonly isMenuOpen = signal(false);
   readonly isLogoutConfirmOpen = signal(false);
   readonly currentUser = this.auth.currentUser;
@@ -182,6 +218,7 @@ export class UserMenuComponent {
   readonly initials = this.auth.initials;
   readonly displayName = computed(() => this.currentUser()?.displayName ?? 'Mon compte');
   readonly userId = computed(() => this.currentUser()?.uid ?? '');
+  readonly profileLink = computed(() => this.userId() ? ['/profil', this.userId()] : ['/dashboard']);
   readonly planLabel = computed(() => `Plan ${this.currentUser()?.plan ?? 'FREE'}`);
 
   @HostListener('document:click')
