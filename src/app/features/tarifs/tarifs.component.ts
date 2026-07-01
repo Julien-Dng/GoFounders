@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PricingCardComponent, PricingFeature } from '../../shared/components/pricing-card/pricing-card.component';
+import { AuthService } from '../../core/services/auth.service';
 
 interface Plan {
   name: string;
@@ -8,9 +9,11 @@ interface Plan {
   period: string;
   description: string;
   badge?: string;
+  highlights: string[];
   features: PricingFeature[];
   cta: string;
   href: string;
+  reassurance: string;
   variant: 'free' | 'pro' | 'premium';
 }
 
@@ -38,9 +41,11 @@ interface Plan {
                 [period]="plan.period"
                 [description]="plan.description"
                 [badge]="plan.badge ?? ''"
+                [highlights]="plan.highlights"
                 [features]="plan.features"
                 [cta]="plan.cta"
-                [href]="plan.href"
+                [href]="planHref(plan)"
+                [reassurance]="plan.reassurance"
                 [variant]="plan.variant"
               />
             </div>
@@ -121,9 +126,14 @@ interface Plan {
                   <span>Mise en relation directe acheteur / vendeur</span>
                 </li>
               </ul>
-              <a routerLink="/ma" class="inline-block rounded-full bg-white px-8 py-4 font-bold text-amber-600 shadow-xl transition-all hover:scale-105 active:scale-95">
-                Découvrir l'offre M&A
-              </a>
+              <div class="flex flex-col gap-3 sm:flex-row">
+                <a routerLink="/abonnement" class="inline-block rounded-full bg-white px-8 py-4 text-center font-bold text-amber-600 shadow-xl transition-all hover:scale-105 active:scale-95">
+                  Débloquer l'accès M&A - 149€
+                </a>
+                <a routerLink="/ma" class="inline-block rounded-full border border-white/70 px-8 py-4 text-center font-bold text-white transition-all hover:scale-105 hover:bg-white/10 active:scale-95">
+                  Voir les annonces
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -132,6 +142,8 @@ interface Plan {
   `
 })
 export class TarifsComponent {
+  private readonly auth = inject(AuthService);
+
   readonly plans: Plan[] = [
     {
       name: 'FREE',
@@ -148,8 +160,10 @@ export class TarifsComponent {
         { text: 'Recherche investisseurs', included: false },
         { text: 'Support prioritaire', included: false },
       ],
+      highlights: ['10 profils/mois', '3 contacts', 'Support email'],
       cta: 'Commencer',
       href: '/inscription',
+      reassurance: '',
       variant: 'free',
     },
     {
@@ -168,8 +182,10 @@ export class TarifsComponent {
         { text: 'Analytics avancés', included: true },
         { text: 'Recherche investisseurs', included: false },
       ],
+      highlights: ['Illimité', 'Match IA', 'Recherche avancée'],
       cta: 'Souscrire',
-      href: '/connexion',
+      href: '/abonnement',
+      reassurance: 'Annulation simple',
       variant: 'pro',
     },
     {
@@ -187,8 +203,10 @@ export class TarifsComponent {
         { text: 'Événements exclusifs', included: true },
         { text: 'Support 24/7', included: true },
       ],
+      highlights: ['Accompagnement', 'Experts', 'Priorité'],
       cta: 'Nous contacter',
-      href: '/inscription',
+      href: '/abonnement',
+      reassurance: 'Réponse sous 24h',
       variant: 'premium',
     },
   ];
@@ -204,4 +222,12 @@ export class TarifsComponent {
     ['Support', 'Email', 'Email + Chat', '24/7 dédié'],
     ['Expert matching', 'x', 'x', 'check'],
   ];
+
+  planHref(plan: Plan): string {
+    if (this.auth.isAuthenticated()) {
+      return plan.variant === 'free' ? '/dashboard' : '/abonnement';
+    }
+
+    return plan.href;
+  }
 }

@@ -4,6 +4,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  OnInit,
   OnDestroy,
   QueryList,
   ViewChildren,
@@ -13,9 +14,10 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { MARKETPLACE_PROFILES, MarketplaceProfile } from '../../core/data/mock-platform.data';
+import { MarketplaceProfile } from '../../core/data/mock-platform.data';
 import { ProfileType } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
+import { MatchingService } from '../../core/services/matching.service';
 
 type SearchProfileType = ProfileType;
 
@@ -116,20 +118,25 @@ type SearchProfileType = ProfileType;
               </select>
             </div>
 
-            <div class="relative mb-8 overflow-hidden rounded-2xl bg-gradient-to-r from-accent to-primary p-6 text-white shadow-lg lg:pr-64">
+            <div
+              class="relative mb-8 overflow-hidden rounded-2xl bg-gradient-to-r from-accent to-primary p-6 text-white shadow-lg"
+              [ngClass]="highlightedProfiles().length > 0 ? 'lg:pr-64' : 'lg:pr-6'"
+            >
               <div class="pointer-events-none absolute -right-16 -top-14 hidden h-72 w-72 rounded-full bg-white/10 blur-3xl lg:block"></div>
-              <img
+              @if (highlightedProfiles().length > 0) {
+                <img
                 src="/assets/images/search-analyst.png"
                 alt=""
                 aria-hidden="true"
                 class="pointer-events-none absolute right-3 top-2 hidden h-44 w-56 object-contain object-right drop-shadow-2xl xl:h-52 xl:w-64 lg:block"
-              >
-              <div class="pointer-events-none absolute right-20 top-44 hidden rounded-full border border-white/20 bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] backdrop-blur-sm xl:top-52 lg:block">
+                >
+                <div class="pointer-events-none absolute right-20 top-44 hidden rounded-full border border-white/20 bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] backdrop-blur-sm xl:top-52 lg:block">
                 Recherche
-              </div>
-              <div class="pointer-events-none absolute bottom-6 right-4 hidden w-64 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-center text-xs font-medium leading-relaxed text-white/90 shadow-xl backdrop-blur-md xl:block">
+                </div>
+                <div class="pointer-events-none absolute bottom-6 right-4 hidden w-64 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-center text-xs font-medium leading-relaxed text-white/90 shadow-xl backdrop-blur-md xl:block">
                 Je vous aide à repérer les profils les plus alignés avec vos filtres.
-              </div>
+                </div>
+              }
               <div class="mb-4 flex items-center gap-2">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
@@ -137,41 +144,58 @@ type SearchProfileType = ProfileType;
                 <h2 class="text-xl font-bold">{{ highlightedBannerTitle() }}</h2>
               </div>
 
-              <div class="-mx-2 flex gap-4 overflow-x-auto px-2 pb-2">
-                @for (profile of highlightedProfiles(); track profile.id) {
-                  <div class="w-[19rem] flex-shrink-0 rounded-xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
-                    <div class="mb-3 flex items-center gap-3">
-                      <div class="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 font-bold text-white">
-                        {{ profile.initials }}
+              @if (highlightedProfiles().length > 0) {
+                <div class="-mx-2 flex gap-4 overflow-x-auto px-2 pb-2">
+                  @for (profile of highlightedProfiles(); track profile.id) {
+                    <div class="flex min-h-[12.5rem] w-[19rem] flex-shrink-0 flex-col rounded-xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
+                      <div class="mb-3 flex items-center gap-3">
+                        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 font-bold text-white">
+                          {{ profile.initials }}
+                        </div>
+                        <div class="min-w-0 flex-1">
+                          <h3 class="truncate font-bold">{{ profile.displayName }}</h3>
+                          <div class="line-clamp-2 text-sm opacity-90">{{ profile.title }}</div>
+                        </div>
+                        <div class="flex flex-shrink-0 items-center gap-1 rounded-full bg-white/20 px-2.5 py-1">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
+                          </svg>
+                          <span class="text-sm font-bold">{{ profile.match }}%</span>
+                        </div>
                       </div>
-                      <div class="min-w-0 flex-1">
-                        <h3 class="truncate font-bold">{{ profile.displayName }}</h3>
-                        <div class="text-sm opacity-90">{{ profile.title }}</div>
-                      </div>
-                      <div class="flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
-                        </svg>
-                        <span class="text-sm font-bold">{{ profile.match }}%</span>
-                      </div>
+                      <p class="mb-3 line-clamp-2 text-sm opacity-90">{{ profile.bio }}</p>
+                      <a
+                        [routerLink]="['/profil', profile.id]"
+                        class="mt-auto block w-full rounded-lg bg-white py-2 text-center text-sm font-semibold text-accent transition-colors hover:bg-white/95"
+                      >
+                        {{ cardActionLabel() }}
+                      </a>
                     </div>
-                    <p class="mb-3 line-clamp-2 text-sm opacity-90">{{ profile.bio }}</p>
-                    <a
-                      [routerLink]="['/profil', profile.id]"
-                      class="block w-full rounded-lg bg-white py-2 text-center text-sm font-semibold text-accent transition-colors hover:bg-white/95"
+                  }
+                </div>
+              } @else {
+                <div class="relative flex flex-col gap-3 rounded-xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between">
+                  <p class="text-sm leading-relaxed text-white/90 sm:text-base">
+                    {{ emptyBannerDescription() }}
+                  </p>
+                  @if (hasActiveFilters()) {
+                    <button
+                      type="button"
+                      (click)="resetFilters()"
+                      class="shrink-0 rounded-lg bg-white px-4 py-2 text-sm font-bold text-accent transition-colors hover:bg-white/90"
                     >
-                      {{ cardActionLabel() }}
-                    </a>
-                  </div>
-                }
-              </div>
+                      Réinitialiser les filtres
+                    </button>
+                  }
+                </div>
+              }
             </div>
 
             <div class="relative grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
               @for (profile of filteredProfiles(); track profile.id; let profileIndex = $index) {
                 <div
                   #searchCard
-                  class="search-card-reveal rounded-2xl border-2 border-border bg-white p-6 shadow-sm transition-all hover:shadow-lg"
+                  class="search-card-reveal flex min-h-[21.5rem] flex-col rounded-2xl border-2 border-border bg-white p-6 shadow-sm transition-all hover:shadow-lg"
                   [style.--reveal-delay]="revealDelay(profileIndex)"
                   [class.blur-sm]="isLockedCard(profileIndex)"
                 >
@@ -205,15 +229,15 @@ type SearchProfileType = ProfileType;
                   </div>
 
                   <div class="mb-2 text-sm font-semibold text-primary">{{ profile.title }}</div>
-                  <p class="mb-4 line-clamp-2 text-sm leading-relaxed text-foreground/80">{{ profile.bio }}</p>
+                  <p class="mb-4 min-h-[2.75rem] line-clamp-2 text-sm leading-relaxed text-foreground/80">{{ profile.bio }}</p>
 
-                  <div class="mb-4 flex flex-wrap gap-2">
+                  <div class="mb-4 flex min-h-[2rem] flex-wrap gap-2">
                     @for (skill of profile.skills; track skill) {
                       <span class="rounded-lg bg-secondary px-3 py-1 text-xs font-medium text-foreground">{{ skill }}</span>
                     }
                   </div>
 
-                  <div class="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div class="mt-auto flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1.5 text-accent">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
@@ -273,8 +297,9 @@ type SearchProfileType = ProfileType;
     </div>
   `
 })
-export class RechercheComponent implements AfterViewInit, OnDestroy {
+export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly auth = inject(AuthService);
+  private readonly matchingService = inject(MatchingService);
   private intersectionObserver: IntersectionObserver | null = null;
   private cardsChangesSubscription: Subscription | null = null;
 
@@ -288,7 +313,7 @@ export class RechercheComponent implements AfterViewInit, OnDestroy {
 
   readonly sectors = ['Tous', 'Tech', 'Santé', 'Commerce', 'Finance', 'Industrie', 'Éducation', 'Marketing'];
   readonly projectStages = ['Idée', 'MVP', 'En croissance', 'Établi'];
-  readonly allProfiles = MARKETPLACE_PROFILES;
+  readonly allProfiles = signal<MarketplaceProfile[]>([]);
 
   readonly viewerType = computed<ProfileType>(() => this.auth.currentUser()?.profileType ?? 'entrepreneur');
   readonly visibleProfileType = computed<SearchProfileType>(() =>
@@ -302,7 +327,7 @@ export class RechercheComponent implements AfterViewInit, OnDestroy {
     const location = this.selectedLocation().trim().toLowerCase();
     const availableNowOnly = this.isAvailableNow();
 
-    return this.allProfiles.filter(profile => {
+    return this.allProfiles().filter(profile => {
       const matchesRole = profile.profileType === targetType;
       const matchesSector = activeSector === 'Tous' || profile.sector === activeSector;
       const matchesStage = activeStages.length === 0 || activeStages.includes(profile.stage);
@@ -336,6 +361,21 @@ export class RechercheComponent implements AfterViewInit, OnDestroy {
       ? 'Les talents les plus alignés avec votre projet'
       : 'Les projets les plus alignés avec votre profil'
   );
+  readonly hasActiveFilters = computed(() =>
+    this.selectedSector() !== 'Tous'
+    || this.selectedStage().length > 0
+    || this.selectedLocation().trim().length > 0
+    || this.isAvailableNow()
+  );
+  readonly emptyBannerDescription = computed(() => {
+    if (this.hasActiveFilters()) {
+      return `Aucun ${this.searchResultLabel()} ne correspond à ces filtres. Tu peux les réinitialiser pour revoir toutes les opportunités disponibles.`;
+    }
+
+    return this.visibleProfileType() === 'talent'
+      ? "Aucun talent n'est encore disponible. Dès qu'un profil compatible est publié, il apparaîtra ici."
+      : "Aucun projet n'est encore publié. Dès qu'un entrepreneur ajoute une opportunité, elle apparaîtra ici.";
+  });
   readonly cardBadgeLabel = computed(() =>
     this.visibleProfileType() === 'talent' ? 'Talent' : 'Projet'
   );
@@ -376,6 +416,10 @@ export class RechercheComponent implements AfterViewInit, OnDestroy {
 
   revealDelay(index: number): string {
     return `${(index % 3) * 70}ms`;
+  }
+
+  ngOnInit(): void {
+    void this.loadProfiles();
   }
 
   ngAfterViewInit(): void {
@@ -432,5 +476,11 @@ export class RechercheComponent implements AfterViewInit, OnDestroy {
     return typeof window === 'undefined'
       || typeof IntersectionObserver === 'undefined'
       || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  private async loadProfiles(): Promise<void> {
+    await this.auth.ensureSessionReady();
+    const profiles = await this.matchingService.getMarketplaceProfilesForSearch(this.viewerType());
+    this.allProfiles.set(profiles);
   }
 }

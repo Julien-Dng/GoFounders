@@ -1,5 +1,5 @@
 import { NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, NgZone, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService, UpdateProfilePayload } from '../../../core/services/auth.service';
@@ -60,7 +60,7 @@ import { AuthService, UpdateProfilePayload } from '../../../core/services/auth.s
         </div>
 
         <div class="grid gap-6 xl:grid-cols-[340px_minmax(0,1fr)]">
-          <aside class="rounded-3xl border border-border bg-white p-6 shadow-lg">
+          <aside class="self-start rounded-3xl border border-border bg-white p-6 shadow-lg">
             <div class="text-center">
               <div class="mx-auto mb-4 h-32 w-32 overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-accent to-primary shadow-lg">
                 @if (previewPhoto()) {
@@ -72,11 +72,10 @@ import { AuthService, UpdateProfilePayload } from '../../../core/services/auth.s
                 }
               </div>
 
-              <input #photoInput type="file" accept="image/*" class="hidden" (change)="onPhotoSelected($event)">
+              <input id="profile-photo-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="sr-only" (change)="onPhotoSelected($event)">
 
-              <button
-                type="button"
-                (click)="photoInput.click()"
+              <label
+                for="profile-photo-input"
                 class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-accent/90"
               >
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -84,7 +83,7 @@ import { AuthService, UpdateProfilePayload } from '../../../core/services/auth.s
                   <circle cx="12" cy="13" r="4"/>
                 </svg>
                 Modifier la photo
-              </button>
+              </label>
 
               @if (previewPhoto()) {
                 <button
@@ -92,14 +91,23 @@ import { AuthService, UpdateProfilePayload } from '../../../core/services/auth.s
                   (click)="removePhoto()"
                   class="mt-3 inline-flex w-full items-center justify-center rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:border-destructive hover:text-destructive"
                 >
-                  Retirer la photo
+                  Supprimer la photo
                 </button>
+              }
+
+              @if (photoMessage()) {
+                <div class="mt-3 rounded-xl border border-accent/15 bg-accent/5 px-3 py-2 text-xs font-semibold text-accent">
+                  {{ photoMessage() }}
+                </div>
+              }
+
+              @if (photoErrorMessage()) {
+                <div class="mt-3 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-xs font-semibold text-destructive">
+                  {{ photoErrorMessage() }}
+                </div>
               }
             </div>
 
-            <div class="mt-6 rounded-2xl bg-secondary p-4 text-sm leading-relaxed text-muted-foreground">
-              Préférez une photo carrée, nette, avec un visage visible. Elle sera stockée en local pour la démo, puis plutôt dans Firebase Storage en version production.
-            </div>
           </aside>
 
           <section class="rounded-3xl border border-border bg-white p-6 shadow-lg sm:p-8">
@@ -281,10 +289,13 @@ import { AuthService, UpdateProfilePayload } from '../../../core/services/auth.s
 export class ModifierComponent {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
+  private readonly zone = inject(NgZone);
 
   readonly currentUser = this.auth.currentUser;
   readonly initials = this.auth.initials;
   readonly previewPhoto = signal(this.currentUser()?.photoURL ?? '');
+  readonly photoMessage = signal('');
+  readonly photoErrorMessage = signal('');
   readonly isSaving = signal(false);
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
@@ -321,19 +332,21 @@ export class ModifierComponent {
   onPhotoSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
+    this.photoMessage.set('');
+    this.photoErrorMessage.set('');
 
     if (!file) {
       return;
     }
 
     if (!file.type.startsWith('image/')) {
-      this.errorMessage.set('Choisissez une image valide pour la photo de profil.');
+      this.photoErrorMessage.set('Choisissez une image valide.');
       input.value = '';
       return;
     }
 
-    if (file.size > 1_500_000) {
-      this.errorMessage.set('La photo est trop lourde pour la démo locale. Essayez une image de moins de 1,5 Mo.');
+    if (file.size > 5_000_000) {
+      this.photoErrorMessage.set('Photo trop lourde. Essayez une image de moins de 5 Mo.');
       input.value = '';
       return;
     }
@@ -342,14 +355,19 @@ export class ModifierComponent {
 
     reader.onload = () => {
       if (typeof reader.result === 'string') {
-        this.previewPhoto.set(reader.result);
-        this.errorMessage.set('');
-        this.successMessage.set('');
+        this.zone.run(() => {
+          this.previewPhoto.set(reader.result as string);
+          this.photoMessage.set('Photo prête à être enregistrée.');
+          this.errorMessage.set('');
+          this.successMessage.set('');
+        });
       }
     };
 
     reader.onerror = () => {
-      this.errorMessage.set("Impossible de lire l'image sélectionnée.");
+      this.zone.run(() => {
+        this.photoErrorMessage.set("Impossible de lire l'image sélectionnée.");
+      });
     };
 
     reader.readAsDataURL(file);
@@ -358,6 +376,8 @@ export class ModifierComponent {
 
   removePhoto(): void {
     this.previewPhoto.set('');
+    this.photoMessage.set('Photo supprimée. Enregistrez pour confirmer.');
+    this.photoErrorMessage.set('');
     this.successMessage.set('');
   }
 
@@ -397,6 +417,8 @@ export class ModifierComponent {
       }
 
       this.successMessage.set('Profil mis à jour. Vous pouvez ouvrir votre profil pour vérifier le rendu.');
+      this.photoMessage.set('');
+      this.photoErrorMessage.set('');
     } finally {
       this.isSaving.set(false);
     }

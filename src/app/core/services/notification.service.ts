@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { AuthService } from './auth.service';
+import { SupabaseService } from './supabase.service';
 
 export type NotificationKind = 'message' | 'match' | 'profile' | 'ma';
 
@@ -14,20 +15,33 @@ export interface NotificationItem {
   unread: boolean;
 }
 
-const READ_NOTIFICATIONS_STORAGE_KEY = 'gofounders.mock.notifications.read';
+interface SupabaseNotificationRow {
+  id: string;
+  user_id: string;
+  title: string;
+  body: string;
+  link_url: string | null;
+  read_at: string | null;
+  created_at: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
   private readonly auth = inject(AuthService);
+  private readonly supabase = inject(SupabaseService);
 
-  readonly notifications = signal<NotificationItem[]>(this.createNotifications());
+  readonly notifications = signal<NotificationItem[]>([]);
   readonly unreadCount = computed(() => this.notifications().filter(notification => notification.unread).length);
+
+  constructor() {
+    void this.loadNotifications();
+  }
 
   markAsRead(notificationId: string): void {
     this.notifications.update(items =>
       items.map(item => item.id === notificationId ? { ...item, unread: false } : item)
     );
-    this.persistReadNotifications();
+    void this.persistReadNotification(notificationId);
   }
 
   markAllAsRead(): void {
@@ -38,90 +52,145 @@ export class NotificationService {
     this.notifications.update(items =>
       items.map(item => ({ ...item, unread: false }))
     );
-    this.persistReadNotifications();
+    void this.persistReadNotifications();
   }
 
-  private createNotifications(): NotificationItem[] {
-    const readNotificationIds = this.readStoredNotificationIds();
-    const ownProfileHref = this.auth.currentUser()?.uid
-      ? `/profil/${this.auth.currentUser()?.uid}`
-      : '/dashboard';
+  private async loadNotifications(): Promise<void> {
+    await this.auth.ensureSessionReady();
 
-    return [
-      {
-        id: 'notification-message',
-        kind: 'message',
-        title: 'Sophie Martin a répondu',
-        description: 'Elle peut se libérer jeudi après-midi pour en parler.',
-        time: '14:32',
-        href: '/messages',
-        queryParams: { conversation: 'talent-sophie-martin' },
-        unread: !readNotificationIds.has('notification-message'),
-      },
-      {
-        id: 'notification-match',
-        kind: 'match',
-        title: 'Nouveau match disponible',
-        description: '3 profils correspondent particulièrement à votre projet.',
-        time: 'Il y a 1 h',
-        href: '/recherche',
-        unread: !readNotificationIds.has('notification-match'),
-      },
-      {
-        id: 'notification-profile',
-        kind: 'profile',
-        title: 'Votre profil a gagné en visibilité',
-        description: '12 vues supplémentaires ont été enregistrées aujourd’hui.',
-        time: 'Il y a 2 h',
-        href: ownProfileHref,
-        unread: !readNotificationIds.has('notification-profile'),
-      },
-      {
-        id: 'notification-ma',
-        kind: 'ma',
-        title: 'Une annonce M&A correspond à vos critères',
-        description: 'Nouvelle opportunité détectée sur le segment SaaS.',
-        time: 'Hier',
-        href: '/ma',
-        unread: false,
-      },
-    ];
-  }
+    const user = this.auth.currentUser();
 
-  private persistReadNotifications(): void {
-    if (typeof localStorage === 'undefined') {
+    if (!this.supabase.isConfigured || !user) {
+      this.notifications.set([]);
       return;
     }
 
-    const readNotificationIds = this.notifications()
+    const { data, error } = await this.supabase.client
+      .from('notifications')
+      .select('*')
+      .eq('user_id', user.uid)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error) {
+      this.notifications.set([]);
+      return;
+    }
+
+    const notifications = ((data ?? []) as SupabaseNotificationRow[]).map(row => this.mapNotificationRow(row));
+    this.notifications.set(notifications);
+  }
+
+  private async persistReadNotification(notificationId: string): Promise<void> {
+    const user = this.auth.currentUser();
+
+    if (!this.supabase.isConfigured || !user) {
+      return;
+    }
+
+    await this.supabase.client
+      .from('notifications')
+      .update({ read_at: new Date().toISOString() })
+      .eq('id', notificationId)
+      .eq('user_id', user.uid);
+  }
+
+  private async persistReadNotifications(): Promise<void> {
+    const user = this.auth.currentUser();
+
+    if (!this.supabase.isConfigured || !user) {
+      return;
+    }
+
+    const unreadIds = this.notifications()
       .filter(notification => !notification.unread)
       .map(notification => notification.id);
 
-    localStorage.setItem(this.storageKey(), JSON.stringify(readNotificationIds));
+    if (unreadIds.length === 0) {
+      return;
+    }
+
+    await this.supabase.client
+      .from('notifications')
+      .update({ read_at: new Date().toISOString() })
+      .in('id', unreadIds)
+      .eq('user_id', user.uid);
   }
 
-  private readStoredNotificationIds(): Set<string> {
-    if (typeof localStorage === 'undefined') {
-      return new Set();
-    }
+  private mapNotificationRow(row: SupabaseNotificationRow): NotificationItem {
+    const parsedLink = this.parseLink(row.link_url);
 
-    const rawValue = localStorage.getItem(this.storageKey());
-
-    if (!rawValue) {
-      return new Set();
-    }
-
-    try {
-      const parsedValue = JSON.parse(rawValue) as unknown;
-      return Array.isArray(parsedValue)
-        ? new Set(parsedValue.filter((item): item is string => typeof item === 'string'))
-        : new Set();
-    } catch {
-      return new Set();
-    }
+    return {
+      id: row.id,
+      kind: this.inferKind(parsedLink.href),
+      title: row.title,
+      description: row.body,
+      time: this.formatRelativeTime(row.created_at),
+      href: parsedLink.href,
+      queryParams: parsedLink.queryParams,
+      unread: row.read_at === null,
+    };
   }
 
-  private storageKey(): string {
-    return `${READ_NOTIFICATIONS_STORAGE_KEY}.${this.auth.currentUser()?.uid ?? 'guest'}`;
+  private parseLink(linkUrl: string | null): { href: string; queryParams?: Record<string, string> } {
+    if (!linkUrl) {
+      return { href: '/dashboard' };
+    }
+
+    const [href, rawQuery] = linkUrl.split('?');
+
+    if (!rawQuery) {
+      return { href };
+    }
+
+    const queryParams: Record<string, string> = {};
+    new URLSearchParams(rawQuery).forEach((value, key) => {
+      queryParams[key] = value;
+    });
+
+    return { href, queryParams };
+  }
+
+  private inferKind(href: string): NotificationKind {
+    if (href.startsWith('/messages')) {
+      return 'message';
+    }
+
+    if (href.startsWith('/recherche')) {
+      return 'match';
+    }
+
+    if (href.startsWith('/ma')) {
+      return 'ma';
+    }
+
+    return 'profile';
+  }
+
+  private formatRelativeTime(value: string): string {
+    const createdAt = new Date(value);
+    const diffMs = Date.now() - createdAt.getTime();
+
+    if (Number.isNaN(diffMs)) {
+      return '';
+    }
+
+    const diffMinutes = Math.max(0, Math.round(diffMs / 60_000));
+
+    if (diffMinutes < 1) {
+      return 'A l’instant';
+    }
+
+    if (diffMinutes < 60) {
+      return `Il y a ${diffMinutes} min`;
+    }
+
+    const diffHours = Math.round(diffMinutes / 60);
+
+    if (diffHours < 24) {
+      return `Il y a ${diffHours} h`;
+    }
+
+    return createdAt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
   }
 }

@@ -213,7 +213,7 @@ export class NavbarComponent {
   readonly navItems: Array<{ id: string; label: string; icon: DrawerIcon; path: string; badge: number | null; exact: boolean }> = [
     { id: 'accueil',    label: 'Accueil',     icon: 'home', path: '/dashboard',   badge: null, exact: true  },
     { id: 'recherche',  label: 'Recherche',    icon: 'search', path: '/recherche',   badge: null, exact: true  },
-    { id: 'messages',   label: 'Messages',     icon: 'messages', path: '/messages',    badge: 3,    exact: false },
+    { id: 'messages',   label: 'Messages',     icon: 'messages', path: '/messages',    badge: null, exact: false },
     { id: 'ma',         label: 'M&A',          icon: 'chart', path: '/ma',          badge: null, exact: true  },
     { id: 'assistant',  label: 'Assistant IA', icon: 'sparkles', path: '/coaching-ia', badge: null, exact: true  },
     { id: 'abonnement', label: 'Abonnement',   icon: 'credit-card', path: '/abonnement',  badge: null, exact: true  },

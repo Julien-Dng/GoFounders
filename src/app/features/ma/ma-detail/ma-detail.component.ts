@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
-import { findMaListingById } from '../../../core/data/mock-platform.data';
+import { MaListingData } from '../../../core/data/mock-platform.data';
+import { MaService } from '../../../core/services/ma.service';
 
 @Component({
   selector: 'app-ma-detail',
@@ -98,13 +99,24 @@ import { findMaListingById } from '../../../core/data/mock-platform.data';
     </div>
   `
 })
-export class MaDetailComponent {
+export class MaDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly maService = inject(MaService);
+  private readonly loadedListing = signal<MaListingData | undefined>(undefined);
 
   private readonly listingId = toSignal(
     this.route.params.pipe(map((params: Record<string, string>) => params['id'] ?? '')),
     { initialValue: '' }
   );
 
-  readonly listing = computed(() => findMaListingById(this.listingId()));
+  readonly listing = computed(() => this.loadedListing());
+
+  ngOnInit(): void {
+    void this.loadListing();
+  }
+
+  private async loadListing(): Promise<void> {
+    const listing = await this.maService.getListingDetail(this.listingId());
+    this.loadedListing.set(listing);
+  }
 }

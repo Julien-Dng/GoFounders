@@ -108,6 +108,17 @@ import { NotificationService } from '../../../core/services/notification.service
                   <span class="mt-2 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-accent" aria-hidden="true"></span>
                 }
               </a>
+            } @empty {
+              <div class="px-4 py-8 text-center">
+                <div class="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary text-muted-foreground">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+                    <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+                  </svg>
+                </div>
+                <p class="text-sm font-semibold text-primary">Aucune notification</p>
+                <p class="mt-1 text-xs leading-relaxed text-muted-foreground">Les nouvelles alertes apparaîtront ici.</p>
+              </div>
             }
           </div>
         </div>

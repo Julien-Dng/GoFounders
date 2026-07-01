@@ -605,6 +605,18 @@ html.dark .pricing-card-cta-pro:hover {
   color: #173A85 !important;
 }
 
+html.dark .pricing-card-cta-free {
+  background: #F8FAFC !important;
+  border-color: rgba(148, 163, 184, 0.22) !important;
+  color: #0F1F3D !important;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.26);
+}
+
+html.dark .pricing-card-cta-free:hover {
+  background: #DDE8F7 !important;
+  color: #0F1F3D !important;
+}
+
 html.dark .bubble-me {
   background: linear-gradient(135deg, #3E6FCF 0%, #5F8FE8 100%);
   box-shadow: 0 4px 18px rgba(95, 143, 232, 0.16);

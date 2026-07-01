@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
+import { MaService } from '../../../core/services/ma.service';
 
 @Component({
   selector: 'app-ma-deposer',
@@ -137,35 +139,56 @@ import { RouterLink } from '@angular/router';
                     Continuer
                   </button>
                 } @else {
-                  <button type="button" (click)="continueToPayment()" class="rounded-lg bg-amber-500 px-5 py-3 font-semibold text-white transition-colors hover:bg-amber-600">
-                    Continuer vers le paiement sécurisé
+                  <button type="button" (click)="submitListing()" [disabled]="isSubmitting()" class="rounded-lg bg-amber-500 px-5 py-3 font-semibold text-white transition-colors hover:bg-amber-600 disabled:cursor-wait disabled:opacity-60">
+                    {{ finalActionLabel() }}
                   </button>
                 }
               </div>
             </div>
           } @else {
             <div class="text-center">
-              <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-amber-100 text-amber-600">
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                </svg>
-              </div>
-              <h2 class="mb-3 text-3xl font-bold">Paiement sécurisé bientôt branché</h2>
-              <p class="mx-auto mb-8 max-w-xl leading-relaxed text-muted-foreground">
-                Votre annonce est prête pour l'étape de paiement. Dès que la connexion Stripe sera active, cette action ouvrira une session sécurisée dédiée à l'accès M&A avant publication.
-              </p>
-              <p class="mx-auto mb-8 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                Aucun accès M&A n'a été activé automatiquement.
-              </p>
-              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
-                <a routerLink="/ma" class="rounded-lg bg-amber-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-amber-600">
-                  Retour aux annonces
-                </a>
-                <a routerLink="/tarifs" fragment="ma-access" class="rounded-lg border border-border px-6 py-3 font-semibold transition-colors hover:border-amber-500">
-                  Découvrir l'offre M&A
-                </a>
-              </div>
+              @if (createdListingId()) {
+                <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100 text-green-700">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                </div>
+                <h2 class="mb-3 text-3xl font-bold">Annonce publiée</h2>
+                <p class="mx-auto mb-8 max-w-xl leading-relaxed text-muted-foreground">
+                  Votre annonce a bien été enregistrée dans Supabase. Elle apparaît maintenant dans la marketplace M&A.
+                </p>
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
+                  <a [routerLink]="['/ma/annonce', createdListingId()]" class="rounded-lg bg-amber-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-amber-600">
+                    Voir le dossier
+                  </a>
+                  <a routerLink="/ma" class="rounded-lg border border-border px-6 py-3 font-semibold transition-colors hover:border-amber-500">
+                    Retour aux annonces
+                  </a>
+                </div>
+              } @else {
+                <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </div>
+                <h2 class="mb-3 text-3xl font-bold">Paiement sécurisé requis</h2>
+                <p class="mx-auto mb-8 max-w-xl leading-relaxed text-muted-foreground">
+                  Votre annonce est prête. Il faut débloquer l'accès M&A avant publication, puis revenir publier l'annonce.
+                </p>
+                <p class="mx-auto mb-8 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                  Aucun accès M&A n'a été activé automatiquement.
+                </p>
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
+                  <a routerLink="/abonnement" class="rounded-lg bg-amber-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-amber-600">
+                    Débloquer l'accès M&A
+                  </a>
+                  <a routerLink="/tarifs" fragment="ma-access" class="rounded-lg border border-border px-6 py-3 font-semibold transition-colors hover:border-amber-500">
+                    Découvrir l'offre M&A
+                  </a>
+                </div>
+              }
             </div>
           }
         </div>
@@ -174,9 +197,14 @@ import { RouterLink } from '@angular/router';
   `
 })
 export class MaDeposerComponent {
+  private readonly auth = inject(AuthService);
+  private readonly maService = inject(MaService);
+
   readonly totalSteps = 5;
   readonly currentStep = signal(1);
   readonly checkoutRequested = signal(false);
+  readonly isSubmitting = signal(false);
+  readonly createdListingId = signal('');
 
   readonly companyName = signal('Atelier Local');
   readonly sector = signal('Commerce local');
@@ -187,6 +215,9 @@ export class MaDeposerComponent {
   readonly priceMax = signal('420 k€');
 
   readonly progressPercent = computed(() => Math.round((this.currentStep() / this.totalSteps) * 100));
+  readonly finalActionLabel = computed(() =>
+    this.auth.hasMaAccess() ? "Publier l'annonce" : "Débloquer l'accès M&A avant publication"
+  );
 
   nextStep(): void {
     this.currentStep.update(step => Math.min(step + 1, this.totalSteps));
@@ -196,7 +227,70 @@ export class MaDeposerComponent {
     this.currentStep.update(step => Math.max(step - 1, 1));
   }
 
-  continueToPayment(): void {
-    this.checkoutRequested.set(true);
+  async submitListing(): Promise<void> {
+    if (!this.auth.hasMaAccess()) {
+      this.checkoutRequested.set(true);
+      return;
+    }
+
+    const user = this.auth.currentUser();
+
+    if (!user || this.isSubmitting()) {
+      return;
+    }
+
+    this.isSubmitting.set(true);
+
+    try {
+      const listingId = await this.maService.createListing({
+        ownerId: user.uid,
+        sector: this.sector().trim() || 'Commerce local',
+        region: user.location || 'France',
+        type: 'cession',
+        revenue: this.parseNumber(this.revenue()),
+        margin: this.parseNumber(this.margin()),
+        age: this.parseNumber(this.age()),
+        priceMin: this.parseNumber(this.priceMin()),
+        priceMax: this.parseNumber(this.priceMax()),
+        saleReason: 'Cession à qualifier avec le repreneur.',
+        description: this.buildDescription(),
+        contactInfo: user.email,
+        status: 'active',
+      });
+
+      if (listingId) {
+        this.createdListingId.set(listingId);
+      }
+
+      this.checkoutRequested.set(true);
+    } finally {
+      this.isSubmitting.set(false);
+    }
+  }
+
+  private buildDescription(): string {
+    return `${this.companyName().trim() || 'Annonce M&A'} - ${this.sector().trim() || 'secteur à préciser'}. CA annuel ${this.revenue() || 'à préciser'}, marge ${this.margin() || 'à préciser'}, ancienneté ${this.age() || 'à préciser'}.`;
+  }
+
+  private parseNumber(value: string): number {
+    const normalizedValue = value
+      .replace(/\s/g, '')
+      .replace(',', '.')
+      .toLowerCase();
+    const numberValue = Number.parseFloat(normalizedValue.replace(/[^0-9.]/g, ''));
+
+    if (Number.isNaN(numberValue)) {
+      return 0;
+    }
+
+    if (normalizedValue.includes('m€') || normalizedValue.includes('m')) {
+      return Math.round(numberValue * 1_000_000);
+    }
+
+    if (normalizedValue.includes('k€') || normalizedValue.includes('k')) {
+      return Math.round(numberValue * 1_000);
+    }
+
+    return Math.round(numberValue);
   }
 }

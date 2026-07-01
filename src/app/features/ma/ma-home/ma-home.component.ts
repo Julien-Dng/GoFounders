@@ -1,7 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { MA_LISTINGS } from '../../../core/data/mock-platform.data';
+import { MaListingData } from '../../../core/data/mock-platform.data';
 import { AuthService } from '../../../core/services/auth.service';
+import { MaService } from '../../../core/services/ma.service';
+
+type MaStatIcon = 'mask' | 'handshake' | 'certified';
 
 @Component({
   selector: 'app-ma-home',
@@ -26,18 +29,50 @@ import { AuthService } from '../../../core/services/auth.service';
             </p>
 
             <div class="mb-12 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
-              <a href="#ma-listings" class="rounded-lg bg-amber-500 px-8 py-4 font-bold text-white shadow-2xl transition-all hover:scale-105 hover:bg-amber-600 active:scale-95">
+              <a routerLink="/ma" fragment="ma-listings" class="rounded-lg bg-amber-500 px-8 py-4 font-bold text-white shadow-2xl transition-all hover:scale-105 hover:bg-amber-600 active:scale-95">
                 Voir les annonces
               </a>
               <a routerLink="/ma/deposer" class="rounded-lg border-2 border-white px-8 py-4 font-bold text-white transition-all hover:scale-105 hover:bg-white/10 active:scale-95">
                 Déposer une annonce
               </a>
+              @if (!canViewSensitiveDetails()) {
+                <button type="button" (click)="continueToMaAccess()" class="rounded-lg border-2 border-amber-300/80 bg-amber-300/10 px-8 py-4 font-bold text-amber-100 transition-all hover:scale-105 hover:bg-amber-300/20 active:scale-95">
+                  {{ accessCtaLabel() }}
+                </button>
+              }
             </div>
 
-            <div class="grid gap-6 text-center sm:grid-cols-2 xl:grid-cols-3">
-              @for (stat of stats; track stat) {
-                <div class="rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-lg font-semibold opacity-95 backdrop-blur-sm">
-                  {{ stat }}
+            <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              @for (stat of stats; track stat.label) {
+                <div class="flex min-h-[5.6rem] items-center gap-4 rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-left text-lg font-semibold opacity-95 backdrop-blur-sm">
+                  <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-300 ring-1 ring-amber-300/20" aria-hidden="true">
+                    @switch (stat.icon) {
+                      @case ('mask') {
+                        <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M4 11.5c2.2-1.5 4.4-2.2 8-2.2s5.8.7 8 2.2v2.2c0 3.1-2.5 5.6-5.6 5.6H9.6A5.6 5.6 0 0 1 4 13.7z"/>
+                          <path d="M8 14h.01"/>
+                          <path d="M16 14h.01"/>
+                          <path d="M9 16.5c1.8.8 4.2.8 6 0"/>
+                        </svg>
+                      }
+                      @case ('handshake') {
+                        <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="m8 12 2.3 2.3a2.4 2.4 0 0 0 3.4 0L15 13"/>
+                          <path d="M7 13 3.5 9.5 7 6l3 3"/>
+                          <path d="m17 13 3.5-3.5L17 6l-3 3"/>
+                          <path d="m10 16-2-2"/>
+                          <path d="m14 16 2-2"/>
+                        </svg>
+                      }
+                      @case ('certified') {
+                        <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M12 3 15 5.2l3.7.2.9 3.6 2.4 2.8-2.4 2.8-.9 3.6-3.7.2L12 21l-3-2.2-3.7-.2-.9-3.6L2 12.2l2.4-2.8.9-3.6 3.7-.2z"/>
+                          <path d="m8.5 12.2 2.2 2.2 4.8-5"/>
+                        </svg>
+                      }
+                    }
+                  </span>
+                  <span class="leading-snug">{{ stat.label }}</span>
                 </div>
               }
             </div>
@@ -119,7 +154,7 @@ import { AuthService } from '../../../core/services/auth.service';
         </div>
       </section>
 
-      <section id="ma-listings" class="px-4 py-12 sm:px-6 lg:px-8">
+      <section id="ma-listings" class="scroll-mt-28 px-4 py-12 sm:px-6 lg:px-8">
         <div class="mx-auto max-w-[1400px]">
           <div class="mb-8 text-lg">
             <span class="font-bold text-primary">{{ filteredListings().length }}</span>
@@ -277,33 +312,43 @@ import { AuthService } from '../../../core/services/auth.service';
     </div>
   `
 })
-export class MaHomeComponent {
+export class MaHomeComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly maService = inject(MaService);
 
   readonly selectedSector = signal('Tous');
   readonly selectedType = signal('Tous');
+  readonly listings = signal<MaListingData[]>([]);
   readonly accessRequiredNotice = computed(() =>
     this.route.snapshot.queryParamMap.get('access') === 'required' && !this.auth.hasMaAccess()
   );
 
   readonly sectors = ['Tous', 'E-commerce', 'SaaS', 'Commerce de détail', 'Restauration', 'Services B2B'];
   readonly types = ['Tous', 'Cession', 'Fonds de commerce', 'Parts sociales'];
-  readonly stats = ['Annonces anonymisées', 'Transactions de 50 k€ à 5 M€', 'Mise en relation après accès validé'];
+  readonly stats: Array<{ label: string; icon: MaStatIcon }> = [
+    { label: 'Annonces anonymisées', icon: 'mask' },
+    { label: 'Transactions de 50 k€ à 5 M€', icon: 'handshake' },
+    { label: 'Mise en relation après accès validé', icon: 'certified' },
+  ];
   readonly bullets = ['Teaser public lisible', 'Détails sensibles réservés', 'Publication après paiement confirmé'];
 
   readonly canViewSensitiveDetails = computed(() => this.auth.hasMaAccess());
   readonly accessCtaLabel = computed(() =>
-    this.auth.isAuthenticated() ? "Découvrir l'offre M&A" : "Se connecter pour découvrir l'offre M&A"
+    this.auth.isAuthenticated() ? "Débloquer l'accès M&A - 149€" : "Se connecter pour l'accès M&A"
   );
   readonly filteredListings = computed(() =>
-    MA_LISTINGS.filter(listing => {
+    this.listings().filter(listing => {
       const matchesSector = this.selectedSector() === 'Tous' || listing.sector === this.selectedSector();
       const matchesType = this.selectedType() === 'Tous' || listing.type === this.selectedType();
       return matchesSector && matchesType;
     })
   );
+
+  ngOnInit(): void {
+    void this.loadListings();
+  }
 
   async continueToMaAccess(): Promise<void> {
     if (!this.auth.isAuthenticated()) {
@@ -312,5 +357,10 @@ export class MaHomeComponent {
     }
 
     await this.router.navigate(['/tarifs'], { fragment: 'ma-access' });
+  }
+
+  private async loadListings(): Promise<void> {
+    const listings = await this.maService.getListingCards();
+    this.listings.set(listings);
   }
 }

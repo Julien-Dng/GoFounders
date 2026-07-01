@@ -1,10 +1,11 @@
 import { NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
-import { findMarketplaceProfileById } from '../../core/data/mock-platform.data';
+import { MarketplaceProfile } from '../../core/data/mock-platform.data';
 import { AuthService } from '../../core/services/auth.service';
+import { MatchingService } from '../../core/services/matching.service';
 
 @Component({
   selector: 'app-profil',
@@ -23,12 +24,12 @@ import { AuthService } from '../../core/services/auth.service';
         </div>
       </div>
 
-      <div class="mx-auto -mt-32 max-w-[1400px] px-4 pb-12 sm:px-6 lg:px-8">
+      <div class="relative z-10 mx-auto -mt-12 max-w-[1400px] px-4 pb-12 sm:-mt-16 sm:px-6 lg:-mt-20 lg:px-8">
         <div class="grid grid-cols-1 gap-8 xl:grid-cols-12">
           <div class="xl:col-span-8">
             <div class="mb-6 rounded-2xl border-2 border-border bg-white p-6 shadow-xl sm:p-8">
               <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
-                <div class="relative">
+                <div class="relative lg:-mt-1">
                   <div class="h-28 w-28 overflow-hidden rounded-2xl bg-gradient-to-br from-accent to-primary text-3xl font-bold text-white shadow-lg sm:h-32 sm:w-32 sm:text-4xl">
                     @if (profilePhotoUrl()) {
                       <img [src]="profilePhotoUrl()" [alt]="'Photo de profil de ' + profileName()" class="h-full w-full object-cover">
@@ -46,7 +47,7 @@ import { AuthService } from '../../core/services/auth.service';
                   </div>
                 </div>
 
-                <div class="flex-1">
+                <div class="flex-1 pt-2">
                   <div class="mb-3">
                     <div class="mb-2 flex flex-col gap-3 sm:flex-row sm:items-center">
                       <h1 class="text-3xl font-bold">{{ profileName() }}</h1>
@@ -58,20 +59,30 @@ import { AuthService } from '../../core/services/auth.service';
                       </svg>
                       <span>{{ profileLocation() }}</span>
                     </div>
+                    <div class="mb-3 flex flex-wrap gap-2">
+                      @for (signal of trustSignals(); track signal) {
+                        <span class="rounded-full border border-border bg-secondary px-3 py-1 text-xs font-bold text-muted-foreground">
+                          {{ signal }}
+                        </span>
+                      }
+                    </div>
                     @if (!isOwnProfile()) {
-                      <div class="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-2 text-accent">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
-                        </svg>
-                        <span class="font-bold">{{ compatibilityScore() }}% compatible</span>
-                        <span class="text-sm">avec votre profil</span>
+                      <div>
+                        <div class="inline-flex items-center gap-2 text-accent">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
+                          </svg>
+                          <span class="compatibility-score-shine font-bold">{{ compatibilityScore() }}% compatible</span>
+                          <span class="text-sm">avec votre profil</span>
+                        </div>
+                        <div class="mt-1 text-xs font-medium text-muted-foreground">Basé sur vos critères de recherche</div>
                       </div>
                     }
                   </div>
 
-                  <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                  <div class="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                     @if (isOwnProfile()) {
-                      <a routerLink="/profil/modifier" class="inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3 font-semibold text-white shadow-lg shadow-accent/25 transition-all hover:scale-105 hover:bg-accent/90 active:scale-95">
+                      <a routerLink="/profil/modifier" class="inline-flex items-center justify-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-5 py-2.5 text-sm font-bold text-accent shadow-sm transition-all hover:-translate-y-0.5 hover:bg-accent hover:text-white hover:shadow-lg hover:shadow-accent/20 active:translate-y-0">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -99,6 +110,20 @@ import { AuthService } from '../../core/services/auth.service';
                     }
                   </div>
                 </div>
+
+                @if (!isOwnProfile()) {
+                  <div class="rounded-2xl border border-accent/15 bg-accent/5 p-4 lg:w-60">
+                    <div class="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-accent">Pourquoi ça matche</div>
+                    <div class="space-y-2">
+                      @for (reason of matchReasons(); track reason) {
+                        <div class="flex items-start gap-2 text-sm font-semibold text-primary">
+                          <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-accent"></span>
+                          <span>{{ reason }}</span>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
               </div>
             </div>
 
@@ -129,6 +154,17 @@ import { AuthService } from '../../core/services/auth.service';
                     <div>
                       <h3 class="mb-4 text-xl font-bold">À propos</h3>
                       <p class="leading-relaxed text-foreground/80">{{ presentationText() }}</p>
+                    </div>
+
+                    <div class="rounded-2xl border border-border bg-secondary/40 p-5">
+                      <div class="mb-3 text-sm font-bold uppercase tracking-[0.14em] text-accent">Ce que {{ isOwnProfile() ? 'mon profil' : 'ce profil' }} apporte</div>
+                      <div class="grid gap-3 sm:grid-cols-3">
+                        @for (point of contributionPoints(); track point) {
+                          <div class="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-primary shadow-sm">
+                            {{ point }}
+                          </div>
+                        }
+                      </div>
                     </div>
 
                     <div>
@@ -281,13 +317,45 @@ import { AuthService } from '../../core/services/auth.service';
       </div>
     </div>
   `
+  ,
+  styles: [`
+    .compatibility-score-shine {
+      position: relative;
+      display: inline-block;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .compatibility-score-shine::after {
+      content: '';
+      position: absolute;
+      inset: -20% auto -20% -45%;
+      width: 42%;
+      transform: skewX(-20deg);
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent);
+      animation: compatibility-shine 2.8s ease-in-out infinite;
+      mix-blend-mode: overlay;
+    }
+
+    @keyframes compatibility-shine {
+      0%, 42% {
+        left: -45%;
+      }
+
+      78%, 100% {
+        left: 115%;
+      }
+    }
+  `]
 })
-export class ProfilComponent {
+export class ProfilComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly auth = inject(AuthService);
+  private readonly matchingService = inject(MatchingService);
 
   readonly activeTab = signal('presentation');
   readonly isBookmarked = signal(false);
+  readonly loadedPublicProfile = signal<MarketplaceProfile | undefined>(undefined);
 
   private readonly routeId = toSignal(
     this.route.params.pipe(map((params: Record<string, string>) => params['id'] ?? '')),
@@ -301,10 +369,14 @@ export class ProfilComponent {
     return uid !== '' && uid === this.routeId();
   });
 
-  readonly publicProfile = computed(() => findMarketplaceProfileById(this.routeId()));
-  readonly profileName = computed(() =>
-    this.isOwnProfile() ? (this.currentUser()?.displayName ?? 'Mon profil') : (this.publicProfile()?.displayName ?? 'Profil introuvable')
-  );
+  readonly publicProfile = computed(() => this.loadedPublicProfile());
+  readonly profileName = computed(() => {
+    if (this.isOwnProfile()) {
+      return this.currentUser()?.displayName?.trim() || 'Mon profil';
+    }
+
+    return this.publicProfile()?.displayName?.trim() || 'Profil introuvable';
+  });
   readonly profileInitials = computed(() =>
     this.isOwnProfile() ? this.auth.initials() : (this.publicProfile()?.initials ?? 'GF')
   );
@@ -393,6 +465,35 @@ export class ProfilComponent {
           `${this.publicProfile()?.skills.slice(0, 2).join(' et ') || 'Compétences à préciser'} comme premiers points forts`,
         ]
   );
+  readonly trustSignals = computed(() =>
+    this.isOwnProfile()
+      ? ['Profil connecté', 'Actif récemment', `Plan ${this.currentUser()?.plan ?? 'FREE'}`]
+      : ['Profil vérifié', 'Actif récemment', 'Répond sous 24h']
+  );
+  readonly matchReasons = computed(() => {
+    const profile = this.publicProfile();
+    const firstNeed = profile?.lookingFor?.[0];
+
+    return [
+      profile?.sector ? `Secteur ${profile.sector}` : 'Secteur cohérent',
+      firstNeed ? `Recherche ${firstNeed}` : 'Besoin aligné',
+      profile?.availableNow ? 'Disponible rapidement' : 'Échange qualifié',
+    ];
+  });
+  readonly contributionPoints = computed(() => {
+    if (this.isOwnProfile()) {
+      return ['Profil modifiable', 'Données centralisées', 'Présentation claire'];
+    }
+
+    const profile = this.publicProfile();
+    const firstSkill = profile?.skills?.[0];
+
+    return [
+      profile?.sector ? `${profile.sector} cadré` : 'Contexte cadré',
+      firstSkill ? `Expertise ${firstSkill}` : 'Expertise identifiable',
+      profile?.stage ? `Stade ${profile.stage}` : 'Objectif lisible',
+    ];
+  });
   readonly socialLinks = computed(() => {
     if (!this.isOwnProfile()) {
       return [];
@@ -414,7 +515,23 @@ export class ProfilComponent {
     { id: 'avis', label: 'Avis' },
   ];
 
+  ngOnInit(): void {
+    void this.loadProfile();
+  }
+
   toggleBookmark(): void {
     this.isBookmarked.update(value => !value);
+  }
+
+  private async loadProfile(): Promise<void> {
+    await this.auth.ensureSessionReady();
+    const profileId = this.routeId();
+
+    if (!profileId || this.isOwnProfile()) {
+      return;
+    }
+
+    const profile = await this.matchingService.getMarketplaceProfileById(profileId);
+    this.loadedPublicProfile.set(profile);
   }
 }

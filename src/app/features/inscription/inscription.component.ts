@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { ProfileType } from '../../core/models/user.model';
+import { EMAIL_POLICY_MESSAGES, registrationEmailValidator } from '../../core/validators/email-policy.validator';
 
 interface ProfileOption {
   id: ProfileType;
@@ -171,6 +172,9 @@ interface ProfileOption {
                     class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
                     placeholder="vous@exemple.fr"
                   >
+                  @if (emailErrorMessage()) {
+                    <p class="mt-2 text-sm text-destructive">{{ emailErrorMessage() }}</p>
+                  }
                 </div>
 
                 <div>
@@ -430,7 +434,7 @@ export class InscriptionComponent {
 
   readonly basicsForm = this.fb.nonNullable.group({
     displayName: ['', Validators.required],
-    email: ['', [Validators.required, Validators.email]],
+    email: ['', [Validators.required, Validators.email, registrationEmailValidator()]],
     password: ['', [Validators.required, Validators.minLength(6)]],
     location: ['', Validators.required],
   });
@@ -522,6 +526,32 @@ export class InscriptionComponent {
     { value: 'established', label: 'Établi' },
   ];
 
+  emailErrorMessage(): string {
+    const emailControl = this.basicsForm.controls.email;
+
+    if (!emailControl.touched && !emailControl.dirty) {
+      return '';
+    }
+
+    if (emailControl.hasError('required')) {
+      return 'Renseignez votre email.';
+    }
+
+    if (emailControl.hasError('email') || emailControl.hasError('invalidEmail')) {
+      return EMAIL_POLICY_MESSAGES.invalidEmail;
+    }
+
+    if (emailControl.hasError('emailAlias')) {
+      return EMAIL_POLICY_MESSAGES.emailAlias;
+    }
+
+    if (emailControl.hasError('temporaryEmail')) {
+      return EMAIL_POLICY_MESSAGES.temporaryEmail;
+    }
+
+    return '';
+  }
+
   selectType(id: ProfileType): void {
     this.selectedType.set(id);
     this.errorMessage.set('');
@@ -575,6 +605,15 @@ export class InscriptionComponent {
           password: this.basicsForm.controls.password.getRawValue(),
           location: this.basicsForm.controls.location.getRawValue(),
           profileType,
+          projectName: this.detailsForm.controls.projectName.getRawValue(),
+          projectSector: this.detailsForm.controls.projectSector.getRawValue(),
+          projectStage: this.detailsForm.controls.projectStage.getRawValue(),
+          talentHeadline: this.detailsForm.controls.talentHeadline.getRawValue(),
+          talentSkill: this.detailsForm.controls.talentSkill.getRawValue(),
+          talentAvailability: this.detailsForm.controls.talentAvailability.getRawValue(),
+          maSector: this.detailsForm.controls.maSector.getRawValue(),
+          maBudget: this.detailsForm.controls.maBudget.getRawValue(),
+          maRegion: this.detailsForm.controls.maRegion.getRawValue(),
         },
         this.returnUrl()
       );

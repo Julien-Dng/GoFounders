@@ -5,9 +5,11 @@ import { Plan } from '../models/user.model';
 
 const PLAN_RANK: Record<Plan, number> = { FREE: 0, PRO: 1, PREMIUM: 2 };
 
-export const planGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
+export const planGuard: CanActivateFn = async (route: ActivatedRouteSnapshot) => {
   const auth = inject(AuthService);
   const router = inject(Router);
+
+  await auth.ensureSessionReady();
 
   const requiredPlan = (route.data['requiredPlan'] as Plan) ?? 'PRO';
   const userPlan = auth.plan();

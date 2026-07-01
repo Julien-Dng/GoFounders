@@ -1,7 +1,8 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild, computed, inject } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
+import { AuthService } from '../../core/services/auth.service';
 
 interface PricingPreviewPlan {
   name: string;
@@ -63,8 +64,8 @@ interface LandingAudience {
               </p>
 
               <div class="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center">
-                <a routerLink="/inscription" class="px-8 py-4 bg-accent text-white rounded-lg font-semibold shadow-lg shadow-accent/25 hover:bg-accent/90 transition-all hover:scale-105 active:scale-95 text-center">
-                  Créer mon compte
+                <a [routerLink]="primaryCtaHref()" class="px-8 py-4 bg-accent text-white rounded-lg font-semibold shadow-lg shadow-accent/25 hover:bg-accent/90 transition-all hover:scale-105 active:scale-95 text-center">
+                  {{ primaryCtaLabel() }}
                 </a>
                 <a routerLink="/recherche" class="px-8 py-4 border-2 border-border text-foreground rounded-lg font-semibold hover:border-accent transition-all hover:scale-105 active:scale-95 text-center">
                   Explorer les opportunités
@@ -74,7 +75,7 @@ interface LandingAudience {
               <div class="mb-8 grid gap-3 sm:grid-cols-3">
                 @for (audience of audienceCards; track audience.title) {
                   <a
-                    [routerLink]="audience.href"
+                    [routerLink]="audienceHref(audience.href)"
                     class="group rounded-2xl border border-border bg-white p-4 shadow-sm transition-all hover:-translate-y-1 hover:border-accent/40 hover:shadow-lg"
                   >
                     <div
@@ -402,8 +403,13 @@ interface LandingAudience {
   `
 })
 export class LandingComponent implements AfterViewInit {
+  private readonly auth = inject(AuthService);
+
   @ViewChild('heroVideo')
   private readonly heroVideo?: ElementRef<HTMLVideoElement>;
+
+  readonly primaryCtaHref = computed(() => this.auth.isAuthenticated() ? '/dashboard' : '/inscription');
+  readonly primaryCtaLabel = computed(() => this.auth.isAuthenticated() ? 'Aller au dashboard' : 'Créer mon compte');
 
   readonly trustBadges = [
     'Inscription rapide',
@@ -492,6 +498,14 @@ export class LandingComponent implements AfterViewInit {
       ],
     },
   ];
+
+  audienceHref(href: string): string {
+    if (href === '/inscription' && this.auth.isAuthenticated()) {
+      return '/profil/modifier';
+    }
+
+    return href;
+  }
 
   playHeroAnimation(event: Event): void {
     const video = event.target as HTMLVideoElement | null;

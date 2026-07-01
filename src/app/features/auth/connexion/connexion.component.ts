@@ -24,6 +24,12 @@ import { AuthService } from '../../../core/services/auth.service';
             </div>
           }
 
+          @if (infoMessage()) {
+            <div class="mb-6 rounded-xl border border-success/20 bg-success/5 px-4 py-3 text-sm text-success">
+              {{ infoMessage() }}
+            </div>
+          }
+
           <div class="mb-5">
             <label class="block text-sm font-semibold mb-2" for="login-email">Email</label>
             <input
@@ -93,7 +99,11 @@ export class ConnexionComponent {
   private readonly route = inject(ActivatedRoute);
 
   readonly returnUrl = signal<string | null>(this.route.snapshot.queryParamMap.get('returnUrl'));
-  readonly email = signal('');
+  readonly infoMessage = signal(this.route.snapshot.queryParamMap.get('confirmation') === '1'
+    ? "Compte cree. Confirmez votre email si Supabase vous l'envoie, puis connectez-vous."
+    : ''
+  );
+  readonly email = signal(this.route.snapshot.queryParamMap.get('email') ?? '');
   readonly password = signal('');
   readonly errorMessage = signal('');
   readonly isSubmitting = signal(false);

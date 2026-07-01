@@ -20,6 +20,7 @@ export interface User {
   websiteUrl?: string;
   plan: Plan;
   maAccess: boolean;
+  isAdmin?: boolean;
   stripeCustomerId?: string;
   createdAt: Timestamp;
   lastActive: Timestamp;

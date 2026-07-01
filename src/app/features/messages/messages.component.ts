@@ -1,21 +1,26 @@
 import { NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, HostListener, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
 import {
-  CONVERSATIONS,
   ConversationMessage,
+  MarketplaceProfile,
   findMarketplaceProfileById
 } from '../../core/data/mock-platform.data';
+import { AuthService } from '../../core/services/auth.service';
+import { ConversationThread, MessagingService } from '../../core/services/messaging.service';
 
 interface ConversationPreview {
   id: string;
+  participantProfileId: string;
   name: string;
   initials: string;
   lastMessage: string;
   time: string;
   unread: number;
+  profile?: MarketplaceProfile;
+  messages: ConversationMessage[];
 }
 
 @Component({
@@ -213,11 +218,11 @@ interface ConversationPreview {
 
         <div class="border-b border-border px-4 py-4">
           <h2 class="text-lg font-bold">Messages</h2>
-          <p class="text-xs text-muted-foreground mt-0.5">{{ conversations.length }} conversation(s) active(s)</p>
+          <p class="text-xs text-muted-foreground mt-0.5">{{ conversations().length }} conversation(s) active(s)</p>
         </div>
 
         <div class="overflow-y-auto flex-1">
-          @for (conv of conversations; track conv.id) {
+          @for (conv of conversations(); track conv.id) {
             <button
               type="button"
               (click)="selectConversation(conv)"
@@ -258,18 +263,13 @@ interface ConversationPreview {
 
   `
 })
-export class MessagesComponent {
+export class MessagesComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
+  private readonly messagingService = inject(MessagingService);
 
-  readonly conversations: ConversationPreview[] = CONVERSATIONS.map(conversation => ({
-    id: conversation.id,
-    name: conversation.participantName,
-    initials: conversation.participantInitials,
-    lastMessage: conversation.lastMessage,
-    time: conversation.time,
-    unread: conversation.unread,
-  }));
+  readonly conversations = signal<ConversationPreview[]>([]);
 
   private readonly requestedConversationId = toSignal(
     this.route.queryParamMap.pipe(map(params => params.get('conversation'))),
@@ -279,28 +279,27 @@ export class MessagesComponent {
   readonly selectedConversationId = signal<string | null>(null);
   readonly selectedConv = computed(() => {
     const activeId = this.requestedConversationId() ?? this.selectedConversationId();
-    return activeId ? this.conversations.find(conv => conv.id === activeId) ?? null : null;
+    return activeId ? this.conversations().find(conv => conv.id === activeId) ?? null : null;
   });
   readonly selectedProfile = computed(() => {
-    const activeId = this.selectedConv()?.id;
-    return activeId ? findMarketplaceProfileById(activeId) : undefined;
+    const activeConversation = this.selectedConv();
+    return activeConversation?.profile ?? findMarketplaceProfileById(activeConversation?.participantProfileId ?? '');
   });
   readonly selectedProfileSkills = computed(() => this.selectedProfile()?.skills.slice(0, 4) ?? []);
   readonly newMessage = signal('');
   readonly emojiPickerOpen = signal(false);
 
-  readonly localMessages = signal<Record<string, ConversationMessage[]>>(
-    CONVERSATIONS.reduce<Record<string, ConversationMessage[]>>((messagesByConversation, conversation) => {
-      messagesByConversation[conversation.id] = [...conversation.messages];
-      return messagesByConversation;
-    }, {})
-  );
+  readonly localMessages = signal<Record<string, ConversationMessage[]>>({});
   readonly activeMessages = computed<ConversationMessage[]>(() => {
     const activeId = this.selectedConv()?.id;
     return activeId ? this.localMessages()[activeId] ?? [] : [];
   });
 
   readonly emojis = ['😀', '😊', '😂', '❤️', '👍', '🎉', '🙏', '🤝', '💡', '🚀', '✅', '👋', '🔥', '💪', '🙌', '😎'];
+
+  ngOnInit(): void {
+    void this.loadConversations();
+  }
 
   @HostListener('document:click')
   closeEmojiPicker(): void {
@@ -309,6 +308,7 @@ export class MessagesComponent {
 
   selectConversation(conv: ConversationPreview): void {
     this.selectedConversationId.set(conv.id);
+    this.markConversationAsRead(conv.id);
     void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { conversation: conv.id },
@@ -327,17 +327,30 @@ export class MessagesComponent {
     this.emojiPickerOpen.set(false);
   }
 
-  sendMessage(): void {
+  async sendMessage(): Promise<void> {
     const content = this.newMessage().trim();
     const activeId = this.selectedConv()?.id;
-    if (!content || !activeId) return;
-    const now = new Date();
-    const time = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
-    const message: ConversationMessage = { id: String(Date.now()), senderId: 'me', content, time };
+    const user = this.auth.currentUser();
+
+    if (!content || !activeId || !user) {
+      return;
+    }
+
+    const message = await this.messagingService.sendThreadMessage(activeId, user.uid, content);
+
+    if (!message) {
+      return;
+    }
+
     this.localMessages.update(messagesByConversation => ({
       ...messagesByConversation,
       [activeId]: [...(messagesByConversation[activeId] ?? []), message],
     }));
+    this.conversations.update(conversations => conversations.map(conversation =>
+      conversation.id === activeId
+        ? { ...conversation, lastMessage: message.content, time: message.time }
+        : conversation
+    ));
     this.newMessage.set('');
   }
 
@@ -346,5 +359,73 @@ export class MessagesComponent {
     if (file) {
       console.log('Fichier sélectionné :', file.name);
     }
+  }
+
+  private async loadConversations(): Promise<void> {
+    await this.auth.ensureSessionReady();
+    const user = this.auth.currentUser();
+
+    if (!user) {
+      return;
+    }
+
+    const requestedConversationOrProfileId = this.requestedConversationId();
+    let threads = await this.messagingService.getConversationThreads(user);
+    let selectedConversationId = requestedConversationOrProfileId;
+
+    if (
+      requestedConversationOrProfileId &&
+      !threads.some(thread => thread.id === requestedConversationOrProfileId)
+    ) {
+      const createdConversationId = await this.messagingService.ensureConversationWithProfile(user, requestedConversationOrProfileId);
+
+      if (createdConversationId) {
+        selectedConversationId = createdConversationId;
+        threads = await this.messagingService.getConversationThreads(user);
+        await this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { conversation: createdConversationId },
+          queryParamsHandling: 'merge',
+        });
+      }
+    }
+
+    this.conversations.set(threads.map(thread => this.toPreview(thread)));
+    this.localMessages.set(threads.reduce<Record<string, ConversationMessage[]>>((messagesByConversation, thread) => {
+      messagesByConversation[thread.id] = [...thread.messages];
+      return messagesByConversation;
+    }, {}));
+
+    if (selectedConversationId) {
+      this.selectedConversationId.set(selectedConversationId);
+      this.markConversationAsRead(selectedConversationId);
+    }
+  }
+
+  private markConversationAsRead(conversationId: string): void {
+    const user = this.auth.currentUser();
+
+    if (!user) {
+      return;
+    }
+
+    this.conversations.update(conversations => conversations.map(conversation =>
+      conversation.id === conversationId ? { ...conversation, unread: 0 } : conversation
+    ));
+    void this.messagingService.markAsRead(conversationId, user.uid);
+  }
+
+  private toPreview(thread: ConversationThread): ConversationPreview {
+    return {
+      id: thread.id,
+      participantProfileId: thread.participantProfileId,
+      name: thread.participantName,
+      initials: thread.participantInitials,
+      lastMessage: thread.lastMessage,
+      time: thread.time,
+      unread: thread.unread,
+      profile: thread.profile,
+      messages: thread.messages,
+    };
   }
 }

@@ -353,7 +353,9 @@ interface QuickActionItem {
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
-        <span class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs font-bold text-white">{{ floatingBubbleBadge() }}</span>
+        @if (floatingBubbleBadge() > 0) {
+          <span class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs font-bold text-white">{{ floatingBubbleBadge() }}</span>
+        }
       </a>
     </div>
   `
@@ -369,7 +371,7 @@ export class DashboardComponent {
   readonly planLabel = computed(() => this.currentUser()?.plan ?? 'FREE');
   readonly floatingBubbleLink = computed(() => '/messages');
   readonly floatingBubbleLabel = computed(() => 'Ouvrir les messages');
-  readonly floatingBubbleBadge = computed(() => 3);
+  readonly floatingBubbleBadge = computed(() => 0);
   readonly ownProfilePath = computed(() => {
     const uid = this.currentUser()?.uid ?? '';
     return uid ? `/profil/${uid}` : '/dashboard';
@@ -379,7 +381,7 @@ export class DashboardComponent {
     { id: 'accueil', label: 'Accueil', icon: 'home', path: '/dashboard', badge: null },
     { id: 'recherche', label: 'Recherche', icon: 'search', path: '/recherche', badge: null },
     { id: 'profil', label: 'Mon profil', icon: 'user', path: this.ownProfilePath(), badge: null },
-    { id: 'messages', label: 'Messages', icon: 'messages', path: '/messages', badge: 3 },
+    { id: 'messages', label: 'Messages', icon: 'messages', path: '/messages', badge: null },
     { id: 'ma', label: 'M&A', icon: 'ma', path: '/ma', badge: null },
     { id: 'assistant', label: 'Assistant IA', icon: 'sparkles', path: '/coaching-ia', badge: null },
     { id: 'abonnement', label: 'Abonnement', icon: 'credit-card', path: '/abonnement', badge: null },
@@ -394,13 +396,12 @@ export class DashboardComponent {
   readonly activities = [
     { text: '3 personnes ont consulté votre profil', time: 'Il y a 2 h', type: 'view' },
     { text: 'Nouveau match disponible', time: 'Il y a 5 h', type: 'match' },
-    { text: 'Sophie B. a répondu à votre message', time: 'Hier', type: 'message' },
     { text: 'Votre profil a été mis en avant', time: 'Il y a 2 j', type: 'boost' },
   ];
 
   readonly stats: StatItem[] = [
     { label: 'Vues profil', value: '127', icon: 'views' },
-    { label: 'Messages reçus', value: '18', icon: 'messages' },
+    { label: 'Messages reçus', value: '0', icon: 'messages' },
     { label: 'Matches', value: '24', icon: 'target' },
   ];
 
