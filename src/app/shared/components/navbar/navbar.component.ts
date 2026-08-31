@@ -16,40 +16,40 @@ type DrawerIcon = 'home' | 'search' | 'messages' | 'chart' | 'sparkles' | 'credi
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (!isHidden()) {
-      <nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-border shadow-sm">
+      <nav class="fixed top-0 left-0 right-0 z-[100] overflow-visible bg-white/95 backdrop-blur-md border-b border-border shadow-sm">
 
           <!-- Hamburger aligné avec la flèche retour (left-6 = 24px du bord) -->
-          @if (auth.isAuthenticated()) {
-            <button
-              type="button"
-              (click)="toggleDrawer($event)"
-              class="absolute left-6 top-0 h-20 flex items-center px-1 text-muted-foreground hover:text-foreground transition-colors z-10"
-              aria-label="Menu de navigation"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="3" y1="6" x2="21" y2="6"/>
-                <line x1="3" y1="12" x2="21" y2="12"/>
-                <line x1="3" y1="18" x2="21" y2="18"/>
-              </svg>
-            </button>
-          }
+          <button
+            type="button"
+            (click)="toggleDrawer($event)"
+            [class]="auth.isAuthenticated()
+              ? 'absolute left-4 top-0 z-10 flex h-20 items-center px-1 text-muted-foreground transition-colors hover:text-foreground sm:left-6'
+              : 'absolute left-4 top-0 z-10 flex h-20 items-center px-1 text-muted-foreground transition-colors hover:text-foreground md:hidden'"
+            aria-label="Menu de navigation"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
 
-        <div class="max-w-[1400px] mx-auto h-20 flex items-center pl-16">
+        <div class="mx-auto flex h-20 max-w-[1400px] items-center overflow-visible pl-12 pr-4 sm:pl-16 md:pr-6">
 
           <!-- Logo -->
-          <a [routerLink]="logoLink()" class="flex items-center gap-3 group px-4">
-            <div class="brand-logo-mark h-11 w-11 transition-transform group-hover:scale-105">
+          <a [routerLink]="logoLink()" class="group flex min-w-0 items-center gap-2 px-2 sm:gap-3 sm:px-4">
+            <div class="brand-logo-mark h-9 w-9 flex-shrink-0 transition-transform group-hover:scale-105 sm:h-11 sm:w-11">
               <img
                 src="/assets/images/gofounders-logo.png"
                 alt="Logo GoFounders"
                 class="h-full w-full object-contain"
               >
             </div>
-            <span class="text-2xl font-bold text-primary">GoFounders</span>
+            <span class="truncate text-xl font-bold text-primary sm:text-2xl">GoFounders</span>
           </a>
 
           <!-- Nav links (center) -->
-          <div class="flex items-center gap-8 flex-1 justify-center">
+          <div class="hidden flex-1 items-center justify-center gap-8 md:flex">
             @for (link of navLinks; track link.href) {
               <a
                 [routerLink]="link.href"
@@ -60,20 +60,31 @@ type DrawerIcon = 'home' | 'search' | 'messages' | 'chart' | 'sparkles' | 'credi
           </div>
 
           <!-- Right actions -->
-          <div class="flex items-center gap-3 px-8">
+          <div class="hidden items-center gap-3 px-2 md:flex lg:px-8">
             @if (auth.isAuthenticated()) {
 
-              <a routerLink="/dashboard" class="px-5 py-2 text-foreground font-medium hover:text-accent transition-colors cursor-pointer">
+              <a routerLink="/dashboard" class="px-5 py-2 text-foreground font-medium hover:text-accent transition-colors">
                 Dashboard
+              </a>
+              <a
+                routerLink="/messages"
+                routerLinkActive="!text-accent"
+                class="hidden items-center gap-2 rounded-lg px-3 py-2 text-foreground transition-colors hover:bg-secondary hover:text-accent lg:inline-flex"
+                aria-label="Ouvrir les messages"
+              >
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                <span class="hidden xl:inline">Messages</span>
               </a>
               <app-notification-menu />
               <app-user-menu avatarClass="h-11 w-11" />
 
             } @else {
-              <a routerLink="/connexion" class="px-5 py-2 text-foreground font-medium hover:text-accent transition-colors cursor-pointer">
+              <a routerLink="/connexion" class="px-5 py-2 text-foreground font-medium hover:text-accent transition-colors">
                 Connexion
               </a>
-              <a routerLink="/inscription" class="px-6 py-2.5 bg-accent text-white rounded-lg font-semibold shadow-md hover:bg-accent/90 transition-all hover:scale-105 active:scale-95 cursor-pointer">
+              <a routerLink="/inscription" class="px-6 py-2.5 bg-accent text-white rounded-lg font-semibold shadow-md hover:bg-accent/90 transition-all hover:scale-105 active:scale-95">
                 S'inscrire
               </a>
             }
@@ -177,16 +188,37 @@ type DrawerIcon = 'home' | 'search' | 'messages' | 'chart' | 'sparkles' | 'credi
           }
         </div>
 
-        <div class="p-4 border-t border-border">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-              {{ auth.initials() }}
+        <div class="border-t border-border p-4">
+          @if (auth.isAuthenticated()) {
+            <a
+              [routerLink]="profileLink()"
+              (click)="drawerOpen.set(false)"
+              class="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+              [attr.aria-label]="'Voir le profil de ' + displayName()"
+            >
+              @if (showPhoto()) {
+                <img
+                  [src]="photoUrl()"
+                  [alt]="'Photo de profil de ' + displayName()"
+                  (error)="handlePhotoError()"
+                  class="h-9 w-9 flex-shrink-0 rounded-full border border-border object-cover shadow-sm"
+                >
+              } @else {
+                <span class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary text-sm font-bold text-white" aria-hidden="true">
+                  {{ auth.initials() }}
+                </span>
+              }
+              <div class="min-w-0">
+                <div class="truncate text-sm font-semibold">{{ displayName() }}</div>
+                <span class="text-xs text-muted-foreground">{{ auth.currentUser()?.plan ?? 'FREE' }}</span>
+              </div>
+            </a>
+          } @else {
+            <div class="grid gap-2">
+              <a routerLink="/connexion" (click)="drawerOpen.set(false)" class="rounded-xl border border-border px-4 py-2.5 text-center text-sm font-semibold">Connexion</a>
+              <a routerLink="/inscription" (click)="drawerOpen.set(false)" class="rounded-xl bg-accent px-4 py-2.5 text-center text-sm font-semibold text-white">S'inscrire</a>
             </div>
-            <div class="min-w-0">
-              <div class="text-sm font-semibold truncate">{{ auth.currentUser()?.displayName ?? 'Mon compte' }}</div>
-              <span class="text-xs text-muted-foreground">{{ auth.currentUser()?.plan ?? 'FREE' }}</span>
-            </div>
-          </div>
+          }
         </div>
       </aside>
     }
@@ -198,6 +230,18 @@ export class NavbarComponent {
   protected readonly auth = inject(AuthService);
 
   readonly drawerOpen = signal(false);
+  private readonly failedPhotoUrl = signal('');
+
+  readonly displayName = computed(() => this.auth.currentUser()?.displayName ?? 'Mon compte');
+  readonly photoUrl = computed(() => this.auth.currentUser()?.photoURL?.trim() ?? '');
+  readonly showPhoto = computed(() => {
+    const photoUrl = this.photoUrl();
+    return photoUrl.length > 0 && this.failedPhotoUrl() !== photoUrl;
+  });
+  readonly profileLink = computed(() => {
+    const userId = this.auth.currentUser()?.uid;
+    return userId ? ['/profil', userId] : ['/dashboard'];
+  });
 
   constructor() {
     const saved = typeof localStorage !== 'undefined' && localStorage.getItem('gofounders.dark') === 'true';
@@ -216,7 +260,7 @@ export class NavbarComponent {
     { id: 'messages',   label: 'Messages',     icon: 'messages', path: '/messages',    badge: null, exact: false },
     { id: 'ma',         label: 'M&A',          icon: 'chart', path: '/ma',          badge: null, exact: true  },
     { id: 'assistant',  label: 'Assistant IA', icon: 'sparkles', path: '/coaching-ia', badge: null, exact: true  },
-    { id: 'abonnement', label: 'Abonnement',   icon: 'credit-card', path: '/abonnement',  badge: null, exact: true  },
+    { id: 'abonnement', label: 'Abonnement',   icon: 'credit-card', path: '/tarifs',      badge: null, exact: true  },
     { id: 'parametres', label: 'Paramètres',   icon: 'settings', path: '/parametres',  badge: null, exact: true  },
   ];
 
@@ -245,6 +289,10 @@ export class NavbarComponent {
   toggleDrawer(event: Event): void {
     event.stopPropagation();
     this.drawerOpen.update(v => !v);
+  }
+
+  handlePhotoError(): void {
+    this.failedPhotoUrl.set(this.photoUrl());
   }
 
 }

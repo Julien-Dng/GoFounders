@@ -1,5 +1,5 @@
 import { NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
@@ -294,6 +294,23 @@ export class MessagesComponent implements OnInit {
     const activeId = this.selectedConv()?.id;
     return activeId ? this.localMessages()[activeId] ?? [] : [];
   });
+
+  private readonly requestedConversationEffect = effect(() => {
+    const requestedId = this.requestedConversationId();
+    const requestedConversation = requestedId
+      ? this.conversations().find(conversation => conversation.id === requestedId)
+      : null;
+
+    if (!requestedConversation) {
+      return;
+    }
+
+    this.selectedConversationId.set(requestedConversation.id);
+
+    if (requestedConversation.unread > 0) {
+      this.markConversationAsRead(requestedConversation.id);
+    }
+  }, { allowSignalWrites: true });
 
   readonly emojis = ['😀', '😊', '😂', '❤️', '👍', '🎉', '🙏', '🤝', '💡', '🚀', '✅', '👋', '🔥', '💪', '🙌', '😎'];
 

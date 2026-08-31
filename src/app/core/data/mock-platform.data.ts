@@ -12,6 +12,7 @@ export interface MarketplaceProfile {
   skills: string[];
   match: number;
   initials: string;
+  photoURL?: string;
   availableNow: boolean;
   availabilityLabel: string;
   lookingFor: string[];

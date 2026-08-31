@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { MessagingService } from '../../core/services/messaging.service';
 import { NotificationMenuComponent } from '../../shared/components/notification-menu/notification-menu.component';
 import { UserMenuComponent } from '../../shared/components/user-menu/user-menu.component';
 
@@ -121,12 +122,17 @@ interface QuickActionItem {
         </nav>
 
         <div class="border-t border-primary-foreground/10 p-4">
-          <div class="cursor-pointer rounded-lg bg-primary-foreground/5 p-3 transition-colors hover:bg-primary-foreground/10">
+          <a
+            [routerLink]="ownProfilePath()"
+            class="block rounded-lg bg-primary-foreground/5 p-3 transition-colors hover:bg-primary-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/60"
+            [attr.aria-label]="'Voir le profil de ' + displayName()"
+          >
             <div class="flex items-center gap-3">
-              @if (photoUrl()) {
+              @if (showPhoto()) {
                 <img
                   [src]="photoUrl()"
                   [alt]="'Photo de profil de ' + displayName()"
+                  (error)="handlePhotoError()"
                   class="h-10 w-10 flex-shrink-0 rounded-full border border-primary-foreground/10 object-cover shadow-sm"
                 >
               } @else {
@@ -142,7 +148,7 @@ interface QuickActionItem {
                 </div>
               </div>
             </div>
-          </div>
+          </a>
         </div>
       </aside>
 
@@ -362,16 +368,23 @@ interface QuickActionItem {
 })
 export class DashboardComponent {
   private readonly auth = inject(AuthService);
+  private readonly messaging = inject(MessagingService);
 
   readonly currentUser = this.auth.currentUser;
+  private readonly failedPhotoUrl = signal('');
   readonly displayName = computed(() => this.currentUser()?.displayName ?? 'Mon compte');
   readonly firstName = computed(() => this.displayName().split(' ')[0] || 'membre');
-  readonly photoUrl = computed(() => this.currentUser()?.photoURL ?? '');
+  readonly photoUrl = computed(() => this.currentUser()?.photoURL?.trim() ?? '');
+  readonly showPhoto = computed(() => {
+    const photoUrl = this.photoUrl();
+    return photoUrl.length > 0 && this.failedPhotoUrl() !== photoUrl;
+  });
   readonly initials = this.auth.initials;
   readonly planLabel = computed(() => this.currentUser()?.plan ?? 'FREE');
   readonly floatingBubbleLink = computed(() => '/messages');
   readonly floatingBubbleLabel = computed(() => 'Ouvrir les messages');
-  readonly floatingBubbleBadge = computed(() => 0);
+  readonly messageUnreadCount = this.messaging.unreadCount;
+  readonly floatingBubbleBadge = computed(() => this.messageUnreadCount());
   readonly ownProfilePath = computed(() => {
     const uid = this.currentUser()?.uid ?? '';
     return uid ? `/profil/${uid}` : '/dashboard';
@@ -381,10 +394,10 @@ export class DashboardComponent {
     { id: 'accueil', label: 'Accueil', icon: 'home', path: '/dashboard', badge: null },
     { id: 'recherche', label: 'Recherche', icon: 'search', path: '/recherche', badge: null },
     { id: 'profil', label: 'Mon profil', icon: 'user', path: this.ownProfilePath(), badge: null },
-    { id: 'messages', label: 'Messages', icon: 'messages', path: '/messages', badge: null },
+    { id: 'messages', label: 'Messages', icon: 'messages', path: '/messages', badge: this.messageUnreadCount() || null },
     { id: 'ma', label: 'M&A', icon: 'ma', path: '/ma', badge: null },
     { id: 'assistant', label: 'Assistant IA', icon: 'sparkles', path: '/coaching-ia', badge: null },
-    { id: 'abonnement', label: 'Abonnement', icon: 'credit-card', path: '/abonnement', badge: null },
+    { id: 'abonnement', label: 'Abonnement', icon: 'credit-card', path: '/tarifs', badge: null },
     { id: 'parametres', label: 'Paramètres', icon: 'settings', path: '/parametres', badge: null },
   ]);
 
@@ -410,4 +423,8 @@ export class DashboardComponent {
     { label: 'Améliorer mon profil', icon: 'user', path: '/profil/modifier' },
     { label: 'Comprendre mes statistiques', icon: 'chart', path: '/dashboard' },
   ];
+
+  handlePhotoError(): void {
+    this.failedPhotoUrl.set(this.photoUrl());
+  }
 }

@@ -6,6 +6,7 @@ import { map } from 'rxjs/operators';
 import { MarketplaceProfile } from '../../core/data/mock-platform.data';
 import { AuthService } from '../../core/services/auth.service';
 import { MatchingService } from '../../core/services/matching.service';
+import { EditableProject, ProjectService } from '../../core/services/project.service';
 
 @Component({
   selector: 'app-profil',
@@ -352,10 +353,12 @@ export class ProfilComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly auth = inject(AuthService);
   private readonly matchingService = inject(MatchingService);
+  private readonly projectService = inject(ProjectService);
 
   readonly activeTab = signal('presentation');
   readonly isBookmarked = signal(false);
   readonly loadedPublicProfile = signal<MarketplaceProfile | undefined>(undefined);
+  readonly ownProject = signal<EditableProject | null>(null);
 
   private readonly routeId = toSignal(
     this.route.params.pipe(map((params: Record<string, string>) => params['id'] ?? '')),
@@ -381,7 +384,7 @@ export class ProfilComponent implements OnInit {
     this.isOwnProfile() ? this.auth.initials() : (this.publicProfile()?.initials ?? 'GF')
   );
   readonly profilePhotoUrl = computed(() =>
-    this.isOwnProfile() ? (this.currentUser()?.photoURL ?? '') : ''
+    this.isOwnProfile() ? (this.currentUser()?.photoURL ?? '') : (this.publicProfile()?.photoURL ?? '')
   );
   readonly profileLocation = computed(() =>
     this.isOwnProfile() ? (this.currentUser()?.location ?? 'Paris, France') : (this.publicProfile()?.location ?? 'France')
@@ -421,7 +424,7 @@ export class ProfilComponent implements OnInit {
   );
   readonly projectText = computed(() =>
     this.isOwnProfile()
-      ? "Cette section présentera votre projet, votre contexte actuel et ce que vous cherchez à construire avec GoFounders."
+      ? (this.ownProject()?.description || "Ajoutez une présentation à votre annonce depuis la modification du profil.")
       : (this.publicProfile()?.projectSummary ?? 'Aucun détail de projet disponible pour le moment.')
   );
   readonly experienceText = computed(() =>
@@ -434,7 +437,9 @@ export class ProfilComponent implements OnInit {
   );
   readonly searchingFor = computed(() =>
     this.isOwnProfile()
-      ? (this.currentUser()?.lookingFor?.length ? this.currentUser()?.lookingFor ?? [] : ['Co-fondateur technique', 'Talent produit', 'Profil growth'])
+      ? (this.ownProject()?.lookingFor?.length
+          ? this.ownProject()?.lookingFor ?? []
+          : (this.currentUser()?.lookingFor?.length ? this.currentUser()?.lookingFor ?? [] : ['Recherche à préciser']))
       : (this.publicProfile()?.lookingFor ?? ['Échange qualifié'])
   );
   readonly skills = computed(() =>
@@ -527,7 +532,12 @@ export class ProfilComponent implements OnInit {
     await this.auth.ensureSessionReady();
     const profileId = this.routeId();
 
-    if (!profileId || this.isOwnProfile()) {
+    if (!profileId) {
+      return;
+    }
+
+    if (this.isOwnProfile()) {
+      this.ownProject.set(await this.projectService.getOwnedProject(profileId));
       return;
     }
 

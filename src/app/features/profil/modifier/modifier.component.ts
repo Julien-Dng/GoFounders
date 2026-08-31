@@ -1,8 +1,9 @@
 import { NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, NgZone, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, NgZone, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService, UpdateProfilePayload } from '../../../core/services/auth.service';
+import { ProjectService } from '../../../core/services/project.service';
 
 @Component({
   selector: 'app-modifier-profil',
@@ -205,6 +206,116 @@ import { AuthService, UpdateProfilePayload } from '../../../core/services/auth.s
                 </div>
               </div>
 
+              @if (isEntrepreneur()) {
+                <div class="rounded-2xl border border-accent/20 bg-accent/[0.035] p-5 sm:p-6" [formGroup]="projectForm">
+                  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <div class="text-xs font-bold uppercase tracking-[0.16em] text-accent">Annonce visible par les talents</div>
+                      <h2 class="mt-1 text-xl font-bold text-primary">Mon annonce de projet</h2>
+                      <p class="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                        Modifiez ici le projet créé lors de votre inscription. Les informations publiées alimentent directement les résultats de recherche des talents.
+                      </p>
+                    </div>
+
+                    <label class="inline-flex flex-shrink-0 items-center gap-3 rounded-full border border-border bg-white px-4 py-2 text-sm font-semibold">
+                      <input type="checkbox" formControlName="isActive" class="h-4 w-4 accent-accent">
+                      Annonce publiée
+                    </label>
+                  </div>
+
+                  @if (isProjectLoading()) {
+                    <div class="mt-5 rounded-xl border border-border bg-white px-4 py-3 text-sm text-muted-foreground">
+                      Chargement de votre annonce...
+                    </div>
+                  } @else {
+                    <div class="mt-6 grid gap-5 md:grid-cols-2">
+                      <div>
+                        <label for="project-name" class="mb-2 block text-sm font-semibold">Nom du projet</label>
+                        <input
+                          id="project-name"
+                          type="text"
+                          formControlName="name"
+                          class="w-full rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
+                          placeholder="Nom de votre projet"
+                        >
+                      </div>
+
+                      <div>
+                        <label for="project-sector" class="mb-2 block text-sm font-semibold">Secteur</label>
+                        <input
+                          id="project-sector"
+                          type="text"
+                          formControlName="sector"
+                          class="w-full rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
+                          placeholder="SaaS, santé, commerce..."
+                        >
+                      </div>
+
+                      <div>
+                        <label for="project-stage" class="mb-2 block text-sm font-semibold">Stade du projet</label>
+                        <select
+                          id="project-stage"
+                          formControlName="stage"
+                          class="w-full rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
+                        >
+                          @for (stage of projectStages; track stage.value) {
+                            <option [value]="stage.value">{{ stage.label }}</option>
+                          }
+                        </select>
+                      </div>
+
+                      <div>
+                        <label for="project-location" class="mb-2 block text-sm font-semibold">Localisation du projet</label>
+                        <input
+                          id="project-location"
+                          type="text"
+                          formControlName="location"
+                          class="w-full rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
+                          placeholder="Paris, France ou à distance"
+                        >
+                      </div>
+
+                      <div class="md:col-span-2">
+                        <label for="project-description" class="mb-2 block text-sm font-semibold">Présentation de l'annonce</label>
+                        <textarea
+                          id="project-description"
+                          formControlName="description"
+                          rows="5"
+                          maxlength="900"
+                          class="w-full resize-none rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
+                          placeholder="Présentez le problème, votre solution et l'avancement du projet."
+                        ></textarea>
+                        <div class="mt-2 text-right text-xs text-muted-foreground">{{ projectForm.controls.description.getRawValue().length }}/900</div>
+                      </div>
+
+                      <div>
+                        <label for="project-looking-for" class="mb-2 block text-sm font-semibold">Profils recherchés</label>
+                        <textarea
+                          id="project-looking-for"
+                          formControlName="lookingFor"
+                          rows="3"
+                          class="w-full resize-none rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
+                          placeholder="CTO, développeur frontend, commercial..."
+                        ></textarea>
+                        <p class="mt-2 text-xs text-muted-foreground">Séparez les profils par des virgules.</p>
+                      </div>
+
+                      <div>
+                        <label for="project-skills" class="mb-2 block text-sm font-semibold">Compétences attendues</label>
+                        <textarea
+                          id="project-skills"
+                          formControlName="skillsNeeded"
+                          rows="3"
+                          class="w-full resize-none rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
+                          placeholder="Angular, UX/UI, vente B2B..."
+                        ></textarea>
+                        <p class="mt-2 text-xs text-muted-foreground">Séparez les compétences par des virgules.</p>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+
               <div>
                 <h2 class="text-xl font-bold text-primary">Liens professionnels</h2>
                 <p class="mt-1 text-sm text-muted-foreground">Ajoutez seulement les liens utiles pour inspirer confiance.</p>
@@ -286,9 +397,10 @@ import { AuthService, UpdateProfilePayload } from '../../../core/services/auth.s
     </div>
   `
 })
-export class ModifierComponent {
+export class ModifierComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
+  private readonly projects = inject(ProjectService);
   private readonly zone = inject(NgZone);
 
   readonly currentUser = this.auth.currentUser;
@@ -297,8 +409,11 @@ export class ModifierComponent {
   readonly photoMessage = signal('');
   readonly photoErrorMessage = signal('');
   readonly isSaving = signal(false);
+  readonly isProjectLoading = signal(false);
+  readonly projectId = signal<string | null>(null);
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
+  readonly isEntrepreneur = computed(() => this.currentUser()?.profileType === 'entrepreneur');
   readonly profileLink = computed(() => {
     const userId = this.currentUser()?.uid;
     return userId ? ['/profil', userId] : ['/dashboard'];
@@ -328,6 +443,28 @@ export class ModifierComponent {
     linkedinUrl: [this.currentUser()?.linkedinUrl ?? '', Validators.maxLength(160)],
     websiteUrl: [this.currentUser()?.websiteUrl ?? '', Validators.maxLength(160)],
   });
+
+  readonly projectForm = this.fb.nonNullable.group({
+    name: ['', [Validators.required, Validators.maxLength(120)]],
+    sector: ['', [Validators.required, Validators.maxLength(80)]],
+    stage: ['mvp', Validators.required],
+    location: ['', Validators.maxLength(100)],
+    description: ['', [Validators.required, Validators.maxLength(900)]],
+    lookingFor: ['', Validators.maxLength(260)],
+    skillsNeeded: ['', Validators.maxLength(260)],
+    isActive: [true],
+  });
+
+  readonly projectStages = [
+    { value: 'idea', label: 'Idée' },
+    { value: 'mvp', label: 'MVP' },
+    { value: 'growth', label: 'En croissance' },
+    { value: 'established', label: 'Établi' },
+  ];
+
+  ngOnInit(): void {
+    void this.loadProject();
+  }
 
   onPhotoSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -383,10 +520,13 @@ export class ModifierComponent {
 
   async saveProfile(): Promise<void> {
     this.profileForm.markAllAsTouched();
+    if (this.isEntrepreneur()) {
+      this.projectForm.markAllAsTouched();
+    }
     this.errorMessage.set('');
     this.successMessage.set('');
 
-    if (this.profileForm.invalid) {
+    if (this.profileForm.invalid || (this.isEntrepreneur() && this.projectForm.invalid)) {
       this.errorMessage.set('Vérifiez les champs obligatoires et les longueurs maximales.');
       return;
     }
@@ -416,12 +556,85 @@ export class ModifierComponent {
         return;
       }
 
-      this.successMessage.set('Profil mis à jour. Vous pouvez ouvrir votre profil pour vérifier le rendu.');
+      if (this.isEntrepreneur()) {
+        const projectResult = await this.saveProject();
+
+        if (!projectResult) {
+          return;
+        }
+      }
+
+      this.successMessage.set(this.isEntrepreneur()
+        ? 'Profil et annonce de projet mis à jour.'
+        : 'Profil mis à jour. Vous pouvez ouvrir votre profil pour vérifier le rendu.'
+      );
       this.photoMessage.set('');
       this.photoErrorMessage.set('');
     } finally {
       this.isSaving.set(false);
     }
+  }
+
+  private async loadProject(): Promise<void> {
+    await this.auth.ensureSessionReady();
+
+    if (!this.isEntrepreneur()) {
+      return;
+    }
+
+    const ownerId = this.currentUser()?.uid;
+
+    if (!ownerId) {
+      return;
+    }
+
+    this.isProjectLoading.set(true);
+
+    try {
+      const project = await this.projects.getOwnedProject(ownerId);
+      this.projectId.set(project?.id ?? null);
+      this.projectForm.patchValue({
+        name: project?.name ?? this.currentUser()?.profileTitle ?? '',
+        sector: project?.sector ?? '',
+        stage: project?.stage ?? 'mvp',
+        location: project?.location ?? this.currentUser()?.location ?? '',
+        description: project?.description ?? '',
+        lookingFor: (project?.lookingFor ?? this.currentUser()?.lookingFor ?? []).join(', '),
+        skillsNeeded: (project?.skillsNeeded ?? []).join(', '),
+        isActive: project?.isActive ?? true,
+      });
+    } finally {
+      this.isProjectLoading.set(false);
+    }
+  }
+
+  private async saveProject(): Promise<boolean> {
+    const ownerId = this.currentUser()?.uid;
+
+    if (!ownerId) {
+      this.errorMessage.set("Impossible d'identifier le propriétaire de l'annonce.");
+      return false;
+    }
+
+    const value = this.projectForm.getRawValue();
+    const result = await this.projects.saveOwnedProject(ownerId, this.projectId(), {
+      name: value.name,
+      sector: value.sector,
+      stage: value.stage,
+      location: value.location,
+      description: value.description,
+      lookingFor: this.splitTags(value.lookingFor),
+      skillsNeeded: this.splitTags(value.skillsNeeded),
+      isActive: value.isActive,
+    });
+
+    if (!result.success) {
+      this.errorMessage.set(result.message ?? "Le profil a été enregistré, mais pas l'annonce de projet.");
+      return false;
+    }
+
+    this.projectId.set(result.project?.id ?? this.projectId());
+    return true;
   }
 
   private splitTags(value: string): string[] {

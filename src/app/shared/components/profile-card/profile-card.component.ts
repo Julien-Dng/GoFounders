@@ -6,6 +6,7 @@ export interface ProfileCardData {
   id: string;
   displayName: string;
   initials: string;
+  photoURL?: string;
   role: string;
   sector: string;
   stage: string;
@@ -25,8 +26,16 @@ export interface ProfileCardData {
     <div class="bg-card rounded-2xl border border-border p-6 shadow-sm hover:shadow-lg transition-all hover:-translate-y-0.5 duration-200 flex flex-col gap-4">
       <div class="flex items-start justify-between">
         <div class="flex items-center gap-3">
-          <div class="w-12 h-12 bg-gradient-to-br from-accent to-primary rounded-xl flex items-center justify-center text-white font-bold">
-            {{ profile.initials }}
+          <div class="relative flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-accent to-primary font-bold text-white">
+            <span>{{ profile.initials }}</span>
+            @if (profile.photoURL) {
+              <img
+                [src]="profile.photoURL"
+                [alt]="'Photo de ' + profile.displayName"
+                (error)="hideBrokenImage($event)"
+                class="absolute inset-0 h-full w-full object-cover"
+              >
+            }
           </div>
           <div>
             <div class="font-bold">{{ profile.displayName }}</div>
@@ -72,4 +81,12 @@ export interface ProfileCardData {
 })
 export class ProfileCardComponent {
   @Input({ required: true }) profile!: ProfileCardData;
+
+  hideBrokenImage(event: Event): void {
+    const image = event.target as HTMLImageElement | null;
+
+    if (image) {
+      image.hidden = true;
+    }
+  }
 }

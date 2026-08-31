@@ -9,7 +9,7 @@ import { AuthService } from '../../../core/services/auth.service';
   imports: [NgClass, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="relative">
+    <div class="relative z-[110]">
       <button
         type="button"
         [ngClass]="buttonClass"
@@ -19,10 +19,11 @@ import { AuthService } from '../../../core/services/auth.service';
         aria-label="Ouvrir le menu utilisateur"
         (click)="toggleMenu($event)"
       >
-        @if (photoUrl()) {
+        @if (showPhoto()) {
           <img
             [src]="photoUrl()"
             [alt]="'Photo de profil de ' + displayName()"
+            (error)="handlePhotoError()"
             [ngClass]="avatarClass"
             class="rounded-full border border-border object-cover shadow-sm"
           >
@@ -38,15 +39,16 @@ import { AuthService } from '../../../core/services/auth.service';
 
       @if (isMenuOpen()) {
         <div
-          class="absolute right-0 z-50 mt-3 w-64 overflow-hidden rounded-2xl border border-border bg-white shadow-2xl"
+          class="absolute right-0 top-full z-[120] mt-3 w-64 overflow-hidden rounded-2xl border border-border bg-white shadow-2xl"
           role="menu"
           (click)="$event.stopPropagation()"
         >
           <div class="flex items-center gap-3 border-b border-border bg-secondary/60 px-4 py-4">
-            @if (photoUrl()) {
+            @if (showPhoto()) {
               <img
                 [src]="photoUrl()"
                 [alt]="'Photo de profil de ' + displayName()"
+                (error)="handlePhotoError()"
                 class="h-11 w-11 rounded-full border border-border object-cover shadow-sm"
               >
             } @else {
@@ -75,6 +77,20 @@ import { AuthService } from '../../../core/services/auth.service';
                 </svg>
               </span>
               <span>Voir le profil</span>
+            </a>
+
+            <a
+              routerLink="/messages"
+              class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+              role="menuitem"
+              (click)="closeMenu()"
+            >
+              <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary text-muted-foreground" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+              </span>
+              <span>Messages</span>
             </a>
 
             <a
@@ -213,8 +229,13 @@ export class UserMenuComponent {
   readonly isDark = signal(typeof localStorage !== 'undefined' && localStorage.getItem('gofounders.dark') === 'true');
   readonly isMenuOpen = signal(false);
   readonly isLogoutConfirmOpen = signal(false);
+  private readonly failedPhotoUrl = signal('');
   readonly currentUser = this.auth.currentUser;
-  readonly photoUrl = computed(() => this.currentUser()?.photoURL ?? '');
+  readonly photoUrl = computed(() => this.currentUser()?.photoURL?.trim() ?? '');
+  readonly showPhoto = computed(() => {
+    const photoUrl = this.photoUrl();
+    return photoUrl.length > 0 && this.failedPhotoUrl() !== photoUrl;
+  });
   readonly initials = this.auth.initials;
   readonly displayName = computed(() => this.currentUser()?.displayName ?? 'Mon compte');
   readonly userId = computed(() => this.currentUser()?.uid ?? '');
@@ -241,6 +262,10 @@ export class UserMenuComponent {
 
   closeMenu(): void {
     this.isMenuOpen.set(false);
+  }
+
+  handlePhotoError(): void {
+    this.failedPhotoUrl.set(this.photoUrl());
   }
 
   openLogoutConfirm(): void {

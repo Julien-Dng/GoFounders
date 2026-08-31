@@ -149,8 +149,11 @@ type SearchProfileType = ProfileType;
                   @for (profile of highlightedProfiles(); track profile.id) {
                     <div class="flex min-h-[12.5rem] w-[19rem] flex-shrink-0 flex-col rounded-xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
                       <div class="mb-3 flex items-center gap-3">
-                        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 font-bold text-white">
-                          {{ profile.initials }}
+                        <div class="relative flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/20 font-bold text-white">
+                          <span>{{ profile.initials }}</span>
+                          @if (profile.photoURL) {
+                            <img [src]="profile.photoURL" [alt]="'Photo de ' + profile.displayName" (error)="hideBrokenImage($event)" class="absolute inset-0 h-full w-full object-cover">
+                          }
                         </div>
                         <div class="min-w-0 flex-1">
                           <h3 class="truncate font-bold">{{ profile.displayName }}</h3>
@@ -201,8 +204,11 @@ type SearchProfileType = ProfileType;
                 >
                   <div class="mb-4 flex items-start justify-between">
                     <div class="flex items-center gap-3">
-                      <div class="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary text-lg font-bold text-white">
-                        {{ profile.initials }}
+                      <div class="relative flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-accent to-primary text-lg font-bold text-white">
+                        <span>{{ profile.initials }}</span>
+                        @if (profile.photoURL) {
+                          <img [src]="profile.photoURL" [alt]="'Photo de ' + profile.displayName" (error)="hideBrokenImage($event)" class="absolute inset-0 h-full w-full object-cover">
+                        }
                       </div>
                       <div>
                         <h3 class="text-lg font-bold">{{ profile.displayName }}</h3>
@@ -416,6 +422,14 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
 
   revealDelay(index: number): string {
     return `${(index % 3) * 70}ms`;
+  }
+
+  hideBrokenImage(event: Event): void {
+    const image = event.target as HTMLImageElement | null;
+
+    if (image) {
+      image.hidden = true;
+    }
   }
 
   ngOnInit(): void {

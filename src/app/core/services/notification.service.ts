@@ -1,4 +1,5 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { RealtimeChannel } from '@supabase/supabase-js';
 import { AuthService } from './auth.service';
 import { SupabaseService } from './supabase.service';
 
@@ -29,12 +30,23 @@ interface SupabaseNotificationRow {
 export class NotificationService {
   private readonly auth = inject(AuthService);
   private readonly supabase = inject(SupabaseService);
+  private realtimeChannel: RealtimeChannel | null = null;
+  private activeUserId: string | null = null;
 
   readonly notifications = signal<NotificationItem[]>([]);
   readonly unreadCount = computed(() => this.notifications().filter(notification => notification.unread).length);
 
   constructor() {
-    void this.loadNotifications();
+    effect(() => {
+      const userId = this.auth.currentUser()?.uid ?? null;
+
+      if (userId === this.activeUserId) {
+        return;
+      }
+
+      this.activeUserId = userId;
+      void this.handleUserChange(userId);
+    }, { allowSignalWrites: true });
   }
 
   markAsRead(notificationId: string): void {
@@ -49,15 +61,17 @@ export class NotificationService {
       return;
     }
 
+    const unreadIds = this.notifications()
+      .filter(notification => notification.unread)
+      .map(notification => notification.id);
+
     this.notifications.update(items =>
       items.map(item => ({ ...item, unread: false }))
     );
-    void this.persistReadNotifications();
+    void this.persistReadNotifications(unreadIds);
   }
 
-  private async loadNotifications(): Promise<void> {
-    await this.auth.ensureSessionReady();
-
+  async refreshNotifications(): Promise<void> {
     const user = this.auth.currentUser();
 
     if (!this.supabase.isConfigured || !user) {
@@ -71,6 +85,10 @@ export class NotificationService {
       .eq('user_id', user.uid)
       .order('created_at', { ascending: false })
       .limit(20);
+
+    if (this.auth.currentUser()?.uid !== user.uid) {
+      return;
+    }
 
     if (error) {
       this.notifications.set([]);
@@ -95,16 +113,12 @@ export class NotificationService {
       .eq('user_id', user.uid);
   }
 
-  private async persistReadNotifications(): Promise<void> {
+  private async persistReadNotifications(unreadIds: string[]): Promise<void> {
     const user = this.auth.currentUser();
 
     if (!this.supabase.isConfigured || !user) {
       return;
     }
-
-    const unreadIds = this.notifications()
-      .filter(notification => !notification.unread)
-      .map(notification => notification.id);
 
     if (unreadIds.length === 0) {
       return;
@@ -137,18 +151,52 @@ export class NotificationService {
       return { href: '/dashboard' };
     }
 
-    const [href, rawQuery] = linkUrl.split('?');
+    const [rawHref, rawQuery] = linkUrl.split('?');
+    const conversationPath = rawHref.match(/^\/messages\/([^/?#]+)$/);
+    const href = conversationPath ? '/messages' : rawHref.startsWith('/') ? rawHref : '/dashboard';
+    const queryParams: Record<string, string> = {};
 
-    if (!rawQuery) {
-      return { href };
+    if (conversationPath?.[1]) {
+      queryParams['conversation'] = decodeURIComponent(conversationPath[1]);
     }
 
-    const queryParams: Record<string, string> = {};
+    if (!rawQuery) {
+      return Object.keys(queryParams).length > 0 ? { href, queryParams } : { href };
+    }
+
     new URLSearchParams(rawQuery).forEach((value, key) => {
       queryParams[key] = value;
     });
 
     return { href, queryParams };
+  }
+
+  private async handleUserChange(userId: string | null): Promise<void> {
+    if (this.realtimeChannel) {
+      await this.supabase.client.removeChannel(this.realtimeChannel);
+      this.realtimeChannel = null;
+    }
+
+    this.notifications.set([]);
+
+    if (!userId || !this.supabase.isConfigured) {
+      return;
+    }
+
+    await this.refreshNotifications();
+
+    if (this.activeUserId !== userId) {
+      return;
+    }
+
+    this.realtimeChannel = this.supabase.client
+      .channel(`notifications:${userId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
+        () => void this.refreshNotifications()
+      )
+      .subscribe();
   }
 
   private inferKind(href: string): NotificationKind {

@@ -52,46 +52,68 @@ interface Plan {
           }
         </div>
 
-        <div class="rounded-2xl border border-border bg-card p-6 sm:p-8 lg:p-12">
-          <h2 class="mb-10 text-center text-3xl font-bold text-primary sm:text-4xl">Comparaison détaillée</h2>
+        <div class="rounded-2xl border border-border bg-card p-4 sm:p-8 lg:p-12">
+          <h2 class="mb-8 text-center text-3xl font-bold text-primary sm:mb-10 sm:text-4xl">Comparaison détaillée</h2>
 
-          <div class="overflow-x-auto">
-            <table class="w-full min-w-[760px]">
+          <div class="max-w-full overflow-hidden rounded-xl border border-border" style="contain: inline-size;">
+            <div class="max-w-full overflow-x-auto overscroll-x-contain">
+            <table class="w-full min-w-[1000px] table-fixed">
+              <caption class="sr-only">Comparaison détaillée des formules FREE, PRO et PREMIUM</caption>
+              <colgroup>
+                <col class="w-[28%]" />
+                <col class="w-[20%]" />
+                <col class="w-[22%]" />
+                <col class="w-[30%]" />
+              </colgroup>
               <thead>
-                <tr class="border-b-2 border-border">
-                  <th class="px-6 py-4 text-left">Fonctionnalité</th>
-                  <th class="px-6 py-4 text-center text-muted-foreground">FREE</th>
-                  <th class="px-6 py-4 text-center text-accent">PRO</th>
-                  <th class="px-6 py-4 text-center text-primary">PREMIUM</th>
+                <tr class="border-b-2 border-border bg-background/60">
+                  <th scope="col" class="px-5 py-5 text-left text-sm font-bold uppercase tracking-wide text-primary sm:px-6">Fonctionnalité</th>
+                  <th scope="col" class="px-5 py-5 text-center sm:px-6">
+                    <span class="block font-bold text-primary">FREE</span>
+                  </th>
+                  <th scope="col" class="bg-accent/5 px-5 py-5 text-center sm:px-6">
+                    <span class="block font-bold text-accent">PRO</span>
+                    <span class="mt-1 block text-sm font-medium text-muted-foreground">49€/mois</span>
+                  </th>
+                  <th scope="col" class="px-5 py-5 text-center sm:px-6">
+                    <span class="block font-bold text-primary">PREMIUM</span>
+                    <span class="mt-1 block text-sm font-medium text-muted-foreground">à partir de ~199€/mois</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 @for (row of comparisonRows; track $index) {
                   <tr class="border-b border-border transition-colors hover:bg-background/50">
-                    <td class="px-6 py-4 font-medium">{{ row[0] }}</td>
-                    <td class="px-6 py-4 text-center">
-                      @if (row[1] === 'check') {
-                        <svg class="mx-auto text-accent" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                      } @else if (row[1] === 'x') {
-                        <svg class="mx-auto text-muted-foreground" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <th scope="row" class="px-5 py-4 text-left font-semibold text-primary sm:px-6">{{ row[0] }}</th>
+                    <td class="px-5 py-4 text-center sm:px-6">
+                      @if (row[1] === '✓') {
+                        <svg aria-hidden="true" class="mx-auto text-accent" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span class="sr-only">Inclus</span>
+                      } @else if (row[1] === '✗') {
+                        <svg aria-hidden="true" class="mx-auto text-muted-foreground" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <span class="sr-only">Non inclus</span>
                       } @else {
                         {{ row[1] }}
                       }
                     </td>
-                    <td class="px-6 py-4 text-center">
-                      @if (row[2] === 'check') {
-                        <svg class="mx-auto text-accent" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                      } @else if (row[2] === 'x') {
-                        <svg class="mx-auto text-muted-foreground" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <td class="bg-accent/[0.03] px-5 py-4 text-center sm:px-6">
+                      @if (row[2] === '✓') {
+                        <svg aria-hidden="true" class="mx-auto text-accent" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span class="sr-only">Inclus</span>
+                      } @else if (row[2] === '✗') {
+                        <svg aria-hidden="true" class="mx-auto text-muted-foreground" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <span class="sr-only">Non inclus</span>
                       } @else {
                         {{ row[2] }}
                       }
                     </td>
-                    <td class="px-6 py-4 text-center">
-                      @if (row[3] === 'check') {
-                        <svg class="mx-auto text-accent" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                      } @else if (row[3] === 'x') {
-                        <svg class="mx-auto text-muted-foreground" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <td class="px-5 py-4 text-center sm:px-6">
+                      @if (row[3] === '✓') {
+                        <svg aria-hidden="true" class="mx-auto text-accent" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span class="sr-only">Inclus</span>
+                      } @else if (row[3] === '✗') {
+                        <svg aria-hidden="true" class="mx-auto text-muted-foreground" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        <span class="sr-only">Non inclus</span>
                       } @else {
                         {{ row[3] }}
                       }
@@ -100,6 +122,7 @@ interface Plan {
                 }
               </tbody>
             </table>
+            </div>
           </div>
         </div>
 
@@ -152,15 +175,16 @@ export class TarifsComponent {
       description: 'Pour explorer la plateforme',
       features: [
         { text: 'Création de profil', included: true },
-        { text: 'Voir 10 profils par mois', included: true },
+        { text: 'Voir 5 profils par mois', included: true },
         { text: '3 contacts par mois', included: true },
+        { text: '5 messages par mois', included: true },
         { text: 'Score de compatibilité IA', included: false },
         { text: 'Suggestions personnalisées', included: false },
         { text: 'Générateur de pitch IA', included: false },
         { text: 'Recherche investisseurs', included: false },
         { text: 'Support prioritaire', included: false },
       ],
-      highlights: ['10 profils/mois', '3 contacts', 'Support email'],
+      highlights: ['5 profils/mois', '3 contacts', '5 messages/mois'],
       cta: 'Commencer',
       href: '/inscription',
       reassurance: '',
@@ -176,6 +200,7 @@ export class TarifsComponent {
         { text: 'Tout de FREE, plus :', included: true },
         { text: 'Profils illimités', included: true },
         { text: 'Contacts illimités', included: true },
+        { text: 'Messages illimités', included: true },
         { text: 'Score de compatibilité IA', included: true },
         { text: 'Suggestions personnalisées', included: true },
         { text: 'Générateur de pitch IA basique', included: true },
@@ -212,15 +237,18 @@ export class TarifsComponent {
   ];
 
   readonly comparisonRows: string[][] = [
-    ['Profils visibles/mois', '10', 'Illimité', 'Illimité'],
-    ['Nombre de contacts', '3/mois', 'Illimité', 'Illimité'],
-    ['Score IA', 'x', 'check', 'check'],
-    ['Générateur de pitch', 'x', 'check', 'check'],
-    ['Pitch IA', 'x', 'Basique', 'Complet'],
-    ['Recherche investisseurs', 'x', 'x', 'check'],
-    ['Coaching humain', 'x', 'x', 'check'],
+    ['Profils visibles/mois', '5', 'Illimité', 'Illimité'],
+    ['Contacts/mois', '3', 'Illimité', 'Illimité'],
+    ['Messages/mois', '5', 'Illimité', 'Illimité'],
+    ['Score IA', 'Aperçu partiel (flouté)', '✓', '✓'],
+    ['Générateur de pitch', '✗', 'IA (auto)', 'IA + relecture par expert'],
+    ['Matching IA', '✗', '✓', '✓ avancé'],
+    ['Recherche avancée', '✗', '✓', '✓'],
+    ['Visibilité premium dans les résultats', '✗', '✓', '✓'],
+    ['Recherche investisseurs', '✗', '✗', '✓'],
+    ['Coaching humain', '✗', '✗', '✓ (inclut relecture pitch)'],
+    ['Account manager dédié', '✗', '✗', '✓'],
     ['Support', 'Email', 'Email + Chat', '24/7 dédié'],
-    ['Expert matching', 'x', 'x', 'check'],
   ];
 
   planHref(plan: Plan): string {

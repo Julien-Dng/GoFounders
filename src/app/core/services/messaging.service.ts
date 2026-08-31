@@ -1,8 +1,10 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { RealtimeChannel } from '@supabase/supabase-js';
 import { ConversationMessage, MarketplaceProfile } from '../data/mock-platform.data';
 import { Conversation, Message } from '../models/message.model';
 import { SupabaseProfileRow } from '../models/supabase-database.model';
 import { User } from '../models/user.model';
+import { AuthService } from './auth.service';
 import { MatchingService } from './matching.service';
 import { SupabaseService } from './supabase.service';
 
@@ -38,8 +40,31 @@ export interface ConversationThread {
 
 @Injectable({ providedIn: 'root' })
 export class MessagingService {
+  private readonly auth = inject(AuthService);
   private readonly supabase = inject(SupabaseService);
   private readonly matching = inject(MatchingService);
+  private realtimeChannel: RealtimeChannel | null = null;
+  private activeUserId: string | null = null;
+  private refreshTimer: ReturnType<typeof setTimeout> | null = null;
+
+  readonly conversationThreads = signal<ConversationThread[]>([]);
+  readonly unreadCount = computed(() =>
+    this.conversationThreads().reduce((total, conversation) => total + conversation.unread, 0)
+  );
+
+  constructor() {
+    effect(() => {
+      const user = this.auth.currentUser();
+      const userId = user?.uid ?? null;
+
+      if (userId === this.activeUserId) {
+        return;
+      }
+
+      this.activeUserId = userId;
+      void this.handleUserChange(user);
+    }, { allowSignalWrites: true });
+  }
 
   async getConversations(_userId: string): Promise<Conversation[]> {
     return [];
@@ -51,6 +76,7 @@ export class MessagingService {
 
   async getConversationThreads(user: User): Promise<ConversationThread[]> {
     if (!this.supabase.isConfigured) {
+      this.setConversationThreadsForUser(user.uid, []);
       return [];
     }
 
@@ -62,6 +88,7 @@ export class MessagingService {
         .order('created_at', { ascending: false });
 
       if (conversationsError) {
+        this.setConversationThreadsForUser(user.uid, []);
         return [];
       }
 
@@ -69,14 +96,20 @@ export class MessagingService {
       const conversationIds = conversationRows.map(conversation => conversation.id);
 
       if (conversationIds.length === 0) {
+        this.setConversationThreadsForUser(user.uid, []);
         return [];
       }
 
-      const { data: messagesData } = await this.supabase.client
+      const { data: messagesData, error: messagesError } = await this.supabase.client
         .from('messages')
         .select('*')
         .in('conversation_id', conversationIds)
         .order('created_at', { ascending: true });
+
+      if (messagesError) {
+        this.setConversationThreadsForUser(user.uid, []);
+        return [];
+      }
 
       const participantIds = conversationRows
         .map(conversation => conversation.participant_a === user.uid ? conversation.participant_b : conversation.participant_a);
@@ -89,7 +122,7 @@ export class MessagingService {
       const messageRows = (messagesData ?? []) as SupabaseMessageRow[];
       const profileRows = (profilesData ?? []) as SupabaseProfileRow[];
 
-      return Promise.all(conversationRows.map(async conversation => {
+      const threads = await Promise.all(conversationRows.map(async conversation => {
         const participantProfileId = conversation.participant_a === user.uid ? conversation.participant_b : conversation.participant_a;
         const profileRow = profileRows.find(profile => profile.id === participantProfileId);
         const profile = await this.matching.getMarketplaceProfileById(participantProfileId);
@@ -116,7 +149,12 @@ export class MessagingService {
           messages,
         };
       }));
+
+      this.setConversationThreadsForUser(user.uid, threads);
+
+      return threads;
     } catch {
+      this.setConversationThreadsForUser(user.uid, []);
       return [];
     }
   }
@@ -191,12 +229,78 @@ export class MessagingService {
       return;
     }
 
-    await this.supabase.client
+    this.conversationThreads.update(conversations => conversations.map(conversation =>
+      conversation.id === conversationId ? { ...conversation, unread: 0 } : conversation
+    ));
+
+    const { error } = await this.supabase.client
       .from('messages')
       .update({ read_at: new Date().toISOString() })
       .eq('conversation_id', conversationId)
       .neq('sender_id', userId)
       .is('read_at', null);
+
+    if (error) {
+      await this.refreshConversationThreads();
+    }
+  }
+
+  async refreshConversationThreads(): Promise<void> {
+    const user = this.auth.currentUser();
+
+    if (!user) {
+      this.conversationThreads.set([]);
+      return;
+    }
+
+    await this.getConversationThreads(user);
+  }
+
+  private async handleUserChange(user: User | null): Promise<void> {
+    if (this.refreshTimer) {
+      clearTimeout(this.refreshTimer);
+      this.refreshTimer = null;
+    }
+
+    if (this.realtimeChannel) {
+      await this.supabase.client.removeChannel(this.realtimeChannel);
+      this.realtimeChannel = null;
+    }
+
+    this.conversationThreads.set([]);
+
+    if (!user || !this.supabase.isConfigured) {
+      return;
+    }
+
+    await this.getConversationThreads(user);
+
+    if (this.activeUserId !== user.uid) {
+      return;
+    }
+
+    this.realtimeChannel = this.supabase.client
+      .channel(`messaging:${user.uid}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => this.scheduleRefresh())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, () => this.scheduleRefresh())
+      .subscribe();
+  }
+
+  private scheduleRefresh(): void {
+    if (this.refreshTimer) {
+      clearTimeout(this.refreshTimer);
+    }
+
+    this.refreshTimer = setTimeout(() => {
+      this.refreshTimer = null;
+      void this.refreshConversationThreads();
+    }, 150);
+  }
+
+  private setConversationThreadsForUser(userId: string, threads: ConversationThread[]): void {
+    if (this.auth.currentUser()?.uid === userId) {
+      this.conversationThreads.set(threads);
+    }
   }
 
   private async resolveConversationParticipantId(targetProfileId: string): Promise<string> {

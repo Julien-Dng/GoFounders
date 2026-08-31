@@ -149,7 +149,7 @@ export class NotificationMenuComponent {
     this.isMenuOpen.set(shouldOpen);
 
     if (shouldOpen) {
-      this.notificationService.markAllAsRead();
+      void this.refreshAndMarkNotificationsAsRead();
     }
   }
 
@@ -160,5 +160,13 @@ export class NotificationMenuComponent {
   handleNotificationClick(notificationId: string): void {
     this.notificationService.markAsRead(notificationId);
     this.closeMenu();
+  }
+
+  private async refreshAndMarkNotificationsAsRead(): Promise<void> {
+    await this.notificationService.refreshNotifications();
+
+    if (this.isMenuOpen()) {
+      this.notificationService.markAllAsRead();
+    }
   }
 }
