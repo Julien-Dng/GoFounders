@@ -3,7 +3,9 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MarketplaceProfile } from '../../core/data/mock-platform.data';
 import { isTalentMarketplaceRole } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
+import { MaService } from '../../core/services/ma.service';
 import { MatchingService } from '../../core/services/matching.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { MessagingService } from '../../core/services/messaging.service';
 import { NotificationMenuComponent } from '../../shared/components/notification-menu/notification-menu.component';
 import { UserMenuComponent } from '../../shared/components/user-menu/user-menu.component';
@@ -182,10 +184,10 @@ interface QuickActionItem {
                 <div class="mb-4">
                   <div class="mb-2 flex items-center justify-between">
                     <span class="text-sm text-muted-foreground">Complétion</span>
-                    <span class="text-sm font-bold text-accent">65%</span>
+                    <span class="text-sm font-bold text-accent">{{ profileComplete() }}%</span>
                   </div>
                   <div class="h-2 overflow-hidden rounded-full bg-secondary">
-                    <div class="h-full rounded-full bg-accent" style="width: 65%"></div>
+                    <div class="h-full rounded-full bg-accent" [style.width.%]="profileComplete()"></div>
                   </div>
                 </div>
                 <p class="mb-4 text-sm text-muted-foreground">Complétez votre profil pour augmenter vos chances de match.</p>
@@ -262,17 +264,24 @@ interface QuickActionItem {
               <div class="animate-fade-in-up delay-200 rounded-2xl border border-border bg-white p-6 shadow-sm">
                 <h2 class="mb-6 text-xl font-bold">Activité récente</h2>
                 <div class="space-y-4">
-                  @for (activity of activities; track $index) {
-                    <div class="flex items-start gap-3 border-b border-border pb-4 last:border-0 last:pb-0">
-                      <div class="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-accent"></div>
+                  @for (activity of activities(); track activity.id) {
+                    <a
+                      [routerLink]="activity.href"
+                      [queryParams]="activity.queryParams"
+                      (click)="markActivityAsRead(activity.id)"
+                      class="flex items-start gap-3 border-b border-border pb-4 last:border-0 last:pb-0"
+                    >
+                      <div class="mt-2 h-2 w-2 flex-shrink-0 rounded-full" [class.bg-accent]="activity.unread" [class.bg-border]="!activity.unread"></div>
                       <div class="flex-1">
-                        <p class="text-sm font-medium text-foreground">{{ activity.text }}</p>
+                        <p class="text-sm font-medium text-foreground">{{ activity.title }}</p>
                         <p class="mt-1 text-xs text-muted-foreground">{{ activity.time }}</p>
                       </div>
-                      <svg width="16" height="16" class="mt-1 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <svg width="16" height="16" class="mt-1 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <polyline points="9 18 15 12 9 6"/>
                       </svg>
-                    </div>
+                    </a>
+                  } @empty {
+                    <p class="text-sm text-muted-foreground">Aucune activité récente pour le moment.</p>
                   }
                 </div>
               </div>
@@ -327,7 +336,7 @@ interface QuickActionItem {
               <div class="animate-fade-in-up delay-300 rounded-2xl border border-border bg-white p-6 shadow-sm">
                 <h3 class="mb-4 text-lg font-bold">Statistiques</h3>
                 <div class="space-y-4">
-                  @for (stat of stats; track stat.label) {
+                  @for (stat of stats(); track stat.label) {
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2">
                         <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-muted-foreground" aria-hidden="true">
@@ -383,6 +392,8 @@ export class DashboardComponent {
   private readonly auth = inject(AuthService);
   private readonly messaging = inject(MessagingService);
   private readonly matchingService = inject(MatchingService);
+  private readonly maService = inject(MaService);
+  private readonly notifications = inject(NotificationService);
 
   readonly currentUser = this.auth.currentUser;
   private readonly failedPhotoUrl = signal('');
@@ -442,17 +453,23 @@ export class DashboardComponent {
   readonly maCtaLabel = computed(() => (this.profileType() === 'seller' ? 'Déposer mon annonce' : 'Voir les annonces'));
   readonly maCtaLink = computed(() => (this.profileType() === 'seller' ? '/ma/deposer' : '/ma'));
 
-  readonly activities = [
-    { text: '3 personnes ont consulté votre profil', time: 'Il y a 2 h', type: 'view' },
-    { text: 'Nouveau match disponible', time: 'Il y a 5 h', type: 'match' },
-    { text: 'Votre profil a été mis en avant', time: 'Il y a 2 j', type: 'boost' },
-  ];
+  readonly profileComplete = computed(() => this.currentUser()?.profileComplete ?? 0);
+  readonly activities = computed(() => this.notifications.notifications().slice(0, 3));
 
-  readonly stats: StatItem[] = [
-    { label: 'Vues profil', value: '127', icon: 'views' },
-    { label: 'Messages reçus', value: '0', icon: 'messages' },
-    { label: 'Matches', value: '24', icon: 'target' },
-  ];
+  // Profils proposés (entrepreneur/talent), annonces actives (acheteur) ou annonces publiées (vendeur).
+  private readonly opportunityCount = signal<number | null>(null);
+  readonly stats = computed<StatItem[]>(() => {
+    const opportunityCount = this.opportunityCount();
+    const opportunityLabel = this.usesTalentMarketplace()
+      ? 'Profils compatibles'
+      : this.profileType() === 'seller' ? 'Mes annonces M&A' : 'Annonces M&A actives';
+
+    return [
+      { label: 'Conversations', value: String(this.messaging.conversationThreads().length), icon: 'messages' },
+      { label: 'Messages non lus', value: String(this.messageUnreadCount()), icon: 'views' },
+      { label: opportunityLabel, value: opportunityCount === null ? '…' : String(opportunityCount), icon: 'target' },
+    ];
+  });
 
   readonly quickActions = computed<Array<QuickActionItem & { path: string }>>(() => [
     this.usesTalentMarketplace()
@@ -463,19 +480,35 @@ export class DashboardComponent {
   ]);
 
   constructor() {
-    void this.loadMatches();
+    void this.loadDashboardData();
   }
 
-  private async loadMatches(): Promise<void> {
+  private async loadDashboardData(): Promise<void> {
     await this.auth.ensureSessionReady();
     const profileType = this.profileType();
 
-    if (!profileType || !isTalentMarketplaceRole(profileType)) {
+    if (!profileType) {
+      return;
+    }
+
+    if (!isTalentMarketplaceRole(profileType)) {
+      const listings = await this.maService.getListings();
+      const uid = this.currentUser()?.uid;
+      this.opportunityCount.set(
+        profileType === 'seller'
+          ? listings.filter(listing => listing.ownerId === uid).length
+          : listings.filter(listing => listing.status === 'active').length
+      );
       return;
     }
 
     const profiles = await this.matchingService.getMarketplaceProfilesForSearch(profileType);
+    this.opportunityCount.set(profiles.length);
     this.matches.set([...profiles].sort((a, b) => b.match - a.match).slice(0, 2));
+  }
+
+  markActivityAsRead(notificationId: string): void {
+    this.notifications.markAsRead(notificationId);
   }
 
   handlePhotoError(): void {

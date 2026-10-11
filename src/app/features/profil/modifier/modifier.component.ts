@@ -206,6 +206,49 @@ import { ProjectService } from '../../../core/services/project.service';
                 </div>
               </div>
 
+              @if (isMaRole()) {
+                <div class="rounded-2xl border border-[#D97706]/30 bg-[#D97706]/[0.04] p-5 sm:p-6" [formGroup]="maForm">
+                  <div class="text-xs font-bold uppercase tracking-[0.16em] text-[#D97706]">Marketplace M&A</div>
+                  <h2 class="mt-1 text-xl font-bold text-primary">{{ maLabels().title }}</h2>
+                  <p class="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">{{ maLabels().description }}</p>
+
+                  <div class="mt-6 grid gap-5 md:grid-cols-2">
+                    <div>
+                      <label for="ma-sector" class="mb-2 block text-sm font-semibold">{{ maLabels().sector }}</label>
+                      <input
+                        id="ma-sector"
+                        type="text"
+                        formControlName="sector"
+                        class="w-full rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
+                        placeholder="SaaS, commerce, services B2B..."
+                      >
+                    </div>
+
+                    <div>
+                      <label for="ma-budget" class="mb-2 block text-sm font-semibold">{{ maLabels().budget }}</label>
+                      <input
+                        id="ma-budget"
+                        type="text"
+                        formControlName="budget"
+                        class="w-full rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
+                        [placeholder]="maLabels().budgetPlaceholder"
+                      >
+                    </div>
+
+                    <div class="md:col-span-2">
+                      <label for="ma-region" class="mb-2 block text-sm font-semibold">{{ maLabels().region }}</label>
+                      <input
+                        id="ma-region"
+                        type="text"
+                        formControlName="region"
+                        class="w-full rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
+                        placeholder="Toute la France, Île-de-France, Auvergne-Rhône-Alpes..."
+                      >
+                    </div>
+                  </div>
+                </div>
+              }
+
               @if (isEntrepreneur()) {
                 <div class="rounded-2xl border border-accent/20 bg-accent/[0.035] p-5 sm:p-6" [formGroup]="projectForm">
                   <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -414,6 +457,29 @@ export class ModifierComponent implements OnInit {
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
   readonly isEntrepreneur = computed(() => this.currentUser()?.profileType === 'entrepreneur');
+  readonly isMaRole = computed(() => {
+    const profileType = this.currentUser()?.profileType;
+    return profileType === 'buyer' || profileType === 'seller';
+  });
+  readonly maLabels = computed(() =>
+    this.currentUser()?.profileType === 'seller'
+      ? {
+          title: 'Mon entreprise à céder',
+          description: 'Ces informations résument votre projet de cession. Le détail de votre annonce se gère depuis le dépôt M&A.',
+          sector: "Secteur de l'entreprise",
+          budget: 'Ordre de grandeur',
+          budgetPlaceholder: "CA, prix cible ou taille de l'activité",
+          region: 'Région',
+        }
+      : {
+          title: 'Ma recherche de reprise',
+          description: "Précisez le type d'entreprise que vous souhaitez reprendre pour être identifié par les vendeurs.",
+          sector: "Type d'entreprise recherchée",
+          budget: 'Budget indicatif',
+          budgetPlaceholder: 'Ex. 150 k€ - 500 k€',
+          region: 'Zone ou région visée',
+        }
+  );
   readonly profileLink = computed(() => {
     const userId = this.currentUser()?.uid;
     return userId ? ['/profil', userId] : ['/dashboard'];
@@ -442,6 +508,12 @@ export class ModifierComponent implements OnInit {
     githubUrl: [this.currentUser()?.githubUrl ?? '', Validators.maxLength(160)],
     linkedinUrl: [this.currentUser()?.linkedinUrl ?? '', Validators.maxLength(160)],
     websiteUrl: [this.currentUser()?.websiteUrl ?? '', Validators.maxLength(160)],
+  });
+
+  readonly maForm = this.fb.nonNullable.group({
+    sector: [this.currentUser()?.maSector ?? '', [Validators.required, Validators.maxLength(80)]],
+    budget: [this.currentUser()?.maBudget ?? '', [Validators.required, Validators.maxLength(80)]],
+    region: [this.currentUser()?.maRegion ?? '', Validators.maxLength(100)],
   });
 
   readonly projectForm = this.fb.nonNullable.group({
@@ -523,20 +595,29 @@ export class ModifierComponent implements OnInit {
     if (this.isEntrepreneur()) {
       this.projectForm.markAllAsTouched();
     }
+    if (this.isMaRole()) {
+      this.maForm.markAllAsTouched();
+    }
     this.errorMessage.set('');
     this.successMessage.set('');
 
-    if (this.profileForm.invalid || (this.isEntrepreneur() && this.projectForm.invalid)) {
+    if (
+      this.profileForm.invalid ||
+      (this.isEntrepreneur() && this.projectForm.invalid) ||
+      (this.isMaRole() && this.maForm.invalid)
+    ) {
       this.errorMessage.set('Vérifiez les champs obligatoires et les longueurs maximales.');
       return;
     }
 
     const value = this.profileForm.getRawValue();
+    const maValue = this.maForm.getRawValue();
     const payload: UpdateProfilePayload = {
       displayName: value.displayName,
       location: value.location,
       profileTitle: value.profileTitle,
       availabilityLabel: value.availabilityLabel,
+      ...(this.isMaRole() ? { maSector: maValue.sector, maBudget: maValue.budget, maRegion: maValue.region } : {}),
       bio: value.bio,
       skills: this.splitTags(value.skills),
       lookingFor: this.splitTags(value.lookingFor),

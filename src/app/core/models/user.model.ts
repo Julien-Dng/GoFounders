@@ -30,6 +30,10 @@ export interface User {
   skills?: string[];
   lookingFor?: string[];
   availabilityLabel?: string;
+  // Infos M&A des acheteurs (cible recherchée) et vendeurs (entreprise cédée).
+  maSector?: string;
+  maBudget?: string;
+  maRegion?: string;
   githubUrl?: string;
   linkedinUrl?: string;
   websiteUrl?: string;

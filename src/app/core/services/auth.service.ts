@@ -23,6 +23,9 @@ interface StoredUserRecord {
   skills?: string[];
   lookingFor?: string[];
   availabilityLabel?: string;
+  maSector?: string;
+  maBudget?: string;
+  maRegion?: string;
   githubUrl?: string;
   linkedinUrl?: string;
   websiteUrl?: string;
@@ -71,6 +74,9 @@ export interface UpdateProfilePayload {
   skills: string[];
   lookingFor: string[];
   availabilityLabel: string;
+  maSector?: string;
+  maBudget?: string;
+  maRegion?: string;
   githubUrl: string;
   linkedinUrl: string;
   websiteUrl: string;
@@ -291,6 +297,9 @@ export class AuthService {
           project_name: payload.projectName?.trim() ?? '',
           project_sector: payload.projectSector?.trim() ?? '',
           project_stage: payload.projectStage?.trim() ?? 'mvp',
+          ma_sector: this.initialMaField(payload, payload.maSector) ?? '',
+          ma_budget: this.initialMaField(payload, payload.maBudget) ?? '',
+          ma_region: this.initialMaField(payload, payload.maRegion) ?? '',
         },
       },
     });
@@ -361,6 +370,9 @@ export class AuthService {
           skills: this.buildInitialSkills(payload) ?? [],
           looking_for: this.buildInitialLookingFor(payload) ?? [],
           availability_label: payload.profileType === 'talent' && payload.talentAvailability ? 'Disponible rapidement' : null,
+          ma_sector: this.initialMaField(payload, payload.maSector) ?? null,
+          ma_budget: this.initialMaField(payload, payload.maBudget) ?? null,
+          ma_region: this.initialMaField(payload, payload.maRegion) ?? null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', userId)
@@ -413,6 +425,9 @@ export class AuthService {
         skills: this.cleanTags(payload.skills) ?? [],
         looking_for: this.cleanTags(payload.lookingFor) ?? [],
         availability_label: this.cleanOptionalText(payload.availabilityLabel) ?? null,
+        ma_sector: this.cleanOptionalText(payload.maSector) ?? null,
+        ma_budget: this.cleanOptionalText(payload.maBudget) ?? null,
+        ma_region: this.cleanOptionalText(payload.maRegion) ?? null,
         github_url: this.cleanOptionalText(payload.githubUrl) ?? null,
         linkedin_url: this.cleanOptionalText(payload.linkedinUrl) ?? null,
         website_url: this.cleanOptionalText(payload.websiteUrl) ?? null,
@@ -617,6 +632,9 @@ export class AuthService {
       skills: this.buildInitialSkills(payload),
       lookingFor: this.buildInitialLookingFor(payload),
       availabilityLabel: payload.profileType === 'talent' && payload.talentAvailability ? 'Disponible rapidement' : undefined,
+      maSector: this.initialMaField(payload, payload.maSector),
+      maBudget: this.initialMaField(payload, payload.maBudget),
+      maRegion: this.initialMaField(payload, payload.maRegion),
       plan: 'FREE',
       maAccess: false,
       createdAt: now,
@@ -662,6 +680,9 @@ export class AuthService {
       skills: this.cleanTags(payload.skills),
       lookingFor: this.cleanTags(payload.lookingFor),
       availabilityLabel: this.cleanOptionalText(payload.availabilityLabel),
+      maSector: this.cleanOptionalText(payload.maSector),
+      maBudget: this.cleanOptionalText(payload.maBudget),
+      maRegion: this.cleanOptionalText(payload.maRegion),
       githubUrl: this.cleanOptionalText(payload.githubUrl),
       linkedinUrl: this.cleanOptionalText(payload.linkedinUrl),
       websiteUrl: this.cleanOptionalText(payload.websiteUrl),
@@ -760,6 +781,9 @@ export class AuthService {
       skills: this.buildInitialSkills(payload) ?? [],
       looking_for: this.buildInitialLookingFor(payload) ?? [],
       availability_label: payload.profileType === 'talent' && payload.talentAvailability ? 'Disponible rapidement' : null,
+      ma_sector: this.initialMaField(payload, payload.maSector) ?? null,
+      ma_budget: this.initialMaField(payload, payload.maBudget) ?? null,
+      ma_region: this.initialMaField(payload, payload.maRegion) ?? null,
     };
   }
 
@@ -796,7 +820,11 @@ export class AuthService {
       return this.cleanTags(['Projet entrepreneurial']);
     }
 
-    return this.cleanTags([payload.maBudget ?? '', payload.maRegion ?? '']);
+    return undefined;
+  }
+
+  private initialMaField(payload: SignUpPayload, value: string | undefined): string | undefined {
+    return payload.profileType === 'buyer' || payload.profileType === 'seller' ? this.cleanOptionalText(value) : undefined;
   }
 
   private toRuntimeUser(user: StoredUserRecord): User {
@@ -812,6 +840,9 @@ export class AuthService {
       skills: user.skills,
       lookingFor: user.lookingFor,
       availabilityLabel: user.availabilityLabel,
+      maSector: user.maSector,
+      maBudget: user.maBudget,
+      maRegion: user.maRegion,
       githubUrl: user.githubUrl,
       linkedinUrl: user.linkedinUrl,
       websiteUrl: user.websiteUrl,
@@ -839,6 +870,9 @@ export class AuthService {
       skills: profile.skills ?? undefined,
       lookingFor: profile.looking_for ?? undefined,
       availabilityLabel: profile.availability_label ?? undefined,
+      maSector: profile.ma_sector ?? undefined,
+      maBudget: profile.ma_budget ?? undefined,
+      maRegion: profile.ma_region ?? undefined,
       githubUrl: profile.github_url ?? undefined,
       linkedinUrl: profile.linkedin_url ?? undefined,
       websiteUrl: profile.website_url ?? undefined,

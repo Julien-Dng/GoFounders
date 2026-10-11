@@ -6,6 +6,26 @@ alter type public.profile_role add value if not exists 'seller';
 -- Le rôle n'est pas modifiable par l'utilisateur : la colonne reste hors du grant update de 2026-06-30.
 revoke update (role) on public.profiles from authenticated;
 
+-- Infos M&A dédiées des acheteurs (cible recherchée) et vendeurs (entreprise cédée), modifiables depuis /profil/modifier.
+alter table public.profiles
+  add column if not exists ma_sector text,
+  add column if not exists ma_budget text,
+  add column if not exists ma_region text;
+
+grant update (ma_sector, ma_budget, ma_region) on public.profiles to authenticated;
+
+-- Reprise des comptes existants : le budget et la région étaient stockés dans looking_for, le secteur dans title.
+update public.profiles
+set
+  ma_sector = nullif(regexp_replace(coalesce(title, ''), '^(Recherche|Cession) M&A - ', ''), coalesce(title, '')),
+  ma_budget = looking_for[1],
+  ma_region = looking_for[2],
+  looking_for = '{}'
+where role::text in ('buyer', 'seller')
+  and ma_sector is null
+  and ma_budget is null
+  and ma_region is null;
+
 -- Le trigger d'inscription refuse un compte sans rôle au lieu de basculer silencieusement sur 'talent'.
 create or replace function public.handle_new_auth_user()
 returns trigger
@@ -41,7 +61,10 @@ begin
     title,
     skills,
     looking_for,
-    availability_label
+    availability_label,
+    ma_sector,
+    ma_budget,
+    ma_region
   )
   values (
     new.id,
@@ -54,7 +77,10 @@ begin
     nullif(new.raw_user_meta_data ->> 'profile_title', ''),
     skills_value,
     looking_for_value,
-    nullif(new.raw_user_meta_data ->> 'availability_label', '')
+    nullif(new.raw_user_meta_data ->> 'availability_label', ''),
+    nullif(new.raw_user_meta_data ->> 'ma_sector', ''),
+    nullif(new.raw_user_meta_data ->> 'ma_budget', ''),
+    nullif(new.raw_user_meta_data ->> 'ma_region', '')
   )
   on conflict (id) do nothing;
 

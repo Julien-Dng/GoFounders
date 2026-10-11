@@ -76,6 +76,9 @@ export interface SupabaseProfileRow {
   skills: string[] | null;
   looking_for: string[] | null;
   availability_label: string | null;
+  ma_sector: string | null;
+  ma_budget: string | null;
+  ma_region: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -98,6 +101,9 @@ export interface SupabaseProfileInsert {
   skills?: string[] | null;
   looking_for?: string[] | null;
   availability_label?: string | null;
+  ma_sector?: string | null;
+  ma_budget?: string | null;
+  ma_region?: string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -114,6 +120,9 @@ export interface SupabaseProfileUpdate {
   skills?: string[] | null;
   looking_for?: string[] | null;
   availability_label?: string | null;
+  ma_sector?: string | null;
+  ma_budget?: string | null;
+  ma_region?: string | null;
   is_admin?: boolean | null;
   updated_at?: string;
 }

@@ -139,6 +139,9 @@ export class MatchingService {
         { label: 'Plan', value: profile.plan },
         { label: 'Localisation', value: profile.location ?? 'France' },
         { label: 'Disponibilite', value: profile.availability_label ?? 'A confirmer' },
+        ...(profile.ma_sector ? [{ label: 'Secteur M&A', value: profile.ma_sector }] : []),
+        ...(profile.ma_budget ? [{ label: profile.role === 'seller' ? 'Ordre de grandeur' : 'Budget', value: profile.ma_budget }] : []),
+        ...(profile.ma_region ? [{ label: 'Région visée', value: profile.ma_region }] : []),
       ],
     };
   }
