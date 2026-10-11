@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MaListingData } from '../../../core/data/mock-platform.data';
+import { canAccessMaDetails, canPublishMaListing } from '../../../core/models/user.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { MaService } from '../../../core/services/ma.service';
 
@@ -32,10 +33,12 @@ type MaStatIcon = 'mask' | 'handshake' | 'certified';
               <a routerLink="/ma" fragment="ma-listings" class="rounded-lg bg-amber-500 px-8 py-4 font-bold text-white shadow-2xl transition-all hover:scale-105 hover:bg-amber-600 active:scale-95">
                 Voir les annonces
               </a>
-              <a routerLink="/ma/deposer" class="rounded-lg border-2 border-white px-8 py-4 font-bold text-white transition-all hover:scale-105 hover:bg-white/10 active:scale-95">
-                Déposer une annonce
-              </a>
-              @if (!canViewSensitiveDetails()) {
+              @if (canDepositListing()) {
+                <a routerLink="/ma/deposer" class="rounded-lg border-2 border-white px-8 py-4 font-bold text-white transition-all hover:scale-105 hover:bg-white/10 active:scale-95">
+                  Déposer une annonce
+                </a>
+              }
+              @if (showAccessCta()) {
                 <button type="button" (click)="continueToMaAccess()" class="rounded-lg border-2 border-amber-300/80 bg-amber-300/10 px-8 py-4 font-bold text-amber-100 transition-all hover:scale-105 hover:bg-amber-300/20 active:scale-95">
                   {{ accessCtaLabel() }}
                 </button>
@@ -170,9 +173,11 @@ type MaStatIcon = 'mask' | 'handshake' | 'certified';
                     Les teasers restent lisibles ci-dessous. Les informations sensibles et la mise en relation sont réservées aux comptes avec accès M&A.
                   </p>
                 </div>
-                <button type="button" (click)="continueToMaAccess()" class="rounded-lg bg-amber-500 px-5 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-amber-600">
-                  {{ accessCtaLabel() }}
-                </button>
+                @if (showAccessCta()) {
+                  <button type="button" (click)="continueToMaAccess()" class="rounded-lg bg-amber-500 px-5 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-amber-600">
+                    {{ accessCtaLabel() }}
+                  </button>
+                }
               </div>
             </div>
           }
@@ -243,7 +248,7 @@ type MaStatIcon = 'mask' | 'handshake' | 'certified';
                         <div>
                           <div class="mb-1 text-sm font-bold text-amber-900">Dossier complet réservé</div>
                           <p class="text-xs leading-relaxed text-amber-900/75">
-                            Motif de cession, informations détaillées et mise en relation sont accessibles après l'accès M&A one-shot.
+                            {{ lockedDetailsText() }}
                           </p>
                         </div>
                       </div>
@@ -269,7 +274,7 @@ type MaStatIcon = 'mask' | 'handshake' | 'certified';
                         </svg>
                         Voir le dossier
                       </a>
-                    } @else {
+                    } @else if (showAccessCta()) {
                       <button type="button" (click)="continueToMaAccess()" class="inline-flex items-center justify-center gap-2 rounded-lg bg-amber-500 px-6 py-2.5 font-semibold text-white shadow-md transition-colors hover:bg-amber-600">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
@@ -277,6 +282,8 @@ type MaStatIcon = 'mask' | 'handshake' | 'certified';
                         </svg>
                         {{ accessCtaLabel() }}
                       </button>
+                    } @else {
+                      <span class="text-sm font-semibold text-amber-700">Dossier réservé aux repreneurs</span>
                     }
                   </div>
                 </div>
@@ -296,9 +303,13 @@ type MaStatIcon = 'mask' | 'handshake' | 'certified';
           </div>
           <h2 class="mb-4 text-4xl font-bold">Vous souhaitez vendre votre entreprise ?</h2>
           <p class="mx-auto mb-8 max-w-2xl text-xl opacity-90">Préparez votre annonce confidentielle avant validation de l'accès M&A.</p>
-          <a routerLink="/ma/deposer" class="inline-block rounded-lg bg-white px-10 py-5 text-lg font-bold text-amber-600 shadow-2xl transition-all hover:scale-105 hover:bg-white/95 active:scale-95">
+          @if (canDepositListing()) {
+            <a routerLink="/ma/deposer" class="inline-block rounded-lg bg-white px-10 py-5 text-lg font-bold text-amber-600 shadow-2xl transition-all hover:scale-105 hover:bg-white/95 active:scale-95">
             Déposer mon annonce
           </a>
+          } @else {
+            <p class="text-lg font-semibold opacity-90">Le dépôt d'annonce est réservé aux comptes vendeur.</p>
+          }
           <div class="mt-8 flex flex-col items-center justify-center gap-4 text-sm opacity-90 sm:flex-row sm:flex-wrap sm:gap-8">
             @for (bullet of bullets; track bullet) {
               <div class="flex items-center gap-2">
@@ -334,9 +345,20 @@ export class MaHomeComponent implements OnInit {
   ];
   readonly bullets = ['Teaser public lisible', 'Détails sensibles réservés', 'Publication après paiement confirmé'];
 
-  readonly canViewSensitiveDetails = computed(() => this.auth.hasMaAccess());
+  private readonly profileType = computed(() => this.auth.currentUser()?.profileType);
+  // Dossier complet : acheteur avec accès payé. Dépôt : vendeur (ou visiteur, invité à s'inscrire).
+  readonly canViewSensitiveDetails = computed(() => canAccessMaDetails(this.profileType()) && this.auth.hasMaAccess());
+  readonly canDepositListing = computed(() => !this.auth.isAuthenticated() || canPublishMaListing(this.profileType()));
+  readonly showAccessCta = computed(() =>
+    !this.auth.isAuthenticated() || (canAccessMaDetails(this.profileType()) && !this.auth.hasMaAccess())
+  );
   readonly accessCtaLabel = computed(() =>
     this.auth.isAuthenticated() ? "Débloquer l'accès M&A - 149€" : "Se connecter pour l'accès M&A"
+  );
+  readonly lockedDetailsText = computed(() =>
+    this.auth.isAuthenticated() && !canAccessMaDetails(this.profileType())
+      ? 'Motif de cession, informations détaillées et mise en relation sont réservés aux comptes acheteur avec accès M&A.'
+      : "Motif de cession, informations détaillées et mise en relation sont accessibles après l'accès M&A one-shot."
   );
   readonly filteredListings = computed(() =>
     this.listings().filter(listing => {

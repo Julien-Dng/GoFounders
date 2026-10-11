@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
-import { Plan } from '../../core/models/user.model';
+import { Plan, canAccessMaDetails, canPublishMaListing } from '../../core/models/user.model';
+import { PaymentService } from '../../core/services/payment.service';
 
 @Component({
   selector: 'app-abonnement',
@@ -41,7 +42,7 @@ import { Plan } from '../../core/models/user.model';
               (click)="activatePlan('PRO')"
               class="w-full rounded-full bg-accent px-6 py-3 font-bold text-white shadow-lg shadow-accent/20 transition-all hover:scale-[1.02] hover:bg-accent/90 active:scale-95"
             >
-              Activer PRO en démo
+              {{ isSimulation ? 'Activer PRO (paiement simulé)' : 'Passer en PRO' }}
             </button>
           </section>
 
@@ -63,7 +64,7 @@ import { Plan } from '../../core/models/user.model';
               (click)="activatePlan('PREMIUM')"
               class="w-full rounded-full bg-white px-6 py-3 font-bold text-primary shadow-xl transition-all hover:scale-[1.02] hover:bg-white/95 active:scale-95"
             >
-              Activer PREMIUM en démo
+              {{ isSimulation ? 'Activer PREMIUM (paiement simulé)' : 'Passer en PREMIUM' }}
             </button>
           </section>
 
@@ -77,24 +78,30 @@ import { Plan } from '../../core/models/user.model';
             </div>
 
             <p class="mb-6 text-sm leading-relaxed text-muted-foreground">
-              Accès indépendant de l'abonnement pour consulter les dossiers complets et déposer une annonce.
+              {{ maDescription() }}
             </p>
 
+            @if (maEligible()) {
             <button
               type="button"
               (click)="activateMaAccess()"
               class="w-full rounded-full bg-amber-500 px-6 py-3 font-bold text-white shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02] hover:bg-amber-600 active:scale-95"
               [disabled]="hasMaAccess()"
             >
-              {{ hasMaAccess() ? 'Accès M&A déjà actif' : "Activer l'accès M&A en démo" }}
+              {{ hasMaAccess() ? 'Accès M&A déjà actif' : isSimulation ? "Activer l'accès M&A (paiement simulé)" : "Payer l'accès M&A" }}
             </button>
+            } @else {
+              <a routerLink="/ma" class="block w-full rounded-full border border-amber-300 px-6 py-3 text-center font-bold text-amber-700">Voir les annonces anonymisées</a>
+            }
           </section>
         </div>
 
+        @if (isSimulation) {
         <div class="mt-8 rounded-2xl border border-border bg-white p-6 text-sm text-muted-foreground shadow-sm">
           <strong class="text-primary">Note projet :</strong>
           les boutons ci-dessus simulent l'état après paiement. Le branchement Stripe réel viendra ensuite via Checkout + webhook.
         </div>
+        }
 
         <div class="mt-6">
           <a routerLink="/tarifs" class="font-semibold text-accent hover:underline">Retour aux tarifs</a>
@@ -105,18 +112,37 @@ import { Plan } from '../../core/models/user.model';
 })
 export class AbonnementComponent {
   private readonly auth = inject(AuthService);
+  private readonly payment = inject(PaymentService);
 
+  readonly isSimulation = this.payment.isSimulation;
+  readonly maEligible = computed(() => {
+    const profileType = this.auth.currentUser()?.profileType;
+    return canAccessMaDetails(profileType) || canPublishMaListing(profileType);
+  });
+  readonly maDescription = computed(() => {
+    const profileType = this.auth.currentUser()?.profileType;
+
+    if (canAccessMaDetails(profileType)) {
+      return "Accès indépendant de l'abonnement pour consulter les dossiers complets et contacter les vendeurs.";
+    }
+
+    if (canPublishMaListing(profileType)) {
+      return "Accès indépendant de l'abonnement pour publier l'annonce de votre entreprise auprès des repreneurs.";
+    }
+
+    return "L'accès M&A est réservé aux comptes acheteur et vendeur. Votre compte voit les annonces anonymisées.";
+  });
   readonly currentPlan = computed(() => this.auth.currentUser()?.plan ?? 'FREE');
   readonly hasMaAccess = computed(() => this.auth.hasMaAccess());
   readonly statusMessage = signal('');
 
   async activatePlan(plan: Exclude<Plan, 'FREE'>): Promise<void> {
-    const success = await this.auth.grantDemoPlan(plan);
-    this.statusMessage.set(success ? `Plan ${plan} activé en démonstration.` : "Impossible d'activer ce plan pour le moment.");
+    const result = await this.payment.purchase(plan);
+    this.statusMessage.set(result.message);
   }
 
   async activateMaAccess(): Promise<void> {
-    const success = await this.auth.grantMaAccess();
-    this.statusMessage.set(success ? "Accès M&A activé en démonstration." : "Impossible d'activer l'accès M&A pour le moment.");
+    const result = await this.payment.purchase('MA_ACCESS');
+    this.statusMessage.set(result.message);
   }
 }

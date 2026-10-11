@@ -159,8 +159,8 @@ import { MaService } from '../../../core/services/ma.service';
                   Votre annonce a bien été enregistrée dans Supabase. Elle apparaît maintenant dans la marketplace M&A.
                 </p>
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
-                  <a [routerLink]="['/ma/annonce', createdListingId()]" class="rounded-lg bg-amber-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-amber-600">
-                    Voir le dossier
+                  <a routerLink="/dashboard" class="rounded-lg bg-amber-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-amber-600">
+                    Mon tableau de bord
                   </a>
                   <a routerLink="/ma" class="rounded-lg border border-border px-6 py-3 font-semibold transition-colors hover:border-amber-500">
                     Retour aux annonces

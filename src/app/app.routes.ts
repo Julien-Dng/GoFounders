@@ -85,7 +85,8 @@ export const routes: Routes = [
       },
       {
         path: 'ma/deposer',
-        canActivate: [authGuard],
+        canActivate: [authGuard, roleGuard],
+        data: { allowedRoles: ['seller'] },
         loadComponent: () => import('./features/ma/ma-deposer/ma-deposer.component').then(m => m.MaDeposerComponent)
       },
       {

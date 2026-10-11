@@ -492,12 +492,9 @@ export class DashboardComponent {
     }
 
     if (!isTalentMarketplaceRole(profileType)) {
-      const listings = await this.maService.getListings();
-      const uid = this.currentUser()?.uid;
+      const listings = profileType === 'seller' ? await this.maService.getMyListings() : await this.maService.getListings();
       this.opportunityCount.set(
-        profileType === 'seller'
-          ? listings.filter(listing => listing.ownerId === uid).length
-          : listings.filter(listing => listing.status === 'active').length
+        profileType === 'seller' ? listings.length : listings.filter(listing => listing.status === 'active').length
       );
       return;
     }

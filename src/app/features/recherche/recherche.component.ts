@@ -17,6 +17,7 @@ import { Subscription } from 'rxjs';
 import { MarketplaceProfile } from '../../core/data/mock-platform.data';
 import { ProfileType } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
+import { PaymentService } from '../../core/services/payment.service';
 import { MatchingService } from '../../core/services/matching.service';
 
 type SearchProfileType = ProfileType;
@@ -305,6 +306,7 @@ type SearchProfileType = ProfileType;
 })
 export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly auth = inject(AuthService);
+  private readonly payment = inject(PaymentService);
   private readonly matchingService = inject(MatchingService);
   private intersectionObserver: IntersectionObserver | null = null;
   private cardsChangesSubscription: Subscription | null = null;
@@ -415,7 +417,7 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   activateProDemo(): void {
-    void this.auth.grantDemoPlan('PRO');
+    void this.payment.purchase('PRO');
   }
 
   revealDelay(index: number): string {

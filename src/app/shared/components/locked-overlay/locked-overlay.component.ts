@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Plan } from '../../../core/models/user.model';
-import { AuthService } from '../../../core/services/auth.service';
+import { PaymentService } from '../../../core/services/payment.service';
 
 @Component({
   selector: 'app-locked-overlay',
@@ -37,13 +37,13 @@ import { AuthService } from '../../../core/services/auth.service';
   `
 })
 export class LockedOverlayComponent {
-  private readonly auth = inject(AuthService);
+  private readonly payment = inject(PaymentService);
 
   @Input() requiredPlan: Plan = 'PRO';
   @Input() description = 'Passez à un abonnement supérieur pour accéder à cette fonctionnalité.';
 
   previewDemo(): void {
     const demoPlan: Exclude<Plan, 'FREE'> = this.requiredPlan === 'PREMIUM' ? 'PREMIUM' : 'PRO';
-    void this.auth.grantDemoPlan(demoPlan);
+    void this.payment.purchase(demoPlan);
   }
 }

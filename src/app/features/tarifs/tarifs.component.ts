@@ -137,16 +137,16 @@ interface Plan {
             <div class="flex-1">
               <h2 class="mb-3 text-3xl font-semibold">Accès M&A - Achat & cession d'entreprise</h2>
               <p class="mb-1 text-lg text-white/90">
-                Disponible en accès one-shot à <span class="font-bold">149€</span> - indépendant de votre abonnement.
+                Accès one-shot à <span class="font-bold">149€</span>, indépendant de l'abonnement, réservé aux comptes acheteur et vendeur.
               </p>
               <ul class="mb-6 space-y-2 text-white/90">
                 <li class="flex items-start gap-2">
                   <svg width="20" height="20" class="mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  <span>Dépôt et consultation d'annonces complètes</span>
+                  <span>Acheteur : consultation des dossiers complets et contact des vendeurs</span>
                 </li>
                 <li class="flex items-start gap-2">
                   <svg width="20" height="20" class="mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  <span>Mise en relation directe acheteur / vendeur</span>
+                  <span>Vendeur : publication confidentielle de votre annonce auprès des repreneurs</span>
                 </li>
               </ul>
               <div class="flex flex-col gap-3 sm:flex-row">

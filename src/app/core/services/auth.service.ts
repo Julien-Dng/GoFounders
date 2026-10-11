@@ -149,62 +149,23 @@ export class AuthService {
     return this.signUpLocally(payload, returnUrl);
   }
 
-  async grantMaAccess(): Promise<boolean> {
+  // Recharge le profil après un changement de droits fait côté serveur (paiement simulé ou webhook Stripe).
+  async reloadCurrentProfile(): Promise<boolean> {
     const activeUser = this._currentUser();
 
-    if (!activeUser) {
+    if (!activeUser || !this.supabase.isConfigured) {
       return false;
     }
 
-    if (this.supabase.isConfigured) {
-      const { error } = await this.supabase.client
-        .from('profiles')
-        .update({ ma_access: true })
-        .eq('id', activeUser.uid);
-      if (error) {
-        return false;
-      }
-      this._currentUser.set({ ...activeUser, maAccess: true });
-      return true;
-    }
-
-    const users = this.readUsers();
-    const userIndex = users.findIndex(user => user.uid === activeUser.uid);
-
-    if (userIndex < 0) {
-      return false;
-    }
-
-    const updatedUser: StoredUserRecord = {
-      ...users[userIndex],
-      maAccess: true,
-      lastActive: new Date().toISOString(),
-    };
-
-    users[userIndex] = updatedUser;
-    this.writeUsers(users);
-    this.setAuthenticatedUser(updatedUser);
-
-    return true;
+    return this.loadSupabaseProfile(activeUser.uid);
   }
 
-  async grantDemoPlan(plan: Exclude<Plan, 'FREE'> = 'PRO'): Promise<boolean> {
+  // Mode local sans Supabase uniquement : applique les droits d'un paiement simulé.
+  applyLocalEntitlements(entitlements: { plan?: Exclude<Plan, 'FREE'>; maAccess?: boolean }): boolean {
     const activeUser = this._currentUser();
 
-    if (!activeUser) {
+    if (!activeUser || this.supabase.isConfigured) {
       return false;
-    }
-
-    if (this.supabase.isConfigured) {
-      const { error } = await this.supabase.client
-        .from('profiles')
-        .update({ plan })
-        .eq('id', activeUser.uid);
-      if (error) {
-        return false;
-      }
-      this._currentUser.set({ ...activeUser, plan });
-      return true;
     }
 
     const users = this.readUsers();
@@ -216,7 +177,7 @@ export class AuthService {
 
     const updatedUser: StoredUserRecord = {
       ...users[userIndex],
-      plan,
+      ...entitlements,
       lastActive: new Date().toISOString(),
     };
 

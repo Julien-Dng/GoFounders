@@ -54,9 +54,11 @@ Chaque utilisateur a **un seul rôle**, choisi à l'inscription et non modifiabl
 | Support | Email | Email rapide | Téléphone + Email |
 
 ### M&A — Accès One-Shot (149€, paiement unique)
-- Totalement **indépendant** de l'abonnement mensuel
-- Donne accès à : consultation complète des annonces, dépôt d'annonce, mise en relation directe
-- Les utilisateurs FREE/PRO voient les annonces **anonymisées** sans accès aux détails
+- Totalement **indépendant** de l'abonnement mensuel, mais **réservé aux rôles acheteur et vendeur**
+- **Acheteur** (`buyer`) : consultation des dossiers complets + mise en relation directe avec les vendeurs
+- **Vendeur** (`seller`) : dépôt de son annonce ; il ne voit pas le détail des annonces des autres vendeurs
+- **Porteur de projet / Talent** : annonces **anonymisées** uniquement, pas d'achat de l'accès M&A
+- Helpers : `canAccessMaDetails()` et `canPublishMaListing()` dans `user.model.ts`
 
 ### PREMIUM M&A
 - Accompagnement complet : valorisation, mise en relation experts (notaires, comptables partenaires)
@@ -91,8 +93,8 @@ Chaque utilisateur a **un seul rôle**, choisi à l'inscription et non modifiabl
 **Guards Angular à implémenter :**
 - `AuthGuard` → redirige vers `/connexion` si non connecté
 - `PlanGuard` → vérifie le niveau d'abonnement (FREE / PRO / PREMIUM)
-- `MaAccessGuard` → vérifie si l'utilisateur a payé le one-shot M&A
-- `RoleGuard` → réserve une route à certains rôles (`/recherche` : entrepreneur et talent)
+- `MaAccessGuard` → acheteur ayant payé le one-shot M&A (`/ma/annonce/:id`)
+- `RoleGuard` → réserve une route à certains rôles (`/recherche` : entrepreneur et talent ; `/ma/deposer` : vendeur)
 
 ---
 
@@ -454,6 +456,11 @@ Tu proposes des actions concrètes sur la plateforme GoFounders.
 
 ## 💳 Stripe — Flux de paiement
 
+> **État actuel : paiements simulés** (pas encore de clé Stripe). Tous les achats passent par
+> `PaymentService.purchase()` ; `environment.paymentMode = 'simulation'` appelle la fonction Supabase
+> `simulate_purchase`. Pour brancher Stripe : passer `paymentMode` à `'stripe'`, implémenter la
+> Checkout Session + le webhook, puis **supprimer `simulate_purchase` avant la mise en production**.
+
 ### Abonnement PRO (49€/mois)
 1. Utilisateur clique "Passer en PRO"
 2. Firebase Function crée une Stripe Checkout Session
@@ -470,7 +477,8 @@ Tu proposes des actions concrètes sur la plateforme GoFounders.
 
 ## 🔒 Règles de sécurité importantes
 
-- Les détails des annonces M&A (`description`, `contactInfo`) ne sont **jamais** retournés au frontend si `user.maAccess = false` — validation côté Firebase Functions, pas côté client
+- Les détails des annonces M&A (`confidential_description`, `contact_info`, `sale_reason`, `owner_id`) ne sont **jamais** lisibles directement : seules les colonnes anonymisées sont accordées en `select`, le dossier passe par la fonction Supabase `get_ma_listing_detail` (acheteur avec accès, propriétaire ou admin)
+- `plan`, `ma_access`, `role` et `is_admin` ne sont modifiables que côté serveur (trigger `enforce_profile_entitlements`)
 - Les profils avec `confidential: true` masquent les infos de contact côté Firestore Rules
 - La limite de 3 contacts/mois pour FREE est vérifiée côté Firebase Functions
 - Les scores de compatibilité IA sont calculés côté Firebase Functions (jamais exposé le prompt)

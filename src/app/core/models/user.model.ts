@@ -18,6 +18,16 @@ export function isTalentMarketplaceRole(profileType: ProfileType | undefined): b
   return !!profileType && TALENT_MARKETPLACE_ROLES.includes(profileType);
 }
 
+// Accès M&A (149€) : l'acheteur consulte les dossiers complets, le vendeur publie son annonce.
+// Les autres rôles ne voient que les annonces anonymisées.
+export function canAccessMaDetails(profileType: ProfileType | undefined): boolean {
+  return profileType === 'buyer';
+}
+
+export function canPublishMaListing(profileType: ProfileType | undefined): boolean {
+  return profileType === 'seller';
+}
+
 export interface User {
   uid: string;
   email: string;
