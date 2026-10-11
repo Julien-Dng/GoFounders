@@ -1,6 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { MarketplaceProfile } from '../../core/data/mock-platform.data';
+import { isTalentMarketplaceRole } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
+import { MatchingService } from '../../core/services/matching.service';
 import { MessagingService } from '../../core/services/messaging.service';
 import { NotificationMenuComponent } from '../../shared/components/notification-menu/notification-menu.component';
 import { UserMenuComponent } from '../../shared/components/user-menu/user-menu.component';
@@ -211,31 +214,41 @@ interface QuickActionItem {
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
                     </svg>
-                    <h2 class="text-xl font-bold">Vos matches du jour</h2>
+                    <h2 class="text-xl font-bold">{{ matchesTitle() }}</h2>
                   </div>
-                  <a routerLink="/recherche" class="text-sm font-semibold text-accent hover:underline">Voir tous</a>
+                  <a [routerLink]="matchesLink()" class="text-sm font-semibold text-accent hover:underline">Voir tous</a>
                 </div>
 
                 <div class="space-y-4">
-                  @for (match of matches; track $index) {
+                  @if (!usesTalentMarketplace()) {
+                    <div class="rounded-xl bg-secondary p-4">
+                      <p class="mb-4 text-sm text-foreground/80">{{ maPrompt() }}</p>
+                      <a [routerLink]="maCtaLink()" class="inline-block rounded-lg bg-[#D97706] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#D97706]/90">
+                        {{ maCtaLabel() }}
+                      </a>
+                    </div>
+                  } @else if (matches().length === 0) {
+                    <p class="rounded-xl bg-secondary p-4 text-sm text-muted-foreground">Aucun profil à vous proposer pour le moment. Complétez votre profil pour améliorer vos suggestions.</p>
+                  }
+                  @for (match of matches(); track match.id) {
                     <div class="group flex items-center gap-4 rounded-xl border border-transparent bg-secondary p-4 transition-colors hover:border-accent/20 hover:bg-accent/5">
                       <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary font-bold text-white">
-                        {{ match.avatar }}
+                        {{ match.initials }}
                       </div>
                       <div class="min-w-0 flex-1">
                         <div class="mb-1 flex items-center gap-2">
-                          <h3 class="font-bold">{{ match.name }}</h3>
+                          <h3 class="font-bold">{{ match.displayName }}</h3>
                           <span class="rounded bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">{{ match.stage }}</span>
                         </div>
-                        <div class="mb-1 text-sm text-muted-foreground">{{ match.role }}</div>
-                        <div class="truncate text-sm text-foreground/70">{{ match.project }}</div>
+                        <div class="mb-1 text-sm text-muted-foreground">{{ match.title }}</div>
+                        <div class="truncate text-sm text-foreground/70">{{ match.sector }}</div>
                       </div>
                       <div class="flex flex-shrink-0 items-center gap-3">
                         <div class="flex items-center gap-1 rounded-full bg-accent/10 px-3 py-1.5 text-accent">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
                           </svg>
-                          <span class="text-sm font-bold">{{ match.compatibility }}%</span>
+                          <span class="text-sm font-bold">{{ match.match }}%</span>
                         </div>
                         <a [routerLink]="['/profil', match.id]" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white opacity-0 transition-opacity hover:bg-primary/90 group-hover:opacity-100">
                           Voir le profil
@@ -277,7 +290,7 @@ interface QuickActionItem {
                 </div>
                 <p class="mb-4 text-sm text-foreground/80">Bonjour {{ firstName() }}.<br>Que puis-je faire pour vous aujourd'hui ?</p>
                 <div class="space-y-2">
-                  @for (action of quickActions; track action.label) {
+                  @for (action of quickActions(); track action.label) {
                     <a [routerLink]="action.path" class="group flex w-full items-center gap-3 rounded-lg border border-border bg-white px-3 py-2.5 text-left text-sm font-medium transition-all hover:border-accent/30 hover:bg-accent/5">
                       <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-accent/10 text-accent" aria-hidden="true">
                         @switch (action.icon) {
@@ -369,6 +382,7 @@ interface QuickActionItem {
 export class DashboardComponent {
   private readonly auth = inject(AuthService);
   private readonly messaging = inject(MessagingService);
+  private readonly matchingService = inject(MatchingService);
 
   readonly currentUser = this.auth.currentUser;
   private readonly failedPhotoUrl = signal('');
@@ -390,9 +404,14 @@ export class DashboardComponent {
     return uid ? `/profil/${uid}` : '/dashboard';
   });
 
+  readonly profileType = computed(() => this.currentUser()?.profileType);
+  readonly usesTalentMarketplace = computed(() => isTalentMarketplaceRole(this.profileType()));
+
   readonly sidebarItems = computed<SidebarItem[]>(() => [
     { id: 'accueil', label: 'Accueil', icon: 'home', path: '/dashboard', badge: null },
-    { id: 'recherche', label: 'Recherche', icon: 'search', path: '/recherche', badge: null },
+    ...(this.usesTalentMarketplace()
+      ? [{ id: 'recherche', label: 'Recherche', icon: 'search' as const, path: '/recherche', badge: null }]
+      : []),
     { id: 'profil', label: 'Mon profil', icon: 'user', path: this.ownProfilePath(), badge: null },
     { id: 'messages', label: 'Messages', icon: 'messages', path: '/messages', badge: this.messageUnreadCount() || null },
     { id: 'ma', label: 'M&A', icon: 'ma', path: '/ma', badge: null },
@@ -401,10 +420,27 @@ export class DashboardComponent {
     { id: 'parametres', label: 'Paramètres', icon: 'settings', path: '/parametres', badge: null },
   ]);
 
-  readonly matches = [
-    { id: 'talent-sophie-martin', name: 'Sophie Martin', role: 'CTO freelance', avatar: 'SM', stage: 'MVP', compatibility: 94, project: 'SaaS B2B pour la logistique' },
-    { id: 'talent-marc-laurent', name: 'Marc Laurent', role: 'Développeur full-stack', avatar: 'ML', stage: 'Idée', compatibility: 87, project: 'Marketplace locale bio' },
-  ];
+  readonly matches = signal<MarketplaceProfile[]>([]);
+  readonly matchesTitle = computed(() => {
+    switch (this.profileType()) {
+      case 'talent':
+        return 'Projets du jour';
+      case 'buyer':
+        return 'Vos opportunités de reprise';
+      case 'seller':
+        return 'Votre cession';
+      default:
+        return 'Vos matches du jour';
+    }
+  });
+  readonly matchesLink = computed(() => (this.usesTalentMarketplace() ? '/recherche' : '/ma'));
+  readonly maPrompt = computed(() =>
+    this.profileType() === 'seller'
+      ? 'Publiez votre annonce anonymisée pour être visible des repreneurs qualifiés.'
+      : 'Consultez les entreprises à reprendre sur la marketplace M&A.'
+  );
+  readonly maCtaLabel = computed(() => (this.profileType() === 'seller' ? 'Déposer mon annonce' : 'Voir les annonces'));
+  readonly maCtaLink = computed(() => (this.profileType() === 'seller' ? '/ma/deposer' : '/ma'));
 
   readonly activities = [
     { text: '3 personnes ont consulté votre profil', time: 'Il y a 2 h', type: 'view' },
@@ -418,11 +454,29 @@ export class DashboardComponent {
     { label: 'Matches', value: '24', icon: 'target' },
   ];
 
-  readonly quickActions: Array<QuickActionItem & { path: string }> = [
-    { label: 'Analyser mes matches', icon: 'target', path: '/recherche' },
+  readonly quickActions = computed<Array<QuickActionItem & { path: string }>>(() => [
+    this.usesTalentMarketplace()
+      ? { label: 'Analyser mes matches', icon: 'target', path: '/recherche' }
+      : { label: 'Explorer le M&A', icon: 'target', path: '/ma' },
     { label: 'Améliorer mon profil', icon: 'user', path: '/profil/modifier' },
     { label: 'Comprendre mes statistiques', icon: 'chart', path: '/dashboard' },
-  ];
+  ]);
+
+  constructor() {
+    void this.loadMatches();
+  }
+
+  private async loadMatches(): Promise<void> {
+    await this.auth.ensureSessionReady();
+    const profileType = this.profileType();
+
+    if (!profileType || !isTalentMarketplaceRole(profileType)) {
+      return;
+    }
+
+    const profiles = await this.matchingService.getMarketplaceProfilesForSearch(profileType);
+    this.matches.set([...profiles].sort((a, b) => b.match - a.match).slice(0, 2));
+  }
 
   handlePhotoError(): void {
     this.failedPhotoUrl.set(this.photoUrl());

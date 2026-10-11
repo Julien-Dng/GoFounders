@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { maAccessGuard } from './core/guards/ma-access.guard';
 import { planGuard } from './core/guards/plan.guard';
+import { roleGuard } from './core/guards/role.guard';
+import { TALENT_MARKETPLACE_ROLES } from './core/models/user.model';
 
 export const routes: Routes = [
   // Routes publiques (avec navbar)
@@ -45,7 +47,8 @@ export const routes: Routes = [
       // Routes protégées (auth requise)
       {
         path: 'recherche',
-        canActivate: [authGuard],
+        canActivate: [authGuard, roleGuard],
+        data: { allowedRoles: TALENT_MARKETPLACE_ROLES },
         loadComponent: () => import('./features/recherche/recherche.component').then(m => m.RechercheComponent)
       },
       {

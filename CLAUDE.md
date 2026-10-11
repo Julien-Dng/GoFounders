@@ -19,6 +19,22 @@ Le produit est composé de **deux verticales** :
 
 ---
 
+## 👤 Rôles utilisateur
+
+Chaque utilisateur a **un seul rôle**, choisi à l'inscription et non modifiable ensuite (pas de profil « les deux ») :
+
+| Rôle (`profileType`) | Libellé | Verticale | `/recherche` affiche |
+|---|---|---|---|
+| `entrepreneur` | Porteur de projet | Talents & Associés | Les talents |
+| `talent` | Talent / Expert | Talents & Associés | Les projets |
+| `buyer` | Acheteur / Repreneur | M&A | — (redirigé vers `/ma`) |
+| `seller` | Vendeur M&A | M&A | — (redirigé vers `/ma`) |
+
+- `RoleGuard` (`route.data.allowedRoles`) protège `/recherche` ; le dashboard et la navigation s'adaptent au rôle.
+- Libellés et rôles de la marketplace : `PROFILE_TYPE_LABELS` et `TALENT_MARKETPLACE_ROLES` dans `user.model.ts`.
+
+---
+
 ## 💰 Modèle tarifaire
 
 ### Abonnements (Marketplace Talents & Associés)
@@ -76,6 +92,7 @@ Le produit est composé de **deux verticales** :
 - `AuthGuard` → redirige vers `/connexion` si non connecté
 - `PlanGuard` → vérifie le niveau d'abonnement (FREE / PRO / PREMIUM)
 - `MaAccessGuard` → vérifie si l'utilisateur a payé le one-shot M&A
+- `RoleGuard` → réserve une route à certains rôles (`/recherche` : entrepreneur et talent)
 
 ---
 
@@ -93,11 +110,11 @@ Le produit est composé de **deux verticales** :
 - Footer complet
 
 ### `/inscription` — Onboarding (3 étapes)
-- **Étape 1** : Choix du type de profil
+- **Étape 1** : Choix du type de profil (un seul rôle par utilisateur, non modifiable ensuite)
   - Porteur de projet
   - Talent / Expert
-  - Les deux
   - Acheteur / Repreneur
+  - Vendeur M&A
 - **Étape 2** : Informations de base (nom, email, mot de passe, localisation)
 - **Étape 3** : Détails du profil selon le type choisi
 - Barre de progression en haut
@@ -330,7 +347,7 @@ interface User {
   displayName: string;
   photoURL?: string;
   location: string;
-  profileType: 'entrepreneur' | 'talent' | 'both' | 'buyer';
+  profileType: 'entrepreneur' | 'talent' | 'buyer' | 'seller'; // rôle unique
   plan: 'FREE' | 'PRO' | 'PREMIUM';
   maAccess: boolean;           // true si one-shot M&A payé
   stripeCustomerId?: string;

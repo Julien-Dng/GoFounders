@@ -355,9 +355,7 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly audiencePanelDescription = computed(() =>
     this.visibleProfileType() === 'talent'
       ? "En tant qu'entrepreneur, la recherche affiche seulement des talents afin de garder un matching clair."
-      : this.viewerType() === 'talent'
-        ? 'En tant que talent, la recherche affiche seulement les projets publiés par des entrepreneurs.'
-        : 'Votre compte M&A garde accès aux projets côté marketplace talents ; les opportunités de reprise restent dans la verticale M&A.'
+      : 'En tant que talent, la recherche affiche seulement les projets publiés par des entrepreneurs.'
   );
   readonly searchResultLabel = computed(() =>
     this.visibleProfileType() === 'talent' ? 'talents disponibles' : 'projets disponibles'

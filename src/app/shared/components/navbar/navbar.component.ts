@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, HostListener, computed, inject, sig
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs/operators';
+import { isTalentMarketplaceRole } from '../../../core/models/user.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserMenuComponent } from '../user-menu/user-menu.component';
 import { NotificationMenuComponent } from '../notification-menu/notification-menu.component';
@@ -50,7 +51,7 @@ type DrawerIcon = 'home' | 'search' | 'messages' | 'chart' | 'sparkles' | 'credi
 
           <!-- Nav links (center) -->
           <div class="hidden flex-1 items-center justify-center gap-8 md:flex">
-            @for (link of navLinks; track link.href) {
+            @for (link of navLinks(); track link.href) {
               <a
                 [routerLink]="link.href"
                 routerLinkActive="!text-accent"
@@ -122,7 +123,7 @@ type DrawerIcon = 'home' | 'search' | 'messages' | 'chart' | 'sparkles' | 'credi
         </div>
 
         <div class="flex-1 overflow-y-auto p-3 space-y-0.5">
-          @for (item of navItems; track item.id) {
+          @for (item of navItems(); track item.id) {
             <a
               [routerLink]="item.path"
               routerLinkActive="bg-accent/10 text-accent"
@@ -248,13 +249,23 @@ export class NavbarComponent {
     if (saved) this.doc.documentElement.classList.add('dark');
   }
 
-  readonly navLinks = [
+  // Acheteurs et vendeurs n'ont pas accès à la recherche Talents & Associés.
+  private readonly hidesRecherche = computed(() => {
+    const profileType = this.auth.currentUser()?.profileType;
+    return !!profileType && !isTalentMarketplaceRole(profileType);
+  });
+
+  private readonly allNavLinks = [
     { href: '/recherche', label: 'Recherche' },
     { href: '/ma', label: 'M&A' },
     { href: '/tarifs', label: 'Tarifs' },
   ];
 
-  readonly navItems: Array<{ id: string; label: string; icon: DrawerIcon; path: string; badge: number | null; exact: boolean }> = [
+  readonly navLinks = computed(() =>
+    this.hidesRecherche() ? this.allNavLinks.filter(link => link.href !== '/recherche') : this.allNavLinks
+  );
+
+  private readonly allNavItems: Array<{ id: string; label: string; icon: DrawerIcon; path: string; badge: number | null; exact: boolean }> = [
     { id: 'accueil',    label: 'Accueil',     icon: 'home', path: '/dashboard',   badge: null, exact: true  },
     { id: 'recherche',  label: 'Recherche',    icon: 'search', path: '/recherche',   badge: null, exact: true  },
     { id: 'messages',   label: 'Messages',     icon: 'messages', path: '/messages',    badge: null, exact: false },
@@ -263,6 +274,10 @@ export class NavbarComponent {
     { id: 'abonnement', label: 'Abonnement',   icon: 'credit-card', path: '/tarifs',      badge: null, exact: true  },
     { id: 'parametres', label: 'Paramètres',   icon: 'settings', path: '/parametres',  badge: null, exact: true  },
   ];
+
+  readonly navItems = computed(() =>
+    this.hidesRecherche() ? this.allNavItems.filter(item => item.id !== 'recherche') : this.allNavItems
+  );
 
   private readonly currentUrl = toSignal(
     this.router.events.pipe(

@@ -3,7 +3,7 @@ import { MARKETPLACE_PROFILES, MarketplaceProfile, findMarketplaceProfileById } 
 import { Match } from '../models/match.model';
 import { Profile } from '../models/project.model';
 import { SupabaseProfileRow, SupabaseProjectRow } from '../models/supabase-database.model';
-import { ProfileType } from '../models/user.model';
+import { PROFILE_TYPE_LABELS, ProfileType, isTalentMarketplaceRole } from '../models/user.model';
 import { AuthService } from './auth.service';
 import { SupabaseService } from './supabase.service';
 
@@ -21,6 +21,10 @@ export class MatchingService {
   }
 
   async getMarketplaceProfilesForSearch(viewerType: ProfileType): Promise<MarketplaceProfile[]> {
+    if (!isTalentMarketplaceRole(viewerType)) {
+      return [];
+    }
+
     if (!this.supabase.isConfigured) {
       return MARKETPLACE_PROFILES;
     }
@@ -174,16 +178,7 @@ export class MatchingService {
   }
 
   private roleLabel(role: ProfileType): string {
-    switch (role) {
-      case 'talent':
-        return 'Talent / Expert';
-      case 'buyer':
-        return 'Acheteur / Repreneur';
-      case 'seller':
-        return 'Vendeur M&A';
-      default:
-        return 'Porteur de projet';
-    }
+    return PROFILE_TYPE_LABELS[role];
   }
 
   private stageLabel(stage: string | null): string {
