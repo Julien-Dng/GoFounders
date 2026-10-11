@@ -1,6 +1,6 @@
 import { NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, HostListener, OnInit, computed, effect, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
 import {
@@ -26,7 +26,7 @@ interface ConversationPreview {
 @Component({
   selector: 'app-messages',
   standalone: true,
-  imports: [NgClass],
+  imports: [NgClass, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mt-20 h-[calc(100vh-80px)] bg-secondary px-4 py-4 sm:px-6 lg:px-8">
@@ -73,6 +73,15 @@ interface ConversationPreview {
 
           <!-- Barre de saisie -->
           <div class="bg-white border-t border-border p-3 flex-shrink-0 sm:p-4">
+            @if (sendError()) {
+              <div class="mb-3 flex flex-col gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between" role="alert">
+                <span>{{ sendError() }}</span>
+                <a routerLink="/tarifs" class="font-semibold text-accent hover:underline">Voir l'offre PRO</a>
+              </div>
+            }
+            @if (messageQuotaLabel()) {
+              <p class="mb-2 text-xs text-muted-foreground" aria-live="polite">{{ messageQuotaLabel() }}</p>
+            }
             <div class="flex items-center gap-2">
 
               <input #fileInput type="file" accept="image/*,.pdf,.doc,.docx" class="hidden" (change)="onFileSelected($event)">
@@ -132,7 +141,7 @@ interface ConversationPreview {
               <button
                 type="button"
                 (click)="sendMessage()"
-                [disabled]="!newMessage().trim()"
+                [disabled]="!newMessage().trim() || messageQuotaReached()"
                 class="px-5 py-2.5 bg-accent text-white rounded-xl font-semibold text-sm hover:bg-accent/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
               >
                 Envoyer
@@ -287,6 +296,21 @@ export class MessagesComponent implements OnInit {
   });
   readonly selectedProfileSkills = computed(() => this.selectedProfile()?.skills.slice(0, 4) ?? []);
   readonly newMessage = signal('');
+  readonly sendError = this.messagingService.lastError;
+  // Compteur visible pour le plan FREE uniquement (limites null = illimité).
+  readonly messageQuotaLabel = computed(() => {
+    const quota = this.messagingService.quota();
+
+    if (!quota || quota.messagesLimit === null || quota.contactsLimit === null) {
+      return '';
+    }
+
+    return `Plan FREE : ${quota.messagesUsed}/${quota.messagesLimit} messages et ${quota.contactsUsed}/${quota.contactsLimit} nouveaux contacts ce mois-ci`;
+  });
+  readonly messageQuotaReached = computed(() => {
+    const quota = this.messagingService.quota();
+    return !!quota && quota.messagesLimit !== null && quota.messagesUsed >= quota.messagesLimit;
+  });
   readonly emojiPickerOpen = signal(false);
 
   readonly localMessages = signal<Record<string, ConversationMessage[]>>({});
@@ -386,6 +410,8 @@ export class MessagesComponent implements OnInit {
       return;
     }
 
+    this.messagingService.lastError.set('');
+    void this.messagingService.refreshQuota();
     const requestedConversationOrProfileId = this.requestedConversationId();
     let threads = await this.messagingService.getConversationThreads(user);
     let selectedConversationId = requestedConversationOrProfileId;

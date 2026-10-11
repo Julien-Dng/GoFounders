@@ -24,6 +24,27 @@ interface SupabaseMessageRow {
   created_at: string;
 }
 
+// Consommation du mois en cours ; une limite null signifie illimité (PRO, PREMIUM, M&A).
+export interface MessagingQuota {
+  contactsUsed: number;
+  contactsLimit: number | null;
+  messagesUsed: number;
+  messagesLimit: number | null;
+}
+
+interface SupabaseQuotaRow {
+  contacts_used: number;
+  contacts_limit: number | null;
+  messages_used: number;
+  messages_limit: number | null;
+}
+
+// Codes levés par les triggers Supabase (2026-10-11-free-quotas.sql).
+const QUOTA_ERROR_MESSAGES: Record<string, string> = {
+  FREE_QUOTA_CONTACTS: 'Vous avez atteint la limite de 3 nouveaux contacts ce mois-ci avec le plan FREE. Passez en PRO pour des contacts illimités.',
+  FREE_QUOTA_MESSAGES: 'Vous avez atteint la limite de 5 messages ce mois-ci avec le plan FREE. Passez en PRO pour une messagerie illimitée.',
+};
+
 export interface ConversationThread {
   id: string;
   participantProfileId: string;
@@ -48,6 +69,8 @@ export class MessagingService {
   private refreshTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly conversationThreads = signal<ConversationThread[]>([]);
+  readonly quota = signal<MessagingQuota | null>(null);
+  readonly lastError = signal('');
   readonly unreadCount = computed(() =>
     this.conversationThreads().reduce((total, conversation) => total + conversation.unread, 0)
   );
@@ -194,9 +217,11 @@ export class MessagingService {
       .single();
 
     if (error || !data) {
+      this.lastError.set(this.toErrorMessage(error?.message, "Impossible d'ouvrir cette conversation."));
       return null;
     }
 
+    void this.refreshQuota();
     return (data as { id: string }).id;
   }
 
@@ -216,9 +241,12 @@ export class MessagingService {
       .single();
 
     if (error || !data) {
+      this.lastError.set(this.toErrorMessage(error?.message, "Le message n'a pas pu être envoyé."));
       return null;
     }
 
+    this.lastError.set('');
+    void this.refreshQuota();
     return this.mapMessage(data as SupabaseMessageRow, senderId);
   }
 
@@ -243,6 +271,32 @@ export class MessagingService {
     if (error) {
       await this.refreshConversationThreads();
     }
+  }
+
+  async refreshQuota(): Promise<void> {
+    if (!this.supabase.isConfigured || !this.auth.currentUser()) {
+      this.quota.set(null);
+      return;
+    }
+
+    const { data, error } = await this.supabase.client.rpc('get_my_quota').maybeSingle();
+
+    if (error || !data) {
+      this.quota.set(null);
+      return;
+    }
+
+    const row = data as SupabaseQuotaRow;
+    this.quota.set({
+      contactsUsed: row.contacts_used,
+      contactsLimit: row.contacts_limit,
+      messagesUsed: row.messages_used,
+      messagesLimit: row.messages_limit,
+    });
+  }
+
+  private toErrorMessage(rawMessage: string | undefined, fallback: string): string {
+    return (rawMessage && QUOTA_ERROR_MESSAGES[rawMessage]) ?? fallback;
   }
 
   async refreshConversationThreads(): Promise<void> {
