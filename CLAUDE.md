@@ -333,7 +333,8 @@ export const routes: Routes = [
 | **Firebase Storage** | Photos de profil, documents |
 | **Firebase Functions** | Backend logic (matching, notifications) |
 | **Stripe** | Abonnements PRO/PREMIUM + one-shot M&A |
-| **API Anthropic (Claude)** | Assistant IA contextuel (/coaching-ia) |
+| **API Anthropic (Claude)** | Assistant IA contextuel (/coaching-ia), appelé depuis le back Python |
+| **Python / FastAPI** (`backend/`) | Back de l'assistant IA : vérifie la session Supabase et le plan, injecte le contexte, appelle Claude |
 | **Angular Material ou PrimeNG** | Composants UI de base |
 | **SCSS** | Styles avec variables design system |
 
@@ -427,9 +428,11 @@ interface MaListing {
 
 ## 🤖 Intégration IA (Assistant contextuel)
 
-### Comment appeler l'API Anthropic depuis Firebase Functions
+### Implémentation : back Python (`backend/`)
+Angular (`AiService`) → `POST /api/coaching-ia/messages` avec le jeton Supabase → FastAPI vérifie la
+session et le plan PRO/PREMIUM, charge le contexte, appelle Claude. Voir `backend/README.md`.
+Le prompt réel est dans `backend/app/prompt.py`. Esquisse d'origine :
 ```typescript
-// functions/src/ai-assistant.ts
 const systemPrompt = `
 Tu es l'assistant personnel de GoFounders pour l'utilisateur suivant :
 
@@ -480,7 +483,8 @@ Tu proposes des actions concrètes sur la plateforme GoFounders.
 - Les détails des annonces M&A (`confidential_description`, `contact_info`, `sale_reason`, `owner_id`) ne sont **jamais** lisibles directement : seules les colonnes anonymisées sont accordées en `select`, le dossier passe par la fonction Supabase `get_ma_listing_detail` (acheteur avec accès, propriétaire ou admin)
 - `plan`, `ma_access`, `role` et `is_admin` ne sont modifiables que côté serveur (trigger `enforce_profile_entitlements`)
 - Les profils avec `confidential: true` masquent les infos de contact côté Firestore Rules
-- La limite de 3 contacts/mois pour FREE est vérifiée côté Firebase Functions
+- Les limites FREE (3 nouveaux contacts et 5 messages par mois, porteurs de projet et talents) sont vérifiées par des triggers Supabase (`2026-10-11-free-quotas.sql`) ; compteurs dans `usage_counters`, lus via `get_my_quota()`
+- L'assistant IA vérifie le plan côté back Python, pas seulement via le `PlanGuard`
 - Les scores de compatibilité IA sont calculés côté Firebase Functions (jamais exposé le prompt)
 
 ---
