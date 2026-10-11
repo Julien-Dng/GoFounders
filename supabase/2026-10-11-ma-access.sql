@@ -43,7 +43,10 @@ execute function public.enforce_profile_entitlements();
 
 -- 2. Paiement simulé tant que Stripe n'est pas branché.
 --    AVANT LA MISE EN PRODUCTION : drop function public.simulate_purchase(text);
-create or replace function public.simulate_purchase(product text)
+-- Supprimée d'abord : une version existante peut avoir un autre type de retour.
+drop function if exists public.simulate_purchase(text);
+
+create function public.simulate_purchase(product text)
 returns void
 language plpgsql
 security definer
@@ -100,7 +103,10 @@ grant select (
 ) on public.ma_listings to anon, authenticated;
 
 -- Dossier complet : acheteur avec accès M&A, propriétaire de l'annonce ou admin.
-create or replace function public.get_ma_listing_detail(listing_id uuid)
+-- Supprimée d'abord : une version existante peut avoir un autre type de retour.
+drop function if exists public.get_ma_listing_detail(uuid);
+
+create function public.get_ma_listing_detail(listing_id uuid)
 returns setof public.ma_listings
 language sql
 stable
@@ -122,7 +128,10 @@ as $$
 $$;
 
 -- Annonces du vendeur connecté.
-create or replace function public.get_my_ma_listings()
+-- Supprimée d'abord : une version existante peut avoir un autre type de retour.
+drop function if exists public.get_my_ma_listings();
+
+create function public.get_my_ma_listings()
 returns setof public.ma_listings
 language sql
 stable
