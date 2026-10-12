@@ -187,7 +187,7 @@ interface ProfileOption {
                       [type]="isPasswordVisible() ? 'text' : 'password'"
                       formControlName="password"
                       class="w-full rounded-lg border border-border bg-secondary py-3 pl-4 pr-12 outline-none transition-colors focus:border-accent"
-                      placeholder="8 caractères, lettres et chiffres"
+                      placeholder="8 caractères minimum"
                       aria-describedby="signup-password-criteria"
                     >
                     <button

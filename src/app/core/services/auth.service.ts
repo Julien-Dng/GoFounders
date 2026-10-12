@@ -322,7 +322,7 @@ export class AuthService {
       return {
         success: false,
         message: error?.code === 'weak_password'
-          ? 'Mot de passe trop faible : 8 caractères minimum, avec des lettres et des chiffres.'
+          ? 'Mot de passe trop faible : 8 caractères minimum, avec une minuscule, une majuscule, un chiffre et un symbole.'
           : error?.message ?? 'Creation du compte impossible.',
       };
     }

@@ -1,8 +1,9 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
 // Règle de mot de passe de l'inscription et de la réinitialisation.
-// À garder alignée sur Supabase : Authentication > Sign In / Providers > Email (8 caractères minimum,
-// lettres et chiffres), qui applique la règle côté serveur.
+// Identique à Supabase (Authentication > Sign In / Providers > Email) : 8 caractères minimum et
+// « Lowercase, uppercase letters, digits and symbols », appliquée côté serveur.
+// Supabase ne compte que les lettres non accentuées (a-z, A-Z) et les symboles ci-dessous.
 
 export const PASSWORD_MIN_LENGTH = 8;
 
@@ -16,16 +17,21 @@ const COMMON_PASSWORDS = new Set([
   'marseille13', 'football1', 'test1234', 'welcome1', 'gofounders', 'gofounders1', 'gofounders123',
 ]);
 
+// Liste des symboles acceptés par Supabase : !@#$%^&*()_+-=[]{};'\:"|<>?,./`~
+const SUPABASE_SYMBOLS = /[!@#$%^&*()_+\-=[\]{};'\\:"|<>?,./`~]/;
+
 export interface PasswordRule {
-  id: 'length' | 'letter' | 'digit' | 'common';
+  id: 'length' | 'lowercase' | 'uppercase' | 'digit' | 'symbol' | 'common';
   label: string;
   test: (password: string) => boolean;
 }
 
 export const PASSWORD_RULES: PasswordRule[] = [
   { id: 'length', label: `${PASSWORD_MIN_LENGTH} caractères minimum`, test: password => password.length >= PASSWORD_MIN_LENGTH },
-  { id: 'letter', label: 'Au moins une lettre', test: password => /\p{L}/u.test(password) },
-  { id: 'digit', label: 'Au moins un chiffre', test: password => /\d/.test(password) },
+  { id: 'lowercase', label: 'Une minuscule (a-z)', test: password => /[a-z]/.test(password) },
+  { id: 'uppercase', label: 'Une majuscule (A-Z)', test: password => /[A-Z]/.test(password) },
+  { id: 'digit', label: 'Un chiffre', test: password => /[0-9]/.test(password) },
+  { id: 'symbol', label: 'Un symbole (! ? @ # - _ …)', test: password => SUPABASE_SYMBOLS.test(password) },
   {
     id: 'common',
     label: 'Pas un mot de passe trop courant',

@@ -119,7 +119,7 @@ Chaque utilisateur a **un seul rôle**, choisi à l'inscription et non modifiabl
   - Acheteur / Repreneur
   - Vendeur M&A
 - **Étape 2** : Informations de base (nom, email, mot de passe, localisation)
-  - Mot de passe : 8 caractères minimum, au moins une lettre et un chiffre, mots de passe courants refusés
+  - Mot de passe : 8 caractères minimum, une minuscule, une majuscule, un chiffre et un symbole, mots de passe courants refusés
     (`core/validators/password-policy.validator.ts`, critères affichés par `PasswordCriteriaComponent`).
     Règle à garder identique dans Supabase : Authentication > Sign In / Providers > Email
 - **Étape 3** : Détails du profil selon le type choisi
