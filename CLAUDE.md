@@ -485,7 +485,7 @@ Tu proposes des actions concrètes sur la plateforme GoFounders.
 - Les profils avec `confidential: true` masquent les infos de contact côté Firestore Rules
 - Les limites FREE (3 nouveaux contacts et 5 messages par mois, porteurs de projet et talents) sont vérifiées par des triggers Supabase (`2026-10-11-free-quotas.sql`) ; compteurs dans `usage_counters`, lus via `get_my_quota()`
 - L'assistant IA vérifie le plan côté back Python, pas seulement via le `PlanGuard`
-- Les scores de compatibilité IA sont calculés côté Firebase Functions (jamais exposé le prompt)
+- Les scores de compatibilité sont calculés **par règles, sans IA** (`core/matching/compatibility.ts`) entre un projet et un talent : compétences recherchées couvertes (50), localisation (20), disponibilité (15), secteur (15), avec les raisons affichées. Pas de score entre deux profils non complémentaires ni pour acheteurs / vendeurs
 
 ---
 

@@ -111,12 +111,7 @@ type SearchProfileType = ProfileType;
                 <span class="font-bold text-primary">{{ filteredProfiles().length }}</span>
                 <span class="text-muted-foreground"> {{ searchResultLabel() }}</span>
               </div>
-              <select class="cursor-pointer rounded-lg border border-border bg-secondary px-4 py-2.5 text-sm font-medium outline-none focus:border-accent">
-                <option>Pertinence IA</option>
-                <option>Plus récents</option>
-                <option>Compatibilité décroissante</option>
-                <option>Localisation</option>
-              </select>
+              <span class="text-sm font-medium text-muted-foreground">Triés par compatibilité</span>
             </div>
 
             <div
@@ -245,7 +240,7 @@ type SearchProfileType = ProfileType;
                   </div>
 
                   <div class="mt-auto flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div class="flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1.5 text-accent">
+                    <div class="flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1.5 text-accent" [title]="(profile.matchReasons ?? []).join(' · ')">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
                       </svg>

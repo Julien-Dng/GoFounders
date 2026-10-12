@@ -4,13 +4,16 @@ import { Match } from '../models/match.model';
 import { Profile } from '../models/project.model';
 import { SupabaseProfileRow, SupabaseProjectRow } from '../models/supabase-database.model';
 import { PROFILE_TYPE_LABELS, ProfileType, isTalentMarketplaceRole } from '../models/user.model';
+import { ProjectSide, TalentSide, computeCompatibility } from '../matching/compatibility';
 import { AuthService } from './auth.service';
+import { ProjectService } from './project.service';
 import { SupabaseService } from './supabase.service';
 
 @Injectable({ providedIn: 'root' })
 export class MatchingService {
   private readonly supabase = inject(SupabaseService);
   private readonly auth = inject(AuthService);
+  private readonly projects = inject(ProjectService);
 
   async getMatchesForUser(_userId: string): Promise<Match[]> {
     return [];
@@ -20,7 +23,15 @@ export class MatchingService {
     return [];
   }
 
+  // Profils proposés à l'utilisateur connecté, triés par compatibilité décroissante.
   async getMarketplaceProfilesForSearch(viewerType: ProfileType): Promise<MarketplaceProfile[]> {
+    const [profiles, viewer] = await Promise.all([this.loadMarketplaceProfiles(viewerType), this.loadViewerSide()]);
+    return profiles
+      .map(profile => this.withCompatibility(profile, viewer))
+      .sort((a, b) => b.match - a.match);
+  }
+
+  private async loadMarketplaceProfiles(viewerType: ProfileType): Promise<MarketplaceProfile[]> {
     if (!isTalentMarketplaceRole(viewerType)) {
       return [];
     }
@@ -61,7 +72,16 @@ export class MatchingService {
     }
   }
 
-  async getMarketplaceProfileById(profileId: string): Promise<MarketplaceProfile | undefined> {
+  async getMarketplaceProfileById(profileId: string, withCompatibility = true): Promise<MarketplaceProfile | undefined> {
+    if (!withCompatibility) {
+      return this.loadMarketplaceProfileById(profileId);
+    }
+
+    const [profile, viewer] = await Promise.all([this.loadMarketplaceProfileById(profileId), this.loadViewerSide()]);
+    return profile ? this.withCompatibility(profile, viewer) : undefined;
+  }
+
+  private async loadMarketplaceProfileById(profileId: string): Promise<MarketplaceProfile | undefined> {
     if (!this.supabase.isConfigured) {
       return findMarketplaceProfileById(profileId);
     }
@@ -123,7 +143,7 @@ export class MatchingService {
       sector: this.inferSector([...skills, ...lookingFor, title]),
       bio: profile.bio ?? 'Profil GoFounders en cours de completion.',
       skills,
-      match: this.scoreFromId(profile.id),
+      match: 0,
       initials: this.initials(profile.display_name),
       photoURL: profile.photo_url ?? undefined,
       availableNow: (profile.availability_label ?? '').toLowerCase().includes('disponible'),
@@ -162,7 +182,7 @@ export class MatchingService {
       sector: project.sector ?? 'Tech',
       bio: project.description ?? 'Projet GoFounders en cours de presentation.',
       skills,
-      match: this.scoreFromId(project.id),
+      match: 0,
       initials: this.initials(projectName),
       photoURL: owner?.photo_url ?? undefined,
       availableNow: true,
@@ -224,9 +244,62 @@ export class MatchingService {
     return parts.length > 0 ? parts.map(part => part[0]?.toUpperCase() ?? '').join('') : 'GF';
   }
 
-  private scoreFromId(id: string): number {
-    const scoreSeed = [...id].reduce((sum, char) => sum + char.charCodeAt(0), 0);
-    return 78 + (scoreSeed % 20);
+  // Côté de l'utilisateur connecté dans le calcul : son projet s'il est porteur de projet, ses compétences s'il est talent.
+  private async loadViewerSide(): Promise<ViewerSide | null> {
+    await this.auth.ensureSessionReady();
+    const user = this.auth.currentUser();
+
+    if (user?.profileType === 'talent') {
+      return {
+        kind: 'talent',
+        talent: {
+          offers: [...(user.skills ?? []), user.profileTitle ?? ''],
+          text: user.bio,
+          location: user.location,
+          availableNow: (user.availabilityLabel ?? '').toLowerCase().includes('disponible'),
+        },
+      };
+    }
+
+    if (user?.profileType === 'entrepreneur') {
+      const project = await this.projects.getOwnedProject(user.uid);
+      return {
+        kind: 'project',
+        project: {
+          needs: [...(project?.skillsNeeded ?? []), ...(project?.lookingFor ?? []), ...(user.lookingFor ?? [])],
+          sector: project?.sector,
+          location: project?.location || user.location,
+        },
+      };
+    }
+
+    return null;
+  }
+
+  // Score calculé uniquement entre un projet et un talent ; sinon le profil n'a pas de score (matchReasons absent).
+  private withCompatibility(profile: MarketplaceProfile, viewer: ViewerSide | null): MarketplaceProfile {
+    if (viewer?.kind === 'project' && profile.profileType === 'talent') {
+      const talent: TalentSide = {
+        offers: [...profile.skills, profile.title],
+        text: profile.bio,
+        location: profile.location,
+        availableNow: profile.availableNow,
+      };
+      const result = computeCompatibility(viewer.project, talent);
+      return { ...profile, match: result.score, matchReasons: result.reasons };
+    }
+
+    if (viewer?.kind === 'talent' && profile.profileType === 'entrepreneur') {
+      const project: ProjectSide = {
+        needs: [...profile.skills, ...profile.lookingFor],
+        sector: profile.sector,
+        location: profile.location,
+      };
+      const result = computeCompatibility(project, viewer.talent);
+      return { ...profile, match: result.score, matchReasons: result.reasons };
+    }
+
+    return { ...profile, match: 0, matchReasons: undefined };
   }
 }
 
@@ -237,3 +310,5 @@ export interface ProfileSearchFilters {
   location?: string;
   availableOnly?: boolean;
 }
+
+type ViewerSide = { kind: 'project'; project: ProjectSide } | { kind: 'talent'; talent: TalentSide };

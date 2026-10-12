@@ -10,7 +10,9 @@ export interface MarketplaceProfile {
   sector: string;
   bio: string;
   skills: string[];
+  // Score de compatibilité avec l'utilisateur connecté (0-100) et ses raisons ; voir core/matching.
   match: number;
+  matchReasons?: string[];
   initials: string;
   photoURL?: string;
   availableNow: boolean;

@@ -148,7 +148,7 @@ export class MessagingService {
       const threads = await Promise.all(conversationRows.map(async conversation => {
         const participantProfileId = conversation.participant_a === user.uid ? conversation.participant_b : conversation.participant_a;
         const profileRow = profileRows.find(profile => profile.id === participantProfileId);
-        const profile = await this.matching.getMarketplaceProfileById(participantProfileId);
+        const profile = await this.matching.getMarketplaceProfileById(participantProfileId, false);
         const messages = messageRows
           .filter(message => message.conversation_id === conversation.id)
           .map(message => this.mapMessage(message, user.uid));

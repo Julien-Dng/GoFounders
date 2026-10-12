@@ -67,7 +67,7 @@ import { EditableProject, ProjectService } from '../../core/services/project.ser
                         </span>
                       }
                     </div>
-                    @if (!isOwnProfile()) {
+                    @if (!isOwnProfile() && compatibilityScore() !== null) {
                       <div>
                         <div class="inline-flex items-center gap-2 text-accent">
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -76,7 +76,7 @@ import { EditableProject, ProjectService } from '../../core/services/project.ser
                           <span class="compatibility-score-shine font-bold">{{ compatibilityScore() }}% compatible</span>
                           <span class="text-sm">avec votre profil</span>
                         </div>
-                        <div class="mt-1 text-xs font-medium text-muted-foreground">Basé sur vos critères de recherche</div>
+                        <div class="mt-1 text-xs font-medium text-muted-foreground">{{ compatibilityReasons() }}</div>
                       </div>
                     }
                   </div>
@@ -416,7 +416,15 @@ export class ProfilComponent implements OnInit {
 
     return this.publicProfile()?.title ?? 'Profil public';
   });
-  readonly compatibilityScore = computed(() => this.publicProfile()?.match ?? 87);
+  // Score calculé par core/matching/compatibility.ts ; absent entre deux profils non complémentaires.
+  readonly compatibilityScore = computed(() => {
+    const profile = this.publicProfile();
+    return profile?.matchReasons ? profile.match : null;
+  });
+  readonly compatibilityReasons = computed(() => {
+    const reasons = this.publicProfile()?.matchReasons ?? [];
+    return reasons.length > 0 ? reasons.join(' · ') : 'Peu de critères en commun pour le moment';
+  });
   readonly presentationText = computed(() =>
     this.isOwnProfile()
       ? (this.currentUser()?.bio || "Votre profil personnel sera enrichi ici à partir de vos vraies informations, de votre parcours et de ce que vous recherchez sur la plateforme.")
