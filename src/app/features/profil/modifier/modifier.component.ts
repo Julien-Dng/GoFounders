@@ -10,6 +10,14 @@ import { ProjectService } from '../../../core/services/project.service';
   standalone: true,
   imports: [NgClass, ReactiveFormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // Champ invalide après une tentative d'enregistrement : bordure rouge.
+  styles: [`
+    input.ng-invalid.ng-touched,
+    textarea.ng-invalid.ng-touched,
+    select.ng-invalid.ng-touched {
+      border-color: var(--destructive);
+    }
+  `],
   template: `
     <div class="min-h-screen bg-secondary px-4 pb-14 pt-24 sm:px-6 lg:px-8">
       <div class="mx-auto w-full max-w-6xl">
@@ -400,7 +408,7 @@ import { ProjectService } from '../../../core/services/project.service';
               </div>
 
               @if (errorMessage()) {
-                <div class="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive">
+                <div class="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive" role="alert">
                   {{ errorMessage() }}
                 </div>
               }
@@ -606,7 +614,7 @@ export class ModifierComponent implements OnInit {
       (this.isEntrepreneur() && this.projectForm.invalid) ||
       (this.isMaRole() && this.maForm.invalid)
     ) {
-      this.errorMessage.set('Vérifiez les champs obligatoires et les longueurs maximales.');
+      this.errorMessage.set(`À compléter ou raccourcir : ${this.invalidFieldLabels().join(', ')}.`);
       return;
     }
 
@@ -716,6 +724,49 @@ export class ModifierComponent implements OnInit {
 
     this.projectId.set(result.project?.id ?? this.projectId());
     return true;
+  }
+
+  // Libellés des champs invalides, dans l'ordre du formulaire.
+  private invalidFieldLabels(): string[] {
+    const labels: string[] = [];
+    const collect = (controls: Record<string, { invalid: boolean }>, names: Record<string, string>) => {
+      for (const [name, label] of Object.entries(names)) {
+        if (controls[name]?.invalid) {
+          labels.push(label);
+        }
+      }
+    };
+
+    collect(this.profileForm.controls, {
+      displayName: 'Nom complet',
+      location: 'Localisation',
+      profileTitle: 'Titre du profil (90 caractères max.)',
+      availabilityLabel: 'Disponibilité (90 caractères max.)',
+      bio: 'Bio (700 caractères max.)',
+      skills: 'Compétences (240 caractères max.)',
+      lookingFor: 'Ce que vous recherchez (240 caractères max.)',
+      githubUrl: 'GitHub',
+      linkedinUrl: 'LinkedIn',
+      websiteUrl: 'Site / portfolio',
+    });
+
+    if (this.isEntrepreneur()) {
+      collect(this.projectForm.controls, {
+        name: 'Nom du projet',
+        sector: 'Secteur',
+        stage: 'Stade du projet',
+        location: 'Localisation du projet',
+        description: "Présentation de l'annonce",
+        lookingFor: 'Profils recherchés',
+        skillsNeeded: 'Compétences attendues',
+      });
+    }
+
+    if (this.isMaRole()) {
+      collect(this.maForm.controls, { sector: 'Secteur M&A', budget: 'Budget / ordre de grandeur', region: 'Région' });
+    }
+
+    return labels;
   }
 
   private splitTags(value: string): string[] {
