@@ -196,14 +196,67 @@ export class AuthService {
     return this.updateProfileLocally(payload);
   }
 
-  async signOut(): Promise<void> {
+  // Envoie l'email de réinitialisation ; le lien ramène sur /reinitialiser-mot-de-passe.
+  // Réponse identique que le compte existe ou non, pour ne pas révéler les emails inscrits.
+  async requestPasswordReset(email: string): Promise<AuthResult> {
+    if (!this.supabase.isConfigured) {
+      return { success: false, message: 'La réinitialisation nécessite Supabase (indisponible en mode local).' };
+    }
+
+    const { error } = await this.supabase.client.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo: `${window.location.origin}/reinitialiser-mot-de-passe`,
+    });
+
+    if (error?.status === 429) {
+      return { success: false, message: 'Trop de demandes. Réessayez dans quelques minutes.' };
+    }
+
+    return {
+      success: true,
+      message: 'Si un compte existe avec cet email, vous allez recevoir un lien pour choisir un nouveau mot de passe.',
+    };
+  }
+
+  // Session de récupération ouverte par le lien de l'email (lu automatiquement dans l'URL par Supabase).
+  async hasRecoverySession(): Promise<boolean> {
+    if (!this.supabase.isConfigured) {
+      return false;
+    }
+
+    const { data } = await this.supabase.client.auth.getSession();
+    return !!data.session;
+  }
+
+  async updatePassword(password: string): Promise<AuthResult> {
+    if (!this.supabase.isConfigured) {
+      return { success: false, message: 'La réinitialisation nécessite Supabase (indisponible en mode local).' };
+    }
+
+    // Même nettoyage qu'à la connexion (signIn), pour que le nouveau mot de passe fonctionne ensuite.
+    const { error } = await this.supabase.client.auth.updateUser({ password: password.trim() });
+
+    if (error) {
+      return {
+        success: false,
+        message: error.code === 'same_password'
+          ? "Choisissez un mot de passe différent de l'ancien."
+          : error.code === 'weak_password'
+            ? 'Mot de passe refusé : il ne respecte pas les critères de sécurité.'
+            : 'Le lien a expiré ou est invalide. Refaites une demande de réinitialisation.',
+      };
+    }
+
+    return { success: true };
+  }
+
+  async signOut(connexionQueryParams?: Record<string, string>): Promise<void> {
     if (this.supabase.isConfigured) {
       await this.supabase.client.auth.signOut();
     }
 
     this._currentUser.set(null);
     this.removeSession();
-    await this.router.navigate(['/connexion']);
+    await this.router.navigate(['/connexion'], { queryParams: connexionQueryParams });
   }
 
   private async signInWithSupabase(payload: SignInPayload, returnUrl?: string | null): Promise<AuthResult> {
@@ -268,7 +321,9 @@ export class AuthService {
     if (error || !data.user) {
       return {
         success: false,
-        message: error?.message ?? 'Creation du compte impossible.',
+        message: error?.code === 'weak_password'
+          ? 'Mot de passe trop faible : 8 caractères minimum, avec des lettres et des chiffres.'
+          : error?.message ?? 'Creation du compte impossible.',
       };
     }
 

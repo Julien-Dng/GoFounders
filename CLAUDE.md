@@ -72,7 +72,8 @@ Chaque utilisateur a **un seul rôle**, choisi à l'inscription et non modifiabl
 /                          Landing page (publique)
 /tarifs                    Page tarifs (publique)
 /inscription               Onboarding — choix du type de profil
-/connexion                 Login / mot de passe oublié
+/connexion                 Login / mot de passe oublié (envoi du lien de réinitialisation)
+/reinitialiser-mot-de-passe  Choix du nouveau mot de passe (ouverte par le lien de l'email)
 
 /dashboard                 Accueil connecté (protégé)
 /recherche                 Matching / exploration des profils (protégé)
@@ -118,6 +119,9 @@ Chaque utilisateur a **un seul rôle**, choisi à l'inscription et non modifiabl
   - Acheteur / Repreneur
   - Vendeur M&A
 - **Étape 2** : Informations de base (nom, email, mot de passe, localisation)
+  - Mot de passe : 8 caractères minimum, au moins une lettre et un chiffre, mots de passe courants refusés
+    (`core/validators/password-policy.validator.ts`, critères affichés par `PasswordCriteriaComponent`).
+    Règle à garder identique dans Supabase : Authentication > Sign In / Providers > Email
 - **Étape 3** : Détails du profil selon le type choisi
 - Barre de progression en haut
 - Pas de soumission de formulaire HTML — utiliser des event handlers Angular

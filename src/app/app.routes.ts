@@ -41,6 +41,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/auth/connexion/connexion.component').then(m => m.ConnexionComponent)
       },
       {
+        path: 'reinitialiser-mot-de-passe',
+        loadComponent: () => import('./features/auth/reinitialiser/reinitialiser.component').then(m => m.ReinitialiserComponent)
+      },
+      {
         path: 'ma',
         loadComponent: () => import('./features/ma/ma-home/ma-home.component').then(m => m.MaHomeComponent)
       },

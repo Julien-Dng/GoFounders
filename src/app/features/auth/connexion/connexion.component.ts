@@ -80,10 +80,29 @@ import { AuthService } from '../../../core/services/auth.service';
           </div>
 
           <div class="mb-6 text-right">
-            <a href="mailto:support@gofounders.fr?subject=Mot%20de%20passe%20oublie" class="text-sm text-accent hover:underline">
-              Mot de passe oublié ? Contactez le support
-            </a>
+            <button type="button" (click)="toggleResetForm()" class="text-sm text-accent hover:underline" [attr.aria-expanded]="isResetFormOpen()">
+              Mot de passe oublié ?
+            </button>
           </div>
+
+          @if (isResetFormOpen()) {
+            <div class="mb-6 rounded-xl border border-accent/20 bg-accent/5 p-4 text-sm">
+              <p class="mb-3 text-foreground/80">
+                Indiquez votre email ci-dessus : nous vous envoyons un lien pour choisir un nouveau mot de passe.
+              </p>
+              <button
+                type="button"
+                (click)="handlePasswordReset()"
+                [disabled]="isSendingReset()"
+                class="w-full rounded-lg border-2 border-accent py-2.5 font-semibold text-accent transition-colors hover:bg-accent hover:text-white disabled:cursor-wait disabled:opacity-60"
+              >
+                {{ isSendingReset() ? 'Envoi…' : 'Recevoir le lien de réinitialisation' }}
+              </button>
+              @if (resetMessage()) {
+                <p class="mt-3" [class.text-success]="resetSucceeded()" [class.text-destructive]="!resetSucceeded()" role="status">{{ resetMessage() }}</p>
+              }
+            </div>
+          }
 
           @if (errorMessage()) {
             <div class="mb-6 rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
@@ -125,13 +144,19 @@ export class ConnexionComponent {
   readonly returnUrl = signal<string | null>(this.route.snapshot.queryParamMap.get('returnUrl'));
   readonly infoMessage = signal(this.route.snapshot.queryParamMap.get('confirmation') === '1'
     ? "Compte cree. Confirmez votre email si Supabase vous l'envoie, puis connectez-vous."
-    : ''
+    : this.route.snapshot.queryParamMap.get('reinitialisation') === '1'
+      ? 'Mot de passe modifié. Connectez-vous avec votre nouveau mot de passe.'
+      : ''
   );
   readonly email = signal(this.route.snapshot.queryParamMap.get('email') ?? '');
   readonly password = signal('');
   readonly isPasswordVisible = signal(false);
   readonly errorMessage = signal('');
   readonly isSubmitting = signal(false);
+  readonly isResetFormOpen = signal(false);
+  readonly isSendingReset = signal(false);
+  readonly resetMessage = signal('');
+  readonly resetSucceeded = signal(false);
 
   onEmailInput(event: Event): void {
     const input = event.target as HTMLInputElement | null;
@@ -145,6 +170,31 @@ export class ConnexionComponent {
 
   togglePasswordVisibility(): void {
     this.isPasswordVisible.update((isVisible) => !isVisible);
+  }
+
+  toggleResetForm(): void {
+    this.isResetFormOpen.update(isOpen => !isOpen);
+    this.resetMessage.set('');
+  }
+
+  async handlePasswordReset(): Promise<void> {
+    const email = this.email().trim();
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      this.resetSucceeded.set(false);
+      this.resetMessage.set('Saisissez d\'abord une adresse email valide dans le champ Email.');
+      return;
+    }
+
+    this.isSendingReset.set(true);
+
+    try {
+      const result = await this.auth.requestPasswordReset(email);
+      this.resetSucceeded.set(result.success);
+      this.resetMessage.set(result.message ?? '');
+    } finally {
+      this.isSendingReset.set(false);
+    }
   }
 
   async handleLogin(): Promise<void> {
