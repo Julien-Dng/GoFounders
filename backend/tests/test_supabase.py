@@ -47,3 +47,19 @@ async def test_load_context_and_auth():
 @pytest.fixture
 def anyio_backend():
     return "asyncio"
+
+
+@pytest.mark.anyio
+async def test_secret_key_formats():
+    seen: list[httpx.Headers] = []
+
+    def capture(request: httpx.Request) -> httpx.Response:
+        seen.append(request.headers)
+        return httpx.Response(200, json=[])
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(capture)) as http:
+        await SupabaseClient("https://t.supabase.co", "sb_secret_abc", http)._select("profiles", {})
+        await SupabaseClient("https://t.supabase.co", "eyJhbGciOi", http)._select("profiles", {})
+
+    assert seen[0]["apikey"] == "sb_secret_abc" and "authorization" not in seen[0]
+    assert seen[1]["authorization"] == "Bearer eyJhbGciOi"

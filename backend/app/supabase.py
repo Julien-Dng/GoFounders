@@ -3,9 +3,13 @@
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
+import logging
+
 import httpx
 
 from .models import UserContext
+
+logger = logging.getLogger(__name__)
 
 
 class SupabaseError(Exception):
@@ -25,15 +29,24 @@ class SupabaseClient:
             headers={"apikey": self._key, "Authorization": f"Bearer {access_token}"},
         )
         if response.status_code != 200:
+            logger.warning("Jeton refusé par Supabase (%s) : %s", response.status_code, response.text[:200])
             return None
         user_id = response.json().get("id")
         return user_id if isinstance(user_id, str) else None
+
+    def _service_headers(self) -> dict[str, str]:
+        # Ancienne clé service_role (JWT « eyJ… ») : aussi en Bearer. Nouvelle clé « sb_secret_… » :
+        # uniquement dans apikey, Supabase refuse une clé qui n'est pas un JWT dans Authorization.
+        headers = {"apikey": self._key}
+        if self._key.startswith("eyJ"):
+            headers["Authorization"] = f"Bearer {self._key}"
+        return headers
 
     async def _select(self, table: str, params: dict[str, str]) -> list[dict[str, Any]]:
         response = await self._http.get(
             f"{self._url}/rest/v1/{table}",
             params=params,
-            headers={"apikey": self._key, "Authorization": f"Bearer {self._key}"},
+            headers=self._service_headers(),
         )
         if response.status_code != 200:
             raise SupabaseError(f"Lecture {table} impossible ({response.status_code})")
