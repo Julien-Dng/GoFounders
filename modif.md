@@ -834,3 +834,21 @@ npm install @stripe/stripe-js
 ### Vérification
 
 - Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 12 octobre 2026 - Refonte « Reprise » (branche `refonte-reprise`)
+
+> Contexte et plan de test complets : `docs/REFONTE-REPRISE.md`.
+
+- **Positionnement** : le site est recentré sur la reprise d'entreprises numériques (« Reprenez une entreprise rentable, avec les bons associés »)
+- **Landing** : nouveaux textes, FAQ à la place des témoignages fictifs, tarifs Cédant gratuit / Repreneur 149 €
+- **Navigation et footer** : Annonces · Vendre · Tarifs ; Recherche, Assistant IA et Pitch IA retirés des menus (routes conservées)
+- **M&A** :
+  - Dépôt d'annonce gratuit, étape de paiement supprimée, plus de valeurs d'exemple pré-remplies
+  - Les boutons « Débloquer » utilisent un Stripe Payment Link (`src/app/core/config/ma-offer.config.ts`), avec repli sur `/abonnement` si le lien est vide
+- **Sécurité** : `sale_reason`, `confidential_description` et `contact_info` ne sont plus lisibles depuis le client ; le dossier complet passe par la fonction `get_ma_listing_detail` (migration `supabase/2026-10-12-ma-listings-confidential-columns.sql` à exécuter)
+
+### Vérification
+
+- Build Angular OK (`ng build`), landing et `/ma` vérifiées visuellement

@@ -46,7 +46,10 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      get_ma_listing_detail: {
+        Args: { listing_id: string };
+        Returns: SupabaseMaListingRow[];
+      };
     };
     Enums: {
       profile_role: ProfileType;

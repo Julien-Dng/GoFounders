@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { PricingCardComponent, PricingFeature } from '../../shared/components/pricing-card/pricing-card.component';
 import { AuthService } from '../../core/services/auth.service';
+import { PaymentService } from '../../core/services/payment.service';
 
 interface Plan {
   name: string;
@@ -142,7 +143,7 @@ interface Plan {
               <ul class="mb-6 space-y-2 text-white/90">
                 <li class="flex items-start gap-2">
                   <svg width="20" height="20" class="mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  <span>Dépôt et consultation d'annonces complètes</span>
+                  <span>Consultation des dossiers complets (le dépôt d'annonce est gratuit)</span>
                 </li>
                 <li class="flex items-start gap-2">
                   <svg width="20" height="20" class="mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -150,9 +151,9 @@ interface Plan {
                 </li>
               </ul>
               <div class="flex flex-col gap-3 sm:flex-row">
-                <a routerLink="/abonnement" class="inline-block rounded-full bg-white px-8 py-4 text-center font-bold text-amber-600 shadow-xl transition-all hover:scale-105 active:scale-95">
+                <button type="button" (click)="unlockMaAccess()" class="inline-block rounded-full bg-white px-8 py-4 text-center font-bold text-amber-600 shadow-xl transition-all hover:scale-105 active:scale-95">
                   Débloquer l'accès M&A - 149€
-                </a>
+                </button>
                 <a routerLink="/ma" class="inline-block rounded-full border border-white/70 px-8 py-4 text-center font-bold text-white transition-all hover:scale-105 hover:bg-white/10 active:scale-95">
                   Voir les annonces
                 </a>
@@ -166,6 +167,8 @@ interface Plan {
 })
 export class TarifsComponent {
   private readonly auth = inject(AuthService);
+  private readonly payment = inject(PaymentService);
+  private readonly router = inject(Router);
 
   readonly plans: Plan[] = [
     {
@@ -257,5 +260,18 @@ export class TarifsComponent {
     }
 
     return plan.href;
+  }
+
+  async unlockMaAccess(): Promise<void> {
+    const user = this.auth.currentUser();
+
+    if (!user) {
+      await this.router.navigate(['/connexion'], { queryParams: { returnUrl: '/tarifs#ma-access' } });
+      return;
+    }
+
+    if (!this.payment.purchaseMaAccess(user)) {
+      await this.router.navigate(['/abonnement']);
+    }
   }
 }

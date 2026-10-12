@@ -6,6 +6,9 @@ import { SupabaseMaListingInsert, SupabaseMaListingRow } from '../models/supabas
 import { AuthService } from './auth.service';
 import { SupabaseService } from './supabase.service';
 
+// Colonnes lisibles sans accès M&A (voir supabase/2026-10-12-ma-listings-confidential-columns.sql).
+const PUBLIC_LISTING_COLUMNS = 'id, owner_id, sector, region, type, revenue, margin, age, price_min, price_max, public_summary, status, created_at, updated_at';
+
 export interface MaSearchFilters {
   sector?: string;
   region?: string;
@@ -26,7 +29,7 @@ export class MaService {
 
     let query = this.supabase.client
       .from('ma_listings')
-      .select('*')
+      .select(PUBLIC_LISTING_COLUMNS)
       .order('created_at', { ascending: false });
 
     if (filters?.sector && filters.sector !== 'Tous') {
@@ -63,17 +66,8 @@ export class MaService {
       return null;
     }
 
-    const { data, error } = await this.supabase.client
-      .from('ma_listings')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (error || !data) {
-      return null;
-    }
-
-    return this.mapRowToListing(data as SupabaseMaListingRow);
+    const row = await this.fetchConfidentialRow(id);
+    return row ? this.mapRowToListing(row) : null;
   }
 
   async getListingCards(): Promise<MaListingData[]> {
@@ -100,17 +94,26 @@ export class MaService {
       return findMaListingById(listingId);
     }
 
-    const { data, error } = await this.supabase.client
-      .from('ma_listings')
-      .select('*')
-      .eq('id', listingId)
-      .maybeSingle();
+    const row = await this.fetchConfidentialRow(listingId);
 
-    if (error || !data) {
+    if (!row) {
       return this.auth.isAdmin() ? findMaListingById(listingId) : undefined;
     }
 
-    return this.mapDetailRow(data as SupabaseMaListingRow);
+    return this.mapDetailRow(row);
+  }
+
+  // Le dossier complet n'est renvoyé par la base qu'au propriétaire, aux comptes avec accès M&A et aux admins.
+  private async fetchConfidentialRow(listingId: string): Promise<SupabaseMaListingRow | null> {
+    const { data, error } = await this.supabase.client
+      .rpc('get_ma_listing_detail', { listing_id: listingId })
+      .maybeSingle();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return data as SupabaseMaListingRow;
   }
 
   async createListing(data: Omit<MaListing, 'id' | 'createdAt'>): Promise<string> {

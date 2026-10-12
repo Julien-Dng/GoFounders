@@ -248,18 +248,19 @@ export class NavbarComponent {
     if (saved) this.doc.documentElement.classList.add('dark');
   }
 
+  // Repositionnement "reprise" : les annonces passent au premier plan,
+  // la recherche de talents et l'assistant IA sortent de la navigation (routes conservées).
   readonly navLinks = [
-    { href: '/recherche', label: 'Recherche' },
-    { href: '/ma', label: 'M&A' },
+    { href: '/ma', label: 'Annonces' },
+    { href: '/ma/deposer', label: 'Vendre' },
     { href: '/tarifs', label: 'Tarifs' },
   ];
 
   readonly navItems: Array<{ id: string; label: string; icon: DrawerIcon; path: string; badge: number | null; exact: boolean }> = [
     { id: 'accueil',    label: 'Accueil',     icon: 'home', path: '/dashboard',   badge: null, exact: true  },
-    { id: 'recherche',  label: 'Recherche',    icon: 'search', path: '/recherche',   badge: null, exact: true  },
+    { id: 'ma',         label: 'Annonces',     icon: 'search', path: '/ma',          badge: null, exact: true  },
+    { id: 'vendre',     label: 'Vendre',       icon: 'chart', path: '/ma/deposer',  badge: null, exact: true  },
     { id: 'messages',   label: 'Messages',     icon: 'messages', path: '/messages',    badge: null, exact: false },
-    { id: 'ma',         label: 'M&A',          icon: 'chart', path: '/ma',          badge: null, exact: true  },
-    { id: 'assistant',  label: 'Assistant IA', icon: 'sparkles', path: '/coaching-ia', badge: null, exact: true  },
     { id: 'abonnement', label: 'Abonnement',   icon: 'credit-card', path: '/tarifs',      badge: null, exact: true  },
     { id: 'parametres', label: 'Paramètres',   icon: 'settings', path: '/parametres',  badge: null, exact: true  },
   ];

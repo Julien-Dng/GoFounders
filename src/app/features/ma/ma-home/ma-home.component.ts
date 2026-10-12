@@ -3,6 +3,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MaListingData } from '../../../core/data/mock-platform.data';
 import { AuthService } from '../../../core/services/auth.service';
 import { MaService } from '../../../core/services/ma.service';
+import { PaymentService } from '../../../core/services/payment.service';
 
 type MaStatIcon = 'mask' | 'handshake' | 'certified';
 
@@ -23,9 +24,9 @@ type MaStatIcon = 'mask' | 'handshake' | 'certified';
               </svg>
             </div>
 
-            <h1 class="mb-4 text-4xl font-bold sm:text-5xl">Marketplace M&A - Achat & Cession d'entreprise</h1>
+            <h1 class="mb-4 text-4xl font-bold sm:text-5xl">Entreprises à reprendre</h1>
             <p class="mx-auto mb-8 max-w-3xl text-lg opacity-90 sm:text-xl lg:mx-0">
-              Trouvez votre prochaine acquisition ou cédez votre entreprise en toute confidentialité.
+              Des activités rentables, surtout numériques, dont les fondateurs veulent passer la main. Teasers publics, dossiers complets pour les repreneurs.
             </p>
 
             <div class="mb-12 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
@@ -33,7 +34,7 @@ type MaStatIcon = 'mask' | 'handshake' | 'certified';
                 Voir les annonces
               </a>
               <a routerLink="/ma/deposer" class="rounded-lg border-2 border-white px-8 py-4 font-bold text-white transition-all hover:scale-105 hover:bg-white/10 active:scale-95">
-                Déposer une annonce
+                Céder gratuitement
               </a>
               @if (!canViewSensitiveDetails()) {
                 <button type="button" (click)="continueToMaAccess()" class="rounded-lg border-2 border-amber-300/80 bg-amber-300/10 px-8 py-4 font-bold text-amber-100 transition-all hover:scale-105 hover:bg-amber-300/20 active:scale-95">
@@ -295,7 +296,7 @@ type MaStatIcon = 'mask' | 'handshake' | 'certified';
             </svg>
           </div>
           <h2 class="mb-4 text-4xl font-bold">Vous souhaitez vendre votre entreprise ?</h2>
-          <p class="mx-auto mb-8 max-w-2xl text-xl opacity-90">Préparez votre annonce confidentielle avant validation de l'accès M&A.</p>
+          <p class="mx-auto mb-8 max-w-2xl text-xl opacity-90">Le dépôt est gratuit et votre annonce reste anonyme jusqu'à ce que vous acceptiez un échange.</p>
           <a routerLink="/ma/deposer" class="inline-block rounded-lg bg-white px-10 py-5 text-lg font-bold text-amber-600 shadow-2xl transition-all hover:scale-105 hover:bg-white/95 active:scale-95">
             Déposer mon annonce
           </a>
@@ -317,6 +318,7 @@ export class MaHomeComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly maService = inject(MaService);
+  private readonly payment = inject(PaymentService);
 
   readonly selectedSector = signal('Tous');
   readonly selectedType = signal('Tous');
@@ -329,14 +331,14 @@ export class MaHomeComponent implements OnInit {
   readonly types = ['Tous', 'Cession', 'Fonds de commerce', 'Parts sociales'];
   readonly stats: Array<{ label: string; icon: MaStatIcon }> = [
     { label: 'Annonces anonymisées', icon: 'mask' },
-    { label: 'Transactions de 50 k€ à 5 M€', icon: 'handshake' },
+    { label: 'Entreprises de 50 k€ à 1 M€ de CA', icon: 'handshake' },
     { label: 'Mise en relation après accès validé', icon: 'certified' },
   ];
-  readonly bullets = ['Teaser public lisible', 'Détails sensibles réservés', 'Publication après paiement confirmé'];
+  readonly bullets = ['Dépôt gratuit', 'Teaser anonymisé', 'Coordonnées partagées avec votre accord'];
 
   readonly canViewSensitiveDetails = computed(() => this.auth.hasMaAccess());
   readonly accessCtaLabel = computed(() =>
-    this.auth.isAuthenticated() ? "Débloquer l'accès M&A - 149€" : "Se connecter pour l'accès M&A"
+    this.auth.isAuthenticated() ? "Débloquer les dossiers - 149 €" : "Se connecter pour débloquer les dossiers"
   );
   readonly filteredListings = computed(() =>
     this.listings().filter(listing => {
@@ -353,6 +355,12 @@ export class MaHomeComponent implements OnInit {
   async continueToMaAccess(): Promise<void> {
     if (!this.auth.isAuthenticated()) {
       await this.router.navigate(['/connexion'], { queryParams: { returnUrl: '/tarifs#ma-access' } });
+      return;
+    }
+
+    const user = this.auth.currentUser();
+
+    if (user && this.payment.purchaseMaAccess(user)) {
       return;
     }
 

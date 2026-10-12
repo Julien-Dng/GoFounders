@@ -12,8 +12,8 @@ import { MaService } from '../../../core/services/ma.service';
     <div class="min-h-screen bg-secondary pb-12 pt-20">
       <div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         <div class="mb-10 text-center">
-          <h1 class="mb-2 text-4xl font-bold">Déposer une annonce M&A</h1>
-          <p class="text-muted-foreground">Préparez votre annonce confidentielle avant validation de l'accès M&A.</p>
+          <h1 class="mb-2 text-4xl font-bold">Céder mon entreprise</h1>
+          <p class="text-muted-foreground">Le dépôt est gratuit. Seul un teaser anonymisé est public.</p>
         </div>
 
         <div class="mb-8">
@@ -37,11 +37,11 @@ import { MaService } from '../../../core/services/ma.service';
                     <div class="grid gap-4 sm:grid-cols-2">
                       <label class="space-y-2">
                         <span class="text-sm font-semibold">Nom de l'activité</span>
-                        <input type="text" [value]="companyName()" (input)="companyName.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
+                        <input type="text" [value]="companyName()" placeholder="Ex. : Boutique Shopify de déco" (input)="companyName.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
                       </label>
                       <label class="space-y-2">
                         <span class="text-sm font-semibold">Secteur</span>
-                        <input type="text" [value]="sector()" (input)="sector.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
+                        <input type="text" [value]="sector()" placeholder="Ex. : E-commerce, SaaS…" (input)="sector.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
                       </label>
                     </div>
                   </div>
@@ -53,15 +53,15 @@ import { MaService } from '../../../core/services/ma.service';
                     <div class="grid gap-4 sm:grid-cols-3">
                       <label class="space-y-2">
                         <span class="text-sm font-semibold">CA annuel</span>
-                        <input type="text" [value]="revenue()" (input)="revenue.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
+                        <input type="text" [value]="revenue()" placeholder="Ex. : 180 k€" (input)="revenue.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
                       </label>
                       <label class="space-y-2">
                         <span class="text-sm font-semibold">Marge</span>
-                        <input type="text" [value]="margin()" (input)="margin.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
+                        <input type="text" [value]="margin()" placeholder="Ex. : 25 %" (input)="margin.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
                       </label>
                       <label class="space-y-2">
                         <span class="text-sm font-semibold">Ancienneté</span>
-                        <input type="text" [value]="age()" (input)="age.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
+                        <input type="text" [value]="age()" placeholder="Ex. : 4 ans" (input)="age.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
                       </label>
                     </div>
                   </div>
@@ -73,11 +73,11 @@ import { MaService } from '../../../core/services/ma.service';
                     <div class="grid gap-4 sm:grid-cols-2">
                       <label class="space-y-2">
                         <span class="text-sm font-semibold">Prix minimum</span>
-                        <input type="text" [value]="priceMin()" (input)="priceMin.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
+                        <input type="text" [value]="priceMin()" placeholder="Ex. : 150 k€" (input)="priceMin.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
                       </label>
                       <label class="space-y-2">
                         <span class="text-sm font-semibold">Prix maximum</span>
-                        <input type="text" [value]="priceMax()" (input)="priceMax.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
+                        <input type="text" [value]="priceMax()" placeholder="Ex. : 220 k€" (input)="priceMax.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
                       </label>
                     </div>
                     <p class="mt-4 text-xs text-muted-foreground">Estimation indicative, non contractuelle.</p>
@@ -86,7 +86,7 @@ import { MaService } from '../../../core/services/ma.service';
                 @case (4) {
                   <div>
                     <h2 class="mb-3 text-2xl font-bold">4. Confidentialité</h2>
-                    <p class="mb-6 text-muted-foreground">Le détail complet restera réservé aux comptes avec accès M&A.</p>
+                    <p class="mb-6 text-muted-foreground">Le détail complet reste réservé aux repreneurs avec un accès validé.</p>
                     <div class="rounded-2xl border border-border bg-secondary/50 p-5">
                       <ul class="space-y-3 text-sm text-foreground/80">
                         <li class="flex items-start gap-2">
@@ -95,7 +95,7 @@ import { MaService } from '../../../core/services/ma.service';
                         </li>
                         <li class="flex items-start gap-2">
                           <span class="mt-1 h-2 w-2 rounded-full bg-amber-500"></span>
-                          <span>La mise en relation se fait après paiement confirmé et validation de l'accès M&A.</span>
+                          <span>Vous choisissez les repreneurs avec qui vous échangez.</span>
                         </li>
                         <li class="flex items-start gap-2">
                           <span class="mt-1 h-2 w-2 rounded-full bg-amber-500"></span>
@@ -103,27 +103,13 @@ import { MaService } from '../../../core/services/ma.service';
                         </li>
                       </ul>
                     </div>
-                  </div>
-                }
-                @case (5) {
-                  <div>
-                    <h2 class="mb-3 text-2xl font-bold">5. Paiement sécurisé</h2>
-                    <p class="mb-6 text-muted-foreground">
-                      Relisez votre annonce avant de continuer vers le paiement sécurisé one-shot. La publication et l'accès M&A seront validés après confirmation du paiement.
-                    </p>
-                    <div class="rounded-2xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-6">
+                    <div class="mt-5 rounded-2xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-6">
                       <div class="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">Résumé</div>
                       <div class="space-y-2 text-sm text-foreground/80">
                         <div><strong>Activité :</strong> {{ companyName() || 'Votre annonce' }}</div>
                         <div><strong>Secteur :</strong> {{ sector() || 'À préciser' }}</div>
                         <div><strong>Fourchette :</strong> {{ priceMin() || '...' }} - {{ priceMax() || '...' }}</div>
                       </div>
-                    </div>
-                    <div class="mt-5 rounded-2xl border border-border bg-secondary/50 p-5">
-                      <div class="mb-2 text-sm font-bold text-foreground">Accès M&A à valider</div>
-                      <p class="text-sm leading-relaxed text-muted-foreground">
-                        Le paiement sécurisé sera branché ici. Aucun accès M&A n'est accordé automatiquement tant que le paiement n'est pas confirmé.
-                      </p>
                     </div>
                   </div>
                 }
@@ -156,7 +142,7 @@ import { MaService } from '../../../core/services/ma.service';
                 </div>
                 <h2 class="mb-3 text-3xl font-bold">Annonce publiée</h2>
                 <p class="mx-auto mb-8 max-w-xl leading-relaxed text-muted-foreground">
-                  Votre annonce a bien été enregistrée dans Supabase. Elle apparaît maintenant dans la marketplace M&A.
+                  Votre annonce a bien été enregistrée. Son teaser anonymisé apparaît maintenant dans les annonces.
                 </p>
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
                   <a [routerLink]="['/ma/annonce', createdListingId()]" class="rounded-lg bg-amber-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-amber-600">
@@ -167,27 +153,13 @@ import { MaService } from '../../../core/services/ma.service';
                   </a>
                 </div>
               } @else {
-                <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-amber-100 text-amber-600">
-                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                  </svg>
-                </div>
-                <h2 class="mb-3 text-3xl font-bold">Paiement sécurisé requis</h2>
+                <h2 class="mb-3 text-3xl font-bold">La publication n'a pas abouti</h2>
                 <p class="mx-auto mb-8 max-w-xl leading-relaxed text-muted-foreground">
-                  Votre annonce est prête. Il faut débloquer l'accès M&A avant publication, puis revenir publier l'annonce.
+                  Votre annonce n'a pas pu être enregistrée. Réessayez dans quelques instants ou contactez-nous.
                 </p>
-                <p class="mx-auto mb-8 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                  Aucun accès M&A n'a été activé automatiquement.
-                </p>
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
-                  <a routerLink="/abonnement" class="rounded-lg bg-amber-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-amber-600">
-                    Débloquer l'accès M&A
-                  </a>
-                  <a routerLink="/tarifs" fragment="ma-access" class="rounded-lg border border-border px-6 py-3 font-semibold transition-colors hover:border-amber-500">
-                    Découvrir l'offre M&A
-                  </a>
-                </div>
+                <button type="button" (click)="checkoutRequested.set(false)" class="rounded-lg bg-amber-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-amber-600">
+                  Revenir à mon annonce
+                </button>
               }
             </div>
           }
@@ -200,24 +172,22 @@ export class MaDeposerComponent {
   private readonly auth = inject(AuthService);
   private readonly maService = inject(MaService);
 
-  readonly totalSteps = 5;
+  readonly totalSteps = 4;
   readonly currentStep = signal(1);
   readonly checkoutRequested = signal(false);
   readonly isSubmitting = signal(false);
   readonly createdListingId = signal('');
 
-  readonly companyName = signal('Atelier Local');
-  readonly sector = signal('Commerce local');
-  readonly revenue = signal('380 k€/an');
-  readonly margin = signal('20 %');
-  readonly age = signal('8 ans');
-  readonly priceMin = signal('300 k€');
-  readonly priceMax = signal('420 k€');
+  readonly companyName = signal('');
+  readonly sector = signal('');
+  readonly revenue = signal('');
+  readonly margin = signal('');
+  readonly age = signal('');
+  readonly priceMin = signal('');
+  readonly priceMax = signal('');
 
   readonly progressPercent = computed(() => Math.round((this.currentStep() / this.totalSteps) * 100));
-  readonly finalActionLabel = computed(() =>
-    this.auth.hasMaAccess() ? "Publier l'annonce" : "Débloquer l'accès M&A avant publication"
-  );
+  readonly finalActionLabel = computed(() => this.isSubmitting() ? 'Publication…' : "Publier l'annonce");
 
   nextStep(): void {
     this.currentStep.update(step => Math.min(step + 1, this.totalSteps));
@@ -228,11 +198,6 @@ export class MaDeposerComponent {
   }
 
   async submitListing(): Promise<void> {
-    if (!this.auth.hasMaAccess()) {
-      this.checkoutRequested.set(true);
-      return;
-    }
-
     const user = this.auth.currentUser();
 
     if (!user || this.isSubmitting()) {

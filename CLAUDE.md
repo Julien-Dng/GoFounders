@@ -5,6 +5,12 @@
 
 ---
 
+> ⚠️ **Branche `refonte-reprise`** : le produit est en cours de recentrage sur la reprise d'entreprises numériques
+> (dépôt gratuit pour les cédants, accès repreneur 149 €). Voir `docs/REFONTE-REPRISE.md` : cette note prime sur
+> les sections ci-dessous en cas de conflit. Le backend réel est **Supabase** (pas Firebase).
+
+---
+
 ## 🎯 Vision du produit
 
 **GoFounders** est une plateforme française qui met en relation :
