@@ -29,7 +29,7 @@ export interface AiContext {
   suggested_questions: string[];
 }
 
-// Appelle le back Python (dossier backend/), qui injecte le contexte utilisateur et interroge Claude.
+// Appelle le back Python (dossier backend/), qui injecte le contexte utilisateur et interroge le modèle d'IA.
 @Injectable({ providedIn: 'root' })
 export class AiService {
   private readonly http = inject(HttpClient);

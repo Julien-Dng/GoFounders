@@ -1,4 +1,4 @@
-"""API GoFounders : assistant IA contextuel (/coaching-ia).
+"""API GoFounders : assistant IA contextuel (/coaching-ia), avec OpenAI ou Claude.
 
 Lancement local : uvicorn app.main:app --reload --port 8000
 """
@@ -11,11 +11,14 @@ from typing import Annotated
 
 import anthropic
 import httpx
+import openai
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 
-from .assistant import Assistant, AssistantUnavailable
+from .assistant import Assistant, AssistantUnavailable, LlmBackend
 from .config import Settings, get_settings
+from .llm_anthropic import AnthropicBackend
+from .llm_openai import OpenAIBackend
 from .models import ChatRequest, ChatResponse, ContextItem, ContextResponse, UserContext
 from .supabase import SupabaseClient, SupabaseError
 
@@ -23,12 +26,20 @@ PAID_PLANS = {"PRO", "PREMIUM"}
 HISTORY_LIMIT = 20
 
 
+def build_backend(settings: Settings) -> LlmBackend:
+    if settings.ai_provider == "openai":
+        return OpenAIBackend(openai.AsyncOpenAI(api_key=settings.openai_api_key), settings.openai_model)
+    return AnthropicBackend(
+        anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key), settings.claude_model, settings.claude_effort
+    )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     async with httpx.AsyncClient(timeout=10.0) as http:
         app.state.supabase = SupabaseClient(settings.supabase_url, settings.supabase_service_role_key, http)
-        app.state.assistant = Assistant(anthropic.AsyncAnthropic(), settings.claude_model, settings.claude_effort)
+        app.state.assistant = Assistant(build_backend(settings))
         app.state.request_log = defaultdict(deque)
         yield
 

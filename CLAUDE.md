@@ -333,8 +333,8 @@ export const routes: Routes = [
 | **Firebase Storage** | Photos de profil, documents |
 | **Firebase Functions** | Backend logic (matching, notifications) |
 | **Stripe** | Abonnements PRO/PREMIUM + one-shot M&A |
-| **API Anthropic (Claude)** | Assistant IA contextuel (/coaching-ia), appelé depuis le back Python |
-| **Python / FastAPI** (`backend/`) | Back de l'assistant IA : vérifie la session Supabase et le plan, injecte le contexte, appelle Claude |
+| **OpenAI** (ou **Claude** en option) | Assistant IA contextuel (/coaching-ia), appelé depuis le back Python ; fournisseur choisi selon la clé présente dans `.env` |
+| **Python / FastAPI** (`backend/`) | Back de l'assistant IA : vérifie la session Supabase et le plan, injecte le contexte, appelle le modèle d'IA |
 | **Angular Material ou PrimeNG** | Composants UI de base |
 | **SCSS** | Styles avec variables design system |
 
@@ -430,7 +430,7 @@ interface MaListing {
 
 ### Implémentation : back Python (`backend/`)
 Angular (`AiService`) → `POST /api/coaching-ia/messages` avec le jeton Supabase → FastAPI vérifie la
-session et le plan PRO/PREMIUM, charge le contexte, appelle Claude. Voir `backend/README.md`.
+session et le plan PRO/PREMIUM, charge le contexte, appelle OpenAI (clé `openAIkey`) ou Claude. Voir `backend/README.md`.
 Le prompt réel est dans `backend/app/prompt.py`. Esquisse d'origine :
 ```typescript
 const systemPrompt = `

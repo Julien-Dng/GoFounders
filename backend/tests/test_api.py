@@ -10,7 +10,9 @@ os.environ.setdefault("SUPABASE_SERVICE_ROLE_KEY", "service-key")
 
 from fastapi.testclient import TestClient  # noqa: E402
 
-from app.assistant import FALLBACK_REPLY, REFUSAL_REPLY, Assistant  # noqa: E402
+from app.assistant import FALLBACK_REPLY, REFUSAL_REPLY, Assistant, AssistantRefused  # noqa: E402
+from app.llm_anthropic import AnthropicBackend  # noqa: E402
+from app.llm_openai import OpenAIBackend  # noqa: E402
 from app.main import app, get_assistant, get_supabase  # noqa: E402
 from app.models import ChatResponse, ChatTurn, UserContext  # noqa: E402
 from app.prompt import build_user_context  # noqa: E402
@@ -126,10 +128,37 @@ def test_prompt_contains_real_data():
     assert "bio" in prompt  # champ manquant signalé
 
 
-# --- Assistant : traitement de la réponse Claude ---------------------------------------------
+# --- Assistant et fournisseurs d'IA ---------------------------------------------------------
+
+HISTORY = [ChatTurn(role="user", content="Que faire ?")]
 
 
-class FakeMessages:
+class FakeBackend:
+    def __init__(self, text: str | None = None, refuse: bool = False) -> None:
+        self.text, self.refuse = text, refuse
+
+    async def complete(self, instructions: str, user_context: str, history: list[ChatTurn]) -> str | None:
+        if self.refuse:
+            raise AssistantRefused()
+        return self.text
+
+
+@pytest.mark.anyio
+async def test_assistant_filters_actions_by_role():
+    payload = {"reply": "Voici mes conseils.", "actions": ["voir_recherche", "voir_ma", "voir_ma", "deposer_annonce"]}
+    result = await Assistant(FakeBackend(json.dumps(payload))).reply(make_context(role="buyer"), HISTORY)
+    assert result.reply == "Voici mes conseils."
+    assert result.actions == ["voir_ma"]
+
+
+@pytest.mark.anyio
+async def test_assistant_handles_refusal_and_bad_output():
+    assert (await Assistant(FakeBackend(refuse=True)).reply(make_context(), HISTORY)).reply == REFUSAL_REPLY
+    assert (await Assistant(FakeBackend('{"reply": "coup')).reply(make_context(), HISTORY)).reply == FALLBACK_REPLY
+    assert (await Assistant(FakeBackend(None)).reply(make_context(), HISTORY)).reply == FALLBACK_REPLY
+
+
+class Recorder:
     def __init__(self, response: SimpleNamespace) -> None:
         self.response = response
         self.kwargs: dict[str, object] = {}
@@ -139,33 +168,60 @@ class FakeMessages:
         return self.response
 
 
-def fake_client(stop_reason: str, text: str | None) -> SimpleNamespace:
-    content = [SimpleNamespace(type="text", text=text)] if text is not None else []
-    messages = FakeMessages(SimpleNamespace(stop_reason=stop_reason, content=content))
-    return SimpleNamespace(beta=SimpleNamespace(messages=messages))
+@pytest.mark.anyio
+async def test_openai_backend_request_and_refusal():
+    ok = SimpleNamespace(
+        status="completed",
+        output=[SimpleNamespace(type="message", content=[SimpleNamespace(type="output_text")])],
+        output_text='{"reply": "ok", "actions": []}',
+        incomplete_details=None,
+    )
+    recorder = Recorder(ok)
+    backend = OpenAIBackend(SimpleNamespace(responses=recorder), "gpt-test")
+    assert await backend.complete("INSTR", "CONTEXTE", HISTORY) == '{"reply": "ok", "actions": []}'
+    assert recorder.kwargs["model"] == "gpt-test"
+    assert recorder.kwargs["store"] is False
+    assert "CONTEXTE" in str(recorder.kwargs["instructions"])
+    assert recorder.kwargs["text"]["format"]["strict"] is True
 
+    refused = SimpleNamespace(
+        status="completed",
+        output=[SimpleNamespace(type="message", content=[SimpleNamespace(type="refusal")])],
+        output_text="",
+        incomplete_details=None,
+    )
+    with pytest.raises(AssistantRefused):
+        await OpenAIBackend(SimpleNamespace(responses=Recorder(refused)), "m").complete("I", "C", HISTORY)
 
-HISTORY = [ChatTurn(role="user", content="Que faire ?")]
+    truncated = SimpleNamespace(status="incomplete", output=[], output_text='{"re', incomplete_details={"reason": "max_output_tokens"})
+    assert await OpenAIBackend(SimpleNamespace(responses=Recorder(truncated)), "m").complete("I", "C", HISTORY) is None
 
 
 @pytest.mark.anyio
-async def test_assistant_filters_actions_by_role():
-    payload = {"reply": "Voici mes conseils.", "actions": ["voir_recherche", "voir_ma", "voir_ma", "deposer_annonce"]}
-    client = fake_client("end_turn", json.dumps(payload))
-    result = await Assistant(client, "claude-opus-5-5", "medium").reply(make_context(role="buyer"), HISTORY)
-    assert result.actions == ["voir_ma"]
-    kwargs = client.beta.messages.kwargs
-    assert kwargs["model"] == "claude-opus-5-5"
-    assert kwargs["fallbacks"] == "default"
-    assert kwargs["output_config"]["effort"] == "medium"
+async def test_anthropic_backend_request_and_refusal():
+    recorder = Recorder(SimpleNamespace(stop_reason="end_turn", content=[SimpleNamespace(type="text", text="{}")]))
+    backend = AnthropicBackend(SimpleNamespace(beta=SimpleNamespace(messages=recorder)), "claude-opus-5-5", "medium")
+    assert await backend.complete("I", "C", HISTORY) == "{}"
+    assert recorder.kwargs["fallbacks"] == "default"
+    assert recorder.kwargs["output_config"]["effort"] == "medium"
+
+    refused = Recorder(SimpleNamespace(stop_reason="refusal", content=[]))
+    with pytest.raises(AssistantRefused):
+        await AnthropicBackend(SimpleNamespace(beta=SimpleNamespace(messages=refused)), "m", "low").complete("I", "C", HISTORY)
 
 
-@pytest.mark.anyio
-async def test_assistant_handles_refusal_and_bad_output():
-    refusal = await Assistant(fake_client("refusal", None), "m", "medium").reply(make_context(), HISTORY)
-    assert refusal.reply == REFUSAL_REPLY
-    truncated = await Assistant(fake_client("max_tokens", '{"reply": "coup'), "m", "medium").reply(make_context(), HISTORY)
-    assert truncated.reply == FALLBACK_REPLY
+def test_provider_choice_reads_openaikey_from_env_file(tmp_path, monkeypatch):
+    from app.config import Settings
+
+    env = tmp_path / ".env"
+    env.write_text("openAIkey=sk-test\nSUPABASE_URL=https://x.supabase.co\nSUPABASE_SERVICE_ROLE_KEY=k\n")
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    settings = Settings(_env_file=env)
+    assert settings.openai_api_key == "sk-test"
+    assert settings.ai_provider == "openai"
+
+    only_claude = Settings(_env_file=None, openai_api_key=None, anthropic_api_key="sk-ant")
+    assert only_claude.ai_provider == "anthropic"
 
 
 @pytest.fixture
