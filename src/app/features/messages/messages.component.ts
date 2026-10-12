@@ -9,6 +9,7 @@ import {
   findMarketplaceProfileById
 } from '../../core/data/mock-platform.data';
 import { AuthService } from '../../core/services/auth.service';
+import { MatchingService } from '../../core/services/matching.service';
 import { ConversationThread, MessagingService } from '../../core/services/messaging.service';
 
 interface ConversationPreview {
@@ -181,11 +182,13 @@ interface ConversationPreview {
               <h3 class="text-base font-bold">{{ selectedProfile()?.displayName ?? selectedConv()!.name }}</h3>
               <p class="mt-1 text-xs font-medium text-muted-foreground">{{ selectedProfile()?.title ?? 'Profil GoFounders' }}</p>
 
-              <div class="mt-4 grid grid-cols-2 gap-2 text-left">
-                <div class="rounded-xl bg-secondary p-3">
-                  <div class="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Match</div>
-                  <div class="mt-1 text-lg font-bold text-accent">{{ selectedProfile()?.match ?? 0 }}%</div>
-                </div>
+              <div class="mt-4 grid gap-2 text-left" [class.grid-cols-2]="selectedCompatibility() !== null">
+                @if (selectedCompatibility(); as compatibility) {
+                  <div class="rounded-xl bg-secondary p-3" [title]="compatibility.reasons.join(' · ')">
+                    <div class="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Compatibilité</div>
+                    <div class="mt-1 text-lg font-bold text-accent">{{ compatibility.score }}%</div>
+                  </div>
+                }
                 <div class="rounded-xl bg-secondary p-3">
                   <div class="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Ville</div>
                   <div class="mt-1 truncate text-sm font-bold">{{ selectedProfile()?.location ?? 'France' }}</div>
@@ -277,6 +280,7 @@ export class MessagesComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
   private readonly messagingService = inject(MessagingService);
+  private readonly matchingService = inject(MatchingService);
 
   readonly conversations = signal<ConversationPreview[]>([]);
 
@@ -294,6 +298,16 @@ export class MessagesComponent implements OnInit {
     const activeConversation = this.selectedConv();
     return activeConversation?.profile ?? findMarketplaceProfileById(activeConversation?.participantProfileId ?? '');
   });
+  // Score calculé à l'ouverture d'une conversation ; null quand il n'a pas de sens (deux talents, acheteur...).
+  readonly selectedCompatibility = signal<{ score: number; reasons: string[] } | null>(null);
+  private readonly selectedCompatibilityEffect = effect(() => {
+    const participantId = this.selectedConv()?.participantProfileId;
+    this.selectedCompatibility.set(null);
+
+    if (participantId) {
+      void this.loadCompatibility(participantId);
+    }
+  }, { allowSignalWrites: true });
   readonly selectedProfileSkills = computed(() => this.selectedProfile()?.skills.slice(0, 4) ?? []);
   readonly newMessage = signal('');
   readonly sendError = this.messagingService.lastError;
@@ -399,6 +413,14 @@ export class MessagesComponent implements OnInit {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file) {
       console.log('Fichier sélectionné :', file.name);
+    }
+  }
+
+  private async loadCompatibility(participantId: string): Promise<void> {
+    const profile = await this.matchingService.getMarketplaceProfileById(participantId);
+
+    if (this.selectedConv()?.participantProfileId === participantId) {
+      this.selectedCompatibility.set(profile?.matchReasons ? { score: profile.match, reasons: profile.matchReasons } : null);
     }
   }
 
