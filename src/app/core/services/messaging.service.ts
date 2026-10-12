@@ -42,7 +42,8 @@ interface SupabaseQuotaRow {
 // Codes levés par les triggers Supabase (2026-10-11-free-quotas.sql).
 const QUOTA_ERROR_MESSAGES: Record<string, string> = {
   FREE_QUOTA_CONTACTS: 'Vous avez atteint la limite de 3 nouveaux contacts ce mois-ci avec le plan FREE. Passez en PRO pour des contacts illimités.',
-  FREE_QUOTA_MESSAGES: 'Vous avez atteint la limite de 5 messages ce mois-ci avec le plan FREE. Passez en PRO pour une messagerie illimitée.',
+  // Ancienne limite de messages (avant 2026-10-12-offres.sql), gardée si la migration n'est pas encore passée.
+  FREE_QUOTA_MESSAGES: 'Vous avez atteint la limite de messages de votre plan ce mois-ci. Passez en PRO pour une messagerie illimitée.',
 };
 
 export interface ConversationThread {

@@ -31,8 +31,13 @@ export class PaymentService {
       return { success: false, message: 'Connectez-vous pour continuer.' };
     }
 
-    if (product === 'MA_ACCESS' && !canAccessMaDetails(user.profileType) && !canPublishMaListing(user.profileType)) {
-      return { success: false, message: "L'accès M&A est réservé aux comptes acheteur et vendeur." };
+    if (product === 'MA_ACCESS' && !canAccessMaDetails(user.profileType)) {
+      return {
+        success: false,
+        message: canPublishMaListing(user.profileType)
+          ? 'La publication est gratuite pour les vendeurs : aucun paiement nécessaire.'
+          : "L'accès M&A est réservé aux comptes acheteur.",
+      };
     }
 
     if (PAYMENT_MODE === 'stripe') {
@@ -54,7 +59,9 @@ export class PaymentService {
       await this.auth.reloadCurrentProfile();
     } else {
       const applied = this.auth.applyLocalEntitlements(
-        product === 'MA_ACCESS' ? { maAccess: true } : { plan: product }
+        product === 'MA_ACCESS'
+          ? { maAccess: true, maAccessExpiresAt: new Date(Date.now() + 365 * 24 * 3600 * 1000).toISOString() }
+          : { plan: product }
       );
 
       if (!applied) {
@@ -64,7 +71,7 @@ export class PaymentService {
 
     return {
       success: true,
-      message: product === 'MA_ACCESS' ? 'Accès M&A activé (paiement simulé).' : `Plan ${product} activé (paiement simulé).`,
+      message: product === 'MA_ACCESS' ? 'Accès M&A activé pour 12 mois (paiement simulé).' : `Plan ${product} activé (paiement simulé).`,
     };
   }
 }

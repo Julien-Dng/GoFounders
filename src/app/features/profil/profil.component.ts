@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { MarketplaceProfile } from '../../core/data/mock-platform.data';
+import { MATCH_REASONS_UPSELL, canSeeMatchReasons } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { MatchingService } from '../../core/services/matching.service';
 import { EditableProject, ProjectService } from '../../core/services/project.service';
@@ -76,7 +77,11 @@ import { EditableProject, ProjectService } from '../../core/services/project.ser
                           <span class="compatibility-score-shine font-bold">{{ compatibilityScore() }}% compatible</span>
                           <span class="text-sm">avec votre profil</span>
                         </div>
-                        <div class="mt-1 text-xs font-medium text-muted-foreground">{{ compatibilityReasons() }}</div>
+                        @if (canSeeReasons()) {
+                          <div class="mt-1 text-xs font-medium text-muted-foreground">{{ compatibilityReasons() }}</div>
+                        } @else {
+                          <a routerLink="/tarifs" class="mt-1 inline-block text-xs font-semibold text-accent hover:underline">{{ reasonsUpsell }}</a>
+                        }
                       </div>
                     }
                   </div>
@@ -421,6 +426,8 @@ export class ProfilComponent implements OnInit {
     const profile = this.publicProfile();
     return profile?.matchReasons ? profile.match : null;
   });
+  readonly canSeeReasons = computed(() => canSeeMatchReasons(this.auth.plan()));
+  readonly reasonsUpsell = MATCH_REASONS_UPSELL;
   readonly compatibilityReasons = computed(() => {
     const reasons = this.publicProfile()?.matchReasons ?? [];
     return reasons.length > 0 ? reasons.join(' · ') : 'Peu de critères en commun pour le moment';

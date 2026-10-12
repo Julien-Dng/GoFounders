@@ -4,14 +4,14 @@
 --
 -- Mot de passe de tous les comptes : Test-GoFounders-2026
 --
---   entrepreneur.free@gofounders.test   Porteur de projet, FREE (quotas 3 contacts / 5 messages)
+--   entrepreneur.free@gofounders.test   Porteur de projet, FREE (3 nouveaux contacts par mois)
 --   entrepreneur.pro@gofounders.test    Porteur de projet, PRO (assistant IA, illimité)
---   talent.free@gofounders.test         Talent, FREE
+--   talent.free@gofounders.test         Talent, FREE (contacts illimités, pas de raisons du score)
 --   talent.pro@gofounders.test          Talent, PRO
 --   acheteur@gofounders.test            Acheteur sans accès M&A (dossiers verrouillés)
---   acheteur.ma@gofounders.test         Acheteur avec accès M&A (dossiers complets)
---   vendeur@gofounders.test             Vendeur sans accès M&A (publication bloquée)
---   vendeur.ma@gofounders.test          Vendeur avec accès M&A + une annonce publiée
+--   acheteur.ma@gofounders.test         Acheteur avec accès M&A 12 mois (dossiers complets)
+--   vendeur@gofounders.test             Vendeur sans annonce (publication gratuite à tester)
+--   vendeur.ma@gofounders.test          Vendeur avec une annonce publiée
 --
 -- Suppression : supabase/seed/supprimer-comptes-test.sql
 
@@ -51,7 +51,10 @@ begin
 
   -- Exécuté en tant que postgres : autorisé par le trigger enforce_profile_entitlements.
   update public.profiles
-  set plan = user_plan::public.plan_type, ma_access = user_ma_access, updated_at = now()
+  set plan = user_plan::public.plan_type,
+      ma_access = user_ma_access,
+      ma_access_expires_at = case when user_ma_access then now() + interval '12 months' end,
+      updated_at = now()
   where id = (select id from auth.users where email = user_email);
 end;
 $$;

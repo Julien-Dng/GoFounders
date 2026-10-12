@@ -31,6 +31,7 @@ interface StoredUserRecord {
   websiteUrl?: string;
   plan: Plan;
   maAccess: boolean;
+  maAccessExpiresAt?: string;
   isAdmin?: boolean;
   stripeCustomerId?: string;
   createdAt: string;
@@ -161,7 +162,7 @@ export class AuthService {
   }
 
   // Mode local sans Supabase uniquement : applique les droits d'un paiement simulé.
-  applyLocalEntitlements(entitlements: { plan?: Exclude<Plan, 'FREE'>; maAccess?: boolean }): boolean {
+  applyLocalEntitlements(entitlements: { plan?: Exclude<Plan, 'FREE'>; maAccess?: boolean; maAccessExpiresAt?: string }): boolean {
     const activeUser = this._currentUser();
 
     if (!activeUser || this.supabase.isConfigured) {
@@ -863,7 +864,8 @@ export class AuthService {
       linkedinUrl: user.linkedinUrl,
       websiteUrl: user.websiteUrl,
       plan: user.plan,
-      maAccess: user.maAccess,
+      maAccess: this.isMaAccessActive(user.maAccess, user.maAccessExpiresAt),
+      maAccessExpiresAt: user.maAccessExpiresAt,
       isAdmin: user.isAdmin ?? false,
       stripeCustomerId: user.stripeCustomerId,
       createdAt: Timestamp.fromDate(new Date(user.createdAt)),
@@ -893,7 +895,8 @@ export class AuthService {
       linkedinUrl: profile.linkedin_url ?? undefined,
       websiteUrl: profile.website_url ?? undefined,
       plan: profile.plan,
-      maAccess: profile.ma_access,
+      maAccess: this.isMaAccessActive(profile.ma_access, profile.ma_access_expires_at),
+      maAccessExpiresAt: profile.ma_access_expires_at ?? undefined,
       isAdmin: profile.is_admin ?? false,
       createdAt: Timestamp.fromDate(new Date(profile.created_at)),
       lastActive: Timestamp.fromDate(new Date(profile.updated_at)),
@@ -909,6 +912,11 @@ export class AuthService {
       ]),
       verified: Boolean(authUser?.email_confirmed_at),
     };
+  }
+
+  // Accès M&A valable 12 mois après l'achat (sans date : accès accordé avant la durée limitée).
+  private isMaAccessActive(maAccess: boolean, expiresAt: string | null | undefined): boolean {
+    return maAccess && (!expiresAt || new Date(expiresAt).getTime() > Date.now());
   }
 
   private computeInitials(displayName: string): string {

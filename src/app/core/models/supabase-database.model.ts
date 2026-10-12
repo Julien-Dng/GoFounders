@@ -65,6 +65,7 @@ export interface SupabaseProfileRow {
   role: ProfileType;
   plan: Plan;
   ma_access: boolean;
+  ma_access_expires_at?: string | null;
   is_admin?: boolean | null;
   location: string | null;
   title: string | null;

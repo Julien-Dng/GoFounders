@@ -15,7 +15,7 @@
 
 Le produit est composé de **deux verticales** :
 1. **Marketplace Talents & Associés** — matching entre entrepreneurs et profils
-2. **Marketplace M&A** — achat et cession d'entreprises (accès one-shot 149€, indépendant de l'abonnement)
+2. **Marketplace M&A** — achat et cession d'entreprises (publication gratuite pour les vendeurs, accès repreneur 149 € / 12 mois)
 
 ---
 
@@ -37,32 +37,35 @@ Chaque utilisateur a **un seul rôle**, choisi à l'inscription et non modifiabl
 
 ## 💰 Modèle tarifaire
 
-### Abonnements (Marketplace Talents & Associés)
+### Abonnements (Marketplace Talents & Associés) — grille d'octobre 2026
 
-| Fonctionnalité | FREE | PRO (49€/mois) | PREMIUM (Sur mesure) |
+Principe : **seule la page tarifs fait foi**, et elle n'annonce que ce qui existe (badge « Bientôt » sinon).
+FREE généreux pour attirer du monde, PRO centré sur une promesse (« Trouvez votre associé plus vite »),
+PREMIUM = accompagnement humain. Les talents n'ont pas besoin de payer.
+
+| Fonctionnalité | FREE | PRO (49€/mois, sans engagement) | PREMIUM (sur devis) |
 |---|---|---|---|
-| Nombre de contacts | 3/mois | Illimité | Illimité |
-| Matching intelligent | ❌ | ✅ | ✅ |
-| Recherche avancée | ❌ | ✅ | ✅ |
-| Messages | 5/mois | Illimité | Illimité |
-| Visibilité premium | ❌ | ✅ (top résultats) | ✅ |
-| Assistant IA contextuel | ❌ | ✅ basique | ✅ complet |
-| Recherche investisseurs | ❌ | ❌ | ✅ |
-| Coaching humain | ❌ | ❌ | ✅ |
-| Account manager dédié | ❌ | ❌ | ✅ |
-| NDA & accompagnement juridique | ❌ | ❌ | ✅ (partenaires) |
-| Support | Email | Email rapide | Téléphone + Email |
+| Profil, recherche, profils visibles | Illimités | Illimités | Illimités |
+| Nouveaux contacts / mois | Talents : illimités · Porteurs de projet : 3 | Illimités | Illimités |
+| Réponses dans les conversations | Illimitées | Illimitées | Illimitées |
+| Score de compatibilité (%) | ✅ | ✅ | ✅ |
+| Matching intelligent (raisons détaillées du score) | ❌ | ✅ | ✅ |
+| Assistant IA personnel (`/coaching-ia`) | ❌ | ✅ | ✅ |
+| Recherche avancée | ❌ | Bientôt | Bientôt |
+| Projet mis en avant dans les résultats | ❌ | Bientôt | Bientôt |
+| Présentations qualifiées d'associés | ❌ | ❌ | ✅ |
+| Mise en relation investisseurs et experts juridiques partenaires | ❌ | ❌ | ✅ |
+| Interlocuteur dédié | ❌ | ❌ | ✅ |
 
-### M&A — Accès One-Shot (149€, paiement unique)
-- Totalement **indépendant** de l'abonnement mensuel, mais **réservé aux rôles acheteur et vendeur**
-- **Acheteur** (`buyer`) : consultation des dossiers complets + mise en relation directe avec les vendeurs
-- **Vendeur** (`seller`) : dépôt de son annonce ; il ne voit pas le détail des annonces des autres vendeurs
-- **Porteur de projet / Talent** : annonces **anonymisées** uniquement, pas d'achat de l'accès M&A
-- Helpers : `canAccessMaDetails()` et `canPublishMaListing()` dans `user.model.ts`
+- Quotas vérifiés par Supabase (`free_quota_limits`) : 3 nouveaux contacts par mois pour les porteurs de projet en FREE, aucune limite de messages
+- Raisons du score : `canSeeMatchReasons()` dans `user.model.ts` (PRO et PREMIUM)
+- Le générateur de pitch a été retiré (hors promesse de mise en relation)
 
-### PREMIUM M&A
-- Accompagnement complet : valorisation, mise en relation experts (notaires, comptables partenaires)
-- Tarif sur devis
+### M&A (indépendant de l'abonnement, réservé aux rôles acheteur et vendeur)
+- **Vendeur** (`seller`) : publication **gratuite** de son annonce anonymisée (offre de lancement) ; il ne voit pas le détail des annonces des autres vendeurs
+- **Acheteur** (`buyer`) : **149 € pour 12 mois** d'accès aux dossiers complets + contact direct des vendeurs (`ma_access_expires_at`)
+- **Porteur de projet / Talent** : annonces **anonymisées** uniquement
+- Helpers : `canAccessMaDetails()` et `canPublishMaListing()` dans `user.model.ts` ; accès valide = `has_active_ma_access()` côté Supabase
 
 ---
 
@@ -84,7 +87,7 @@ Chaque utilisateur a **un seul rôle**, choisi à l'inscription et non modifiabl
 /coaching-ia               Assistant IA contextuel — PRO uniquement (protégé)
 
 /ma                        Marketplace M&A — accueil (publique, détails verrouillés)
-/ma/annonce/:id            Détail d'une annonce M&A (accès one-shot requis)
+/ma/annonce/:id            Détail d'une annonce M&A (accès repreneur requis)
 /ma/deposer                Déposer une annonce M&A (paiement 149€ requis)
 
 /abonnement                Gérer son abonnement Stripe (protégé)
@@ -94,7 +97,7 @@ Chaque utilisateur a **un seul rôle**, choisi à l'inscription et non modifiabl
 **Guards Angular à implémenter :**
 - `AuthGuard` → redirige vers `/connexion` si non connecté
 - `PlanGuard` → vérifie le niveau d'abonnement (FREE / PRO / PREMIUM)
-- `MaAccessGuard` → acheteur ayant payé le one-shot M&A (`/ma/annonce/:id`)
+- `MaAccessGuard` → acheteur avec un accès repreneur en cours (`/ma/annonce/:id`)
 - `RoleGuard` → réserve une route à certains rôles (`/recherche` : entrepreneur et talent ; `/ma/deposer` : vendeur)
 
 ---
@@ -139,7 +142,7 @@ Chaque utilisateur a **un seul rôle**, choisi à l'inscription et non modifiabl
 - Grille principale 3 colonnes de cards profils
 - Bannière IA : "X profils correspondent particulièrement à votre projet"
 - Cards profils : avatar, nom, rôle, secteur, stade, bio, tags compétences, score de compatibilité %
-- **State FREE** : après la 6ème card, overlay blur avec CTA upgrade PRO
+- Profils illimités pour tous ; en FREE, le score s'affiche sans ses raisons (lien vers PRO)
 
 ### `/profil/:id` — Profil public
 - Cover banner + avatar + infos principales
@@ -153,7 +156,7 @@ Chaque utilisateur a **un seul rôle**, choisi à l'inscription et non modifiabl
 - Liste conversations à gauche
 - Zone de chat à droite (style WhatsApp/iMessage)
 - Indicateur de lecture + horodatage
-- **State FREE** : limité à 5 messages/mois, compteur visible
+- **State FREE (porteur de projet)** : compteur des 3 nouveaux contacts du mois ; réponses illimitées
 
 ### `/coaching-ia` — Assistant IA (PRO)
 - Layout 2 colonnes
@@ -167,12 +170,12 @@ Chaque utilisateur a **un seul rôle**, choisi à l'inscription et non modifiabl
 - Barre de filtres horizontale : secteur, CA, prix, région, type
 - Grille 2 colonnes de cards annonces anonymisées
 - Cards : secteur, métriques clés (CA, marge, ancienneté), fourchette de prix
-- **State sans accès M&A** : détails floutés, overlay "Accès one-shot 149€"
+- **State sans accès M&A** : détails floutés, invitation « Accès repreneur 149 € / 12 mois »
 - Section bottom CTA amber : "Déposez votre annonce"
 
 ### `/ma/deposer` — Déposer une annonce
-- Wizard en étapes : infos générales → métriques → prix → confidentialité → paiement
-- Paiement Stripe (149€ one-shot) avant publication
+- Wizard en étapes : infos générales → métriques → prix → confidentialité → aperçu et publication
+- Publication gratuite pour les vendeurs (offre de lancement), sans étape de paiement
 - Aperçu de l'annonce avant publication
 
 ### `/coaching-ia` — Assistant IA
@@ -336,7 +339,7 @@ export const routes: Routes = [
 | **Firestore** | Base de données |
 | **Firebase Storage** | Photos de profil, documents |
 | **Firebase Functions** | Backend logic (matching, notifications) |
-| **Stripe** | Abonnements PRO/PREMIUM + one-shot M&A |
+| **Stripe** | Abonnements PRO/PREMIUM + accès repreneur M&A (12 mois) |
 | **OpenAI** (ou **Claude** en option) | Assistant IA contextuel (/coaching-ia), appelé depuis le back Python ; fournisseur choisi selon la clé présente dans `.env` |
 | **Python / FastAPI** (`backend/`) | Back de l'assistant IA : vérifie la session Supabase et le plan, injecte le contexte, appelle le modèle d'IA |
 | **Angular Material ou PrimeNG** | Composants UI de base |
@@ -356,7 +359,7 @@ interface User {
   location: string;
   profileType: 'entrepreneur' | 'talent' | 'buyer' | 'seller'; // rôle unique
   plan: 'FREE' | 'PRO' | 'PREMIUM';
-  maAccess: boolean;           // true si one-shot M&A payé
+  maAccess: boolean;           // true si accès repreneur payé et non expiré (12 mois)
   stripeCustomerId?: string;
   createdAt: Timestamp;
   lastActive: Timestamp;
@@ -474,11 +477,11 @@ Tu proposes des actions concrètes sur la plateforme GoFounders.
 3. Redirect vers Stripe Checkout
 4. Webhook Stripe → met à jour `user.plan = 'PRO'` dans Firestore
 
-### One-shot M&A (149€)
-1. Utilisateur clique "Accès one-shot 149€"
+### Accès repreneur M&A (149€, 12 mois)
+1. L'acheteur clique "Accès repreneur - 149 € / 12 mois"
 2. Firebase Function crée un Stripe Payment Intent (one-time)
 3. Redirect vers Stripe Checkout
-4. Webhook Stripe → met à jour `user.maAccess = true` dans Firestore
+4. Webhook Stripe → met à jour `ma_access = true` et `ma_access_expires_at = now() + 12 mois` dans Supabase
 
 ---
 
@@ -487,7 +490,7 @@ Tu proposes des actions concrètes sur la plateforme GoFounders.
 - Les détails des annonces M&A (`confidential_description`, `contact_info`, `sale_reason`, `owner_id`) ne sont **jamais** lisibles directement : seules les colonnes anonymisées sont accordées en `select`, le dossier passe par la fonction Supabase `get_ma_listing_detail` (acheteur avec accès, propriétaire ou admin)
 - `plan`, `ma_access`, `role` et `is_admin` ne sont modifiables que côté serveur (trigger `enforce_profile_entitlements`)
 - Les profils avec `confidential: true` masquent les infos de contact côté Firestore Rules
-- Les limites FREE (3 nouveaux contacts et 5 messages par mois, porteurs de projet et talents) sont vérifiées par des triggers Supabase (`2026-10-11-free-quotas.sql`) ; compteurs dans `usage_counters`, lus via `get_my_quota()`
+- La limite FREE (3 nouveaux contacts par mois, porteurs de projet uniquement) est vérifiée par des triggers Supabase (`2026-10-11-free-quotas.sql`, règles mises à jour par `2026-10-12-offres.sql`) ; compteurs dans `usage_counters`, lus via `get_my_quota()`
 - L'assistant IA vérifie le plan côté back Python, pas seulement via le `PlanGuard`
 - Les scores de compatibilité sont calculés **par règles, sans IA** (`core/matching/compatibility.ts`) entre un projet et un talent : compétences recherchées couvertes (50), localisation (20), disponibilité (15), secteur (15), avec les raisons affichées. Pas de score entre deux profils non complémentaires ni pour acheteurs / vendeurs
 
@@ -504,7 +507,7 @@ Tu proposes des actions concrètes sur la plateforme GoFounders.
 6. Messagerie simple
 
 ### Phase 2 — Monétisation
-7. Intégration Stripe (abonnements + one-shot)
+7. Intégration Stripe (abonnements + accès repreneur M&A)
 8. Guards de plan (LockedOverlay)
 9. Marketplace M&A
 

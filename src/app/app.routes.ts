@@ -82,12 +82,6 @@ export const routes: Routes = [
         loadComponent: () => import('./features/coaching-ia/coaching-ia.component').then(m => m.CoachingIaComponent)
       },
       {
-        path: 'generateur-pitch',
-        canActivate: [authGuard, planGuard],
-        data: { requiredPlan: 'PRO' },
-        loadComponent: () => import('./features/pitch/pitch.component').then(m => m.PitchComponent)
-      },
-      {
         path: 'ma/deposer',
         canActivate: [authGuard, roleGuard],
         data: { allowedRoles: ['seller'] },

@@ -13,7 +13,7 @@ import { MaService } from '../../../core/services/ma.service';
       <div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         <div class="mb-10 text-center">
           <h1 class="mb-2 text-4xl font-bold">Déposer une annonce M&A</h1>
-          <p class="text-muted-foreground">Préparez votre annonce confidentielle avant validation de l'accès M&A.</p>
+          <p class="text-muted-foreground">Publication gratuite pendant le lancement. Votre annonce reste anonymisée.</p>
         </div>
 
         <div class="mb-8">
@@ -91,11 +91,11 @@ import { MaService } from '../../../core/services/ma.service';
                       <ul class="space-y-3 text-sm text-foreground/80">
                         <li class="flex items-start gap-2">
                           <span class="mt-1 h-2 w-2 rounded-full bg-amber-500"></span>
-                          <span>Les visiteurs sans accès one-shot voient une version anonymisée.</span>
+                          <span>Les visiteurs sans accès repreneur voient une version anonymisée.</span>
                         </li>
                         <li class="flex items-start gap-2">
                           <span class="mt-1 h-2 w-2 rounded-full bg-amber-500"></span>
-                          <span>La mise en relation se fait après paiement confirmé et validation de l'accès M&A.</span>
+                          <span>Seuls les repreneurs disposant d'un accès M&A voient le dossier complet et vos coordonnées.</span>
                         </li>
                         <li class="flex items-start gap-2">
                           <span class="mt-1 h-2 w-2 rounded-full bg-amber-500"></span>
@@ -107,9 +107,9 @@ import { MaService } from '../../../core/services/ma.service';
                 }
                 @case (5) {
                   <div>
-                    <h2 class="mb-3 text-2xl font-bold">5. Paiement sécurisé</h2>
+                    <h2 class="mb-3 text-2xl font-bold">5. Aperçu et publication</h2>
                     <p class="mb-6 text-muted-foreground">
-                      Relisez votre annonce avant de continuer vers le paiement sécurisé one-shot. La publication et l'accès M&A seront validés après confirmation du paiement.
+                      Relisez votre annonce avant de la publier.
                     </p>
                     <div class="rounded-2xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-6">
                       <div class="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">Résumé</div>
@@ -120,9 +120,10 @@ import { MaService } from '../../../core/services/ma.service';
                       </div>
                     </div>
                     <div class="mt-5 rounded-2xl border border-border bg-secondary/50 p-5">
-                      <div class="mb-2 text-sm font-bold text-foreground">Accès M&A à valider</div>
+                      <div class="mb-2 text-sm font-bold text-foreground">Publication gratuite</div>
                       <p class="text-sm leading-relaxed text-muted-foreground">
-                        Le paiement sécurisé sera branché ici. Aucun accès M&A n'est accordé automatiquement tant que le paiement n'est pas confirmé.
+                        Offre de lancement : la publication ne coûte rien. Votre annonce apparaît anonymisée sur la marketplace ;
+                        seuls les repreneurs avec un accès M&A voient le dossier complet et peuvent vous contacter.
                       </p>
                     </div>
                   </div>
@@ -173,20 +174,14 @@ import { MaService } from '../../../core/services/ma.service';
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                   </svg>
                 </div>
-                <h2 class="mb-3 text-3xl font-bold">Paiement sécurisé requis</h2>
-                <p class="mx-auto mb-8 max-w-xl leading-relaxed text-muted-foreground">
-                  Votre annonce est prête. Il faut débloquer l'accès M&A avant publication, puis revenir publier l'annonce.
-                </p>
-                <p class="mx-auto mb-8 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                  Aucun accès M&A n'a été activé automatiquement.
+                <h2 class="mb-3 text-3xl font-bold">La publication a échoué</h2>
+                <p class="mx-auto mb-8 max-w-xl leading-relaxed text-muted-foreground" role="alert">
+                  Votre annonce n'a pas pu être enregistrée. Vérifiez votre connexion puis réessayez.
                 </p>
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
-                  <a routerLink="/abonnement" class="rounded-lg bg-amber-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-amber-600">
-                    Débloquer l'accès M&A
-                  </a>
-                  <a routerLink="/tarifs" fragment="ma-access" class="rounded-lg border border-border px-6 py-3 font-semibold transition-colors hover:border-amber-500">
-                    Découvrir l'offre M&A
-                  </a>
+                  <button type="button" (click)="checkoutRequested.set(false)" class="rounded-lg bg-amber-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-amber-600">
+                    Revenir à mon annonce
+                  </button>
                 </div>
               }
             </div>
@@ -215,9 +210,7 @@ export class MaDeposerComponent {
   readonly priceMax = signal('420 k€');
 
   readonly progressPercent = computed(() => Math.round((this.currentStep() / this.totalSteps) * 100));
-  readonly finalActionLabel = computed(() =>
-    this.auth.hasMaAccess() ? "Publier l'annonce" : "Débloquer l'accès M&A avant publication"
-  );
+  readonly finalActionLabel = computed(() => (this.isSubmitting() ? 'Publication…' : 'Publier gratuitement'));
 
   nextStep(): void {
     this.currentStep.update(step => Math.min(step + 1, this.totalSteps));
@@ -228,11 +221,6 @@ export class MaDeposerComponent {
   }
 
   async submitListing(): Promise<void> {
-    if (!this.auth.hasMaAccess()) {
-      this.checkoutRequested.set(true);
-      return;
-    }
-
     const user = this.auth.currentUser();
 
     if (!user || this.isSubmitting()) {

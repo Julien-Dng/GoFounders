@@ -8,6 +8,7 @@ import {
   MarketplaceProfile,
   findMarketplaceProfileById
 } from '../../core/data/mock-platform.data';
+import { MATCH_REASONS_UPSELL, canSeeMatchReasons } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { MatchingService } from '../../core/services/matching.service';
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
@@ -141,7 +142,7 @@ interface ConversationPreview {
               <button
                 type="button"
                 (click)="sendMessage()"
-                [disabled]="!newMessage().trim() || messageQuotaReached()"
+                [disabled]="!newMessage().trim()"
                 class="px-5 py-2.5 bg-accent text-white rounded-xl font-semibold text-sm hover:bg-accent/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
               >
                 Envoyer
@@ -182,7 +183,7 @@ interface ConversationPreview {
 
               <div class="mt-4 grid gap-2 text-left" [class.grid-cols-2]="selectedCompatibility() !== null">
                 @if (selectedCompatibility(); as compatibility) {
-                  <div class="rounded-xl bg-secondary p-3" [title]="compatibility.reasons.join(' · ')">
+                  <div class="rounded-xl bg-secondary p-3" [title]="canSeeReasons() ? compatibility.reasons.join(' · ') : reasonsUpsell">
                     <div class="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Compatibilité</div>
                     <div class="mt-1 text-lg font-bold text-accent">{{ compatibility.score }}%</div>
                   </div>
@@ -275,6 +276,8 @@ export class MessagesComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
+  readonly canSeeReasons = computed(() => canSeeMatchReasons(this.auth.plan()));
+  readonly reasonsUpsell = MATCH_REASONS_UPSELL;
   private readonly messagingService = inject(MessagingService);
   private readonly matchingService = inject(MatchingService);
 
@@ -307,19 +310,15 @@ export class MessagesComponent implements OnInit {
   readonly selectedProfileSkills = computed(() => this.selectedProfile()?.skills.slice(0, 4) ?? []);
   readonly newMessage = signal('');
   readonly sendError = this.messagingService.lastError;
-  // Compteur visible pour le plan FREE uniquement (limites null = illimité).
+  // Compteur visible pour les porteurs de projet en FREE (limite de nouveaux contacts ; null = illimité).
   readonly messageQuotaLabel = computed(() => {
     const quota = this.messagingService.quota();
 
-    if (!quota || quota.messagesLimit === null || quota.contactsLimit === null) {
+    if (!quota || quota.contactsLimit === null) {
       return '';
     }
 
-    return `Plan FREE : ${quota.messagesUsed}/${quota.messagesLimit} messages et ${quota.contactsUsed}/${quota.contactsLimit} nouveaux contacts ce mois-ci`;
-  });
-  readonly messageQuotaReached = computed(() => {
-    const quota = this.messagingService.quota();
-    return !!quota && quota.messagesLimit !== null && quota.messagesUsed >= quota.messagesLimit;
+    return `Plan FREE : ${quota.contactsUsed}/${quota.contactsLimit} nouveaux contacts ce mois-ci · réponses illimitées`;
   });
   readonly emojiPickerOpen = signal(false);
 

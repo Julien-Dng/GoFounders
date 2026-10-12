@@ -197,17 +197,19 @@ interface QuickActionItem {
                 </a>
               </div>
 
-              <div class="animate-fade-in-up delay-100 rounded-2xl bg-gradient-to-br from-accent to-primary p-6 text-white shadow-lg">
-                <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/20">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m2 4 3 12h14l3-12-6 5-4-5-4 5-6-5z"/>
-                    <path d="M5 20h14"/>
-                  </svg>
+              @if (showProUpsell()) {
+                <div class="animate-fade-in-up delay-100 rounded-2xl bg-gradient-to-br from-accent to-primary p-6 text-white shadow-lg">
+                  <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/20">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m2 4 3 12h14l3-12-6 5-4-5-4 5-6-5z"/>
+                      <path d="M5 20h14"/>
+                    </svg>
+                  </div>
+                  <h3 class="mb-2 text-lg font-bold">Passez en PRO</h3>
+                  <p class="mb-4 text-sm leading-relaxed opacity-90">Contacts illimités, raisons détaillées de chaque score et assistant IA personnel.</p>
+                  <a routerLink="/tarifs" class="block w-full rounded-lg bg-white py-2.5 text-center font-semibold text-accent shadow-md transition-colors hover:bg-white/95">Découvrir PRO</a>
                 </div>
-                <h3 class="mb-2 text-lg font-bold">Passez en PRO</h3>
-                <p class="mb-4 text-sm leading-relaxed opacity-90">Débloquez le matching intelligent, les messages illimités et davantage de visibilité.</p>
-                <a routerLink="/tarifs" class="block w-full rounded-lg bg-white py-2.5 text-center font-semibold text-accent shadow-md transition-colors hover:bg-white/95">Découvrir PRO</a>
-              </div>
+              }
             </div>
 
             <div class="col-span-6 space-y-6">
@@ -416,6 +418,8 @@ export class DashboardComponent {
 
   readonly profileType = computed(() => this.currentUser()?.profileType);
   readonly usesTalentMarketplace = computed(() => isTalentMarketplaceRole(this.profileType()));
+  // PRO concerne la marketplace Talents & Associés ; acheteurs et vendeurs ont leur offre M&A.
+  readonly showProUpsell = computed(() => this.usesTalentMarketplace() && this.planLabel() === 'FREE');
 
   readonly sidebarItems = computed<SidebarItem[]>(() => [
     { id: 'accueil', label: 'Accueil', icon: 'home', path: '/dashboard', badge: null },

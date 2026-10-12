@@ -83,7 +83,7 @@ export class FooterComponent {
       links: [
         { label: 'M&A', href: '/ma' },
         { label: 'Recherche', href: '/recherche' },
-        { label: 'Pitch IA', href: '/generateur-pitch' },
+        { label: 'Tarifs', href: '/tarifs' },
       ]
     },
     {

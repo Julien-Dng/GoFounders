@@ -5,6 +5,8 @@ import { RouterLink } from '@angular/router';
 export interface PricingFeature {
   text: string;
   included: boolean;
+  // Fonctionnalité annoncée mais pas encore disponible : affichée avec un badge « Bientôt ».
+  soon?: boolean;
 }
 
 @Component({
@@ -64,7 +66,12 @@ export interface PricingFeature {
                   <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
               }
-              <span [class.opacity-50]="!feature.included">{{ feature.text }}</span>
+              <span [class.opacity-50]="!feature.included">
+                {{ feature.text }}
+                @if (feature.soon) {
+                  <span class="ml-1 whitespace-nowrap rounded-full border border-current px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide opacity-70">Bientôt</span>
+                }
+              </span>
             </li>
           }
         </ul>

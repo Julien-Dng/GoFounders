@@ -302,7 +302,7 @@ type MaStatIcon = 'mask' | 'handshake' | 'certified';
             </svg>
           </div>
           <h2 class="mb-4 text-4xl font-bold">Vous souhaitez vendre votre entreprise ?</h2>
-          <p class="mx-auto mb-8 max-w-2xl text-xl opacity-90">Préparez votre annonce confidentielle avant validation de l'accès M&A.</p>
+          <p class="mx-auto mb-8 max-w-2xl text-xl opacity-90">Publiez gratuitement votre annonce anonymisée pendant le lancement.</p>
           @if (canDepositListing()) {
             <a routerLink="/ma/deposer" class="inline-block rounded-lg bg-white px-10 py-5 text-lg font-bold text-amber-600 shadow-2xl transition-all hover:scale-105 hover:bg-white/95 active:scale-95">
             Déposer mon annonce
@@ -343,7 +343,7 @@ export class MaHomeComponent implements OnInit {
     { label: 'Transactions de 50 k€ à 5 M€', icon: 'handshake' },
     { label: 'Mise en relation après accès validé', icon: 'certified' },
   ];
-  readonly bullets = ['Teaser public lisible', 'Détails sensibles réservés', 'Publication après paiement confirmé'];
+  readonly bullets = ['Publication gratuite au lancement', 'Annonce anonymisée', 'Détails réservés aux repreneurs vérifiés'];
 
   private readonly profileType = computed(() => this.auth.currentUser()?.profileType);
   // Dossier complet : acheteur avec accès payé. Dépôt : vendeur (ou visiteur, invité à s'inscrire).
@@ -353,12 +353,12 @@ export class MaHomeComponent implements OnInit {
     !this.auth.isAuthenticated() || (canAccessMaDetails(this.profileType()) && !this.auth.hasMaAccess())
   );
   readonly accessCtaLabel = computed(() =>
-    this.auth.isAuthenticated() ? "Débloquer l'accès M&A - 149€" : "Se connecter pour l'accès M&A"
+    this.auth.isAuthenticated() ? "Accès repreneur - 149 € / 12 mois" : "Se connecter pour l'accès M&A"
   );
   readonly lockedDetailsText = computed(() =>
     this.auth.isAuthenticated() && !canAccessMaDetails(this.profileType())
       ? 'Motif de cession, informations détaillées et mise en relation sont réservés aux comptes acheteur avec accès M&A.'
-      : "Motif de cession, informations détaillées et mise en relation sont accessibles après l'accès M&A one-shot."
+      : 'Motif de cession, informations détaillées et mise en relation sont accessibles avec l’accès repreneur (149 €, 12 mois).'
   );
   readonly filteredListings = computed(() =>
     this.listings().filter(listing => {

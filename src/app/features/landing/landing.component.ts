@@ -447,7 +447,7 @@ export class LandingComponent implements AfterViewInit {
   readonly useCases: LandingUseCase[] = [
     { icon: 'rocket', title: 'Je dépose un projet', description: 'Publiez votre ambition et trouvez des talents capables de faire avancer le produit, la vente ou l’exécution.' },
     { icon: 'briefcase', title: 'Je suis un talent', description: 'Accédez uniquement aux projets publiés par les entrepreneurs pour vous concentrer sur les opportunités utiles.' },
-    { icon: 'building', title: "J'achète ou je vends une entreprise", description: 'Utilisez la verticale M&A avec un accès one-shot dédié et indépendant de l’abonnement mensuel.' },
+    { icon: 'building', title: "J'achète ou je vends une entreprise", description: 'Vendeurs : publication gratuite et anonymisée. Repreneurs : accès aux dossiers complets pendant 12 mois.' },
   ];
 
   readonly stats = [
@@ -469,10 +469,10 @@ export class LandingComponent implements AfterViewInit {
       price: '0€',
       popular: false,
       features: [
-        '3 contacts par mois',
-        '5 messages par mois',
-        'Accès limité aux profils',
-        'Sans matching intelligent ni recherche avancée',
+        'Profil, recherche et score de compatibilité',
+        'Réponses illimitées',
+        'Talents : contacts illimités',
+        'Porteurs de projet : 3 nouveaux contacts par mois',
       ],
     },
     {
@@ -480,21 +480,21 @@ export class LandingComponent implements AfterViewInit {
       price: '49€/mois',
       popular: true,
       features: [
-        'Contacts et messages illimités',
-        'Matching intelligent',
-        'Recherche avancée',
-        'Visibilité premium dans les résultats',
+        'Trouvez votre associé plus vite',
+        'Contacts illimités',
+        'Matching intelligent : pourquoi chaque profil vous correspond',
+        'Assistant IA personnel',
       ],
     },
     {
       name: 'PREMIUM',
-      price: 'Sur mesure',
+      price: 'Sur devis',
       popular: false,
       features: [
         'Tout PRO',
-        'Assistant IA complet',
-        'Recherche investisseurs',
-        'Coaching humain et account manager dédié',
+        "Présentations qualifiées d'associés",
+        'Mise en relation avec des investisseurs',
+        'Interlocuteur dédié',
       ],
     },
   ];
