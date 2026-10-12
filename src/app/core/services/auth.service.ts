@@ -321,6 +321,12 @@ export class AuthService {
       return { success: true };
     }
 
+    const userId = this._currentUser()?.uid;
+    if (userId) {
+      // Avant la suppression du compte : ensuite, la session ne permet plus d'accéder au stockage.
+      await this.removeAvatarFiles(userId);
+    }
+
     const { error } = await this.supabase.client.rpc('delete_my_account');
 
     if (error) {
@@ -513,6 +519,11 @@ export class AuthService {
       photoUrl = uploadedPhotoUrl ?? activeUser.photoURL ?? null;
     }
 
+    if (!photoUrl && activeUser.photoURL) {
+      // Photo retirée : le fichier n'est plus utilisé.
+      await this.removeAvatarFiles(activeUser.uid);
+    }
+
     const { data, error } = await this.supabase.client
       .from('profiles')
       .update({
@@ -657,6 +668,27 @@ export class AuthService {
     }
   }
 
+  // Supprime les photos de l'utilisateur (dossier <id>/ du bucket avatars), sauf keepPath.
+  // Nécessite les règles de 2026-10-12-avatars.sql ; un échec n'empêche pas l'action en cours.
+  private async removeAvatarFiles(userId: string, keepPath?: string): Promise<void> {
+    const bucket = this.supabase.client.storage.from('avatars');
+    const { data, error } = await bucket.list(userId, { limit: 100 });
+
+    if (error || !data) {
+      console.warn('Photos de profil non listées :', error?.message);
+      return;
+    }
+
+    const paths = data.map(file => `${userId}/${file.name}`).filter(path => path !== keepPath);
+
+    if (paths.length > 0) {
+      const { error: removeError } = await bucket.remove(paths);
+      if (removeError) {
+        console.warn('Photos de profil non supprimées :', removeError.message);
+      }
+    }
+  }
+
   private async uploadAvatar(userId: string, dataUrl: string): Promise<string | null> {
     try {
       const response = await fetch(dataUrl);
@@ -674,6 +706,9 @@ export class AuthService {
         console.warn('Avatar non envoye dans Supabase Storage:', error.message);
         return null;
       }
+
+      // Les anciennes photos ne servent plus : on ne garde que la nouvelle.
+      await this.removeAvatarFiles(userId, filePath);
 
       const { data } = this.supabase.client.storage.from('avatars').getPublicUrl(filePath);
       return data.publicUrl;

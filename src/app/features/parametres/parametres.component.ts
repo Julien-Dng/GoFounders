@@ -123,7 +123,7 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
           <section class="rounded-2xl border border-destructive/20 bg-white p-6 shadow-sm" aria-labelledby="danger-titre">
             <h2 id="danger-titre" class="mb-2 text-lg font-bold text-destructive">Zone de danger</h2>
             <p class="mb-4 text-sm text-muted-foreground">
-              La suppression est définitive : profil, projet, annonces M&A, conversations et messages sont effacés.
+              La suppression est définitive : profil, photo, projet, annonces M&A, conversations et messages sont effacés.
             </p>
             @if (!confirmingDelete()) {
               <button type="button" (click)="confirmingDelete.set(true)"
