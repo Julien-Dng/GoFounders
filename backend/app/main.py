@@ -3,6 +3,7 @@
 Lancement local : uvicorn app.main:app --reload --port 8000
 """
 
+import logging
 import time
 from collections import defaultdict, deque
 from collections.abc import AsyncIterator
@@ -21,6 +22,8 @@ from .llm_anthropic import AnthropicBackend
 from .llm_openai import OpenAIBackend
 from .models import ChatRequest, ChatResponse, ContextItem, ContextResponse, UserContext
 from .supabase import SupabaseClient, SupabaseError
+
+logger = logging.getLogger(__name__)
 
 PAID_PLANS = {"PRO", "PREMIUM"}
 HISTORY_LIMIT = 20
@@ -76,6 +79,7 @@ async def get_current_context(
     try:
         context = await supabase.load_user_context(user_id)
     except SupabaseError as error:
+        logger.error("Contexte utilisateur illisible : %s", error)
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, "Données du profil indisponibles") from error
 
     if context is None:

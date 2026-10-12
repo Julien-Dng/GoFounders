@@ -49,7 +49,7 @@ class SupabaseClient:
             headers=self._service_headers(),
         )
         if response.status_code != 200:
-            raise SupabaseError(f"Lecture {table} impossible ({response.status_code})")
+            raise SupabaseError(f"Lecture {table} impossible ({response.status_code}) : {response.text[:300]}")
         rows = response.json()
         return rows if isinstance(rows, list) else []
 
