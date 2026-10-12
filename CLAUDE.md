@@ -42,7 +42,7 @@ Chaque utilisateur a **un seul rôle**, choisi à l'inscription et non modifiabl
 | Fonctionnalité | FREE | PRO (49€/mois) | PREMIUM (Sur mesure) |
 |---|---|---|---|
 | Nombre de contacts | 3/mois | Illimité | Illimité |
-| Match IA | ❌ | ✅ | ✅ |
+| Matching intelligent | ❌ | ✅ | ✅ |
 | Recherche avancée | ❌ | ✅ | ✅ |
 | Messages | 5/mois | Illimité | Illimité |
 | Visibilité premium | ❌ | ✅ (top résultats) | ✅ |
@@ -134,12 +134,12 @@ Chaque utilisateur a **un seul rôle**, choisi à l'inscription et non modifiabl
 - Sidebar filtres (280px) : type, secteur, stade, localisation, disponibilité
 - Grille principale 3 colonnes de cards profils
 - Bannière IA : "X profils correspondent particulièrement à votre projet"
-- Cards profils : avatar, nom, rôle, secteur, stade, bio, tags compétences, score IA %
+- Cards profils : avatar, nom, rôle, secteur, stade, bio, tags compétences, score de compatibilité %
 - **State FREE** : après la 6ème card, overlay blur avec CTA upgrade PRO
 
 ### `/profil/:id` — Profil public
 - Cover banner + avatar + infos principales
-- Badge compatibilité IA
+- Badge de compatibilité (avec ses raisons)
 - Boutons : "Envoyer un message" + "Sauvegarder"
 - Tabs : Présentation / Projet / Expérience / Avis
 - Sidebar droite : infos rapides + carte NDA (verrouillée FREE)
@@ -204,7 +204,7 @@ $color-danger: #EF4444;       // Rouge — erreurs
 ProfileCard          — Card profil (marketplace)
 MaCard               — Card annonce M&A
 PlanBadge            — Badge FREE / PRO / PREMIUM
-CompatibilityBadge   — Score IA en %
+CompatibilityBadge   — Score de compatibilité en %
 LockedOverlay        — Overlay "Passer en PRO"
 StepWizard           — Wizard multi-étapes (onboarding, M&A)
 SidebarNav           — Navigation latérale dashboard
@@ -384,7 +384,7 @@ interface Match {
   id: string;
   user1Id: string;
   user2Id: string;
-  score: number;               // 0-100 score de compatibilité IA
+  score: number;               // 0-100 score de compatibilité (calcul par règles)
   scoreReason: string[];       // explications du score
   status: 'pending' | 'accepted' | 'rejected' | 'connected';
   createdAt: Timestamp;
@@ -505,7 +505,7 @@ Tu proposes des actions concrètes sur la plateforme GoFounders.
 9. Marketplace M&A
 
 ### Phase 3 — IA & différenciation
-10. Matching IA (scores de compatibilité)
+10. Matching intelligent (scores de compatibilité par règles — fait)
 11. Assistant IA contextuel (/coaching-ia)
 
 ### Phase 4 — Polish
@@ -522,5 +522,6 @@ Tu proposes des actions concrètes sur la plateforme GoFounders.
 - **Pas de `any`** — tout typer avec les interfaces définies ci-dessus
 - **Mobile first** — tous les composants doivent être responsive
 - **Accessibilité** — attributs ARIA sur tous les éléments interactifs
+- Le matching est présenté comme **« Matching intelligent »**, jamais comme de l'IA : le score est calculé par règles
 - Le terme **"NDA & accompagnement juridique"** sur le site devient **"Mise en relation avec des experts juridiques partenaires"** — jamais promettre de conseil juridique direct
 - Toujours afficher un **disclaimer** sous la valorisation IA M&A : "Estimation indicative, non contractuelle"

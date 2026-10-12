@@ -34,7 +34,7 @@ import { PaymentService } from '../../core/services/payment.service';
             </div>
 
             <p class="mb-6 text-sm leading-relaxed text-muted-foreground">
-              Passez en PRO pour débloquer les messages illimités, le matching IA et la recherche avancée.
+              Passez en PRO pour débloquer les messages illimités, le matching intelligent et la recherche avancée.
             </p>
 
             <button

@@ -472,7 +472,7 @@ export class LandingComponent implements AfterViewInit {
         '3 contacts par mois',
         '5 messages par mois',
         'Accès limité aux profils',
-        'Sans matching IA ni recherche avancée',
+        'Sans matching intelligent ni recherche avancée',
       ],
     },
     {
@@ -481,7 +481,7 @@ export class LandingComponent implements AfterViewInit {
       popular: true,
       features: [
         'Contacts et messages illimités',
-        'Matching IA',
+        'Matching intelligent',
         'Recherche avancée',
         'Visibilité premium dans les résultats',
       ],

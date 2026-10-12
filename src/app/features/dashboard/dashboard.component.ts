@@ -204,7 +204,7 @@ interface QuickActionItem {
                   </svg>
                 </div>
                 <h3 class="mb-2 text-lg font-bold">Passez en PRO</h3>
-                <p class="mb-4 text-sm leading-relaxed opacity-90">Débloquez l'IA de matching, les messages illimités et davantage de visibilité.</p>
+                <p class="mb-4 text-sm leading-relaxed opacity-90">Débloquez le matching intelligent, les messages illimités et davantage de visibilité.</p>
                 <a routerLink="/tarifs" class="block w-full rounded-lg bg-white py-2.5 text-center font-semibold text-accent shadow-md transition-colors hover:bg-white/95">Découvrir PRO</a>
               </div>
             </div>
