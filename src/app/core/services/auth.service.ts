@@ -228,9 +228,10 @@ export class AuthService {
     return !!data.session;
   }
 
-  async updatePassword(password: string): Promise<AuthResult> {
+  // context : 'reset' depuis le lien « mot de passe oublié », 'settings' depuis /parametres.
+  async updatePassword(password: string, context: 'reset' | 'settings' = 'reset'): Promise<AuthResult> {
     if (!this.supabase.isConfigured) {
-      return { success: false, message: 'La réinitialisation nécessite Supabase (indisponible en mode local).' };
+      return { success: false, message: 'Le changement de mot de passe nécessite Supabase (indisponible en mode local).' };
     }
 
     // Même nettoyage qu'à la connexion (signIn), pour que le nouveau mot de passe fonctionne ensuite.
@@ -243,10 +244,90 @@ export class AuthService {
           ? "Choisissez un mot de passe différent de l'ancien."
           : error.code === 'weak_password'
             ? 'Mot de passe refusé : il ne respecte pas les critères de sécurité.'
-            : 'Le lien a expiré ou est invalide. Refaites une demande de réinitialisation.',
+            : error.code === 'reauthentication_needed'
+              ? 'Par sécurité, reconnectez-vous puis réessayez (ou utilisez « Mot de passe oublié » sur la page de connexion).'
+              : context === 'settings'
+                ? 'Impossible de modifier le mot de passe pour le moment. Réessayez dans quelques minutes.'
+                : 'Le lien a expiré ou est invalide. Refaites une demande de réinitialisation.',
       };
     }
 
+    return { success: true };
+  }
+
+  // Changement d'email : Supabase envoie un lien de confirmation (aux deux adresses si
+  // « Secure email change » est activé) ; l'email ne change qu'après confirmation.
+  async updateEmail(email: string): Promise<AuthResult> {
+    if (!this.supabase.isConfigured) {
+      return { success: false, message: "Le changement d'email nécessite Supabase (indisponible en mode local)." };
+    }
+
+    const policy = validateRegistrationEmail(email);
+    if (!policy.valid) {
+      return { success: false, message: policy.message ?? 'Adresse email refusée.' };
+    }
+
+    const { error } = await this.supabase.client.auth.updateUser(
+      { email: email.trim().toLowerCase() },
+      { emailRedirectTo: `${window.location.origin}/parametres` }
+    );
+
+    if (error) {
+      return {
+        success: false,
+        message: error.code === 'email_exists'
+          ? 'Cette adresse est déjà utilisée par un autre compte.'
+          : error.status === 429
+            ? 'Trop de demandes. Réessayez dans quelques minutes.'
+            : "Impossible de modifier l'email pour le moment.",
+      };
+    }
+
+    return {
+      success: true,
+      message: 'Un lien de confirmation vient d’être envoyé. Votre email changera une fois le lien ouvert (vérifiez aussi votre ancienne adresse).',
+    };
+  }
+
+  // Visibilité dans la recherche (colonne is_visible, 2026-10-12-parametres.sql).
+  async getProfileVisibility(): Promise<boolean | null> {
+    const user = this._currentUser();
+    if (!user || !this.supabase.isConfigured) {
+      return null;
+    }
+
+    const { data, error } = await this.supabase.client.from('profiles').select('is_visible').eq('id', user.uid).maybeSingle();
+    return error || !data ? null : (data as { is_visible: boolean }).is_visible;
+  }
+
+  async setProfileVisibility(isVisible: boolean): Promise<AuthResult> {
+    const user = this._currentUser();
+    if (!user || !this.supabase.isConfigured) {
+      return { success: false, message: 'La visibilité nécessite Supabase (indisponible en mode local).' };
+    }
+
+    const { error } = await this.supabase.client.from('profiles').update({ is_visible: isVisible }).eq('id', user.uid);
+    return error
+      ? { success: false, message: 'Impossible de modifier la visibilité pour le moment.' }
+      : { success: true, message: isVisible ? 'Votre profil apparaît de nouveau dans la recherche.' : 'Votre profil est masqué de la recherche.' };
+  }
+
+  // Suppression définitive du compte et de ses données (fonction Supabase delete_my_account).
+  async deleteAccount(): Promise<AuthResult> {
+    if (!this.supabase.isConfigured) {
+      const user = this._currentUser();
+      this.writeUsers(this.readUsers().filter(stored => stored.uid !== user?.uid));
+      await this.signOut({ compteSupprime: '1' });
+      return { success: true };
+    }
+
+    const { error } = await this.supabase.client.rpc('delete_my_account');
+
+    if (error) {
+      return { success: false, message: 'La suppression a échoué. Réessayez ou contactez support@gofounders.fr.' };
+    }
+
+    await this.signOut({ compteSupprime: '1' });
     return { success: true };
   }
 

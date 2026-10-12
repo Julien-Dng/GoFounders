@@ -146,7 +146,9 @@ export class ConnexionComponent {
     ? "Compte cree. Confirmez votre email si Supabase vous l'envoie, puis connectez-vous."
     : this.route.snapshot.queryParamMap.get('reinitialisation') === '1'
       ? 'Mot de passe modifié. Connectez-vous avec votre nouveau mot de passe.'
-      : ''
+      : this.route.snapshot.queryParamMap.get('compteSupprime') === '1'
+        ? 'Votre compte et vos données ont été supprimés.'
+        : ''
   );
   readonly email = signal(this.route.snapshot.queryParamMap.get('email') ?? '');
   readonly password = signal('');

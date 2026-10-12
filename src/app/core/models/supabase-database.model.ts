@@ -116,6 +116,7 @@ export interface SupabaseProfileInsert {
 }
 
 export interface SupabaseProfileUpdate {
+  is_visible?: boolean;
   display_name?: string;
   location?: string | null;
   title?: string | null;
