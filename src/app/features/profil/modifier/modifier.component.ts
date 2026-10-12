@@ -1,6 +1,7 @@
 import { NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, NgZone, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { AuthService, UpdateProfilePayload } from '../../../core/services/auth.service';
 import { ProjectService } from '../../../core/services/project.service';
@@ -327,7 +328,10 @@ import { ProjectService } from '../../../core/services/project.service';
                       </div>
 
                       <div class="md:col-span-2">
-                        <label for="project-description" class="mb-2 block text-sm font-semibold">Présentation de l'annonce</label>
+                        <label for="project-description" class="mb-2 block text-sm font-semibold">
+                          Présentation de l'annonce
+                          <span class="font-normal text-muted-foreground">{{ isProjectPublished() ? '(obligatoire pour publier)' : '(facultative en brouillon)' }}</span>
+                        </label>
                         <textarea
                           id="project-description"
                           formControlName="description"
@@ -529,11 +533,23 @@ export class ModifierComponent implements OnInit {
     sector: ['', [Validators.required, Validators.maxLength(80)]],
     stage: ['mvp', Validators.required],
     location: ['', Validators.maxLength(100)],
+    // Obligatoire uniquement quand l'annonce est publiée (voir syncDescriptionRequirement).
     description: ['', [Validators.required, Validators.maxLength(900)]],
     lookingFor: ['', Validators.maxLength(260)],
     skillsNeeded: ['', Validators.maxLength(260)],
     isActive: [true],
   });
+
+  // Une annonce publiée doit avoir une présentation ; un brouillon peut rester incomplet.
+  private readonly syncDescriptionRequirement = this.projectForm.controls.isActive.valueChanges
+    .pipe(takeUntilDestroyed())
+    .subscribe(isActive => {
+      const description = this.projectForm.controls.description;
+      description.setValidators(isActive ? [Validators.required, Validators.maxLength(900)] : [Validators.maxLength(900)]);
+      description.updateValueAndValidity();
+    });
+
+  readonly isProjectPublished = toSignal(this.projectForm.controls.isActive.valueChanges, { initialValue: true });
 
   readonly projectStages = [
     { value: 'idea', label: 'Idée' },
@@ -654,7 +670,9 @@ export class ModifierComponent implements OnInit {
       }
 
       this.successMessage.set(this.isEntrepreneur()
-        ? 'Profil et annonce de projet mis à jour.'
+        ? this.projectForm.controls.isActive.value
+          ? 'Profil et annonce de projet mis à jour.'
+          : 'Profil mis à jour, annonce enregistrée en brouillon (non visible par les talents).'
         : 'Profil mis à jour. Vous pouvez ouvrir votre profil pour vérifier le rendu.'
       );
       this.photoMessage.set('');
@@ -756,7 +774,9 @@ export class ModifierComponent implements OnInit {
         sector: 'Secteur',
         stage: 'Stade du projet',
         location: 'Localisation du projet',
-        description: "Présentation de l'annonce",
+        description: this.projectForm.controls.description.hasError('required')
+          ? "Présentation de l'annonce (obligatoire pour publier ; décochez « Annonce publiée » pour enregistrer un brouillon)"
+          : "Présentation de l'annonce (900 caractères max.)",
         lookingFor: 'Profils recherchés',
         skillsNeeded: 'Compétences attendues',
       });
