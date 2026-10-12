@@ -169,11 +169,7 @@ interface ConversationPreview {
         <!-- MINI PROFIL -->
         <aside class="order-2 hidden h-full w-72 flex-shrink-0 overflow-hidden rounded-2xl border border-border bg-white shadow-sm xl:block">
           @if (selectedConv()) {
-            <div class="bg-gradient-to-br from-accent to-primary px-5 pb-12 pt-6 text-white">
-              <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/20 text-lg font-bold ring-4 ring-white/15">
-                {{ selectedProfile()?.initials ?? selectedConv()!.initials }}
-              </div>
-            </div>
+            <div class="h-20 bg-gradient-to-br from-accent to-primary" aria-hidden="true"></div>
 
             <div class="-mt-8 px-5 pb-5 text-center">
               <div class="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary text-lg font-bold text-white shadow-lg ring-4 ring-white">
