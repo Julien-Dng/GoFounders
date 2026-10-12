@@ -2,7 +2,7 @@ import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { ConversationMessage, MarketplaceProfile } from '../data/mock-platform.data';
 import { Conversation, Message } from '../models/message.model';
-import { SupabaseProfileRow } from '../models/supabase-database.model';
+import { SupabaseProfileRow, PROFILE_COLUMNS } from '../models/supabase-database.model';
 import { User } from '../models/user.model';
 import { AuthService } from './auth.service';
 import { MatchingService } from './matching.service';
@@ -39,8 +39,9 @@ interface SupabaseQuotaRow {
   messages_limit: number | null;
 }
 
-// Codes levés par les triggers Supabase (2026-10-11-free-quotas.sql).
+// Codes levés par les triggers Supabase (2026-10-11-free-quotas.sql, 2026-10-12-profils-par-role.sql).
 const QUOTA_ERROR_MESSAGES: Record<string, string> = {
+  ROLE_CONTACT_INTERDIT: "Ce profil ne peut pas être contacté avec votre type de compte (porteurs de projet et talents d'un côté, acheteurs et vendeurs de l'autre).",
   FREE_QUOTA_CONTACTS: 'Vous avez atteint la limite de 3 nouveaux contacts ce mois-ci avec le plan FREE. Passez en PRO pour des contacts illimités.',
   // Ancienne limite de messages (avant 2026-10-12-offres.sql), gardée si la migration n'est pas encore passée.
   FREE_QUOTA_MESSAGES: 'Vous avez atteint la limite de messages de votre plan ce mois-ci. Passez en PRO pour une messagerie illimitée.',
@@ -140,7 +141,7 @@ export class MessagingService {
 
       const { data: profilesData } = await this.supabase.client
         .from('profiles')
-        .select('*')
+        .select(PROFILE_COLUMNS)
         .in('id', participantIds);
 
       const messageRows = (messagesData ?? []) as SupabaseMessageRow[];

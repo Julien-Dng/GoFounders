@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { MARKETPLACE_PROFILES, MarketplaceProfile, findMarketplaceProfileById } from '../data/mock-platform.data';
 import { Match } from '../models/match.model';
 import { Profile } from '../models/project.model';
-import { SupabaseProfileRow, SupabaseProjectRow } from '../models/supabase-database.model';
+import { SupabaseProfileRow, SupabaseProjectRow, PROFILE_COLUMNS } from '../models/supabase-database.model';
 import { PROFILE_TYPE_LABELS, ProfileType, isTalentMarketplaceRole } from '../models/user.model';
 import { ProjectSide, TalentSide, computeCompatibility } from '../matching/compatibility';
 import { AuthService } from './auth.service';
@@ -42,7 +42,7 @@ export class MatchingService {
 
     try {
       const [profilesResult, projectsResult] = await Promise.all([
-        this.supabase.client.from('profiles').select('*'),
+        this.supabase.client.from('profiles').select(PROFILE_COLUMNS),
         this.supabase.client.from('projects').select('*').eq('is_active', true),
       ]);
 
@@ -89,7 +89,7 @@ export class MatchingService {
     try {
       const { data: profileData, error: profileError } = await this.supabase.client
         .from('profiles')
-        .select('*')
+        .select(PROFILE_COLUMNS)
         .eq('id', profileId)
         .maybeSingle();
 
@@ -110,7 +110,7 @@ export class MatchingService {
       const project = projectData as SupabaseProjectRow;
       const { data: ownerData } = await this.supabase.client
         .from('profiles')
-        .select('*')
+        .select(PROFILE_COLUMNS)
         .eq('id', project.owner_id)
         .maybeSingle();
 

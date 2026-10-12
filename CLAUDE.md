@@ -489,6 +489,8 @@ Tu proposes des actions concrètes sur la plateforme GoFounders.
 
 - Les détails des annonces M&A (`confidential_description`, `contact_info`, `sale_reason`, `owner_id`) ne sont **jamais** lisibles directement : seules les colonnes anonymisées sont accordées en `select`, le dossier passe par la fonction Supabase `get_ma_listing_detail` (acheteur avec accès, propriétaire ou admin)
 - `plan`, `ma_access`, `role` et `is_admin` ne sont modifiables que côté serveur (trigger `enforce_profile_entitlements`)
+- **Rôles strictement séparés côté Supabase** (`2026-10-12-profils-par-role.sql`) : un profil n'est lisible que par lui-même, par le rôle complémentaire (porteur de projet ↔ talent), par ses interlocuteurs de conversation et par les admins ; un talent ne voit jamais les autres talents. Projets lisibles par leur propriétaire et par les talents uniquement. Nouvelle conversation uniquement entre rôles complémentaires (porteur de projet ↔ talent, acheteur ↔ vendeur)
+- **L'email n'est pas lisible dans `profiles`** : jamais de `select('*')` sur cette table, utiliser `PROFILE_COLUMNS` (`supabase-database.model.ts`)
 - Les profils avec `confidential: true` masquent les infos de contact côté Firestore Rules
 - La limite FREE (3 nouveaux contacts par mois, porteurs de projet uniquement) est vérifiée par des triggers Supabase (`2026-10-11-free-quotas.sql`, règles mises à jour par `2026-10-12-offres.sql`) ; compteurs dans `usage_counters`, lus via `get_my_quota()`
 - L'assistant IA vérifie le plan côté back Python, pas seulement via le `PlanGuard`

@@ -2,7 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Timestamp } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { User as SupabaseAuthUser } from '@supabase/supabase-js';
-import { SupabaseProfileInsert, SupabaseProfileRow, SupabaseProjectInsert } from '../models/supabase-database.model';
+import { SupabaseProfileInsert, SupabaseProfileRow, SupabaseProjectInsert, PROFILE_COLUMNS } from '../models/supabase-database.model';
 import { Plan, ProfileType, User } from '../models/user.model';
 import { validateRegistrationEmail } from '../validators/email-policy.validator';
 import { SupabaseService } from './supabase.service';
@@ -373,7 +373,7 @@ export class AuthService {
   ): Promise<{ profile: SupabaseProfileRow | null; errorMessage?: string }> {
     const { data: existingProfile } = await this.supabase.client
       .from('profiles')
-      .select('*')
+      .select(PROFILE_COLUMNS)
       .eq('id', userId)
       .maybeSingle();
 
@@ -406,7 +406,7 @@ export class AuthService {
     const { data, error } = await this.supabase.client
       .from('profiles')
       .insert(profileInsert)
-      .select('*')
+      .select(PROFILE_COLUMNS)
       .single();
 
     return {
@@ -505,7 +505,7 @@ export class AuthService {
   private async loadSupabaseProfile(userId: string, authUser?: SupabaseAuthUser): Promise<boolean> {
     const { data, error } = await this.supabase.client
       .from('profiles')
-      .select('*')
+      .select(PROFILE_COLUMNS)
       .eq('id', userId)
       .maybeSingle();
 
@@ -545,7 +545,7 @@ export class AuthService {
     const { data, error } = await this.supabase.client
       .from('profiles')
       .insert(profileInsert)
-      .select('*')
+      .select(PROFILE_COLUMNS)
       .single();
 
     if (error || !data) {
@@ -878,7 +878,8 @@ export class AuthService {
   private toRuntimeUserFromSupabaseProfile(profile: SupabaseProfileRow, authUser?: SupabaseAuthUser): User {
     return {
       uid: profile.id,
-      email: profile.email || authUser?.email || '',
+      // L'email n'est plus lisible dans profiles : il vient de la session Supabase.
+      email: profile.email || authUser?.email || this._currentUser()?.email || '',
       displayName: profile.display_name,
       photoURL: profile.photo_url ?? undefined,
       location: profile.location ?? '',
