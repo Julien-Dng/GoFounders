@@ -4,7 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { MarketplaceProfile } from '../../core/data/mock-platform.data';
-import { MATCH_REASONS_UPSELL, canSeeMatchReasons } from '../../core/models/user.model';
+import { MATCH_REASONS_UPSELL, PROFILE_TYPE_LABELS, canSeeMatchReasons } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { MatchingService } from '../../core/services/matching.service';
 import { EditableProject, ProjectService } from '../../core/services/project.service';
@@ -199,6 +199,14 @@ import { EditableProject, ProjectService } from '../../core/services/project.ser
                         <div class="flex flex-wrap gap-2">
                           @for (skill of skills(); track skill) {
                             <span class="cursor-default rounded-lg bg-secondary px-4 py-2 font-medium text-foreground transition-colors hover:bg-accent/10 hover:text-accent">{{ skill }}</span>
+                          } @empty {
+                            <p class="text-sm text-muted-foreground">
+                              @if (isOwnProfile()) {
+                                Aucune compétence renseignée. <a routerLink="/profil/modifier" class="font-semibold text-accent hover:underline">Ajoutez-les</a> pour améliorer vos scores de compatibilité.
+                              } @else {
+                                Aucune compétence renseignée pour le moment.
+                              }
+                            </p>
                           }
                         </div>
                       </div>
@@ -294,30 +302,32 @@ import { EditableProject, ProjectService } from '../../core/services/project.ser
                 </div>
               }
 
-              <div class="relative overflow-hidden rounded-2xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-6 shadow-lg dark:border-amber-300/25 dark:from-amber-500/15 dark:to-orange-500/10">
-                <div class="relative z-10">
-                  <div class="mb-4 flex items-center gap-3">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                      </svg>
+              @if (!isOwnProfile()) {
+                <div class="relative overflow-hidden rounded-2xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-6 shadow-lg dark:border-amber-300/25 dark:from-amber-500/15 dark:to-orange-500/10">
+                  <div class="relative z-10">
+                    <div class="mb-4 flex items-center gap-3">
+                      <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                      </div>
+                      <h3 class="text-lg font-bold dark:text-amber-50">Détails confidentiels</h3>
                     </div>
-                    <h3 class="text-lg font-bold dark:text-amber-50">Détails confidentiels</h3>
+                    <p class="mb-4 text-sm leading-relaxed text-foreground/80 dark:text-amber-100/85">
+                      Accédez aux informations complètes en passant par un échange sécurisé et, si besoin, un cadre de confidentialité.
+                    </p>
+                    <a routerLink="/messages" [queryParams]="{ conversation: profileId() }" class="flex w-full items-center justify-center gap-2 rounded-lg bg-amber-500 px-4 py-3 font-semibold text-white shadow-md transition-colors hover:bg-amber-600">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                      </svg>
+                      Ouvrir un échange
+                    </a>
+                    <p class="mt-3 text-center text-xs text-muted-foreground dark:text-amber-100/70">Mise en relation avec des experts juridiques partenaires</p>
                   </div>
-                  <p class="mb-4 text-sm leading-relaxed text-foreground/80 dark:text-amber-100/85">
-                    Accédez aux informations complètes en passant par un échange sécurisé et, si besoin, un cadre de confidentialité.
-                  </p>
-                  <a routerLink="/messages" [queryParams]="{ conversation: profileId() }" class="flex w-full items-center justify-center gap-2 rounded-lg bg-amber-500 px-4 py-3 font-semibold text-white shadow-md transition-colors hover:bg-amber-600">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                    </svg>
-                    Ouvrir un échange
-                  </a>
-                  <p class="mt-3 text-center text-xs text-muted-foreground dark:text-amber-100/70">Mise en relation avec des experts juridiques partenaires</p>
+                  <div class="absolute -right-16 -top-16 h-32 w-32 rounded-full bg-amber-500/10 dark:bg-amber-300/10"></div>
                 </div>
-                <div class="absolute -right-16 -top-16 h-32 w-32 rounded-full bg-amber-500/10 dark:bg-amber-300/10"></div>
-              </div>
+              }
 
               @if (!isOwnProfile()) {
                 <div class="text-center">
@@ -449,7 +459,7 @@ export class ProfilComponent implements OnInit {
   });
   readonly presentationText = computed(() =>
     this.isOwnProfile()
-      ? (this.currentUser()?.bio || "Votre profil personnel sera enrichi ici à partir de vos vraies informations, de votre parcours et de ce que vous recherchez sur la plateforme.")
+      ? (this.currentUser()?.bio || 'Vous n’avez pas encore de bio. Ajoutez quelques lignes depuis « Modifier mon profil » : c’est ce que les autres membres lisent en premier.')
       : (this.publicProfile()?.about ?? "Ce profil n'est pas encore détaillé.")
   );
   readonly projectText = computed(() =>
@@ -474,15 +484,15 @@ export class ProfilComponent implements OnInit {
   );
   readonly skills = computed(() =>
     this.isOwnProfile()
-      ? (this.currentUser()?.skills?.length ? this.currentUser()?.skills ?? [] : ['Vision produit', 'Business', 'Pitch', 'Exécution'])
+      ? (this.currentUser()?.skills ?? [])
       : (this.publicProfile()?.skills ?? [])
   );
   readonly quickInfo = computed(() =>
     this.isOwnProfile()
       ? [
-          { label: 'Type de profil', value: this.profileRole() },
+          { label: 'Type de profil', value: PROFILE_TYPE_LABELS[this.currentUser()?.profileType ?? 'entrepreneur'] },
           { label: 'Plan', value: this.currentUser()?.plan ?? 'FREE' },
-          { label: 'Complétion', value: `${this.currentUser()?.profileComplete ?? 65}%` },
+          { label: 'Complétion', value: `${this.currentUser()?.profileComplete ?? 0}%` },
           { label: 'Localisation', value: this.currentUser()?.location ?? 'France' },
         ]
       : (this.publicProfile()?.quickInfo ?? [])
@@ -517,7 +527,12 @@ export class ProfilComponent implements OnInit {
   });
   readonly contributionPoints = computed(() => {
     if (this.isOwnProfile()) {
-      return ['Profil modifiable', 'Données centralisées', 'Présentation claire'];
+      const user = this.currentUser();
+      return [
+        PROFILE_TYPE_LABELS[user?.profileType ?? 'entrepreneur'],
+        user?.skills?.[0] ? `Expertise ${user.skills[0]}` : 'Compétences à renseigner',
+        user?.availabilityLabel || user?.location || 'Disponibilité à préciser',
+      ];
     }
 
     const profile = this.publicProfile();
