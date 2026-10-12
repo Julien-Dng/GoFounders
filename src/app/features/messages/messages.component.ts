@@ -10,6 +10,7 @@ import {
 } from '../../core/data/mock-platform.data';
 import { AuthService } from '../../core/services/auth.service';
 import { MatchingService } from '../../core/services/matching.service';
+import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
 import { ConversationThread, MessagingService } from '../../core/services/messaging.service';
 
 interface ConversationPreview {
@@ -27,7 +28,7 @@ interface ConversationPreview {
 @Component({
   selector: 'app-messages',
   standalone: true,
-  imports: [NgClass, RouterLink],
+  imports: [NgClass, RouterLink, AvatarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mt-20 h-[calc(100vh-80px)] bg-secondary px-4 py-4 sm:px-6 lg:px-8">
@@ -39,9 +40,7 @@ interface ConversationPreview {
         <!-- Top bar : infos conversation -->
         <div class="flex flex-shrink-0 items-center gap-3 border-b border-border bg-white px-4 py-3">
           @if (selectedConv()) {
-            <div class="w-9 h-9 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-              {{ selectedConv()!.initials }}
-            </div>
+            <app-avatar class="h-9 w-9 text-sm" [photoUrl]="selectedConv()!.profile?.photoURL" [initials]="selectedConv()!.initials" [name]="selectedConv()!.name" />
             <div class="flex-1 min-w-0">
               <div class="font-bold text-sm">{{ selectedConv()!.name }}</div>
               <div class="text-xs text-green-500 font-medium flex items-center gap-1">
@@ -172,9 +171,12 @@ interface ConversationPreview {
             <div class="h-20 bg-gradient-to-br from-accent to-primary" aria-hidden="true"></div>
 
             <div class="-mt-8 px-5 pb-5 text-center">
-              <div class="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary text-lg font-bold text-white shadow-lg ring-4 ring-white">
-                {{ selectedProfile()?.initials ?? selectedConv()!.initials }}
-              </div>
+              <app-avatar
+                class="mx-auto mb-3 h-16 w-16 text-lg shadow-lg ring-4 ring-white"
+                [photoUrl]="selectedProfile()?.photoURL"
+                [initials]="selectedProfile()?.initials ?? selectedConv()!.initials"
+                [name]="selectedProfile()?.displayName ?? selectedConv()!.name"
+              />
               <h3 class="text-base font-bold">{{ selectedProfile()?.displayName ?? selectedConv()!.name }}</h3>
               <p class="mt-1 text-xs font-medium text-muted-foreground">{{ selectedProfile()?.title ?? 'Profil GoFounders' }}</p>
 
@@ -239,9 +241,7 @@ interface ConversationPreview {
                 ? 'bg-accent/5 border-l-4 border-l-accent'
                 : 'hover:bg-secondary'"
             >
-              <div class="w-10 h-10 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                {{ conv.initials }}
-              </div>
+              <app-avatar class="h-10 w-10 text-sm" [photoUrl]="conv.profile?.photoURL" [initials]="conv.initials" [name]="conv.name" />
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between mb-0.5">
                   <span class="font-semibold text-sm truncate">{{ conv.name }}</span>

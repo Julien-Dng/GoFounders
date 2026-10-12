@@ -7,6 +7,7 @@ import { MaService } from '../../core/services/ma.service';
 import { MatchingService } from '../../core/services/matching.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { MessagingService } from '../../core/services/messaging.service';
+import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
 import { NotificationMenuComponent } from '../../shared/components/notification-menu/notification-menu.component';
 import { UserMenuComponent } from '../../shared/components/user-menu/user-menu.component';
 
@@ -36,7 +37,7 @@ interface QuickActionItem {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, NotificationMenuComponent, UserMenuComponent],
+  imports: [RouterLink, RouterLinkActive, AvatarComponent, NotificationMenuComponent, UserMenuComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex min-h-screen bg-secondary">
@@ -234,9 +235,7 @@ interface QuickActionItem {
                   }
                   @for (match of matches(); track match.id) {
                     <div class="group flex items-center gap-4 rounded-xl border border-transparent bg-secondary p-4 transition-colors hover:border-accent/20 hover:bg-accent/5">
-                      <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary font-bold text-white">
-                        {{ match.initials }}
-                      </div>
+                      <app-avatar class="h-14 w-14" [photoUrl]="match.photoURL" [initials]="match.initials" [name]="match.displayName" />
                       <div class="min-w-0 flex-1">
                         <div class="mb-1 flex items-center gap-2">
                           <h3 class="font-bold">{{ match.displayName }}</h3>
