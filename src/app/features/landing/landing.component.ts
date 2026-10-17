@@ -429,8 +429,8 @@ export class LandingComponent implements AfterViewInit {
     {
       icon: 'rocket',
       title: 'Associés',
-      description: 'Rejoignez un repreneur pour faire tourner l’entreprise.',
-      href: '/inscription',
+      description: 'Trouvez un associé, ou rejoignez un repreneur pour faire tourner l’entreprise.',
+      href: '/recherche',
     },
   ];
 

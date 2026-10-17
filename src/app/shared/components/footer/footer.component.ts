@@ -83,6 +83,7 @@ export class FooterComponent {
       links: [
         { label: 'Entreprises à reprendre', href: '/ma' },
         { label: 'Céder mon entreprise', href: '/ma/deposer' },
+        { label: 'Trouver un associé', href: '/recherche' },
       ]
     },
     {

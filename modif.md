@@ -852,3 +852,8 @@ npm install @stripe/stripe-js
 ### Vérification
 
 - Build Angular OK (`ng build`), landing et `/ma` vérifiées visuellement
+
+### Ajout du 17 octobre 2026
+
+- Retour de la recherche de talents et de projets dans les menus (navbar, menu latéral, footer, carte « Associés » de la landing) sous le libellé **« Trouver un associé »** → `/recherche`
+- Navbar : les liens s'affichent à partir de 1024 px (menu hamburger en dessous) pour ne plus couper le logo

@@ -36,14 +36,16 @@ C'est exactement ce qu'apporte une **reprise d'entreprise**. Notre verticale M&A
 - Repreneur : **149 € une fois** pour les dossiers complets et les mises en relation.
 - Plus tard, éventuellement une commission au succès. ⚠️ **À faire valider par un avocat avant** : les intermédiaires en cession de *fonds de commerce* relèvent de la loi Hoguet (carte professionnelle obligatoire).
 
-**Mis de côté pour l'instant (les routes restent dans le code) :** matching de talents généraliste, assistant IA, générateur de pitch, plans PRO/PREMIUM.
+**Gardé en second plan :** la recherche de talents et de projets, présentée comme « Trouver un associé » (pour opérer une entreprise reprise, ou lancer un projet).
+
+**Mis de côté pour l'instant (les routes restent dans le code) :** assistant IA, générateur de pitch, plans PRO/PREMIUM.
 
 ## 3. Ce qui change dans cette branche
 
 | Zone | Changement |
 |---|---|
 | Landing (`/`) | Nouveau discours « reprise ». Témoignages fictifs remplacés par une FAQ. Tarifs : Cédant gratuit / Repreneur 149 €. |
-| Navigation et footer | Annonces · Vendre · Tarifs. Recherche, Assistant IA et Pitch IA retirés des menus. |
+| Navigation et footer | Annonces · Vendre · Trouver un associé · Tarifs. « Trouver un associé » mène à la recherche de talents et de projets (`/recherche`). Assistant IA et Pitch IA retirés des menus. |
 | `/ma` | Hero « Entreprises à reprendre ». Le bouton de déblocage mène au paiement Stripe. |
 | `/ma/deposer` | **Dépôt gratuit**, l'étape de paiement est supprimée. Plus de valeurs d'exemple pré-remplies. |
 | `/tarifs` | Le bouton 149 € mène au paiement Stripe. |
