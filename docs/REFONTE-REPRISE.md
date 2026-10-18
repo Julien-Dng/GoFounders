@@ -49,10 +49,15 @@ C'est exactement ce qu'apporte une **reprise d'entreprise**. Notre verticale M&A
 | `/ma` | Hero « Entreprises à reprendre ». Le bouton de déblocage mène au paiement Stripe. |
 | `/ma/deposer` | **Dépôt gratuit**, l'étape de paiement est supprimée. Plus de valeurs d'exemple pré-remplies. |
 | `/tarifs` | Le bouton 149 € mène au paiement Stripe. |
-| **Sécurité** | Avant : la description, la raison de la cession et le contact des annonces partaient vers le navigateur de **tout le monde**, et le flou n'était que visuel. Après : la base ne renvoie ces colonnes qu'au propriétaire, aux comptes avec `ma_access` et aux admins (`supabase/2026-10-12-ma-listings-confidential-columns.sql`). |
+| **Sécurité (profils)** | Avant : selon la config Supabase, tout membre connecté pouvait lire l'e-mail de tous les inscrits, et s'accorder lui-même l'accès M&A ou le plan PREMIUM depuis la page `/abonnement` (boutons « démo »). Après : e-mails privés, droits modifiables uniquement côté serveur ou dashboard Supabase (`supabase/2026-10-18-profiles-private-columns.sql`). Les boutons « démo » ne fonctionnent plus qu'en mode local sans Supabase. |
+| **Sécurité (annonces)** | Avant : la description, la raison de la cession et le contact des annonces partaient vers le navigateur de **tout le monde**, et le flou n'était que visuel. Après : la base ne renvoie ces colonnes qu'au propriétaire, aux comptes avec `ma_access` et aux admins (`supabase/2026-10-12-ma-listings-confidential-columns.sql`). |
 
 ### Mise en route (à faire une fois)
-1. **Exécuter la migration SQL** `supabase/2026-10-12-ma-listings-confidential-columns.sql` dans l'éditeur SQL de Supabase. Sans elle, la faille reste ouverte et la page de détail ne charge plus.
+1. **Exécuter les deux migrations SQL** dans l'éditeur SQL de Supabase, dans cet ordre, **en même temps que le déploiement du code** :
+   - `supabase/2026-10-12-ma-listings-confidential-columns.sql` (annonces : description, raison et contact réservés aux acheteurs qui ont payé)
+   - `supabase/2026-10-18-profiles-private-columns.sql` (profils : e-mails privés, et `plan`, `ma_access`, `is_admin` impossibles à modifier depuis le navigateur)
+
+   Sans elles, les failles restent ouvertes. Si on déploie le code sans les migrations, la page de détail d'une annonce et le chargement de son propre profil ne fonctionnent plus.
 2. **Créer un Stripe Payment Link** : produit « Accès repreneur GoFounders », 149 €, paiement unique. Coller l'URL dans `src/app/core/config/ma-offer.config.ts`. Tant que la constante est vide, les boutons renvoient vers `/abonnement` comme avant.
 3. **Après chaque paiement**, passer `profiles.ma_access = true` à la main dans Supabase. Le paiement Stripe contient l'uid de l'acheteur (`client_reference_id`) et son e-mail. Pas besoin de webhook pour 10 paiements.
 4. **Modérer les annonces** : le dépôt est gratuit et publie directement. Il faut relire chaque nouvelle annonce et supprimer celles qui ne sont pas sérieuses.

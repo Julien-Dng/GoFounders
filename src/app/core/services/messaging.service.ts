@@ -2,7 +2,7 @@ import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { ConversationMessage, MarketplaceProfile } from '../data/mock-platform.data';
 import { Conversation, Message } from '../models/message.model';
-import { SupabaseProfileRow } from '../models/supabase-database.model';
+import { PUBLIC_PROFILE_COLUMNS, SupabasePublicProfileRow } from '../models/supabase-database.model';
 import { User } from '../models/user.model';
 import { AuthService } from './auth.service';
 import { MatchingService } from './matching.service';
@@ -116,11 +116,11 @@ export class MessagingService {
 
       const { data: profilesData } = await this.supabase.client
         .from('profiles')
-        .select('*')
+        .select(PUBLIC_PROFILE_COLUMNS)
         .in('id', participantIds);
 
       const messageRows = (messagesData ?? []) as SupabaseMessageRow[];
-      const profileRows = (profilesData ?? []) as SupabaseProfileRow[];
+      const profileRows = (profilesData ?? []) as SupabasePublicProfileRow[];
 
       const threads = await Promise.all(conversationRows.map(async conversation => {
         const participantProfileId = conversation.participant_a === user.uid ? conversation.participant_b : conversation.participant_a;

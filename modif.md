@@ -862,3 +862,13 @@ npm install @stripe/stripe-js
 
 - « Trouver un associé » (`/recherche`) : les repreneurs et les cédants voient désormais les **talents** (avant : les projets). Les porteurs de projet voient toujours les talents, les talents voient toujours les projets
 - La règle est centralisée dans `searchTargetFor()` (`matching.service.ts`), utilisée par le service et par la page
+
+### Sécurité des profils (18 octobre 2026)
+
+- Migration `supabase/2026-10-18-profiles-private-columns.sql` :
+  - `email`, `ma_access`, `is_admin` ne sont plus lisibles sur le profil des autres ; son propre profil complet se lit via `get_my_profile()`
+  - `plan`, `ma_access` et `is_admin` ne sont plus modifiables depuis le navigateur ; un profil créé côté client démarre toujours en FREE, sans accès M&A
+- Code : lectures des autres profils limitées à `PUBLIC_PROFILE_COLUMNS` (matching, messagerie), lecture de son profil via `get_my_profile()` (auth)
+- `grantMaAccess()` / `grantDemoPlan()` ne font plus rien sur Supabase (mode démo local uniquement) ; le bouton M&A de `/abonnement` passe par le Payment Link
+- La migration du 12 octobre crée `profiles.is_admin` si la colonne manque (la fonction `get_ma_listing_detail` en dépend)
+- Vérifié sur un Postgres 16 local qui imite Supabase : attaques bloquées après migration, possibles avant

@@ -3,6 +3,10 @@
 -- On retire le SELECT global sur la table et on ne réaccorde que les colonnes publiques (teaser).
 -- Le dossier complet passe par la fonction get_ma_listing_detail(), qui vérifie l'accès côté base.
 
+-- get_ma_listing_detail() s'appuie sur profiles.is_admin : on s'assure que la colonne existe.
+alter table public.profiles
+  add column if not exists is_admin boolean not null default false;
+
 revoke select on public.ma_listings from anon, authenticated;
 
 grant select (

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { PaymentService } from '../../core/services/payment.service';
 import { Plan } from '../../core/models/user.model';
 
 @Component({
@@ -105,6 +106,7 @@ import { Plan } from '../../core/models/user.model';
 })
 export class AbonnementComponent {
   private readonly auth = inject(AuthService);
+  private readonly payment = inject(PaymentService);
 
   readonly currentPlan = computed(() => this.auth.currentUser()?.plan ?? 'FREE');
   readonly hasMaAccess = computed(() => this.auth.hasMaAccess());
@@ -116,6 +118,12 @@ export class AbonnementComponent {
   }
 
   async activateMaAccess(): Promise<void> {
+    const user = this.auth.currentUser();
+
+    if (user && this.payment.purchaseMaAccess(user)) {
+      return;
+    }
+
     const success = await this.auth.grantMaAccess();
     this.statusMessage.set(success ? "Accès M&A activé en démonstration." : "Impossible d'activer l'accès M&A pour le moment.");
   }

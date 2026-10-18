@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { MARKETPLACE_PROFILES, MarketplaceProfile, findMarketplaceProfileById } from '../data/mock-platform.data';
 import { Match } from '../models/match.model';
 import { Profile } from '../models/project.model';
-import { SupabaseProfileRow, SupabaseProjectRow } from '../models/supabase-database.model';
+import { PUBLIC_PROFILE_COLUMNS, SupabaseProjectRow, SupabasePublicProfileRow } from '../models/supabase-database.model';
 import { ProfileType } from '../models/user.model';
 import { AuthService } from './auth.service';
 import { SupabaseService } from './supabase.service';
@@ -33,7 +33,7 @@ export class MatchingService {
 
     try {
       const [profilesResult, projectsResult] = await Promise.all([
-        this.supabase.client.from('profiles').select('*'),
+        this.supabase.client.from('profiles').select(PUBLIC_PROFILE_COLUMNS),
         this.supabase.client.from('projects').select('*').eq('is_active', true),
       ]);
 
@@ -41,7 +41,7 @@ export class MatchingService {
         return [];
       }
 
-      const profileRows = (profilesResult.data ?? []) as SupabaseProfileRow[];
+      const profileRows = (profilesResult.data ?? []) as SupabasePublicProfileRow[];
       const projectRows = (projectsResult.data ?? []) as SupabaseProjectRow[];
 
       if (searchTargetFor(viewerType) === 'talent') {
@@ -71,12 +71,12 @@ export class MatchingService {
     try {
       const { data: profileData, error: profileError } = await this.supabase.client
         .from('profiles')
-        .select('*')
+        .select(PUBLIC_PROFILE_COLUMNS)
         .eq('id', profileId)
         .maybeSingle();
 
       if (!profileError && profileData) {
-        return this.mapProfileRowToMarketplaceProfile(profileData as SupabaseProfileRow);
+        return this.mapProfileRowToMarketplaceProfile(profileData as SupabasePublicProfileRow);
       }
 
       const { data: projectData, error: projectError } = await this.supabase.client
@@ -92,11 +92,11 @@ export class MatchingService {
       const project = projectData as SupabaseProjectRow;
       const { data: ownerData } = await this.supabase.client
         .from('profiles')
-        .select('*')
+        .select(PUBLIC_PROFILE_COLUMNS)
         .eq('id', project.owner_id)
         .maybeSingle();
 
-      return this.mapProjectRowToMarketplaceProfile(project, ownerData as SupabaseProfileRow | null);
+      return this.mapProjectRowToMarketplaceProfile(project, ownerData as SupabasePublicProfileRow | null);
     } catch {
       return undefined;
     }
@@ -110,7 +110,7 @@ export class MatchingService {
     return profiles.length === 0 && this.auth.isAdmin() ? MARKETPLACE_PROFILES : profiles;
   }
 
-  private mapProfileRowToMarketplaceProfile(profile: SupabaseProfileRow): MarketplaceProfile {
+  private mapProfileRowToMarketplaceProfile(profile: SupabasePublicProfileRow): MarketplaceProfile {
     const skills = profile.skills?.length ? profile.skills : ['Expertise', 'Projet', 'Collaboration'];
     const lookingFor = profile.looking_for?.length ? profile.looking_for : ['Projet entrepreneurial'];
     const title = profile.title?.trim() || this.roleLabel(profile.role);
@@ -145,7 +145,7 @@ export class MatchingService {
     };
   }
 
-  private mapProjectRowToMarketplaceProfile(project: SupabaseProjectRow, owner?: SupabaseProfileRow | null): MarketplaceProfile {
+  private mapProjectRowToMarketplaceProfile(project: SupabaseProjectRow, owner?: SupabasePublicProfileRow | null): MarketplaceProfile {
     const projectName = project.name;
     const ownerName = owner?.display_name ?? 'Fondateur';
     const skills = project.skills_needed?.length ? project.skills_needed : project.looking_for?.length ? project.looking_for : ['Projet', 'Equipe', 'Execution'];

@@ -150,16 +150,9 @@ export class AuthService {
       return false;
     }
 
+    // Sur Supabase, l'accès M&A ne s'accorde jamais depuis le navigateur (paiement + activation côté serveur).
     if (this.supabase.isConfigured) {
-      const { error } = await this.supabase.client
-        .from('profiles')
-        .update({ ma_access: true })
-        .eq('id', activeUser.uid);
-      if (error) {
-        return false;
-      }
-      this._currentUser.set({ ...activeUser, maAccess: true });
-      return true;
+      return false;
     }
 
     const users = this.readUsers();
@@ -189,16 +182,9 @@ export class AuthService {
       return false;
     }
 
+    // Sur Supabase, le plan ne se change jamais depuis le navigateur (abonnement Stripe côté serveur).
     if (this.supabase.isConfigured) {
-      const { error } = await this.supabase.client
-        .from('profiles')
-        .update({ plan })
-        .eq('id', activeUser.uid);
-      if (error) {
-        return false;
-      }
-      this._currentUser.set({ ...activeUser, plan });
-      return true;
+      return false;
     }
 
     const users = this.readUsers();
@@ -260,7 +246,7 @@ export class AuthService {
       };
     }
 
-    const loaded = await this.loadSupabaseProfile(data.user.id, data.user);
+    const loaded = await this.loadSupabaseProfile(data.user);
 
     if (!loaded) {
       return {
@@ -345,14 +331,10 @@ export class AuthService {
     email: string,
     payload: SignUpPayload
   ): Promise<{ profile: SupabaseProfileRow | null; errorMessage?: string }> {
-    const { data: existingProfile } = await this.supabase.client
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
+    const existingProfile = await this.fetchOwnProfile();
 
     if (existingProfile) {
-      const { data, error } = await this.supabase.client
+      const { error } = await this.supabase.client
         .from('profiles')
         .update({
           display_name: payload.displayName.trim(),
@@ -363,25 +345,21 @@ export class AuthService {
           availability_label: payload.profileType === 'talent' && payload.talentAvailability ? 'Disponible rapidement' : null,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', userId)
-        .select('*')
-        .single();
+        .eq('id', userId);
 
       return {
-        profile: data as SupabaseProfileRow | null,
+        profile: error ? null : await this.fetchOwnProfile(),
         errorMessage: error?.message,
       };
     }
 
     const profileInsert = this.buildSupabaseProfileInsert(userId, email, payload);
-    const { data, error } = await this.supabase.client
+    const { error } = await this.supabase.client
       .from('profiles')
-      .insert(profileInsert)
-      .select('*')
-      .single();
+      .insert(profileInsert);
 
     return {
-      profile: data as SupabaseProfileRow | null,
+      profile: error ? null : await this.fetchOwnProfile(),
       errorMessage: error?.message,
     };
   }
@@ -403,7 +381,7 @@ export class AuthService {
       photoUrl = uploadedPhotoUrl ?? activeUser.photoURL ?? null;
     }
 
-    const { data, error } = await this.supabase.client
+    const { error } = await this.supabase.client
       .from('profiles')
       .update({
         display_name: payload.displayName.trim(),
@@ -419,9 +397,9 @@ export class AuthService {
         photo_url: photoUrl,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', activeUser.uid)
-      .select('*')
-      .single();
+      .eq('id', activeUser.uid);
+
+    const data = error ? null : await this.fetchOwnProfile();
 
     if (error || !data) {
       return {
@@ -467,15 +445,13 @@ export class AuthService {
       return;
     }
 
-    await this.loadSupabaseProfile(authUser.id, authUser);
+    await this.loadSupabaseProfile(authUser);
   }
 
-  private async loadSupabaseProfile(userId: string, authUser?: SupabaseAuthUser): Promise<boolean> {
+  private async loadSupabaseProfile(authUser?: SupabaseAuthUser): Promise<boolean> {
     const { data, error } = await this.supabase.client
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
+      .rpc('get_my_profile')
+      .maybeSingle<SupabaseProfileRow>();
 
     if (error) {
       this._currentUser.set(null);
@@ -510,17 +486,24 @@ export class AuthService {
       availability_label: this.readMetadataText(metadata, 'availability_label') ?? null,
     };
 
-    const { data, error } = await this.supabase.client
+    const { error } = await this.supabase.client
       .from('profiles')
-      .insert(profileInsert)
-      .select('*')
-      .single();
+      .insert(profileInsert);
 
-    if (error || !data) {
+    if (error) {
       return null;
     }
 
-    return data as SupabaseProfileRow;
+    return this.fetchOwnProfile();
+  }
+
+  // Le profil complet (email, plan, accès M&A) n'est lisible que par son propriétaire, via get_my_profile().
+  private async fetchOwnProfile(): Promise<SupabaseProfileRow | null> {
+    const { data, error } = await this.supabase.client
+      .rpc('get_my_profile')
+      .maybeSingle<SupabaseProfileRow>();
+
+    return error ? null : data;
   }
 
   private async createInitialProject(ownerId: string, payload: SignUpPayload): Promise<void> {

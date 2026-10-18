@@ -46,6 +46,10 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
+      get_my_profile: {
+        Args: Record<string, never>;
+        Returns: SupabaseProfileRow[];
+      };
       get_ma_listing_detail: {
         Args: { listing_id: string };
         Returns: SupabaseMaListingRow[];
@@ -83,6 +87,11 @@ export interface SupabaseProfileRow {
   updated_at: string;
 }
 
+// Colonnes lisibles sur le profil des autres membres (voir supabase/2026-10-18-profiles-private-columns.sql).
+export const PUBLIC_PROFILE_COLUMNS = 'id, display_name, role, plan, location, title, bio, photo_url, github_url, linkedin_url, website_url, skills, looking_for, availability_label, created_at, updated_at';
+
+export type SupabasePublicProfileRow = Omit<SupabaseProfileRow, 'email' | 'ma_access' | 'is_admin'>;
+
 export interface SupabaseProfileInsert {
   id: string;
   email: string;
@@ -117,7 +126,6 @@ export interface SupabaseProfileUpdate {
   skills?: string[] | null;
   looking_for?: string[] | null;
   availability_label?: string | null;
-  is_admin?: boolean | null;
   updated_at?: string;
 }
 
