@@ -139,14 +139,15 @@ const EMPTY_STATS: SellerStats = { listings: [], daily: [], contacts: { contacts
           <section class="mt-6 rounded-2xl border border-border bg-white p-6 shadow-sm">
             <h2 class="text-lg font-bold">Détail par annonce</h2>
             <div class="mt-4 overflow-x-auto">
-              <table class="w-full min-w-[520px] text-left text-sm">
+              <table class="w-full min-w-[620px] text-left text-sm">
                 <thead class="text-xs uppercase text-muted-foreground">
                   <tr>
                     <th class="py-2 pr-4">Annonce</th>
                     <th class="py-2 pr-4">Statut</th>
                     <th class="py-2 pr-4">Vues ({{ days() }} j)</th>
                     <th class="py-2 pr-4">Dossiers ({{ days() }} j)</th>
-                    <th class="py-2">Depuis la publication</th>
+                    <th class="py-2 pr-4">Depuis la publication</th>
+                    <th class="py-2"><span class="sr-only">Actions</span></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -156,7 +157,12 @@ const EMPTY_STATS: SellerStats = { listings: [], daily: [], contacts: { contacts
                       <td class="py-3 pr-4">{{ statusLabel(listing.status) }}</td>
                       <td class="py-3 pr-4">{{ listing.page_views_period }}</td>
                       <td class="py-3 pr-4">{{ listing.dossier_views_period }}</td>
-                      <td class="py-3 text-muted-foreground">{{ listing.page_views_total }} vues · {{ listing.dossier_views_total }} dossiers</td>
+                      <td class="py-3 pr-4 text-muted-foreground">{{ listing.page_views_total }} vues · {{ listing.dossier_views_total }} dossiers</td>
+                      <td class="py-3 text-right">
+                        @if (listing.status !== 'withdrawn') {
+                          <a [routerLink]="['/ma/vendue', listing.listing_id]" class="whitespace-nowrap text-sm font-semibold text-amber-600 hover:underline">{{ listing.status === 'sold' ? 'Mon témoignage' : "J'ai vendu" }}</a>
+                        }
+                      </td>
                     </tr>
                   }
                 </tbody>

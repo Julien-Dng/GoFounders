@@ -440,6 +440,7 @@ export class DashboardComponent {
           { id: 'admin-annonces', label: 'Modération des annonces', icon: 'settings' as const, path: '/admin/annonces', badge: null },
           { id: 'admin-profils', label: 'Profils à vérifier', icon: 'settings' as const, path: '/admin/profils', badge: null },
           { id: 'admin-dossiers', label: 'Dossiers à vérifier', icon: 'settings' as const, path: '/admin/verifications', badge: null },
+          { id: 'admin-temoignages', label: 'Ventes à valider', icon: 'settings' as const, path: '/admin/temoignages', badge: null },
         ]
       : []),
   ]);

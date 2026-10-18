@@ -62,7 +62,12 @@ import { PaymentService } from '../../../core/services/payment.service';
                     </div>
                     <p class="mt-1 text-sm text-muted-foreground">{{ listing.description }}</p>
                   </div>
-                  <a [routerLink]="['/ma/annonce', listing.id]" class="flex-shrink-0 text-sm font-semibold text-accent hover:underline">Voir l'annonce</a>
+                  <div class="flex flex-shrink-0 gap-4">
+                    <a [routerLink]="['/ma/annonce', listing.id]" class="text-sm font-semibold text-accent hover:underline">Voir l'annonce</a>
+                    @if (listing.status !== 'withdrawn') {
+                      <a [routerLink]="['/ma/vendue', listing.id]" class="text-sm font-semibold text-amber-600 hover:underline">{{ listing.status === 'sold' ? 'Mon témoignage' : "J'ai vendu" }}</a>
+                    }
+                  </div>
                 </div>
 
                 <div class="mt-5 grid gap-4 md:grid-cols-2">

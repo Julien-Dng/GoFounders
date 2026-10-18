@@ -83,6 +83,7 @@ Pas de commission sur les ventes (une commission sur une cession de fonds de com
 ### Modération, vérification et statistiques (venues de `V6`, adaptées)
 
 - `/admin/annonces` : relire, retirer (motif envoyé au vendeur) ou remettre en ligne une annonce. `/admin/profils` : badge « Profil vérifié ». `/admin/verifications` : badge « Dossier vérifié » des annonces.
+- Ventes réussies : « J'ai vendu » depuis `/ma/mes-annonces` ou `/ma/statistiques`, validation sur `/admin/temoignages`, section « Ils ont vendu » sur l'accueil et `/ma` (masquée tant qu'aucune vente n'est publiée). Migration `2026-10-23-ventes-reussies.sql`, à exécuter après `2026-10-22`.
 - `/ma/statistiques` (vendeurs et pros) : vues des annonces, dossiers consultés, contacts reçus ; pour un pro, vues de sa fiche et clics vers son site depuis `/pros`.
 
 ### Mise en route (à faire une fois)

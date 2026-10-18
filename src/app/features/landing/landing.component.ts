@@ -3,6 +3,7 @@ import { NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
 import { AuthService } from '../../core/services/auth.service';
+import { SuccessStoriesComponent } from '../../shared/components/success-stories/success-stories.component';
 
 interface PricingPreviewPlan {
   name: string;
@@ -42,7 +43,7 @@ interface LandingAudience {
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [RouterLink, NgClass, FooterComponent],
+  imports: [RouterLink, NgClass, FooterComponent, SuccessStoriesComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-white">
@@ -342,6 +343,8 @@ interface LandingAudience {
           </div>
         </div>
       </section>
+
+      <app-success-stories />
 
       <section class="px-4 py-16 bg-secondary sm:px-6 sm:py-20 lg:px-8">
         <div class="max-w-[1400px] mx-auto">

@@ -111,6 +111,17 @@ export const routes: Routes = [
         loadComponent: () => import('./features/ma/ma-statistiques/ma-statistiques.component').then(m => m.MaStatistiquesComponent)
       },
       {
+        path: 'ma/vendue/:id',
+        canActivate: [authGuard, roleGuard],
+        data: { allowedRoles: ['seller', 'pro'] },
+        loadComponent: () => import('./features/ma/ma-vente/ma-vente.component').then(m => m.MaVenteComponent)
+      },
+      {
+        path: 'admin/temoignages',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/admin/admin-temoignages.component').then(m => m.AdminTemoignagesComponent)
+      },
+      {
         path: 'admin/annonces',
         canActivate: [authGuard],
         loadComponent: () => import('./features/admin/admin-annonces.component').then(m => m.AdminAnnoncesComponent)

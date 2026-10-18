@@ -100,7 +100,10 @@ PREMIUM = accompagnement humain. Les talents n'ont pas besoin de payer.
 
 /ma/statistiques           Statistiques du vendeur : vues, dossiers consultés, contacts reçus (vendeur)
 
+/ma/vendue/:id             « J'ai vendu » : déclaration de la vente et témoignage (vendeur)
+
 /admin/annonces            Modération des annonces M&A (admin)
+/admin/temoignages         Ventes déclarées à valider avant publication (admin)
 /admin/profils             Vérification des profils (admin)
 
 /abonnement                Gérer son abonnement Stripe (protégé)
@@ -510,6 +513,7 @@ Tu proposes des actions concrètes sur la plateforme GoFounders.
 - **Modération des annonces** (`2026-10-21-moderation-verification-stats.sql`) : une annonce est en ligne dès sa publication, un admin la relit sur `/admin/annonces` (`admin_list_ma_listings`, `moderate_ma_listing`). Une annonce retirée n'est lisible que par son propriétaire et les admins (politique restrictive `ma_listings_moderation`) et le vendeur ne peut pas la republier seul. Une annonce modifiée repasse « à relire »
 - **Profil vérifié** : `profiles.verified_at`, posé uniquement par `decide_profile_verification` (admin, `/admin/profils`) après une demande `request_profile_verification` (liens LinkedIn, site, SIREN ; jamais de pièce d'identité). Le badge ne s'affiche que pour un profil réellement vérifié
 - **Statistiques vendeur** : `record_ma_listing_view` (une vue par membre et par jour, propriétaire et admins non comptés), lues via `get_my_listing_stats`, `get_my_listing_daily_views`, `get_my_contact_stats` ; tables sans accès direct
+- **Ventes réussies** (`2026-10-23-ventes-reussies.sql`) : témoignages réels uniquement (jamais de témoignage inventé), publiés après validation d'un admin et avec le consentement du vendeur. Prix exact, fourchette ou masqué selon son choix ; le prix exact n'est jamais renvoyé au public s'il ne l'a pas choisi (`list_success_stories`). Section `SuccessStoriesComponent`, masquée tant qu'il n'y a aucune vente publiée
 - Les profils avec `confidential: true` masquent les infos de contact côté Firestore Rules
 - La limite FREE (3 nouveaux contacts par mois, porteurs de projet uniquement) est vérifiée par des triggers Supabase (`2026-10-11-free-quotas.sql`, règles mises à jour par `2026-10-12-offres.sql`) ; compteurs dans `usage_counters`, lus via `get_my_quota()`
 - L'assistant IA vérifie le plan côté back Python, pas seulement via le `PlanGuard`

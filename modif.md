@@ -962,3 +962,8 @@ npm install @stripe/stripe-js
   - le dossier complet respecte à la fois l'annonce active (modération) et l'accès anticipé de 48 h ;
   - statistiques des pros : vues de la fiche, clics vers le site depuis l'annuaire.
 - `/ma/statistiques` ouverte aux pros ; lien « Voir la fiche » dans l'annuaire ; menu admin : annonces, profils, dossiers.
+
+## Session du 23 octobre 2026 - Ventes réussies (témoignages avec prix)
+
+- Migration `2026-10-23-ventes-reussies.sql` (testée sur un Postgres local) : déclaration de vente par le vendeur (annonce passée en « vendue »), prix exact / fourchette / masqué, consentement, validation par un admin, retrait possible à tout moment, compteur public des ventes.
+- Pages : `/ma/vendue/:id` (lien « J'ai vendu » dans `/ma/statistiques`), `/admin/temoignages` ; section « Ils ont vendu » sur `/ma`, affichée seulement s'il existe des ventes publiées.
