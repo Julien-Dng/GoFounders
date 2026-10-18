@@ -56,11 +56,11 @@ interface LandingAudience {
               </div>
 
               <h1 class="text-4xl font-bold mb-6 leading-tight text-primary sm:text-5xl lg:text-6xl">
-                Trouvez le talent ou le projet qui fera avancer votre prochaine aventure
+                Trouvez le profil ou le projet qui fera avancer votre prochaine aventure
               </h1>
 
               <p class="text-lg text-muted-foreground mb-8 leading-relaxed sm:text-xl">
-                GoFounders prépare un espace de mise en relation pour les entrepreneurs qui lancent un projet et les talents qui veulent rejoindre une équipe ambitieuse.
+                GoFounders prépare un espace de mise en relation pour les entrepreneurs qui lancent un projet et les profils qui veulent rejoindre une équipe ambitieuse.
               </p>
 
               <div class="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center">
@@ -147,7 +147,7 @@ interface LandingAudience {
                         <circle cx="12" cy="8" r="4"/>
                       </svg>
                     </span>
-                    Talent disponible
+                    Profil disponible
                   </div>
 
                   <div class="landing-hero-pill landing-hero-pill-bottom">
@@ -341,7 +341,7 @@ interface LandingAudience {
             </div>
             <h2 class="text-3xl font-bold mb-4 sm:text-4xl">Vous souhaitez céder ou acquérir une entreprise ?</h2>
             <p class="text-lg opacity-90 mb-8 max-w-2xl mx-auto sm:text-xl">
-              Explorez une verticale dédiée aux opportunités d'achat et de cession, séparée du matching talents.
+              Explorez une verticale dédiée aux opportunités d'achat et de cession, séparée du matching entre projets et profils.
             </p>
             <a routerLink="/ma" class="inline-block px-10 py-4 bg-amber-500 text-white rounded-lg font-bold shadow-2xl hover:bg-amber-600 transition-all hover:scale-105 active:scale-95">
               Découvrir l'offre M&A
@@ -421,12 +421,12 @@ export class LandingComponent implements AfterViewInit {
     {
       icon: 'rocket',
       title: 'Entrepreneurs',
-      description: 'Déposez un projet et identifiez les talents utiles.',
+      description: 'Déposez un projet et identifiez les bons profils.',
       href: '/inscription',
     },
     {
       icon: 'briefcase',
-      title: 'Talents',
+      title: 'Profils',
       description: 'Repérez les projets qui correspondent à vos compétences.',
       href: '/inscription',
     },
@@ -439,27 +439,27 @@ export class LandingComponent implements AfterViewInit {
   ];
 
   readonly steps: LandingStep[] = [
-    { icon: 'profile', title: 'Créez votre profil', description: 'Choisissez si vous déposez un projet ou si vous rejoignez un projet comme talent.' },
+    { icon: 'profile', title: 'Créez votre profil', description: 'Choisissez si vous déposez un projet ou si vous proposez votre profil pour rejoindre un projet.' },
     { icon: 'lock', title: 'Connectez-vous', description: 'La recherche, les profils et la messagerie sont réservés aux membres authentifiés.' },
     { icon: 'handshake', title: 'Entrez en contact', description: 'Discutez avec les profils visibles pour votre rôle et accélérez les mises en relation utiles.' },
   ];
 
   readonly useCases: LandingUseCase[] = [
-    { icon: 'rocket', title: 'Je dépose un projet', description: 'Publiez votre ambition et trouvez des talents capables de faire avancer le produit, la vente ou l’exécution.' },
-    { icon: 'briefcase', title: 'Je suis un talent', description: 'Accédez uniquement aux projets publiés par les entrepreneurs pour vous concentrer sur les opportunités utiles.' },
+    { icon: 'rocket', title: 'Je dépose un projet', description: 'Publiez votre ambition et trouvez des profils capables de faire avancer le produit, la vente ou l’exécution.' },
+    { icon: 'briefcase', title: 'Je propose mon profil', description: 'Accédez uniquement aux projets publiés par les entrepreneurs pour vous concentrer sur les opportunités utiles.' },
     { icon: 'building', title: "J'achète ou je vends une entreprise", description: 'Vendeurs : publication gratuite et anonymisée. Repreneurs : accès aux dossiers complets pendant 12 mois.' },
   ];
 
   readonly stats = [
     { value: 'Profils cadrés', label: 'besoins, compétences et disponibilité lisibles avant contact' },
     { value: 'Accès connecté', label: 'recherche, profils et messages réservés aux membres' },
-    { value: 'Rôles séparés', label: 'entrepreneurs orientés talents, talents orientés projets' },
+    { value: 'Rôles séparés', label: 'les porteurs de projet voient les profils, les profils voient les projets' },
     { value: 'Mise en relation filtrée', label: 'des échanges guidés par l’intention, pas par un catalogue ouvert' },
   ];
 
   readonly testimonials = [
     { name: 'Camille Martin', role: 'Fondatrice SaaS santé', avatar: 'CM', quote: 'J’ai pu formuler précisément le profil produit que je cherchais avant de lancer mes premiers contacts.' },
-    { name: 'Nadia Benali', role: 'Product designer freelance', avatar: 'NB', quote: 'Voir uniquement des projets côté talent rend la recherche plus simple et évite de perdre du temps.' },
+    { name: 'Nadia Benali', role: 'Product designer freelance', avatar: 'NB', quote: 'Voir uniquement des projets côté profil rend la recherche plus simple et évite de perdre du temps.' },
     { name: 'Marc Lefèvre', role: 'Repreneur commerce local', avatar: 'ML', quote: 'La verticale M&A séparée clarifie tout de suite le parcours pour une reprise ou une cession.' },
   ];
 
@@ -471,7 +471,7 @@ export class LandingComponent implements AfterViewInit {
       features: [
         'Profil, recherche et score de compatibilité',
         'Réponses illimitées',
-        'Talents : contacts illimités',
+        'Profils : contacts illimités',
         'Porteurs de projet : 3 nouveaux contacts par mois',
       ],
     },

@@ -848,3 +848,9 @@ npm install @stripe/stripe-js
 ### Vérification
 
 - Build Angular OK, parcours testés en mode démo local (porteur : case cochée ; talent : filtre, badge, encadré)
+
+### Vocabulaire (18 octobre 2026)
+
+- Le mot « talent » n'est plus affiché sur le site : remplacé par **« profil »** (inscription « Je propose mon profil », recherche « profils disponibles », landing, tarifs, fiche projet, CGU…)
+- Valeur technique inchangée (`talent` en base et dans le code) : aucune migration nécessaire
+- Étiquette par défaut des projets : « Associé » au lieu de « Talent » (mot déjà ignoré par le score de compatibilité)

@@ -26,12 +26,13 @@ Chaque utilisateur a **un seul rôle**, choisi à l'inscription et non modifiabl
 | Rôle (`profileType`) | Libellé | Verticale | `/recherche` affiche |
 |---|---|---|---|
 | `entrepreneur` | Porteur de projet | Talents & Associés | Les talents |
-| `talent` | Talent / Expert | Talents & Associés | Les projets |
+| `talent` | Profil | Talents & Associés | Les projets |
 | `buyer` | Acheteur / Repreneur | M&A | — (redirigé vers `/ma`) |
 | `seller` | Vendeur M&A | M&A | — (redirigé vers `/ma`) |
 
 - `RoleGuard` (`route.data.allowedRoles`) protège `/recherche` ; le dashboard et la navigation s'adaptent au rôle.
 - Libellés et rôles de la marketplace : `PROFILE_TYPE_LABELS` et `TALENT_MARKETPLACE_ROLES` dans `user.model.ts`.
+- Sur le site, le mot **« talent » n'est jamais affiché** : on parle de **« profil »** (« Je propose mon profil », « profils disponibles »). La valeur technique reste `talent` (base et code).
 
 ---
 

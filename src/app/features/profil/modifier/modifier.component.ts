@@ -262,10 +262,10 @@ import { ProjectService } from '../../../core/services/project.service';
                 <div class="rounded-2xl border border-accent/20 bg-accent/[0.035] p-5 sm:p-6" [formGroup]="projectForm">
                   <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <div class="text-xs font-bold uppercase tracking-[0.16em] text-accent">Annonce visible par les talents</div>
+                      <div class="text-xs font-bold uppercase tracking-[0.16em] text-accent">Annonce visible par les profils</div>
                       <h2 class="mt-1 text-xl font-bold text-primary">Mon annonce de projet</h2>
                       <p class="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                        Modifiez ici le projet créé lors de votre inscription. Les informations publiées alimentent directement les résultats de recherche des talents.
+                        Modifiez ici le projet créé lors de votre inscription. Les informations publiées alimentent directement les résultats de recherche des profils.
                       </p>
                     </div>
 
@@ -379,7 +379,7 @@ import { ProjectService } from '../../../core/services/project.service';
                           <span>
                             <span class="block text-sm font-semibold">Ouvert à un associé avec apport financier</span>
                             <span id="project-open-to-equity-help" class="mt-1 block text-xs leading-relaxed text-muted-foreground">
-                              Les talents verront que vous êtes prêt à accueillir un associé qui entrerait au capital en apportant aussi de l'argent.
+                              Les profils verront que vous êtes prêt à accueillir un associé qui entrerait au capital en apportant aussi de l'argent.
                               N'indiquez ni montant ni pourcentage dans votre annonce : les conditions se discutent en privé, avec l'aide d'un professionnel.
                               GoFounders ne propose pas d'investissement.
                             </span>
@@ -693,7 +693,7 @@ export class ModifierComponent implements OnInit {
       this.successMessage.set(this.isEntrepreneur()
         ? this.projectForm.controls.isActive.value
           ? 'Profil et annonce de projet mis à jour.'
-          : 'Profil mis à jour, annonce enregistrée en brouillon (non visible par les talents).'
+          : 'Profil mis à jour, annonce enregistrée en brouillon (non visible par les profils).'
         : 'Profil mis à jour. Vous pouvez ouvrir votre profil pour vérifier le rendu.'
       );
       this.photoMessage.set('');

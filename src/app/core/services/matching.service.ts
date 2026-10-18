@@ -151,7 +151,7 @@ export class MatchingService {
       lookingFor,
       about: profile.bio ?? 'Ce profil sera enrichi avec les informations ajoutees dans Supabase.',
       projectSummary: profile.role === 'talent'
-        ? 'Ce talent souhaite rejoindre un projet aligne avec ses competences.'
+        ? 'Ce profil souhaite rejoindre un projet aligne avec ses competences.'
         : 'Ce profil entrepreneur presente un projet ou une opportunite a qualifier.',
       experienceSummary: 'Experience detaillee a completer dans le profil.',
       quickInfo: [
@@ -187,7 +187,7 @@ export class MatchingService {
       photoURL: owner?.photo_url ?? undefined,
       availableNow: true,
       availabilityLabel: 'Equipe ouverte aux echanges',
-      lookingFor: project.looking_for?.length ? project.looking_for : ['Talent', 'Associe', 'Expertise'],
+      lookingFor: project.looking_for?.length ? project.looking_for : ['Associe', 'Expertise'],
       about: project.description ?? 'Ce projet a ete cree depuis la base Supabase et peut etre enrichi progressivement.',
       projectSummary: project.description ?? 'Le porteur de projet cherche a structurer son equipe et accelerer son execution.',
       experienceSummary: owner?.bio ?? 'Le parcours du fondateur sera detaille dans une prochaine iteration.',

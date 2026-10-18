@@ -20,8 +20,8 @@ import { EditableProject, ProjectService } from '../../core/services/project.ser
         <div class="max-w-md rounded-2xl border border-border bg-white p-8 text-center shadow-sm" role="alert">
           <h1 class="mb-3 text-2xl font-bold text-primary">Ce profil n'est pas accessible</h1>
           <p class="mb-6 text-sm leading-relaxed text-muted-foreground">
-            Il n'existe pas, ou il ne correspond pas à votre type de compte : les porteurs de projet voient les talents,
-            les talents voient les projets.
+            Il n'existe pas, ou il ne correspond pas à votre type de compte : les porteurs de projet voient les profils,
+            les profils voient les projets.
           </p>
           <a routerLink="/dashboard" class="inline-block rounded-lg bg-accent px-6 py-3 font-semibold text-white hover:bg-accent/90">Retour au tableau de bord</a>
         </div>
@@ -443,7 +443,7 @@ export class ProfilComponent implements OnInit {
       const profileType = this.currentUser()?.profileType;
 
       if (profileType === 'talent') {
-        return 'Talent / Expert';
+        return 'Profil';
       }
 
       if (profileType === 'buyer') {

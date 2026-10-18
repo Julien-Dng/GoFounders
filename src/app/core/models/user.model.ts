@@ -6,7 +6,7 @@ export type Plan = 'FREE' | 'PRO' | 'PREMIUM';
 
 export const PROFILE_TYPE_LABELS: Record<ProfileType, string> = {
   entrepreneur: 'Porteur de projet',
-  talent: 'Talent / Expert',
+  talent: 'Profil',
   buyer: 'Acheteur / Repreneur',
   seller: 'Vendeur M&A',
 };
