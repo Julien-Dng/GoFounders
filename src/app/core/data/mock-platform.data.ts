@@ -24,6 +24,12 @@ export interface MarketplaceProfile {
   quickInfo: Array<{ label: string; value: string }>;
   // Projets uniquement : le porteur accepte un associé qui entrerait au capital avec un apport (sans conditions chiffrées).
   openToEquity?: boolean;
+  // Projets uniquement : partie confidentielle (contenu jamais chargé dans la recherche) et NDA exigé par le porteur.
+  hasConfidential?: boolean;
+  ndaRequired?: boolean;
+  ownerName?: string;
+  // Mode démo uniquement : contenu de la partie confidentielle, révélé après acceptation de la demande.
+  confidentialDetails?: string;
 }
 
 export interface ConversationMessage {
@@ -264,6 +270,10 @@ export const MARKETPLACE_PROFILES: MarketplaceProfile[] = [
     profileType: 'entrepreneur',
     displayName: 'HealthPilot',
     openToEquity: true,
+    hasConfidential: true,
+    ndaRequired: true,
+    ownerName: 'Sophie Bernard',
+    confidentialDetails: 'Modèle de détection des erreurs de prescription entraîné sur 40 000 ordonnances anonymisées. Deux cliniques pilotes à Paris (accord signé, 12 praticiens). Objectif : 30 cliniques payantes en 12 mois à 290 € par praticien et par mois.',
     title: 'Fondatrice · Sophie Bernard',
     location: 'Paris',
     stage: 'MVP',

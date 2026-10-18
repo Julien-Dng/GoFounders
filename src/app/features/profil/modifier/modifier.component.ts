@@ -5,6 +5,9 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { AuthService, UpdateProfilePayload } from '../../../core/services/auth.service';
 import { ProjectService } from '../../../core/services/project.service';
+import { ProjectAccessRequest, ProjectAccessService } from '../../../core/services/project-access.service';
+import { downloadTextFile, ndaProofDocument } from '../../../core/legal/nda';
+import { ProjectAccessStatus } from '../../../core/models/supabase-database.model';
 
 @Component({
   selector: 'app-modifier-profil',
@@ -267,6 +270,15 @@ import { ProjectService } from '../../../core/services/project.service';
                       <p class="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
                         Modifiez ici le projet créé lors de votre inscription. Les informations publiées alimentent directement les résultats de recherche des associés.
                       </p>
+                      <p class="mt-3 flex max-w-2xl items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs leading-relaxed text-foreground/80">
+                        <svg class="mt-0.5 flex-shrink-0 text-emerald-600" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                        <span>
+                          <strong>Votre idée reste protégée.</strong> Votre projet n'est visible que par les associés, jamais par les autres porteurs de projet.
+                          Les détails sensibles vont dans la partie confidentielle : vous choisissez qui y accède, et pouvez exiger un engagement de confidentialité (NDA).
+                        </span>
+                      </p>
                     </div>
 
                     <label class="inline-flex flex-shrink-0 items-center gap-3 rounded-full border border-border bg-white px-4 py-2 text-sm font-semibold">
@@ -386,9 +398,120 @@ import { ProjectService } from '../../../core/services/project.service';
                           </span>
                         </label>
                       </div>
+
+                      <div class="md:col-span-2 rounded-2xl border-2 border-primary/15 bg-white p-4 sm:p-5">
+                        <div class="flex items-center gap-2">
+                          <svg class="text-primary" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="11" width="18" height="11" rx="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                          </svg>
+                          <h3 class="text-base font-bold text-primary">Partie confidentielle</h3>
+                        </div>
+                        <p class="mt-1 text-sm leading-relaxed text-muted-foreground">
+                          Invisible dans la recherche. Un associé doit vous demander l'accès, et vous acceptez ou refusez chaque demande.
+                        </p>
+
+                        <div class="mt-4 rounded-xl bg-secondary/70 px-4 py-3 text-xs leading-relaxed text-foreground/80">
+                          <div class="mb-1 font-semibold text-foreground">Ce qu'il vaut mieux réserver à cette partie (ou au premier rendez-vous)</div>
+                          <ul class="list-disc space-y-0.5 pl-4">
+                            <li>le fonctionnement détaillé du produit, l'algorithme, le code ;</li>
+                            <li>les noms de clients, partenaires et pilotes, et les prix négociés ;</li>
+                            <li>les chiffres financiers et la stratégie de lancement.</li>
+                          </ul>
+                          <div class="mt-1">Dans la partie publique, décrivez le problème, le stade du projet et les profils recherchés.</div>
+                        </div>
+
+                        <label for="project-confidential" class="mb-2 mt-4 block text-sm font-semibold">
+                          Détails confidentiels <span class="font-normal text-muted-foreground">(facultatif)</span>
+                        </label>
+                        <textarea
+                          id="project-confidential"
+                          formControlName="confidentialDetails"
+                          rows="5"
+                          maxlength="3000"
+                          class="w-full resize-y rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
+                          placeholder="Ce que seuls les associés que vous acceptez pourront lire."
+                        ></textarea>
+                        <div class="mt-2 text-right text-xs text-muted-foreground">{{ projectForm.controls.confidentialDetails.getRawValue().length }}/3000</div>
+
+                        <label for="project-nda-required" class="mt-3 flex cursor-pointer items-start gap-3 rounded-xl border border-primary/20 bg-primary/[0.03] px-4 py-3">
+                          <input
+                            id="project-nda-required"
+                            type="checkbox"
+                            formControlName="ndaRequired"
+                            aria-describedby="project-nda-required-help"
+                            class="mt-0.5 h-4 w-4 flex-shrink-0 accent-accent"
+                          >
+                          <span>
+                            <span class="flex flex-wrap items-center gap-2 text-sm font-semibold">
+                              Exiger un engagement de confidentialité (NDA)
+                              <span class="rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-white">Recommandé</span>
+                            </span>
+                            <span id="project-nda-required-help" class="mt-1 block text-xs leading-relaxed text-muted-foreground">
+                              Avant de vous envoyer sa demande, l'associé doit accepter un engagement de confidentialité type. GoFounders conserve la preuve
+                              (nom, date, version du texte) et vous pouvez la télécharger. GoFounders n'assure pas de conseil juridique : pour un accord sur mesure,
+                              faites appel à nos experts juridiques partenaires.
+                            </span>
+                          </span>
+                        </label>
+                      </div>
                     </div>
                   }
                 </div>
+
+                @if (projectId()) {
+                  <div id="demandes-acces" class="rounded-2xl border border-border bg-white p-5 sm:p-6">
+                    <h2 class="text-xl font-bold text-primary">Demandes d'accès à la partie confidentielle</h2>
+                    <p class="mt-1 text-sm text-muted-foreground">Acceptez les associés avec qui vous voulez aller plus loin. Vous pouvez retirer un accès à tout moment.</p>
+
+                    @if (accessRequests().length === 0) {
+                      <p class="mt-4 rounded-xl bg-secondary/60 px-4 py-3 text-sm text-muted-foreground">Aucune demande pour l'instant.</p>
+                    } @else {
+                      <ul class="mt-4 divide-y divide-border">
+                        @for (request of accessRequests(); track request.id) {
+                          <li class="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="min-w-0">
+                              <div class="flex flex-wrap items-center gap-2">
+                                <span class="font-semibold">{{ request.requesterName }}</span>
+                                <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold" [ngClass]="accessStatusClass(request.status)">{{ accessStatusLabel(request.status) }}</span>
+                              </div>
+                              <div class="mt-1 text-xs text-muted-foreground">
+                                Demande du {{ formatDate(request.createdAt) }}
+                                @if (request.ndaAcceptedAt) {
+                                  · NDA accepté le {{ formatDate(request.ndaAcceptedAt) }} (version {{ request.ndaVersion }})
+                                } @else {
+                                  · Sans NDA
+                                }
+                              </div>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                              @if (request.ndaAcceptedAt) {
+                                <button type="button" (click)="downloadNdaProof(request)" class="rounded-lg border border-border px-3 py-2 text-xs font-semibold transition-colors hover:border-accent">
+                                  Télécharger la preuve
+                                </button>
+                              }
+                              @if (request.status !== 'approved') {
+                                <button type="button" (click)="decideAccess(request, true)" class="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent/90">
+                                  Accepter
+                                </button>
+                              }
+                              @if (request.status === 'pending') {
+                                <button type="button" (click)="decideAccess(request, false)" class="rounded-lg border border-border px-3 py-2 text-xs font-semibold transition-colors hover:border-destructive hover:text-destructive">
+                                  Refuser
+                                </button>
+                              }
+                              @if (request.status === 'approved') {
+                                <button type="button" (click)="decideAccess(request, false)" class="rounded-lg border border-border px-3 py-2 text-xs font-semibold transition-colors hover:border-destructive hover:text-destructive">
+                                  Retirer l'accès
+                                </button>
+                              }
+                            </div>
+                          </li>
+                        }
+                      </ul>
+                    }
+                  </div>
+                }
               }
 
               <div>
@@ -476,6 +599,8 @@ export class ModifierComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
   private readonly projects = inject(ProjectService);
+  private readonly projectAccess = inject(ProjectAccessService);
+  readonly accessRequests = signal<ProjectAccessRequest[]>([]);
   private readonly zone = inject(NgZone);
 
   readonly currentUser = this.auth.currentUser;
@@ -559,6 +684,8 @@ export class ModifierComponent implements OnInit {
     skillsNeeded: ['', Validators.maxLength(260)],
     isActive: [true],
     openToEquity: [false],
+    confidentialDetails: ['', Validators.maxLength(3000)],
+    ndaRequired: [false],
   });
 
   // Une annonce publiée doit avoir une présentation ; un brouillon peut rester incomplet.
@@ -703,6 +830,49 @@ export class ModifierComponent implements OnInit {
     }
   }
 
+  async decideAccess(request: ProjectAccessRequest, approve: boolean): Promise<void> {
+    const success = await this.projectAccess.decide(request.id, approve);
+
+    if (!success) {
+      this.errorMessage.set("La décision n'a pas pu être enregistrée. Réessayez dans un instant.");
+      return;
+    }
+
+    this.accessRequests.set(await this.projectAccess.listForProject(request.projectId));
+  }
+
+  downloadNdaProof(request: ProjectAccessRequest): void {
+    if (!request.ndaAcceptedAt || !request.ndaVersion) {
+      return;
+    }
+
+    const content = ndaProofDocument(
+      { ownerName: request.ownerName, associateName: request.requesterName, projectName: request.projectName },
+      { version: request.ndaVersion, acceptedAt: request.ndaAcceptedAt, ip: request.ndaIp, userAgent: request.ndaUserAgent }
+    );
+    downloadTextFile(`NDA-${this.slug(request.projectName)}-${this.slug(request.requesterName)}.txt`, content);
+  }
+
+  accessStatusLabel(status: ProjectAccessStatus): string {
+    return status === 'approved' ? 'Accès accordé' : status === 'refused' ? 'Refusée' : 'En attente';
+  }
+
+  accessStatusClass(status: ProjectAccessStatus): string {
+    return status === 'approved'
+      ? 'bg-emerald-50 text-emerald-700'
+      : status === 'refused'
+        ? 'bg-secondary text-muted-foreground'
+        : 'bg-amber-100 text-amber-700';
+  }
+
+  formatDate(value: string): string {
+    return new Date(value).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  private slug(value: string): string {
+    return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').toLowerCase() || 'document';
+  }
+
   private async loadProject(): Promise<void> {
     await this.auth.ensureSessionReady();
 
@@ -721,6 +891,7 @@ export class ModifierComponent implements OnInit {
     try {
       const project = await this.projects.getOwnedProject(ownerId);
       this.projectId.set(project?.id ?? null);
+      this.accessRequests.set(project ? await this.projectAccess.listForProject(project.id) : []);
       this.projectForm.patchValue({
         name: project?.name ?? this.currentUser()?.profileTitle ?? '',
         sector: project?.sector ?? '',
@@ -731,6 +902,8 @@ export class ModifierComponent implements OnInit {
         skillsNeeded: (project?.skillsNeeded ?? []).join(', '),
         isActive: project?.isActive ?? true,
         openToEquity: project?.openToEquity ?? false,
+        confidentialDetails: project?.confidentialDetails ?? '',
+        ndaRequired: project?.ndaRequired ?? false,
       });
     } finally {
       this.isProjectLoading.set(false);
@@ -756,6 +929,8 @@ export class ModifierComponent implements OnInit {
       skillsNeeded: this.splitTags(value.skillsNeeded),
       isActive: value.isActive,
       openToEquity: value.openToEquity,
+      confidentialDetails: value.confidentialDetails,
+      ndaRequired: value.ndaRequired,
     });
 
     if (!result.success) {

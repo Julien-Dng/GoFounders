@@ -240,6 +240,49 @@ interface LandingAudience {
         </div>
       </section>
 
+      <section id="protection" class="px-4 pt-16 bg-white sm:px-6 sm:pt-20 lg:px-8" aria-labelledby="protection-title">
+        <div class="max-w-[1400px] mx-auto">
+          <div class="overflow-hidden rounded-3xl bg-primary px-6 py-10 text-primary-foreground shadow-2xl sm:px-10 lg:px-14 lg:py-14">
+            <div class="grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center">
+              <div>
+                <div class="mb-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <path d="m9 12 2 2 4-4"/>
+                  </svg>
+                  Porteurs de projet
+                </div>
+                <h2 id="protection-title" class="mb-4 text-3xl font-bold sm:text-4xl">Votre idée reste protégée</h2>
+                <p class="text-lg leading-relaxed text-white/85">
+                  Peur qu'on vous copie ? Sur GoFounders, vous décidez de ce que vous montrez, à qui, et sous quel engagement.
+                </p>
+                <p class="mt-6 text-xs leading-relaxed text-white/60">
+                  Engagement de confidentialité type mis à disposition par GoFounders, qui n'assure pas de conseil juridique.
+                  Pour un accord sur mesure, nos experts juridiques partenaires peuvent vous accompagner.
+                </p>
+              </div>
+
+              <ul class="grid gap-4 sm:grid-cols-2">
+                @for (item of protectionPoints; track item.title) {
+                  <li class="rounded-2xl p-5" [ngClass]="item.highlight ? 'bg-white text-primary sm:col-span-2' : 'border border-white/10 bg-white/5'">
+                    <div class="mb-2 flex items-center gap-2">
+                      <span class="flex h-8 w-8 items-center justify-center rounded-lg" [ngClass]="item.highlight ? 'bg-accent text-white' : 'bg-white/10 text-white'" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="3" y="11" width="18" height="11" rx="2"/>
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                      </span>
+                      <h3 class="font-bold">{{ item.title }}</h3>
+                    </div>
+                    <p class="text-sm leading-relaxed" [ngClass]="item.highlight ? 'text-foreground/80' : 'text-white/75'">{{ item.description }}</p>
+                  </li>
+                }
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="px-4 py-16 bg-white sm:px-6 sm:py-20 lg:px-8">
         <div class="max-w-[1400px] mx-auto">
           <div class="text-center mb-16 animate-fade-in-up">
@@ -413,8 +456,26 @@ export class LandingComponent implements AfterViewInit {
 
   readonly trustBadges = [
     'Inscription rapide',
-    'Recherche réservée aux membres connectés',
+    'Projets protégés par NDA',
     'Mises en relation cadrées au lancement',
+  ];
+
+  readonly protectionPoints = [
+    {
+      title: 'Engagement de confidentialité (NDA)',
+      description: 'Exigez qu’un associé accepte un NDA avant de lire vos détails. GoFounders conserve la preuve (nom, date, version du texte) et vous pouvez la télécharger à tout moment.',
+      highlight: true,
+    },
+    {
+      title: 'Jamais visible par vos concurrents',
+      description: 'Votre projet n’est montré qu’aux associés, jamais aux autres porteurs de projet.',
+      highlight: false,
+    },
+    {
+      title: 'Vous choisissez qui accède',
+      description: 'Les détails sensibles restent dans une partie confidentielle : vous acceptez ou refusez chaque demande, et retirez un accès quand vous voulez.',
+      highlight: false,
+    },
   ];
 
   readonly audienceCards: LandingAudience[] = [

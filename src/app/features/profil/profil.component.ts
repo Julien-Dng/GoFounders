@@ -1,5 +1,5 @@
 import { NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
@@ -8,6 +8,8 @@ import { MATCH_REASONS_UPSELL, PROFILE_TYPE_LABELS, canSeeMatchReasons } from '.
 import { AuthService } from '../../core/services/auth.service';
 import { MatchingService } from '../../core/services/matching.service';
 import { EditableProject, ProjectService } from '../../core/services/project.service';
+import { ProjectAccessRequest, ProjectAccessService } from '../../core/services/project-access.service';
+import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '../../core/legal/nda';
 
 @Component({
   selector: 'app-profil',
@@ -315,7 +317,64 @@ import { EditableProject, ProjectService } from '../../core/services/project.ser
                 </div>
               }
 
-              @if (!isOwnProfile()) {
+              @if (isProjectProfile()) {
+                <div class="rounded-2xl border-2 border-primary/15 bg-white p-6 shadow-lg" aria-live="polite">
+                  <div class="mb-3 flex flex-wrap items-center gap-2">
+                    <svg class="text-primary" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <rect x="3" y="11" width="18" height="11" rx="2"/>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <h3 class="text-lg font-bold">Partie confidentielle</h3>
+                    @if (publicProfile()?.ndaRequired) {
+                      <span class="rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-white">NDA requis</span>
+                    }
+                  </div>
+
+                  @switch (accessState()) {
+                    @case ('approved') {
+                      @if (confidentialDetails()) {
+                        <p class="whitespace-pre-line text-sm leading-relaxed text-foreground/85">{{ confidentialDetails() }}</p>
+                      } @else {
+                        <p class="text-sm text-muted-foreground">Le porteur n'a pas encore rempli cette partie.</p>
+                      }
+                      @if (myRequest()?.ndaAcceptedAt) {
+                        <button type="button" (click)="downloadMyNda()" class="mt-4 text-sm font-semibold text-accent hover:underline">
+                          Télécharger mon engagement de confidentialité
+                        </button>
+                      }
+                    }
+                    @case ('pending') {
+                      <p class="text-sm leading-relaxed text-foreground/80">
+                        Demande envoyée le {{ formatDate(myRequest()!.createdAt) }}. Le porteur de projet vous répondra depuis son espace.
+                      </p>
+                    }
+                    @default {
+                      @if (!publicProfile()?.hasConfidential) {
+                        <p class="text-sm text-muted-foreground">Le porteur n'a pas encore ajouté de partie confidentielle à ce projet.</p>
+                      } @else {
+                        <p class="mb-4 text-sm leading-relaxed text-foreground/80">
+                          @if (accessState() === 'refused') {
+                            Le porteur n'a pas donné suite à votre précédente demande. Vous pouvez la renouveler.
+                          } @else if (publicProfile()?.ndaRequired) {
+                            Le porteur partage les détails sensibles de son projet aux associés qui acceptent un engagement de confidentialité, puis valide chaque demande.
+                          } @else {
+                            Le porteur partage les détails sensibles de son projet après avoir validé votre demande.
+                          }
+                        </p>
+                        <button type="button" (click)="startAccessRequest()" [disabled]="isRequestingAccess()" class="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-semibold text-white shadow-md transition-colors hover:bg-primary/90 disabled:cursor-wait disabled:opacity-70">
+                          Demander l'accès
+                        </button>
+                      }
+                    }
+                  }
+
+                  @if (accessMessage()) {
+                    <p class="mt-3 text-sm text-destructive" role="alert">{{ accessMessage() }}</p>
+                  }
+                </div>
+              }
+
+              @if (!isOwnProfile() && !isProjectProfile()) {
                 <div class="relative overflow-hidden rounded-2xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-6 shadow-lg dark:border-amber-300/25 dark:from-amber-500/15 dark:to-orange-500/10">
                   <div class="relative z-10">
                     <div class="mb-4 flex items-center gap-3">
@@ -358,6 +417,52 @@ import { EditableProject, ProjectService } from '../../core/services/project.ser
         </div>
       </div>
     }
+
+    <dialog
+      #ndaDialog
+      class="m-auto w-[calc(100%_-_2rem)] max-w-2xl rounded-2xl border-0 bg-white p-0 shadow-2xl backdrop:bg-black/40"
+      aria-labelledby="nda-title"
+      (close)="ndaModalOpen.set(false)"
+      (click)="onNdaDialogClick($event)"
+    >
+      @if (ndaModalOpen()) {
+        <div class="flex max-h-[85vh] flex-col">
+          <div class="border-b border-border px-6 py-5">
+            <h2 id="nda-title" class="text-xl font-bold text-primary">Engagement de confidentialité</h2>
+            <p class="mt-1 text-sm text-muted-foreground">
+              Le porteur de « {{ publicProfile()?.displayName }} » demande cet engagement avant de partager les détails de son projet.
+            </p>
+          </div>
+          <div class="flex-1 space-y-4 overflow-y-auto px-6 py-5 text-sm leading-relaxed text-foreground/85">
+            @for (article of ndaText(); track article.title) {
+              <section>
+                <h3 class="mb-1 font-semibold text-foreground">{{ article.title }}</h3>
+                @for (paragraph of article.paragraphs; track $index) {
+                  <p class="mb-2">{{ paragraph }}</p>
+                }
+              </section>
+            }
+          </div>
+          <div class="border-t border-border px-6 py-5">
+            <label class="flex cursor-pointer items-start gap-3 text-sm">
+              <input type="checkbox" [checked]="ndaChecked()" (change)="ndaChecked.set(!ndaChecked())" class="mt-0.5 h-4 w-4 flex-shrink-0 accent-accent">
+              <span>J'ai lu et j'accepte cet engagement de confidentialité (version {{ ndaVersion }}).</span>
+            </label>
+            <p class="mt-2 text-xs text-muted-foreground">
+              Votre acceptation est enregistrée comme preuve (nom, date, version du texte, adresse IP). GoFounders n'est pas partie à cet engagement et n'assure pas de conseil juridique.
+            </p>
+            <div class="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <button type="button" (click)="closeNdaModal()" class="rounded-lg border border-border px-5 py-2.5 text-sm font-semibold transition-colors hover:border-accent">
+                Annuler
+              </button>
+              <button type="button" (click)="submitAccessRequest(true)" [disabled]="!ndaChecked() || isRequestingAccess()" class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50">
+                Accepter et envoyer ma demande
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    </dialog>
   `
   ,
   styles: [`
@@ -395,6 +500,18 @@ export class ProfilComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly matchingService = inject(MatchingService);
   private readonly projectService = inject(ProjectService);
+  private readonly projectAccess = inject(ProjectAccessService);
+
+  // Partie confidentielle d'un projet (voir 2026-10-19-projets-confidentiels-nda.sql).
+  readonly ndaVersion = NDA_VERSION;
+  readonly myRequest = signal<ProjectAccessRequest | null>(null);
+  readonly confidentialDetails = signal<string | null>(null);
+  readonly ndaModalOpen = signal(false);
+  // <dialog> natif (showModal) : affiché au-dessus de toute la page, Échap et focus gérés par le navigateur.
+  @ViewChild('ndaDialog') private readonly ndaDialog?: ElementRef<HTMLDialogElement>;
+  readonly ndaChecked = signal(false);
+  readonly isRequestingAccess = signal(false);
+  readonly accessMessage = signal('');
 
   readonly activeTab = signal('presentation');
   readonly isBookmarked = signal(false);
@@ -500,6 +617,14 @@ export class ProfilComponent implements OnInit {
       ? (this.currentUser()?.skills ?? [])
       : (this.publicProfile()?.skills ?? [])
   );
+  readonly isProjectProfile = computed(() => !this.isOwnProfile() && this.publicProfile()?.profileType === 'entrepreneur');
+  readonly accessState = computed(() => this.myRequest()?.status ?? 'none');
+  private readonly ndaParties = computed(() => ({
+    ownerName: this.publicProfile()?.ownerName ?? 'le porteur de projet',
+    associateName: this.currentUser()?.displayName ?? 'l’associé',
+    projectName: this.publicProfile()?.displayName ?? 'le projet',
+  }));
+  readonly ndaText = computed(() => ndaArticles(this.ndaParties()));
   readonly openToEquity = computed(() => !this.isOwnProfile() && this.publicProfile()?.openToEquity === true);
   readonly quickInfo = computed(() =>
     this.isOwnProfile()
@@ -603,5 +728,85 @@ export class ProfilComponent implements OnInit {
     const profile = await this.matchingService.getMarketplaceProfileById(profileId);
     this.loadedPublicProfile.set(profile);
     this.isUnavailable.set(!profile);
+
+    if (profile?.profileType === 'entrepreneur') {
+      await this.loadAccess(profile.id);
+    }
+  }
+
+  private async loadAccess(projectId: string): Promise<void> {
+    const request = await this.projectAccess.getMyRequest(projectId);
+    this.myRequest.set(request);
+    this.confidentialDetails.set(request?.status === 'approved' ? await this.projectAccess.getConfidentialDetails(projectId) : null);
+  }
+
+  startAccessRequest(): void {
+    this.accessMessage.set('');
+
+    if (this.publicProfile()?.ndaRequired) {
+      this.ndaChecked.set(false);
+      this.ndaModalOpen.set(true);
+      this.ndaDialog?.nativeElement.showModal();
+      return;
+    }
+
+    void this.submitAccessRequest(false);
+  }
+
+  closeNdaModal(): void {
+    this.ndaDialog?.nativeElement.close();
+    this.ndaModalOpen.set(false);
+  }
+
+  // Clic sur le fond (hors du contenu) : ferme la fenêtre.
+  onNdaDialogClick(event: MouseEvent): void {
+    if (event.target === this.ndaDialog?.nativeElement) {
+      this.closeNdaModal();
+    }
+  }
+
+  async submitAccessRequest(acceptNda: boolean): Promise<void> {
+    const project = this.publicProfile();
+
+    if (!project || this.isRequestingAccess()) {
+      return;
+    }
+
+    this.isRequestingAccess.set(true);
+
+    try {
+      const result = await this.projectAccess.requestAccess(project.id, acceptNda, project.ndaRequired === true, {
+        projectName: project.displayName,
+        ownerName: project.ownerName ?? 'Porteur de projet',
+      });
+
+      if (!result.success) {
+        this.accessMessage.set(result.message ?? "La demande n'a pas pu être envoyée.");
+        return;
+      }
+
+      this.closeNdaModal();
+      await this.loadAccess(project.id);
+    } finally {
+      this.isRequestingAccess.set(false);
+    }
+  }
+
+  downloadMyNda(): void {
+    const request = this.myRequest();
+
+    if (!request?.ndaAcceptedAt || !request.ndaVersion) {
+      return;
+    }
+
+    const content = ndaProofDocument(
+      { ownerName: request.ownerName, associateName: request.requesterName, projectName: request.projectName },
+      { version: request.ndaVersion, acceptedAt: request.ndaAcceptedAt, ip: request.ndaIp, userAgent: request.ndaUserAgent }
+    );
+    downloadTextFile('engagement-de-confidentialite.txt', content);
+  }
+
+  formatDate(value: string): string {
+    return new Date(value).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   }
 }
