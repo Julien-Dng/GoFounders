@@ -506,14 +506,14 @@ export class InscriptionComponent {
 
   readonly detailStepDescription = computed(() => {
     return this.selectedType() === 'entrepreneur'
-      ? 'Présentez rapidement votre projet pour que les profils sachent ce que vous construisez.'
+      ? 'Présentez rapidement votre projet pour que les futurs associés sachent ce que vous construisez.'
       : 'Présentez votre expertise pour que les entrepreneurs trouvent le bon profil plus vite.';
   });
 
   readonly detailStepPrompt = computed(() => {
     switch (this.selectedType()) {
       case 'entrepreneur':
-        return 'Présentez rapidement votre projet pour que les profils sachent ce que vous construisez.';
+        return 'Présentez rapidement votre projet pour que les futurs associés sachent ce que vous construisez.';
       case 'talent':
         return 'Présentez votre expertise pour que les entrepreneurs trouvent le bon profil plus vite.';
       case 'buyer':
@@ -530,12 +530,12 @@ export class InscriptionComponent {
       id: 'entrepreneur',
       icon: 'project',
       title: 'Je dépose un projet',
-      description: 'Je construis un projet et je veux trouver les bons profils pour le faire avancer.',
+      description: 'Je construis un projet et je veux trouver les bons associés pour le faire avancer.',
     },
     {
       id: 'talent',
       icon: 'talent',
-      title: 'Je propose mon profil',
+      title: 'Je veux devenir associé',
       description: 'Je veux découvrir des projets et rejoindre une équipe entrepreneuriale.',
     },
     {

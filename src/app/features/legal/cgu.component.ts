@@ -21,7 +21,7 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
           <h1 class="mb-6 text-3xl font-bold text-primary sm:text-5xl">Conditions générales d'utilisation</h1>
           <p class="mb-10 text-lg leading-relaxed text-muted-foreground">
             Ces conditions décrivent le cadre d'utilisation de GoFounders, plateforme de mise en relation entre porteurs de projet,
-            profils, acheteurs et vendeurs d'entreprises. Elles devront être relues et adaptées par un professionnel du droit avant publication définitive.
+            associés, acheteurs et vendeurs d'entreprises. Elles devront être relues et adaptées par un professionnel du droit avant publication définitive.
           </p>
 
           <div class="space-y-8 text-muted-foreground">

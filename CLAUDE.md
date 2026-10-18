@@ -26,13 +26,13 @@ Chaque utilisateur a **un seul rôle**, choisi à l'inscription et non modifiabl
 | Rôle (`profileType`) | Libellé | Verticale | `/recherche` affiche |
 |---|---|---|---|
 | `entrepreneur` | Porteur de projet | Talents & Associés | Les talents |
-| `talent` | Profil | Talents & Associés | Les projets |
+| `talent` | Associé | Talents & Associés | Les projets |
 | `buyer` | Acheteur / Repreneur | M&A | — (redirigé vers `/ma`) |
 | `seller` | Vendeur M&A | M&A | — (redirigé vers `/ma`) |
 
 - `RoleGuard` (`route.data.allowedRoles`) protège `/recherche` ; le dashboard et la navigation s'adaptent au rôle.
 - Libellés et rôles de la marketplace : `PROFILE_TYPE_LABELS` et `TALENT_MARKETPLACE_ROLES` dans `user.model.ts`.
-- Sur le site, le mot **« talent » n'est jamais affiché** : on parle de **« profil »** (« Je propose mon profil », « profils disponibles »). La valeur technique reste `talent` (base et code).
+- Sur le site, le mot **« talent » n'est jamais affiché** : on parle d'**« associé »** (« Je veux devenir associé », « associés disponibles »). La valeur technique reste `talent` (base et code).
 
 ---
 
@@ -119,7 +119,7 @@ PREMIUM = accompagnement humain. Les talents n'ont pas besoin de payer.
 ### `/inscription` — Onboarding (3 étapes)
 - **Étape 1** : Choix du type de profil (un seul rôle par utilisateur, non modifiable ensuite)
   - Porteur de projet
-  - Profil (« Je propose mon profil »)
+  - Associé (« Je veux devenir associé »)
   - Acheteur / Repreneur
   - Vendeur M&A
 - **Étape 2** : Informations de base (nom, email, mot de passe, localisation)

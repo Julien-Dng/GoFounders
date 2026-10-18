@@ -335,19 +335,19 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
 
   readonly highlightedProfiles = computed(() => this.filteredProfiles().slice(0, 3));
   readonly audiencePanelTitle = computed(() =>
-    this.visibleProfileType() === 'talent' ? 'Vous voyez uniquement les profils' : 'Vous voyez uniquement les projets'
+    this.visibleProfileType() === 'talent' ? 'Vous voyez uniquement les associés' : 'Vous voyez uniquement les projets'
   );
   readonly audiencePanelDescription = computed(() =>
     this.visibleProfileType() === 'talent'
-      ? "En tant que porteur de projet, la recherche affiche seulement des profils afin de garder un matching clair."
-      : 'En tant que profil, la recherche affiche seulement les projets publiés par des porteurs de projet.'
+      ? "En tant que porteur de projet, la recherche affiche seulement des associés afin de garder un matching clair."
+      : 'En tant qu’associé, la recherche affiche seulement les projets publiés par des porteurs de projet.'
   );
   readonly searchResultLabel = computed(() =>
-    this.visibleProfileType() === 'talent' ? 'profils disponibles' : 'projets disponibles'
+    this.visibleProfileType() === 'talent' ? 'associés disponibles' : 'projets disponibles'
   );
   readonly highlightedBannerTitle = computed(() =>
     this.visibleProfileType() === 'talent'
-      ? 'Les profils les plus alignés avec votre projet'
+      ? 'Les associés les plus alignés avec votre projet'
       : 'Les projets les plus alignés avec votre profil'
   );
   readonly hasActiveFilters = computed(() =>
@@ -363,11 +363,11 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     return this.visibleProfileType() === 'talent'
-      ? "Aucun profil n'est encore disponible. Dès qu'un profil compatible est publié, il apparaîtra ici."
+      ? "Aucun associé n'est encore disponible. Dès qu'un profil compatible est publié, il apparaîtra ici."
       : "Aucun projet n'est encore publié. Dès qu'un entrepreneur ajoute une opportunité, elle apparaîtra ici.";
   });
   readonly cardBadgeLabel = computed(() =>
-    this.visibleProfileType() === 'talent' ? 'Profil' : 'Projet'
+    this.visibleProfileType() === 'talent' ? 'Associé' : 'Projet'
   );
   readonly cardActionLabel = computed(() =>
     this.visibleProfileType() === 'talent' ? 'Voir le profil' : 'Voir le projet'

@@ -851,6 +851,6 @@ npm install @stripe/stripe-js
 
 ### Vocabulaire (18 octobre 2026)
 
-- Le mot « talent » n'est plus affiché sur le site : remplacé par **« profil »** (inscription « Je propose mon profil », recherche « profils disponibles », landing, tarifs, fiche projet, CGU…)
+- Le mot « talent » n'est plus affiché sur le site : remplacé par **« associé »** (inscription « Je veux devenir associé », recherche « associés disponibles », landing, tarifs, fiche projet, CGU…). Un premier essai avec « profil » a été abandonné : le mot servait déjà partout (« Mon profil », « Voir le profil »)
 - Valeur technique inchangée (`talent` en base et dans le code) : aucune migration nécessaire
 - Étiquette par défaut des projets : « Associé » au lieu de « Talent » (mot déjà ignoré par le score de compatibilité)

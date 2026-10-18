@@ -151,7 +151,7 @@ export class MatchingService {
       lookingFor,
       about: profile.bio ?? 'Ce profil sera enrichi avec les informations ajoutees dans Supabase.',
       projectSummary: profile.role === 'talent'
-        ? 'Ce profil souhaite rejoindre un projet aligne avec ses competences.'
+        ? 'Cet associe souhaite rejoindre un projet aligne avec ses competences.'
         : 'Ce profil entrepreneur presente un projet ou une opportunite a qualifier.',
       experienceSummary: 'Experience detaillee a completer dans le profil.',
       quickInfo: [

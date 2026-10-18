@@ -23,7 +23,7 @@ import { RouterLink } from '@angular/router';
               <span class="text-2xl font-bold">GoFounders</span>
             </div>
             <p class="text-primary-foreground/70 text-sm leading-relaxed">
-              La plateforme qui connecte porteurs de projet, profils et opportunités business.
+              La plateforme qui connecte porteurs de projet, associés et opportunités business.
             </p>
           </div>
 

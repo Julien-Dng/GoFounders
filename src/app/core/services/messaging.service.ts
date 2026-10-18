@@ -41,7 +41,7 @@ interface SupabaseQuotaRow {
 
 // Codes levés par les triggers Supabase (2026-10-11-free-quotas.sql, 2026-10-12-profils-par-role.sql).
 const QUOTA_ERROR_MESSAGES: Record<string, string> = {
-  ROLE_CONTACT_INTERDIT: "Ce profil ne peut pas être contacté avec votre type de compte (porteurs de projet et profils d'un côté, acheteurs et vendeurs de l'autre).",
+  ROLE_CONTACT_INTERDIT: "Ce profil ne peut pas être contacté avec votre type de compte (porteurs de projet et associés d'un côté, acheteurs et vendeurs de l'autre).",
   FREE_QUOTA_CONTACTS: 'Vous avez atteint la limite de 3 nouveaux contacts ce mois-ci avec le plan FREE. Passez en PRO pour des contacts illimités.',
   // Ancienne limite de messages (avant 2026-10-12-offres.sql), gardée si la migration n'est pas encore passée.
   FREE_QUOTA_MESSAGES: 'Vous avez atteint la limite de messages de votre plan ce mois-ci. Passez en PRO pour une messagerie illimitée.',
