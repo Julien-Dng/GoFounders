@@ -179,11 +179,11 @@ export class TarifsComponent {
         { text: 'Score de compatibilité', included: true },
         { text: 'Réponses illimitées à vos conversations', included: true },
         { text: 'Porteurs de projet : 3 nouveaux contacts par mois', included: true },
-        { text: 'Talents : contacts illimités', included: true },
+        { text: 'Associés : contacts illimités', included: true },
         { text: 'Raisons détaillées du score', included: false },
         { text: 'Assistant IA personnel', included: false },
       ],
-      highlights: ['Gratuit pour les talents', 'Recherche illimitée', 'Réponses illimitées'],
+      highlights: ['Gratuit pour les associés', 'Recherche illimitée', 'Réponses illimitées'],
       cta: 'Créer mon profil',
       href: '/inscription',
       reassurance: '',
@@ -216,7 +216,7 @@ export class TarifsComponent {
       description: 'On vous présente les bonnes personnes',
       features: [
         { text: 'Tout de PRO, plus :', included: true },
-        { text: "Présentations qualifiées d'associés et de talents", included: true },
+        { text: "Présentations qualifiées d'associés", included: true },
         { text: 'Mise en relation avec des investisseurs', included: true },
         { text: 'Mise en relation avec des experts juridiques partenaires', included: true },
         { text: 'Un interlocuteur dédié', included: true },
@@ -231,7 +231,7 @@ export class TarifsComponent {
 
   readonly comparisonRows: string[][] = [
     ['Profil et recherche', 'Illimités', 'Illimités', 'Illimités'],
-    ['Nouveaux contacts par mois', 'Talents : illimités · Porteurs de projet : 3', 'Illimités', 'Illimités'],
+    ['Nouveaux contacts par mois', 'Associés : illimités · Porteurs de projet : 3', 'Illimités', 'Illimités'],
     ['Réponses dans vos conversations', 'Illimitées', 'Illimitées', 'Illimitées'],
     ['Score de compatibilité', '✓', '✓', '✓'],
     ['Matching intelligent (raisons détaillées)', '✗', '✓', '✓'],

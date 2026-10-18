@@ -100,6 +100,22 @@ type SearchProfileType = ProfileType;
                     </div>
                   </label>
                 </div>
+
+                @if (visibleProfileType() === 'entrepreneur') {
+                  <div>
+                    <label class="flex cursor-pointer items-center justify-between gap-3">
+                      <span class="text-sm font-bold">Ouvert à un associé avec apport</span>
+                      <div class="relative flex-shrink-0">
+                        <input type="checkbox" [checked]="openToEquityOnly()" (change)="openToEquityOnly.set(!openToEquityOnly())" class="peer sr-only" aria-describedby="equity-filter-help">
+                        <div class="h-6 w-11 rounded-full bg-border transition-colors peer-checked:bg-accent"></div>
+                        <div class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5"></div>
+                      </div>
+                    </label>
+                    <p id="equity-filter-help" class="mt-2 text-xs leading-relaxed text-muted-foreground">
+                      Projets dont le porteur accepte un associé qui entrerait au capital. Les conditions se négocient en privé ; GoFounders ne propose pas d'investissement.
+                    </p>
+                  </div>
+                }
               </div>
             </div>
           </aside>
@@ -206,8 +222,20 @@ type SearchProfileType = ProfileType;
                       </div>
                       <div>
                         <h3 class="text-lg font-bold">{{ profile.displayName }}</h3>
-                        <div class="mt-1 flex items-center gap-2">
+                        <div class="mt-1 flex flex-wrap items-center gap-2">
                           <span class="rounded-full bg-accent px-2.5 py-0.5 text-xs font-semibold text-white">{{ cardBadgeLabel() }}</span>
+                          @if (profile.ndaRequired) {
+                            <span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-white" title="Détails partagés après engagement de confidentialité">
+                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <rect x="3" y="11" width="18" height="11" rx="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                              </svg>
+                              NDA
+                            </span>
+                          }
+                          @if (profile.openToEquity) {
+                            <span class="whitespace-nowrap rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent">Associé avec apport</span>
+                          }
                         </div>
                       </div>
                     </div>
@@ -283,6 +311,7 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly selectedStage = signal<string[]>([]);
   readonly selectedLocation = signal('');
   readonly isAvailableNow = signal(false);
+  readonly openToEquityOnly = signal(false);
 
   readonly sectors = ['Tous', 'Tech', 'Santé', 'Commerce', 'Finance', 'Industrie', 'Éducation', 'Marketing'];
   readonly projectStages = ['Idée', 'MVP', 'En croissance', 'Établi'];
@@ -299,6 +328,7 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
     const activeStages = this.selectedStage();
     const location = this.selectedLocation().trim().toLowerCase();
     const availableNowOnly = this.isAvailableNow();
+    const equityOnly = this.openToEquityOnly() && targetType === 'entrepreneur';
 
     return this.allProfiles().filter(profile => {
       const matchesRole = profile.profileType === targetType;
@@ -306,26 +336,27 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
       const matchesStage = activeStages.length === 0 || activeStages.includes(profile.stage);
       const matchesLocation = location.length === 0 || profile.location.toLowerCase().includes(location);
       const matchesAvailability = !availableNowOnly || profile.availableNow;
+      const matchesEquity = !equityOnly || profile.openToEquity === true;
 
-      return matchesRole && matchesSector && matchesStage && matchesLocation && matchesAvailability;
+      return matchesRole && matchesSector && matchesStage && matchesLocation && matchesAvailability && matchesEquity;
     });
   });
 
   readonly highlightedProfiles = computed(() => this.filteredProfiles().slice(0, 3));
   readonly audiencePanelTitle = computed(() =>
-    this.visibleProfileType() === 'talent' ? 'Vous voyez uniquement les talents' : 'Vous voyez uniquement les projets'
+    this.visibleProfileType() === 'talent' ? 'Vous voyez uniquement les associés' : 'Vous voyez uniquement les projets'
   );
   readonly audiencePanelDescription = computed(() =>
     this.visibleProfileType() === 'talent'
-      ? "En tant qu'entrepreneur, la recherche affiche seulement des talents afin de garder un matching clair."
-      : 'En tant que talent, la recherche affiche seulement les projets publiés par des entrepreneurs.'
+      ? "En tant que porteur de projet, la recherche affiche seulement des associés afin de garder un matching clair."
+      : 'En tant qu’associé, la recherche affiche seulement les projets publiés par des porteurs de projet.'
   );
   readonly searchResultLabel = computed(() =>
-    this.visibleProfileType() === 'talent' ? 'talents disponibles' : 'projets disponibles'
+    this.visibleProfileType() === 'talent' ? 'associés disponibles' : 'projets disponibles'
   );
   readonly highlightedBannerTitle = computed(() =>
     this.visibleProfileType() === 'talent'
-      ? 'Les talents les plus alignés avec votre projet'
+      ? 'Les associés les plus alignés avec votre projet'
       : 'Les projets les plus alignés avec votre profil'
   );
   readonly hasActiveFilters = computed(() =>
@@ -333,6 +364,7 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
     || this.selectedStage().length > 0
     || this.selectedLocation().trim().length > 0
     || this.isAvailableNow()
+    || this.openToEquityOnly()
   );
   readonly emptyBannerDescription = computed(() => {
     if (this.hasActiveFilters()) {
@@ -340,11 +372,11 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     return this.visibleProfileType() === 'talent'
-      ? "Aucun talent n'est encore disponible. Dès qu'un profil compatible est publié, il apparaîtra ici."
+      ? "Aucun associé n'est encore disponible. Dès qu'un profil compatible est publié, il apparaîtra ici."
       : "Aucun projet n'est encore publié. Dès qu'un entrepreneur ajoute une opportunité, elle apparaîtra ici.";
   });
   readonly cardBadgeLabel = computed(() =>
-    this.visibleProfileType() === 'talent' ? 'Talent' : 'Projet'
+    this.visibleProfileType() === 'talent' ? 'Associé' : 'Projet'
   );
   readonly cardActionLabel = computed(() =>
     this.visibleProfileType() === 'talent' ? 'Voir le profil' : 'Voir le projet'
@@ -371,6 +403,7 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectedStage.set([]);
     this.selectedLocation.set('');
     this.isAvailableNow.set(false);
+    this.openToEquityOnly.set(false);
   }
 
   revealDelay(index: number): string {

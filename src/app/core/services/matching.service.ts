@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { MARKETPLACE_PROFILES, MarketplaceProfile, findMarketplaceProfileById } from '../data/mock-platform.data';
 import { Match } from '../models/match.model';
 import { Profile } from '../models/project.model';
-import { SupabaseProfileRow, SupabaseProjectRow, PROFILE_COLUMNS } from '../models/supabase-database.model';
+import { SupabaseProfileRow, SupabaseProjectRow, PROFILE_COLUMNS, PROJECT_COLUMNS } from '../models/supabase-database.model';
 import { PROFILE_TYPE_LABELS, ProfileType, isTalentMarketplaceRole } from '../models/user.model';
 import { ProjectSide, TalentSide, computeCompatibility } from '../matching/compatibility';
 import { AuthService } from './auth.service';
@@ -43,7 +43,7 @@ export class MatchingService {
     try {
       const [profilesResult, projectsResult] = await Promise.all([
         this.supabase.client.from('profiles').select(PROFILE_COLUMNS),
-        this.supabase.client.from('projects').select('*').eq('is_active', true),
+        this.supabase.client.from('projects').select(PROJECT_COLUMNS).eq('is_active', true),
       ]);
 
       if (profilesResult.error || projectsResult.error) {
@@ -99,7 +99,7 @@ export class MatchingService {
 
       const { data: projectData, error: projectError } = await this.supabase.client
         .from('projects')
-        .select('*')
+        .select(PROJECT_COLUMNS)
         .eq('id', profileId)
         .maybeSingle();
 
@@ -151,7 +151,7 @@ export class MatchingService {
       lookingFor,
       about: profile.bio ?? 'Ce profil sera enrichi avec les informations ajoutees dans Supabase.',
       projectSummary: profile.role === 'talent'
-        ? 'Ce talent souhaite rejoindre un projet aligne avec ses competences.'
+        ? 'Cet associe souhaite rejoindre un projet aligne avec ses competences.'
         : 'Ce profil entrepreneur presente un projet ou une opportunite a qualifier.',
       experienceSummary: 'Experience detaillee a completer dans le profil.',
       quickInfo: [
@@ -187,7 +187,7 @@ export class MatchingService {
       photoURL: owner?.photo_url ?? undefined,
       availableNow: true,
       availabilityLabel: 'Equipe ouverte aux echanges',
-      lookingFor: project.looking_for?.length ? project.looking_for : ['Talent', 'Associe', 'Expertise'],
+      lookingFor: project.looking_for?.length ? project.looking_for : ['Associe', 'Expertise'],
       about: project.description ?? 'Ce projet a ete cree depuis la base Supabase et peut etre enrichi progressivement.',
       projectSummary: project.description ?? 'Le porteur de projet cherche a structurer son equipe et accelerer son execution.',
       experienceSummary: owner?.bio ?? 'Le parcours du fondateur sera detaille dans une prochaine iteration.',
@@ -196,7 +196,12 @@ export class MatchingService {
         { label: 'Stade', value: stage },
         { label: 'Recherche', value: skills.slice(0, 3).join(', ') },
         { label: 'Localisation', value: project.location ?? owner?.location ?? 'France' },
+        ...(project.open_to_equity ? [{ label: 'Associé avec apport', value: 'Possible' }] : []),
       ],
+      openToEquity: project.open_to_equity ?? false,
+      hasConfidential: project.has_confidential_details ?? false,
+      ndaRequired: project.nda_required ?? false,
+      ownerName,
     };
   }
 

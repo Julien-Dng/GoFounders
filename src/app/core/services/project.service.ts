@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import {
+  PROJECT_COLUMNS,
   SupabaseProjectInsert,
   SupabaseProjectRow,
   SupabaseProjectUpdate,
@@ -19,6 +20,10 @@ export interface EditableProject {
   skillsNeeded: string[];
   location: string;
   isActive: boolean;
+  openToEquity: boolean;
+  // Partie réservée aux associés dont le porteur a accepté la demande d'accès.
+  confidentialDetails: string;
+  ndaRequired: boolean;
 }
 
 export interface SaveProjectPayload {
@@ -30,6 +35,9 @@ export interface SaveProjectPayload {
   skillsNeeded: string[];
   location: string;
   isActive: boolean;
+  openToEquity: boolean;
+  confidentialDetails: string;
+  ndaRequired: boolean;
 }
 
 export interface SaveProjectResult {
@@ -53,7 +61,7 @@ export class ProjectService {
 
     const { data, error } = await this.supabase.client
       .from('projects')
-      .select('*')
+      .select(PROJECT_COLUMNS)
       .eq('owner_id', ownerId)
       .order('updated_at', { ascending: false })
       .limit(1)
@@ -64,7 +72,13 @@ export class ProjectService {
       return null;
     }
 
-    return data ? this.mapRow(data as SupabaseProjectRow) : null;
+    return data ? this.mapRow(data as SupabaseProjectRow, await this.readConfidentialDetails((data as SupabaseProjectRow).id)) : null;
+  }
+
+  // La partie confidentielle ne se lit jamais directement (voir 2026-10-19-projets-confidentiels-nda.sql).
+  private async readConfidentialDetails(projectId: string): Promise<string> {
+    const { data, error } = await this.supabase.client.rpc('get_project_confidential', { p_project_id: projectId });
+    return error ? '' : ((data as string | null) ?? '');
   }
 
   async saveOwnedProject(
@@ -89,6 +103,9 @@ export class ProjectService {
       skills_needed: this.cleanTags(payload.skillsNeeded),
       location: this.optionalText(payload.location),
       is_active: payload.isActive,
+      open_to_equity: payload.openToEquity,
+      confidential_details: this.optionalText(payload.confidentialDetails),
+      nda_required: payload.ndaRequired,
       updated_at: new Date().toISOString(),
     };
 
@@ -98,7 +115,7 @@ export class ProjectService {
         .update(values)
         .eq('id', projectId)
         .eq('owner_id', ownerId)
-        .select('*')
+        .select(PROJECT_COLUMNS)
         .single();
 
       if (error || !data) {
@@ -108,7 +125,7 @@ export class ProjectService {
         };
       }
 
-      return { success: true, project: this.mapRow(data as SupabaseProjectRow) };
+      return { success: true, project: this.mapRow(data as SupabaseProjectRow, payload.confidentialDetails.trim()) };
     }
 
     const insert: SupabaseProjectInsert = {
@@ -121,12 +138,15 @@ export class ProjectService {
       skills_needed: values.skills_needed,
       location: values.location,
       is_active: values.is_active,
+      open_to_equity: values.open_to_equity,
+      confidential_details: values.confidential_details,
+      nda_required: values.nda_required,
       updated_at: values.updated_at,
     };
     const { data, error } = await this.supabase.client
       .from('projects')
       .insert(insert)
-      .select('*')
+      .select(PROJECT_COLUMNS)
       .single();
 
     if (error || !data) {
@@ -136,7 +156,7 @@ export class ProjectService {
       };
     }
 
-    return { success: true, project: this.mapRow(data as SupabaseProjectRow) };
+    return { success: true, project: this.mapRow(data as SupabaseProjectRow, payload.confidentialDetails.trim()) };
   }
 
   private saveLocalProject(
@@ -159,6 +179,9 @@ export class ProjectService {
       skillsNeeded: this.cleanTags(payload.skillsNeeded),
       location: payload.location.trim(),
       isActive: payload.isActive,
+      openToEquity: payload.openToEquity,
+      confidentialDetails: payload.confidentialDetails.trim(),
+      ndaRequired: payload.ndaRequired,
     };
 
     if (existingIndex >= 0) {
@@ -184,7 +207,7 @@ export class ProjectService {
     }
   }
 
-  private mapRow(row: SupabaseProjectRow): EditableProject {
+  private mapRow(row: SupabaseProjectRow, confidentialDetails = ''): EditableProject {
     return {
       id: row.id,
       ownerId: row.owner_id,
@@ -196,6 +219,9 @@ export class ProjectService {
       skillsNeeded: row.skills_needed ?? [],
       location: row.location ?? '',
       isActive: row.is_active,
+      openToEquity: row.open_to_equity ?? false,
+      confidentialDetails,
+      ndaRequired: row.nda_required ?? false,
     };
   }
 

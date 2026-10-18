@@ -57,7 +57,7 @@ import { PaymentService } from '../../core/services/payment.service';
             </div>
 
             <p class="mb-6 text-sm leading-relaxed text-white/75">
-              On vous présente les bonnes personnes : associés et talents qualifiés, investisseurs, experts juridiques
+              On vous présente les bonnes personnes : associés qualifiés, investisseurs, experts juridiques
               partenaires, avec un interlocuteur dédié.
             </p>
 

@@ -946,7 +946,7 @@ export class AuthService {
 
   private buildInitialLookingFor(payload: SignUpPayload): string[] | undefined {
     if (payload.profileType === 'entrepreneur') {
-      return this.cleanTags(['Talent', payload.projectSector ?? '']);
+      return this.cleanTags(['Associé', payload.projectSector ?? '']);
     }
 
     if (payload.profileType === 'talent') {

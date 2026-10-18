@@ -872,3 +872,43 @@ npm install @stripe/stripe-js
 - `grantMaAccess()` / `grantDemoPlan()` ne font plus rien sur Supabase (mode démo local uniquement) ; le bouton M&A de `/abonnement` passe par le Payment Link
 - La migration du 12 octobre crée `profiles.is_admin` si la colonne manque (la fonction `get_ma_listing_detail` en dépend)
 - Vérifié sur un Postgres 16 local qui imite Supabase : attaques bloquées après migration, possibles avant
+
+---
+
+## Session du 18 octobre 2026 - Projets ouverts à un associé avec apport
+
+- **Base** : migration `supabase/2026-10-18-projets-entree-capital.sql` (colonne `projects.open_to_equity`, oui / non)
+- **Porteur de projet** (`/profil/modifier`) : case « Ouvert à un associé avec apport financier », avec rappel de ne mettre ni montant ni pourcentage
+- **Talent** (`/recherche`) : filtre « Ouvert à un associé avec apport » et badge sur les cartes projet
+- **Page projet** : encadré « Ouvert à un associé avec apport » + mention « GoFounders ne propose pas d'investissement »
+- **Cadre légal** : simple indication, aucune condition chiffrée stockée ni affichée. Afficher des offres d'investissement chiffrées relèverait du financement participatif (agrément AMF). À faire valider par un avocat avant lancement
+
+### Vérification
+
+- Build Angular OK, parcours testés en mode démo local (porteur : case cochée ; talent : filtre, badge, encadré)
+
+### Vocabulaire (18 octobre 2026)
+
+- Le mot « talent » n'est plus affiché sur le site : remplacé par **« associé »** (inscription « Je veux devenir associé », recherche « associés disponibles », landing, tarifs, fiche projet, CGU…). Un premier essai avec « profil » a été abandonné : le mot servait déjà partout (« Mon profil », « Voir le profil »)
+- Valeur technique inchangée (`talent` en base et dans le code) : aucune migration nécessaire
+- Étiquette par défaut des projets : « Associé » au lieu de « Talent » (mot déjà ignoré par le score de compatibilité)
+
+---
+
+## Session du 19 octobre 2026 - Protection des projets : partie confidentielle et NDA
+
+- **Base** : migration `supabase/2026-10-19-projets-confidentiels-nda.sql`
+  - `projects.confidential_details` (jamais lisible directement), `nda_required`, `has_confidential_details`
+  - Table `project_access_requests` (demandes, décision, preuve d'acceptation du NDA), écrite uniquement par les fonctions `request_project_access`, `decide_project_access`, lue par `get_project_confidential`
+  - Notifications au porteur (nouvelle demande) et à l'associé (accès accordé ou non)
+- **Porteur** (`/profil/modifier`) : encadré « Votre idée reste protégée », partie confidentielle avec conseils, option « Exiger un engagement de confidentialité (NDA) » (recommandée), liste des demandes d'accès (accepter, refuser, retirer l'accès, télécharger la preuve)
+- **Associé** (`/profil/:id` d'un projet) : carte « Partie confidentielle », bouton « Demander l'accès », fenêtre du NDA (`<dialog>` natif) avec case d'acceptation, téléchargement de son engagement
+- **Recherche** : badge « NDA » sur les projets qui l'exigent
+- **Landing** : section « Votre idée reste protégée » (NDA mis en avant) et badge « Projets protégés par NDA »
+- **Texte du NDA** : `core/legal/nda.ts`, version `v0-provisoire-2026-10-19`, repris du document « Engagement de confidentialité GoFounders (NDA type) ». À faire valider par un avocat, et compléter `NDA_PUBLISHER`
+
+### Vérification
+
+- Build Angular OK
+- Migration testée sur un Postgres 16 local reproduisant les règles de V6 : 22 scénarios (lecture directe refusée, concurrent sans accès, NDA obligatoire, auto-approbation impossible, preuve et notifications, retrait d'accès, preuve conservée après suppression de compte)
+- Parcours testés en mode démo local : associé (badge, carte, NDA, demande) et porteur (champs, demandes, acceptation, téléchargement de la preuve)

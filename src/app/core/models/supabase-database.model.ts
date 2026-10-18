@@ -269,8 +269,33 @@ export interface SupabaseProjectRow {
   skills_needed: string[] | null;
   location: string | null;
   is_active: boolean;
+  open_to_equity?: boolean | null;
+  nda_required?: boolean | null;
+  // Indique qu'une partie confidentielle existe ; son contenu passe par get_project_confidential().
+  has_confidential_details?: boolean | null;
   created_at: string;
   updated_at: string;
+}
+
+// Colonnes lisibles d'un projet : jamais de select('*') (confidential_details n'est pas accordée en lecture).
+export const PROJECT_COLUMNS =
+  'id, owner_id, name, sector, stage, description, looking_for, skills_needed, location, is_active, open_to_equity, nda_required, has_confidential_details, created_at, updated_at';
+
+export type ProjectAccessStatus = 'pending' | 'approved' | 'refused';
+
+export interface SupabaseProjectAccessRequestRow {
+  id: string;
+  project_id: string | null;
+  requester_id: string | null;
+  owner_id: string | null;
+  status: ProjectAccessStatus;
+  nda_version: string | null;
+  nda_accepted_at: string | null;
+  nda_ip: string | null;
+  nda_user_agent: string | null;
+  snapshot: { project_name?: string; owner_name?: string; requester_name?: string } | null;
+  created_at: string;
+  decided_at: string | null;
 }
 
 export interface SupabaseProjectInsert {
@@ -284,6 +309,9 @@ export interface SupabaseProjectInsert {
   skills_needed?: string[] | null;
   location?: string | null;
   is_active?: boolean;
+  open_to_equity?: boolean;
+  confidential_details?: string | null;
+  nda_required?: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -297,5 +325,8 @@ export interface SupabaseProjectUpdate {
   skills_needed?: string[] | null;
   location?: string | null;
   is_active?: boolean;
+  open_to_equity?: boolean;
+  confidential_details?: string | null;
+  nda_required?: boolean;
   updated_at?: string;
 }

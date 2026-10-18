@@ -32,12 +32,13 @@ Chaque utilisateur a **un seul rôle**, choisi à l'inscription et non modifiabl
 | Rôle (`profileType`) | Libellé | Verticale | `/recherche` affiche |
 |---|---|---|---|
 | `entrepreneur` | Porteur de projet | Talents & Associés | Les talents |
-| `talent` | Talent / Expert | Talents & Associés | Les projets |
+| `talent` | Associé | Talents & Associés | Les projets |
 | `buyer` | Acheteur / Repreneur | M&A | — (redirigé vers `/ma`) |
 | `seller` | Vendeur M&A | M&A | — (redirigé vers `/ma`) |
 
 - `RoleGuard` (`route.data.allowedRoles`) protège `/recherche` ; le dashboard et la navigation s'adaptent au rôle.
 - Libellés et rôles de la marketplace : `PROFILE_TYPE_LABELS` et `TALENT_MARKETPLACE_ROLES` dans `user.model.ts`.
+- Sur le site, le mot **« talent » n'est jamais affiché** : on parle d'**« associé »** (« Je veux devenir associé », « associés disponibles »). La valeur technique reste `talent` (base et code).
 
 ---
 
@@ -124,7 +125,7 @@ PREMIUM = accompagnement humain. Les talents n'ont pas besoin de payer.
 ### `/inscription` — Onboarding (3 étapes)
 - **Étape 1** : Choix du type de profil (un seul rôle par utilisateur, non modifiable ensuite)
   - Porteur de projet
-  - Talent / Expert
+  - Associé (« Je veux devenir associé »)
   - Acheteur / Repreneur
   - Vendeur M&A
 - **Étape 2** : Informations de base (nom, email, mot de passe, localisation)
@@ -498,6 +499,8 @@ Tu proposes des actions concrètes sur la plateforme GoFounders.
 - **Rôles strictement séparés côté Supabase** (`2026-10-12-profils-par-role.sql`) : un profil n'est lisible que par lui-même, par le rôle complémentaire (porteur de projet ↔ talent), par ses interlocuteurs de conversation et par les admins ; un talent ne voit jamais les autres talents. Projets lisibles par leur propriétaire et par les talents uniquement. Nouvelle conversation uniquement entre rôles complémentaires (porteur de projet ↔ talent, acheteur ↔ vendeur)
 - Profil masqué (`is_visible = false`, page Paramètres) : absent de la recherche, visible seulement par soi, ses interlocuteurs et les admins. Suppression du compte : photos du bucket `avatars` effacées par l'appli, puis fonction `delete_my_account()` (RGPD). Une seule photo conservée par utilisateur (`2026-10-12-avatars.sql`)
 - **L'email n'est pas lisible dans `profiles`** : jamais de `select('*')` sur cette table, utiliser `PROFILE_COLUMNS` (`supabase-database.model.ts`)
+- **Partie confidentielle des projets** (`2026-10-19-projets-confidentiels-nda.sql`) : `projects.confidential_details` n'est jamais lisible directement (jamais de `select('*')` sur `projects`, utiliser `PROJECT_COLUMNS`). Elle passe par `get_project_confidential()` : propriétaire, admins et associés dont la demande est acceptée. Demandes via `request_project_access()` / `decide_project_access()` uniquement (table `project_access_requests`, aucune écriture directe)
+- **NDA** : optionnel, activé par le porteur (`projects.nda_required`). Texte et version dans `core/legal/nda.ts` (**provisoire, à faire valider par un avocat** ; toute modification = nouvelle `NDA_VERSION`). Preuve enregistrée à l'acceptation (version, date, IP, navigateur, noms figés) et conservée même si un compte est supprimé. Toujours rappeler que GoFounders n'est pas partie à l'engagement et n'assure pas de conseil juridique
 - Les profils avec `confidential: true` masquent les infos de contact côté Firestore Rules
 - La limite FREE (3 nouveaux contacts par mois, porteurs de projet uniquement) est vérifiée par des triggers Supabase (`2026-10-11-free-quotas.sql`, règles mises à jour par `2026-10-12-offres.sql`) ; compteurs dans `usage_counters`, lus via `get_my_quota()`
 - L'assistant IA vérifie le plan côté back Python, pas seulement via le `PlanGuard`
