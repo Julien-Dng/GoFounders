@@ -196,7 +196,9 @@ export class MatchingService {
         { label: 'Stade', value: stage },
         { label: 'Recherche', value: skills.slice(0, 3).join(', ') },
         { label: 'Localisation', value: project.location ?? owner?.location ?? 'France' },
+        ...(project.open_to_equity ? [{ label: 'Associé avec apport', value: 'Possible' }] : []),
       ],
+      openToEquity: project.open_to_equity ?? false,
     };
   }
 

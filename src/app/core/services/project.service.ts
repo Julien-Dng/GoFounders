@@ -19,6 +19,7 @@ export interface EditableProject {
   skillsNeeded: string[];
   location: string;
   isActive: boolean;
+  openToEquity: boolean;
 }
 
 export interface SaveProjectPayload {
@@ -30,6 +31,7 @@ export interface SaveProjectPayload {
   skillsNeeded: string[];
   location: string;
   isActive: boolean;
+  openToEquity: boolean;
 }
 
 export interface SaveProjectResult {
@@ -89,6 +91,7 @@ export class ProjectService {
       skills_needed: this.cleanTags(payload.skillsNeeded),
       location: this.optionalText(payload.location),
       is_active: payload.isActive,
+      open_to_equity: payload.openToEquity,
       updated_at: new Date().toISOString(),
     };
 
@@ -121,6 +124,7 @@ export class ProjectService {
       skills_needed: values.skills_needed,
       location: values.location,
       is_active: values.is_active,
+      open_to_equity: values.open_to_equity,
       updated_at: values.updated_at,
     };
     const { data, error } = await this.supabase.client
@@ -159,6 +163,7 @@ export class ProjectService {
       skillsNeeded: this.cleanTags(payload.skillsNeeded),
       location: payload.location.trim(),
       isActive: payload.isActive,
+      openToEquity: payload.openToEquity,
     };
 
     if (existingIndex >= 0) {
@@ -196,6 +201,7 @@ export class ProjectService {
       skillsNeeded: row.skills_needed ?? [],
       location: row.location ?? '',
       isActive: row.is_active,
+      openToEquity: row.open_to_equity ?? false,
     };
   }
 

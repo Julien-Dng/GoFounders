@@ -100,6 +100,22 @@ type SearchProfileType = ProfileType;
                     </div>
                   </label>
                 </div>
+
+                @if (visibleProfileType() === 'entrepreneur') {
+                  <div>
+                    <label class="flex cursor-pointer items-center justify-between gap-3">
+                      <span class="text-sm font-bold">Ouvert à un associé avec apport</span>
+                      <div class="relative flex-shrink-0">
+                        <input type="checkbox" [checked]="openToEquityOnly()" (change)="openToEquityOnly.set(!openToEquityOnly())" class="peer sr-only" aria-describedby="equity-filter-help">
+                        <div class="h-6 w-11 rounded-full bg-border transition-colors peer-checked:bg-accent"></div>
+                        <div class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5"></div>
+                      </div>
+                    </label>
+                    <p id="equity-filter-help" class="mt-2 text-xs leading-relaxed text-muted-foreground">
+                      Projets dont le porteur accepte un associé qui entrerait au capital. Les conditions se négocient en privé ; GoFounders ne propose pas d'investissement.
+                    </p>
+                  </div>
+                }
               </div>
             </div>
           </aside>
@@ -206,8 +222,11 @@ type SearchProfileType = ProfileType;
                       </div>
                       <div>
                         <h3 class="text-lg font-bold">{{ profile.displayName }}</h3>
-                        <div class="mt-1 flex items-center gap-2">
+                        <div class="mt-1 flex flex-wrap items-center gap-2">
                           <span class="rounded-full bg-accent px-2.5 py-0.5 text-xs font-semibold text-white">{{ cardBadgeLabel() }}</span>
+                          @if (profile.openToEquity) {
+                            <span class="whitespace-nowrap rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent">Associé avec apport</span>
+                          }
                         </div>
                       </div>
                     </div>
@@ -283,6 +302,7 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly selectedStage = signal<string[]>([]);
   readonly selectedLocation = signal('');
   readonly isAvailableNow = signal(false);
+  readonly openToEquityOnly = signal(false);
 
   readonly sectors = ['Tous', 'Tech', 'Santé', 'Commerce', 'Finance', 'Industrie', 'Éducation', 'Marketing'];
   readonly projectStages = ['Idée', 'MVP', 'En croissance', 'Établi'];
@@ -299,6 +319,7 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
     const activeStages = this.selectedStage();
     const location = this.selectedLocation().trim().toLowerCase();
     const availableNowOnly = this.isAvailableNow();
+    const equityOnly = this.openToEquityOnly() && targetType === 'entrepreneur';
 
     return this.allProfiles().filter(profile => {
       const matchesRole = profile.profileType === targetType;
@@ -306,8 +327,9 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
       const matchesStage = activeStages.length === 0 || activeStages.includes(profile.stage);
       const matchesLocation = location.length === 0 || profile.location.toLowerCase().includes(location);
       const matchesAvailability = !availableNowOnly || profile.availableNow;
+      const matchesEquity = !equityOnly || profile.openToEquity === true;
 
-      return matchesRole && matchesSector && matchesStage && matchesLocation && matchesAvailability;
+      return matchesRole && matchesSector && matchesStage && matchesLocation && matchesAvailability && matchesEquity;
     });
   });
 
@@ -333,6 +355,7 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
     || this.selectedStage().length > 0
     || this.selectedLocation().trim().length > 0
     || this.isAvailableNow()
+    || this.openToEquityOnly()
   );
   readonly emptyBannerDescription = computed(() => {
     if (this.hasActiveFilters()) {
@@ -371,6 +394,7 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectedStage.set([]);
     this.selectedLocation.set('');
     this.isAvailableNow.set(false);
+    this.openToEquityOnly.set(false);
   }
 
   revealDelay(index: number): string {

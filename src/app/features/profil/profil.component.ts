@@ -280,6 +280,19 @@ import { EditableProject, ProjectService } from '../../core/services/project.ser
                 </div>
               </div>
 
+              @if (openToEquity()) {
+                <div class="rounded-2xl border-2 border-accent/20 bg-accent/[0.04] p-6 shadow-lg">
+                  <h3 class="mb-2 text-lg font-bold">Ouvert à un associé avec apport</h3>
+                  <p class="text-sm leading-relaxed text-foreground/80">
+                    Le porteur de ce projet accepte d'accueillir un associé qui entrerait au capital en apportant aussi de l'argent.
+                  </p>
+                  <p class="mt-3 text-xs leading-relaxed text-muted-foreground">
+                    GoFounders ne propose pas d'investissement. Les conditions d'entrée au capital se négocient directement entre les parties,
+                    avec l'aide d'un professionnel (avocat, expert-comptable).
+                  </p>
+                </div>
+              }
+
               @if (socialLinks().length > 0) {
                 <div class="rounded-2xl border-2 border-border bg-white p-6 shadow-lg">
                   <h3 class="mb-4 text-lg font-bold">Liens professionnels</h3>
@@ -487,6 +500,7 @@ export class ProfilComponent implements OnInit {
       ? (this.currentUser()?.skills ?? [])
       : (this.publicProfile()?.skills ?? [])
   );
+  readonly openToEquity = computed(() => !this.isOwnProfile() && this.publicProfile()?.openToEquity === true);
   readonly quickInfo = computed(() =>
     this.isOwnProfile()
       ? [

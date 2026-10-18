@@ -834,3 +834,17 @@ npm install @stripe/stripe-js
 ### Vérification
 
 - Build Angular OK via `npm.cmd run build`
+
+---
+
+## Session du 18 octobre 2026 - Projets ouverts à un associé avec apport
+
+- **Base** : migration `supabase/2026-10-18-projets-entree-capital.sql` (colonne `projects.open_to_equity`, oui / non)
+- **Porteur de projet** (`/profil/modifier`) : case « Ouvert à un associé avec apport financier », avec rappel de ne mettre ni montant ni pourcentage
+- **Talent** (`/recherche`) : filtre « Ouvert à un associé avec apport » et badge sur les cartes projet
+- **Page projet** : encadré « Ouvert à un associé avec apport » + mention « GoFounders ne propose pas d'investissement »
+- **Cadre légal** : simple indication, aucune condition chiffrée stockée ni affichée. Afficher des offres d'investissement chiffrées relèverait du financement participatif (agrément AMF). À faire valider par un avocat avant lancement
+
+### Vérification
+
+- Build Angular OK, parcours testés en mode démo local (porteur : case cochée ; talent : filtre, badge, encadré)

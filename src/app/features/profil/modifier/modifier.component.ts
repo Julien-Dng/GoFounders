@@ -366,6 +366,26 @@ import { ProjectService } from '../../../core/services/project.service';
                         ></textarea>
                         <p class="mt-2 text-xs text-muted-foreground">Séparez les compétences par des virgules.</p>
                       </div>
+
+                      <div class="md:col-span-2">
+                        <label for="project-open-to-equity" class="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-white px-4 py-3">
+                          <input
+                            id="project-open-to-equity"
+                            type="checkbox"
+                            formControlName="openToEquity"
+                            aria-describedby="project-open-to-equity-help"
+                            class="mt-0.5 h-4 w-4 flex-shrink-0 accent-accent"
+                          >
+                          <span>
+                            <span class="block text-sm font-semibold">Ouvert à un associé avec apport financier</span>
+                            <span id="project-open-to-equity-help" class="mt-1 block text-xs leading-relaxed text-muted-foreground">
+                              Les talents verront que vous êtes prêt à accueillir un associé qui entrerait au capital en apportant aussi de l'argent.
+                              N'indiquez ni montant ni pourcentage dans votre annonce : les conditions se discutent en privé, avec l'aide d'un professionnel.
+                              GoFounders ne propose pas d'investissement.
+                            </span>
+                          </span>
+                        </label>
+                      </div>
                     </div>
                   }
                 </div>
@@ -538,6 +558,7 @@ export class ModifierComponent implements OnInit {
     lookingFor: ['', Validators.maxLength(260)],
     skillsNeeded: ['', Validators.maxLength(260)],
     isActive: [true],
+    openToEquity: [false],
   });
 
   // Une annonce publiée doit avoir une présentation ; un brouillon peut rester incomplet.
@@ -709,6 +730,7 @@ export class ModifierComponent implements OnInit {
         lookingFor: (project?.lookingFor ?? this.currentUser()?.lookingFor ?? []).join(', '),
         skillsNeeded: (project?.skillsNeeded ?? []).join(', '),
         isActive: project?.isActive ?? true,
+        openToEquity: project?.openToEquity ?? false,
       });
     } finally {
       this.isProjectLoading.set(false);
@@ -733,6 +755,7 @@ export class ModifierComponent implements OnInit {
       lookingFor: this.splitTags(value.lookingFor),
       skillsNeeded: this.splitTags(value.skillsNeeded),
       isActive: value.isActive,
+      openToEquity: value.openToEquity,
     });
 
     if (!result.success) {

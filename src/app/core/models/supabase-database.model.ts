@@ -269,6 +269,7 @@ export interface SupabaseProjectRow {
   skills_needed: string[] | null;
   location: string | null;
   is_active: boolean;
+  open_to_equity?: boolean | null;
   created_at: string;
   updated_at: string;
 }
@@ -284,6 +285,7 @@ export interface SupabaseProjectInsert {
   skills_needed?: string[] | null;
   location?: string | null;
   is_active?: boolean;
+  open_to_equity?: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -297,5 +299,6 @@ export interface SupabaseProjectUpdate {
   skills_needed?: string[] | null;
   location?: string | null;
   is_active?: boolean;
+  open_to_equity?: boolean;
   updated_at?: string;
 }

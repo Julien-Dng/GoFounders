@@ -22,6 +22,8 @@ export interface MarketplaceProfile {
   projectSummary: string;
   experienceSummary: string;
   quickInfo: Array<{ label: string; value: string }>;
+  // Projets uniquement : le porteur accepte un associé qui entrerait au capital avec un apport (sans conditions chiffrées).
+  openToEquity?: boolean;
 }
 
 export interface ConversationMessage {
@@ -261,6 +263,7 @@ export const MARKETPLACE_PROFILES: MarketplaceProfile[] = [
     id: 'projet-healthpilot',
     profileType: 'entrepreneur',
     displayName: 'HealthPilot',
+    openToEquity: true,
     title: 'Fondatrice · Sophie Bernard',
     location: 'Paris',
     stage: 'MVP',
@@ -345,6 +348,7 @@ export const MARKETPLACE_PROFILES: MarketplaceProfile[] = [
     id: 'projet-fleetflow',
     profileType: 'entrepreneur',
     displayName: 'FleetFlow',
+    openToEquity: true,
     title: 'Fondateur · Mehdi Amrani',
     location: 'Marseille',
     stage: 'Établi',
