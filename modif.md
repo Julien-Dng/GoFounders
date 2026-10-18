@@ -888,3 +888,8 @@ npm install @stripe/stripe-js
 - Nouvelles pages : `/admin/annonces`, `/admin/profils`, `/ma/statistiques` ; demande de vérification sur `/profil/modifier`.
 - Badge « Profil vérifié » réel dans la recherche et sur le profil (avant : affiché pour tout le monde, comme « Répond sous 24h », retiré).
 - Correction : la page profil se recharge quand on passe d'un profil à un autre.
+
+## Session du 23 octobre 2026 - Ventes réussies (témoignages avec prix)
+
+- Migration `2026-10-23-ventes-reussies.sql` (testée sur un Postgres local) : déclaration de vente par le vendeur (annonce passée en « vendue »), prix exact / fourchette / masqué, consentement, validation par un admin, retrait possible à tout moment, compteur public des ventes.
+- Pages : `/ma/vendue/:id` (lien « J'ai vendu » dans `/ma/statistiques`), `/admin/temoignages` ; section « Ils ont vendu » sur `/ma`, affichée seulement s'il existe des ventes publiées.

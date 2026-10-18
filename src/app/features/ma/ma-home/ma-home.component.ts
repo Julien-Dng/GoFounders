@@ -4,13 +4,14 @@ import { MaListingData } from '../../../core/data/mock-platform.data';
 import { canAccessMaDetails, canPublishMaListing } from '../../../core/models/user.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { MaService } from '../../../core/services/ma.service';
+import { SuccessStoriesComponent } from '../../../shared/components/success-stories/success-stories.component';
 
 type MaStatIcon = 'mask' | 'handshake' | 'certified';
 
 @Component({
   selector: 'app-ma-home',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, SuccessStoriesComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-secondary">
@@ -292,6 +293,8 @@ type MaStatIcon = 'mask' | 'handshake' | 'certified';
           </div>
         </div>
       </section>
+
+      <app-success-stories background="bg-secondary" />
 
       <section class="bg-gradient-to-br from-amber-500 to-orange-600 px-4 py-20 text-white sm:px-6 lg:px-8">
         <div class="mx-auto max-w-[1400px] text-center">
