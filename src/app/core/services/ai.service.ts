@@ -29,6 +29,29 @@ export interface AiContext {
   suggested_questions: string[];
 }
 
+// Outils IA de la marketplace M&A (refonte « reprise ») : voir backend/app/ma_ai.py.
+export interface MaListingDraft {
+  teaser: string;
+  description: string;
+  sector: string;
+  region: string;
+  revenue: number | null;
+  margin: number | null;
+  age: number | null;
+  price_min: number | null;
+  price_max: number | null;
+  sale_reason: string | null;
+  identifying_details: Array<{ excerpt: string; reason: string }>;
+}
+
+export interface MaListingAnalysis {
+  summary: string;
+  strengths: string[];
+  risks: string[];
+  questions: string[];
+  checks: string[];
+}
+
 // Appelle le back Python (dossier backend/), qui injecte le contexte utilisateur et interroge le modèle d'IA.
 @Injectable({ providedIn: 'root' })
 export class AiService {
@@ -40,6 +63,16 @@ export class AiService {
 
   async sendMessage(history: AiMessage[]): Promise<AiReply> {
     return this.request(this.http.post<AiReply>(`${API_URL}/api/coaching-ia/messages`, { messages: history }));
+  }
+
+  // Vendeur : prépare une annonce anonymisée à partir d'une description libre.
+  async draftMaListing(description: string): Promise<MaListingDraft> {
+    return this.request(this.http.post<MaListingDraft>(`${API_URL}/api/ma/brouillon-annonce`, { description }));
+  }
+
+  // Acheteur avec un accès repreneur en cours : analyse du dossier d'une annonce.
+  async analyseMaListing(listingId: string): Promise<MaListingAnalysis> {
+    return this.request(this.http.post<MaListingAnalysis>(`${API_URL}/api/ma/annonces/${encodeURIComponent(listingId)}/analyse`, {}));
   }
 
   private async request<T>(call: Observable<T>): Promise<T> {

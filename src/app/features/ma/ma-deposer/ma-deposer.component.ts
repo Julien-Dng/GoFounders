@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { MaService } from '../../../core/services/ma.service';
+import { AiService, MaListingDraft } from '../../../core/services/ai.service';
 
 @Component({
   selector: 'app-ma-deposer',
@@ -29,6 +30,57 @@ import { MaService } from '../../../core/services/ma.service';
         <div class="rounded-2xl border border-border bg-white p-6 shadow-lg sm:p-10">
           @if (!checkoutRequested()) {
             <div class="space-y-8">
+              @if (currentStep() === 1) {
+                <div class="rounded-2xl border-2 border-accent/20 bg-accent/[0.04] p-5">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <svg class="text-accent" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="m12 3-1.9 5.1L5 10l5.1 1.9L12 17l1.9-5.1L19 10l-5.1-1.9z"/>
+                    </svg>
+                    <h2 class="text-lg font-bold text-primary">Préparer mon annonce avec l'IA</h2>
+                  </div>
+                  <p class="mt-1 text-sm leading-relaxed text-muted-foreground">
+                    Décrivez votre entreprise comme à un ami : activité, chiffres, clients, raison de la vente. L'IA rédige une annonce anonymisée,
+                    remplit le formulaire et vous signale ce qui pourrait permettre de vous reconnaître. Vous relisez et modifiez tout avant de publier.
+                  </p>
+                  <label for="ai-description" class="sr-only">Description libre de votre entreprise</label>
+                  <textarea
+                    id="ai-description"
+                    rows="5"
+                    maxlength="6000"
+                    [value]="aiInput()"
+                    (input)="aiInput.set($any($event.target).value)"
+                    class="mt-3 w-full resize-y rounded-xl border border-border bg-white px-4 py-3 text-sm outline-none focus:border-accent"
+                    placeholder="Ex. : Boutique Shopify de décoration créée en 2021, 180 k€ de CA l'an dernier, environ 25 % de marge, 3 000 clients dont 40 % reviennent. Je vends pour me consacrer à un nouveau projet, idéalement entre 150 et 220 k€."
+                  ></textarea>
+                  <div class="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <p class="text-xs text-muted-foreground">Votre texte sert uniquement à préparer l'annonce, il n'est pas publié tel quel.</p>
+                    <button
+                      type="button"
+                      (click)="prepareWithAi()"
+                      [disabled]="aiLoading() || aiInput().trim().length < 40"
+                      class="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {{ aiLoading() ? 'Préparation…' : 'Préparer mon annonce' }}
+                    </button>
+                  </div>
+                  @if (aiError()) {
+                    <p class="mt-3 text-sm text-destructive" role="alert">{{ aiError() }}</p>
+                  }
+                  @if (aiDetails().length > 0) {
+                    <div class="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm" role="status">
+                      <div class="mb-2 font-semibold text-amber-900">Attention : ces éléments de votre texte pourraient permettre de vous reconnaître</div>
+                      <ul class="space-y-1 text-amber-900/85">
+                        @for (detail of aiDetails(); track detail.excerpt) {
+                          <li>« {{ detail.excerpt }} » : {{ detail.reason }}</li>
+                        }
+                      </ul>
+                      <p class="mt-2 text-xs text-amber-900/70">L'annonce proposée ci-dessous les a retirés. Vérifiez qu'il n'en reste aucun avant de publier.</p>
+                    </div>
+                  } @else if (aiApplied()) {
+                    <p class="mt-3 text-sm text-emerald-700" role="status">Annonce préparée : relisez les champs ci-dessous et à chaque étape.</p>
+                  }
+                </div>
+              }
               @switch (currentStep()) {
                 @case (1) {
                   <div>
@@ -36,12 +88,24 @@ import { MaService } from '../../../core/services/ma.service';
                     <p class="mb-6 text-muted-foreground">Décrivez rapidement l'activité que vous souhaitez mettre en vente.</p>
                     <div class="grid gap-4 sm:grid-cols-2">
                       <label class="space-y-2">
-                        <span class="text-sm font-semibold">Nom de l'activité</span>
-                        <input type="text" [value]="companyName()" (input)="companyName.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
+                        <span class="text-sm font-semibold">Secteur</span>
+                        <input type="text" [value]="sector()" (input)="sector.set($any($event.target).value)" placeholder="E-commerce, SaaS, Agence…" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
                       </label>
                       <label class="space-y-2">
-                        <span class="text-sm font-semibold">Secteur</span>
-                        <input type="text" [value]="sector()" (input)="sector.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
+                        <span class="text-sm font-semibold">Région</span>
+                        <input type="text" [value]="region()" (input)="region.set($any($event.target).value)" placeholder="Île-de-France, France entière…" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
+                      </label>
+                      <label class="space-y-2 sm:col-span-2">
+                        <span class="text-sm font-semibold">Accroche publique <span class="font-normal text-muted-foreground">(visible par tous, sans détail identifiant)</span></span>
+                        <textarea rows="2" maxlength="220" [value]="teaser()" (input)="teaser.set($any($event.target).value)" placeholder="Boutique en ligne de décoration rentable, clientèle fidèle." class="w-full resize-none rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500"></textarea>
+                      </label>
+                      <label class="space-y-2 sm:col-span-2">
+                        <span class="text-sm font-semibold">Description détaillée <span class="font-normal text-muted-foreground">(réservée aux repreneurs avec un accès)</span></span>
+                        <textarea rows="5" maxlength="1500" [value]="details()" (input)="details.set($any($event.target).value)" placeholder="Activité, clients, modèle économique, équipe, raison de la cession." class="w-full resize-y rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500"></textarea>
+                      </label>
+                      <label class="space-y-2 sm:col-span-2">
+                        <span class="text-sm font-semibold">Raison de la cession</span>
+                        <input type="text" maxlength="400" [value]="saleReason()" (input)="saleReason.set($any($event.target).value)" placeholder="Nouveau projet, départ à la retraite…" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
                       </label>
                     </div>
                   </div>
@@ -114,7 +178,7 @@ import { MaService } from '../../../core/services/ma.service';
                     <div class="rounded-2xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-6">
                       <div class="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">Résumé</div>
                       <div class="space-y-2 text-sm text-foreground/80">
-                        <div><strong>Activité :</strong> {{ companyName() || 'Votre annonce' }}</div>
+                        <div><strong>Accroche :</strong> {{ teaser() || 'À compléter' }}</div>
                         <div><strong>Secteur :</strong> {{ sector() || 'À préciser' }}</div>
                         <div><strong>Fourchette :</strong> {{ priceMin() || '...' }} - {{ priceMax() || '...' }}</div>
                       </div>
@@ -194,6 +258,7 @@ import { MaService } from '../../../core/services/ma.service';
 export class MaDeposerComponent {
   private readonly auth = inject(AuthService);
   private readonly maService = inject(MaService);
+  private readonly ai = inject(AiService);
 
   readonly totalSteps = 5;
   readonly currentStep = signal(1);
@@ -201,13 +266,23 @@ export class MaDeposerComponent {
   readonly isSubmitting = signal(false);
   readonly createdListingId = signal('');
 
-  readonly companyName = signal('Atelier Local');
-  readonly sector = signal('Commerce local');
-  readonly revenue = signal('380 k€/an');
-  readonly margin = signal('20 %');
-  readonly age = signal('8 ans');
-  readonly priceMin = signal('300 k€');
-  readonly priceMax = signal('420 k€');
+  readonly sector = signal('');
+  readonly region = signal('');
+  readonly teaser = signal('');
+  readonly details = signal('');
+  readonly saleReason = signal('');
+  readonly revenue = signal('');
+  readonly margin = signal('');
+  readonly age = signal('');
+  readonly priceMin = signal('');
+  readonly priceMax = signal('');
+
+  // Préparation de l'annonce par l'IA (backend/app/ma_ai.py).
+  readonly aiInput = signal('');
+  readonly aiLoading = signal(false);
+  readonly aiError = signal('');
+  readonly aiApplied = signal(false);
+  readonly aiDetails = signal<MaListingDraft['identifying_details']>([]);
 
   readonly progressPercent = computed(() => Math.round((this.currentStep() / this.totalSteps) * 100));
   readonly finalActionLabel = computed(() => (this.isSubmitting() ? 'Publication…' : 'Publier gratuitement'));
@@ -232,16 +307,17 @@ export class MaDeposerComponent {
     try {
       const listingId = await this.maService.createListing({
         ownerId: user.uid,
-        sector: this.sector().trim() || 'Commerce local',
-        region: user.location || 'France',
+        sector: this.sector().trim() || 'Secteur à préciser',
+        region: this.region().trim() || 'France',
         type: 'cession',
         revenue: this.parseNumber(this.revenue()),
         margin: this.parseNumber(this.margin()),
         age: this.parseNumber(this.age()),
         priceMin: this.parseNumber(this.priceMin()),
         priceMax: this.parseNumber(this.priceMax()),
-        saleReason: 'Cession à qualifier avec le repreneur.',
+        saleReason: this.saleReason().trim() || 'Cession à qualifier avec le repreneur.',
         description: this.buildDescription(),
+        publicSummary: this.teaser().trim() || undefined,
         contactInfo: user.email,
         status: 'active',
       });
@@ -256,8 +332,53 @@ export class MaDeposerComponent {
     }
   }
 
+  async prepareWithAi(): Promise<void> {
+    if (this.aiLoading()) {
+      return;
+    }
+
+    this.aiLoading.set(true);
+    this.aiError.set('');
+
+    try {
+      const draft = await this.ai.draftMaListing(this.aiInput().trim());
+      this.sector.set(draft.sector);
+      this.region.set(draft.region);
+      this.teaser.set(draft.teaser);
+      this.details.set(draft.description);
+      this.saleReason.set(draft.sale_reason ?? '');
+      this.revenue.set(this.formatEuros(draft.revenue));
+      this.margin.set(draft.margin === null ? '' : `${draft.margin} %`);
+      this.age.set(draft.age === null ? '' : `${draft.age} ans`);
+      this.priceMin.set(this.formatEuros(draft.price_min));
+      this.priceMax.set(this.formatEuros(draft.price_max));
+      this.aiDetails.set(draft.identifying_details);
+      this.aiApplied.set(true);
+    } catch (error) {
+      this.aiError.set(error instanceof Error ? error.message : "L'IA est indisponible pour le moment.");
+    } finally {
+      this.aiLoading.set(false);
+    }
+  }
+
+  private formatEuros(value: number | null): string {
+    if (value === null) {
+      return '';
+    }
+
+    return value >= 1_000_000
+      ? `${(value / 1_000_000).toLocaleString('fr-FR', { maximumFractionDigits: 2 })} M€`
+      : `${Math.round(value / 1_000).toLocaleString('fr-FR')} k€`;
+  }
+
   private buildDescription(): string {
-    return `${this.companyName().trim() || 'Annonce M&A'} - ${this.sector().trim() || 'secteur à préciser'}. CA annuel ${this.revenue() || 'à préciser'}, marge ${this.margin() || 'à préciser'}, ancienneté ${this.age() || 'à préciser'}.`;
+    const details = this.details().trim();
+
+    if (details) {
+      return details;
+    }
+
+    return `${this.sector().trim() || 'Activité'} : CA annuel ${this.revenue() || 'à préciser'}, marge ${this.margin() || 'à préciser'}, ancienneté ${this.age() || 'à préciser'}.`;
   }
 
   private parseNumber(value: string): number {

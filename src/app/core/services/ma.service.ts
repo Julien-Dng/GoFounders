@@ -130,7 +130,7 @@ export class MaService {
     return error || !data ? null : (data as SupabaseMaListingRow);
   }
 
-  async createListing(data: Omit<MaListing, 'id' | 'createdAt'>): Promise<string> {
+  async createListing(data: Omit<MaListing, 'id' | 'createdAt'> & { publicSummary?: string }): Promise<string> {
     if (!this.supabase.isConfigured) {
       return '';
     }
@@ -148,7 +148,7 @@ export class MaService {
       age: data.age,
       price_min: data.priceMin,
       price_max: data.priceMax,
-      public_summary: data.description.slice(0, 220),
+      public_summary: (data.publicSummary ?? data.description).slice(0, 220),
       sale_reason: data.saleReason,
       confidential_description: data.description,
       contact_info: data.contactInfo,

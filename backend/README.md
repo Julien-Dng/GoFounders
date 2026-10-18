@@ -49,6 +49,8 @@ Les tests n'appellent ni Supabase ni OpenAI / Anthropic (clients simulés).
 | `GET` | `/health` | Vérification que le service tourne |
 | `GET` | `/api/coaching-ia/contexte` | Données affichées dans le panneau « Ce que je sais sur vous » |
 | `POST` | `/api/coaching-ia/messages` | `{ "messages": [{ "role": "user", "content": "..." }] }` → `{ "reply", "actions" }` |
+| `POST` | `/api/ma/brouillon-annonce` | Vendeur : `{ "description": "..." }` → teaser, description anonymisée, champs du formulaire, `identifying_details` |
+| `POST` | `/api/ma/annonces/{id}/analyse` | Acheteur avec accès repreneur en cours : synthèse, points forts, points de vigilance, questions, vérifications |
 
 Codes d'erreur : `401` non connecté, `403` plan FREE, `429` plus de `MAX_REQUESTS_PER_HOUR` questions
 par heure, `503` fournisseur d'IA indisponible.
@@ -58,6 +60,7 @@ par heure, `503` fournisseur d'IA indisponible.
 - `app/main.py` : routes FastAPI, authentification, contrôle du plan, limite de requêtes
 - `app/supabase.py` : vérification du jeton et lecture du contexte utilisateur
 - `app/prompt.py` : system prompt (instructions fixes + données de l'utilisateur)
+- `app/ma_ai.py` : outils IA M&A (brouillon d'annonce anonymisée, analyse de dossier), limités à 10 demandes par heure et par utilisateur ; `owner_id` et `contact_info` ne sont jamais transmis au modèle
 - `app/assistant.py` : prompt, lecture de la réponse JSON, filtrage des actions selon le rôle
 - `app/llm_openai.py` : appel OpenAI (Responses API, sortie JSON stricte, `store=False`)
 - `app/llm_anthropic.py` : appel Claude (`claude-opus-5-5`, repli automatique en cas de refus)

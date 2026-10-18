@@ -52,3 +52,34 @@ class OpenAIBackend:
             return None
 
         return response.output_text or None
+
+    async def complete_json(self, instructions: str, content: str, schema: dict, name: str) -> str | None:
+        """Requête unique (sans historique) dont la sortie respecte `schema`. Utilisé par les outils M&A."""
+        try:
+            response = await self._client.responses.create(
+                model=self._model,
+                instructions=instructions,
+                input=[{"role": "user", "content": content}],
+                text={"format": {"type": "json_schema", "name": name, "schema": schema, "strict": True}},
+                max_output_tokens=6000,
+                store=False,
+            )
+        except openai.RateLimitError as error:
+            logger.warning("OpenAI rate limit: %s", error.message)
+            raise AssistantUnavailable("rate_limit") from error
+        except openai.APIStatusError as error:
+            logger.error("OpenAI API error %s: %s", error.status_code, error.message)
+            raise AssistantUnavailable("api_error") from error
+        except openai.APIConnectionError as error:
+            logger.error("OpenAI connection error: %s", error)
+            raise AssistantUnavailable("connection") from error
+
+        for item in response.output:
+            if item.type == "message" and any(part.type == "refusal" for part in item.content):
+                raise AssistantRefused()
+
+        if response.status != "completed":
+            logger.warning("Réponse OpenAI incomplète : %s", response.incomplete_details)
+            return None
+
+        return response.output_text or None

@@ -50,6 +50,17 @@ La branche ne change que la **vitrine**. Toute la logique (rôles, sécurité, p
 | Navigation et footer | Annonces · Vendre · Trouver un associé · Tarifs. « Vendre » visible pour les visiteurs et les vendeurs, « Trouver un associé » pour les visiteurs, porteurs de projet et associés. Assistant IA retiré des menus (route conservée). |
 | `/ma` | Hero « Entreprises à reprendre », cible 50 k€ à 1 M€ de CA. |
 
+### IA au service de la reprise
+
+| Pour qui | Fonction | Où |
+|---|---|---|
+| Cédant | **Préparer mon annonce avec l'IA** : à partir d'une description libre, teaser public, description anonymisée, champs remplis, et liste des passages qui pourraient l'identifier | `/ma/deposer`, étape 1 |
+| Repreneur (accès en cours) | **Analyser ce dossier** : synthèse, points forts, points de vigilance, questions à poser au vendeur, vérifications à faire avec un professionnel | `/ma/annonce/:id` |
+
+- Appels faits par le back Python (`backend/app/ma_ai.py`), qui vérifie la session, le rôle et l'accès repreneur, avec la même clé OpenAI ou Claude que l'assistant.
+- Pas de conseil juridique, comptable ou financier ni de valorisation dans l'analyse : rappel dans les instructions du modèle et sous chaque analyse.
+- Discours investisseurs : l'IA rend la cession rapide et sûre (annonce anonymisée en 5 minutes, dossier analysé pour le repreneur) ; les annonces et transactions accumulées deviennent un actif de données (multiples réels par secteur) difficile à copier.
+
 ### Mise en route (à faire une fois)
 1. **Aucune migration propre à la branche.** Il suffit que la base ait reçu les migrations de `V6`.
 2. **Paiement** : comme sur `V6`, les achats passent par `PaymentService` (mode simulation tant que Stripe n'est pas branché). ⚠️ Supprimer `simulate_purchase` avant toute mise en ligne avec de vrais utilisateurs.

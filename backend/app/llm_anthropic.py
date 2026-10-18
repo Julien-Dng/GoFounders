@@ -47,3 +47,31 @@ class AnthropicBackend:
             raise AssistantRefused()
 
         return next((block.text for block in response.content if block.type == "text"), None)
+
+    async def complete_json(self, instructions: str, content: str, schema: dict, name: str) -> str | None:
+        """Requête unique (sans historique) dont la sortie respecte `schema`. Utilisé par les outils M&A."""
+        try:
+            response = await self._client.beta.messages.create(
+                model=self._model,
+                max_tokens=16000,
+                system=[{"type": "text", "text": instructions}],
+                messages=[{"role": "user", "content": content}],
+                output_config={"effort": self._effort, "format": {"type": "json_schema", "schema": schema}},
+                cache_control={"type": "ephemeral"},
+                betas=["server-side-fallback-2026-07-01"],
+                fallbacks="default",
+            )
+        except anthropic.RateLimitError as error:
+            logger.warning("Claude rate limit: %s", error.message)
+            raise AssistantUnavailable("rate_limit") from error
+        except anthropic.APIStatusError as error:
+            logger.error("Claude API error %s: %s", error.status_code, error.message)
+            raise AssistantUnavailable("api_error") from error
+        except anthropic.APIConnectionError as error:
+            logger.error("Claude connection error: %s", error)
+            raise AssistantUnavailable("connection") from error
+
+        if response.stop_reason == "refusal":
+            raise AssistantRefused()
+
+        return next((block.text for block in response.content if block.type == "text"), None)

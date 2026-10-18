@@ -9,6 +9,7 @@ from collections import defaultdict, deque
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Annotated
+from uuid import UUID
 
 import anthropic
 import httpx
@@ -20,6 +21,7 @@ from .assistant import Assistant, AssistantUnavailable, LlmBackend
 from .config import Settings, get_settings
 from .llm_anthropic import AnthropicBackend
 from .llm_openai import OpenAIBackend
+from .ma_ai import DraftRequest, ListingAnalysis, ListingDraft, MaAi, MaAiUnusable
 from .models import ChatRequest, ChatResponse, ContextItem, ContextResponse, UserContext
 from .supabase import SupabaseClient, SupabaseError
 
@@ -42,7 +44,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     async with httpx.AsyncClient(timeout=10.0) as http:
         app.state.supabase = SupabaseClient(settings.supabase_url, settings.supabase_service_role_key, http)
-        app.state.assistant = Assistant(build_backend(settings))
+        backend = build_backend(settings)
+        app.state.assistant = Assistant(backend)
+        app.state.ma_ai = MaAi(backend)
         app.state.request_log = defaultdict(deque)
         yield
 
@@ -62,6 +66,35 @@ def get_supabase(request: Request) -> SupabaseClient:
 
 def get_assistant(request: Request) -> Assistant:
     return request.app.state.assistant
+
+
+def get_ma_ai(request: Request) -> MaAi:
+    return request.app.state.ma_ai
+
+
+async def get_user_id(
+    supabase: Annotated[SupabaseClient, Depends(get_supabase)],
+    authorization: Annotated[str | None, Header()] = None,
+) -> str:
+    """Utilisateur Supabase connecté (sans condition de plan)."""
+    if not authorization or not authorization.lower().startswith("bearer "):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Connexion requise")
+
+    user_id = await supabase.get_user_id(authorization[7:])
+    if user_id is None:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Session invalide ou expirée")
+    return user_id
+
+
+def enforce_rate_limit(request: Request, key: str, limit: int) -> None:
+    """Fenêtre glissante d'une heure, en mémoire (un seul processus) : limite le coût par utilisateur."""
+    now = time.monotonic()
+    log: deque[float] = request.app.state.request_log[key]
+    while log and now - log[0] > 3600:
+        log.popleft()
+    if len(log) >= limit:
+        raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "Trop de demandes en peu de temps, réessayez plus tard")
+    log.append(now)
 
 
 async def get_current_context(
@@ -144,14 +177,7 @@ async def coaching_message(
 ) -> ChatResponse:
     user_id, context = current
 
-    # Fenêtre glissante d'une heure, en mémoire (un seul processus) : limite le coût par utilisateur.
-    now = time.monotonic()
-    log: deque[float] = request.app.state.request_log[user_id]
-    while log and now - log[0] > 3600:
-        log.popleft()
-    if len(log) >= settings.max_requests_per_hour:
-        raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "Trop de questions en peu de temps, réessayez plus tard")
-    log.append(now)
+    enforce_rate_limit(request, user_id, settings.max_requests_per_hour)
 
     history = payload.messages[-HISTORY_LIMIT:]
     if history[0].role != "user":
@@ -161,3 +187,69 @@ async def coaching_message(
         return await assistant.reply(context, history)
     except AssistantUnavailable as error:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Assistant momentanément indisponible") from error
+
+
+# --- Outils IA de la marketplace M&A (refonte « reprise ») -------------------------------------------
+
+MA_AI_REQUESTS_PER_HOUR = 10
+
+
+@app.post("/api/ma/brouillon-annonce", response_model=ListingDraft)
+async def ma_listing_draft(
+    payload: DraftRequest,
+    request: Request,
+    user_id: Annotated[str, Depends(get_user_id)],
+    supabase: Annotated[SupabaseClient, Depends(get_supabase)],
+    ma_ai: Annotated[MaAi, Depends(get_ma_ai)],
+) -> ListingDraft:
+    """Vendeur : teaser, description anonymisée, champs du formulaire et détails identifiants."""
+    try:
+        role = await supabase.get_role(user_id)
+    except SupabaseError as error:
+        logger.error("Rôle illisible : %s", error)
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, "Données du profil indisponibles") from error
+    if role != "seller":
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "La préparation d'annonce est réservée aux comptes vendeur")
+
+    enforce_rate_limit(request, f"ma-draft:{user_id}", MA_AI_REQUESTS_PER_HOUR)
+    try:
+        return await ma_ai.draft_listing(payload.description)
+    except MaAiUnusable as error:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Je n'ai pas pu préparer l'annonce. Reformulez votre description.") from error
+    except AssistantUnavailable as error:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Service IA momentanément indisponible") from error
+
+
+@app.post("/api/ma/annonces/{listing_id}/analyse", response_model=ListingAnalysis)
+async def ma_listing_analysis(
+    listing_id: UUID,
+    request: Request,
+    user_id: Annotated[str, Depends(get_user_id)],
+    supabase: Annotated[SupabaseClient, Depends(get_supabase)],
+    ma_ai: Annotated[MaAi, Depends(get_ma_ai)],
+) -> ListingAnalysis:
+    """Acheteur avec un accès repreneur en cours : analyse du dossier d'une annonce active."""
+    try:
+        role = await supabase.get_role(user_id)
+        has_access = role == "buyer" and await supabase.has_active_ma_access(user_id)
+    except SupabaseError as error:
+        logger.error("Accès M&A illisible : %s", error)
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, "Données du profil indisponibles") from error
+    if not has_access:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "L'analyse de dossier est réservée aux repreneurs avec un accès en cours")
+
+    try:
+        listing = await supabase.load_listing_for_analysis(str(listing_id))
+    except SupabaseError as error:
+        logger.error("Annonce illisible : %s", error)
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, "Annonce indisponible") from error
+    if listing is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Annonce introuvable")
+
+    enforce_rate_limit(request, f"ma-analysis:{user_id}", MA_AI_REQUESTS_PER_HOUR)
+    try:
+        return await ma_ai.analyse_listing(listing)
+    except MaAiUnusable as error:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Je n'ai pas pu analyser ce dossier. Réessayez plus tard.") from error
+    except AssistantUnavailable as error:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Service IA momentanément indisponible") from error

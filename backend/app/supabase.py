@@ -53,6 +53,34 @@ class SupabaseClient:
         rows = response.json()
         return rows if isinstance(rows, list) else []
 
+    async def get_role(self, user_id: str) -> str | None:
+        rows = await self._select("profiles", {"id": f"eq.{user_id}", "select": "role"})
+        role = rows[0].get("role") if rows else None
+        return role if isinstance(role, str) else None
+
+    async def has_active_ma_access(self, user_id: str) -> bool:
+        """Même règle que l'appli : fonction Supabase has_active_ma_access (accès repreneur non expiré)."""
+        response = await self._http.post(
+            f"{self._url}/rest/v1/rpc/has_active_ma_access",
+            json={"target_user": user_id},
+            headers=self._service_headers(),
+        )
+        if response.status_code != 200:
+            raise SupabaseError(f"has_active_ma_access impossible ({response.status_code}) : {response.text[:300]}")
+        return response.json() is True
+
+    async def load_listing_for_analysis(self, listing_id: str) -> dict[str, Any] | None:
+        """Dossier d'une annonce active, sans owner_id ni contact_info (jamais transmis au modèle)."""
+        rows = await self._select(
+            "ma_listings",
+            {
+                "id": f"eq.{listing_id}",
+                "status": "eq.active",
+                "select": "id,sector,region,type,revenue,margin,age,price_min,price_max,public_summary,sale_reason,confidential_description",
+            },
+        )
+        return rows[0] if rows else None
+
     async def load_user_context(self, user_id: str) -> UserContext | None:
         profiles = await self._select("profiles", {"id": f"eq.{user_id}", "select": "*"})
         if not profiles:

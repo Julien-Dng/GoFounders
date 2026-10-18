@@ -4,6 +4,8 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { MaListingData } from '../../../core/data/mock-platform.data';
 import { MaService } from '../../../core/services/ma.service';
+import { AiService, MaListingAnalysis } from '../../../core/services/ai.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-ma-detail',
@@ -90,6 +92,57 @@ import { MaService } from '../../../core/services/ma.service';
               </div>
             </div>
           </div>
+
+          @if (isBuyer()) {
+            <section class="mt-8 rounded-2xl border-2 border-accent/20 bg-white p-6 shadow-lg sm:p-8" aria-labelledby="analyse-title" aria-live="polite">
+              <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <svg class="text-accent" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="m12 3-1.9 5.1L5 10l5.1 1.9L12 17l1.9-5.1L19 10l-5.1-1.9z"/>
+                    </svg>
+                    <h2 id="analyse-title" class="text-xl font-bold text-primary">Analyse du dossier par l'IA</h2>
+                  </div>
+                  <p class="mt-1 max-w-2xl text-sm text-muted-foreground">
+                    Points forts, points de vigilance et questions à poser au vendeur, à partir des informations de l'annonce.
+                  </p>
+                </div>
+                @if (!analysis()) {
+                  <button type="button" (click)="analyse()" [disabled]="analysing()" class="flex-shrink-0 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-wait disabled:opacity-60">
+                    {{ analysing() ? 'Analyse en cours…' : 'Analyser ce dossier' }}
+                  </button>
+                }
+              </div>
+
+              @if (analysisError()) {
+                <p class="mt-4 text-sm text-destructive" role="alert">{{ analysisError() }}</p>
+              }
+
+              @if (analysis(); as result) {
+                <p class="mt-6 leading-relaxed text-foreground/85">{{ result.summary }}</p>
+                <div class="mt-6 grid gap-6 md:grid-cols-2">
+                  @for (block of analysisBlocks(); track block.title) {
+                    @if (block.items.length > 0) {
+                      <div class="rounded-xl border border-border bg-secondary/40 p-5">
+                        <h3 class="mb-3 font-bold">{{ block.title }}</h3>
+                        <ul class="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-foreground/85">
+                          @for (item of block.items; track item) {
+                            <li>{{ item }}</li>
+                          }
+                        </ul>
+                      </div>
+                    }
+                  }
+                </div>
+              }
+
+              <p class="mt-6 text-xs leading-relaxed text-muted-foreground">
+                Analyse générée automatiquement à partir des seules informations de l'annonce, sans vérification. Elle ne constitue ni une
+                valorisation, ni un conseil juridique, comptable ou financier : faites vérifier le dossier par un expert-comptable et un avocat
+                avant toute offre.
+              </p>
+            </section>
+          }
         } @else {
           <div class="rounded-2xl border border-border bg-white p-10 text-center shadow-lg">
             <p class="py-12 text-muted-foreground">Cette annonce n'existe pas ou n'est plus disponible.</p>
@@ -102,6 +155,8 @@ import { MaService } from '../../../core/services/ma.service';
 export class MaDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly maService = inject(MaService);
+  private readonly ai = inject(AiService);
+  private readonly auth = inject(AuthService);
   private readonly loadedListing = signal<MaListingData | undefined>(undefined);
 
   private readonly listingId = toSignal(
@@ -110,6 +165,42 @@ export class MaDetailComponent implements OnInit {
   );
 
   readonly listing = computed(() => this.loadedListing());
+
+  // Analyse de dossier par l'IA : réservée aux repreneurs (contrôle d'accès refait côté back).
+  readonly isBuyer = computed(() => this.auth.currentUser()?.profileType === 'buyer');
+  readonly analysis = signal<MaListingAnalysis | null>(null);
+  readonly analysing = signal(false);
+  readonly analysisError = signal('');
+  readonly analysisBlocks = computed(() => {
+    const result = this.analysis();
+    return result
+      ? [
+          { title: 'Points forts', items: result.strengths },
+          { title: 'Points de vigilance', items: result.risks },
+          { title: 'Questions à poser au vendeur', items: result.questions },
+          { title: 'À vérifier avec un professionnel', items: result.checks },
+        ]
+      : [];
+  });
+
+  async analyse(): Promise<void> {
+    const listing = this.listing();
+
+    if (!listing || this.analysing()) {
+      return;
+    }
+
+    this.analysing.set(true);
+    this.analysisError.set('');
+
+    try {
+      this.analysis.set(await this.ai.analyseMaListing(listing.id));
+    } catch (error) {
+      this.analysisError.set(error instanceof Error ? error.message : "L'analyse est indisponible pour le moment.");
+    } finally {
+      this.analysing.set(false);
+    }
+  }
 
   ngOnInit(): void {
     void this.loadListing();

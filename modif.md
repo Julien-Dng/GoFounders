@@ -923,3 +923,10 @@ npm install @stripe/stripe-js
 - Vitrine « reprise » réappliquée sur la base `V6` : landing (accroche, FAQ, tarifs Cédant gratuit / Repreneur 149 € pour 12 mois, section NDA conservée), menus (Annonces · Vendre · Trouver un associé · Tarifs, selon le rôle), footer, hero de `/ma`
 - Dépôt gratuit des vendeurs : déjà en place dans `V6`, aucune migration propre à la branche
 - `docs/REFONTE-REPRISE.md` mis à jour (mise en route, maintien de la branche à jour)
+
+### IA M&A (refonte, 19 octobre 2026)
+
+- Back : `backend/app/ma_ai.py` + routes `POST /api/ma/brouillon-annonce` (vendeur) et `POST /api/ma/annonces/{id}/analyse` (acheteur avec accès repreneur en cours), 10 demandes par heure ; `complete_json()` ajouté aux fournisseurs OpenAI et Claude
+- `/ma/deposer` : encadré « Préparer mon annonce avec l'IA », nouveaux champs région, accroche publique, description détaillée, raison de la cession ; alerte sur les détails identifiants ; plus de valeurs d'exemple pré-remplies
+- `/ma/annonce/:id` : « Analyser ce dossier » (repreneurs), avec mention « ni valorisation, ni conseil juridique, comptable ou financier »
+- Tests : 29 tests back (15 nouveaux), parcours vérifiés en mode démo avec réponses du back simulées
