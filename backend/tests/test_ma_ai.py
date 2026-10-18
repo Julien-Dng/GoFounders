@@ -40,10 +40,11 @@ ANALYSIS = {
 
 
 class FakeSupabase:
-    def __init__(self, role: str | None, has_access: bool = False, listing: dict | None = None) -> None:
+    def __init__(self, role: str | None, has_access: bool = False, listing: dict | None = None, analyses_left: int = 99) -> None:
         self.role = role
         self.has_access = has_access
         self.listing = listing
+        self.analyses_left = analyses_left
 
     async def get_user_id(self, token: str) -> str | None:
         return "user-1" if token == "valid" else None
@@ -56,6 +57,12 @@ class FakeSupabase:
 
     async def load_listing_for_analysis(self, listing_id: str) -> dict | None:
         return self.listing
+
+    async def consume_ai_analysis(self, user_id: str, free_limit: int) -> bool:
+        if self.analyses_left <= 0:
+            return False
+        self.analyses_left -= 1
+        return True
 
 
 class FakeJsonBackend:
@@ -182,6 +189,14 @@ def test_buyer_gets_analysis(client_for):
     _, content, name = backend.calls[0]
     assert name == "analyse_dossier"
     assert "Détail confidentiel" in content
+
+
+def test_monthly_analysis_quota_returns_402(client_for):
+    backend = FakeJsonBackend(ANALYSIS)
+    client = client_for(FakeSupabase("buyer", has_access=True, listing=LISTING, analyses_left=1), backend)
+    codes = [client.post(f"/api/ma/annonces/{LISTING_ID}/analyse", headers=AUTH).status_code for _ in range(2)]
+    assert codes == [200, 402]
+    assert len(backend.calls) == 1
 
 
 def test_analysis_refusal_is_422(client_for):

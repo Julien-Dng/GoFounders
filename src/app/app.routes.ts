@@ -48,6 +48,11 @@ export const routes: Routes = [
         path: 'ma',
         loadComponent: () => import('./features/ma/ma-home/ma-home.component').then(m => m.MaHomeComponent)
       },
+      {
+        // Annuaire public des professionnels (refonte « reprise »).
+        path: 'pros',
+        loadComponent: () => import('./features/pros/pros.component').then(m => m.ProsComponent)
+      },
       // Routes protégées (auth requise)
       {
         path: 'recherche',
@@ -84,8 +89,20 @@ export const routes: Routes = [
       {
         path: 'ma/deposer',
         canActivate: [authGuard, roleGuard],
-        data: { allowedRoles: ['seller'] },
+        // Pros : compte pro en cours vérifié dans la page et par Supabase (enforce_ma_listing_owner).
+        data: { allowedRoles: ['seller', 'pro'] },
         loadComponent: () => import('./features/ma/ma-deposer/ma-deposer.component').then(m => m.MaDeposerComponent)
+      },
+      {
+        path: 'ma/mes-annonces',
+        canActivate: [authGuard, roleGuard],
+        data: { allowedRoles: ['seller', 'pro'] },
+        loadComponent: () => import('./features/ma/ma-mes-annonces/ma-mes-annonces.component').then(m => m.MaMesAnnoncesComponent)
+      },
+      {
+        path: 'admin/verifications',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/admin/verifications.component').then(m => m.VerificationsComponent)
       },
       {
         path: 'ma/annonce/:id',

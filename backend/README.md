@@ -50,7 +50,7 @@ Les tests n'appellent ni Supabase ni OpenAI / Anthropic (clients simulés).
 | `GET` | `/api/coaching-ia/contexte` | Données affichées dans le panneau « Ce que je sais sur vous » |
 | `POST` | `/api/coaching-ia/messages` | `{ "messages": [{ "role": "user", "content": "..." }] }` → `{ "reply", "actions" }` |
 | `POST` | `/api/ma/brouillon-annonce` | Vendeur : `{ "description": "..." }` → teaser, description anonymisée, champs du formulaire, `identifying_details` |
-| `POST` | `/api/ma/annonces/{id}/analyse` | Acheteur avec accès repreneur en cours : synthèse, points forts, points de vigilance, questions, vérifications |
+| `POST` | `/api/ma/annonces/{id}/analyse` | Acheteur avec accès repreneur en cours : synthèse, points forts, points de vigilance, questions, vérifications. 3 analyses par mois, illimitées avec l'accès Plus (402 au-delà) |
 
 Codes d'erreur : `401` non connecté, `403` plan FREE, `429` plus de `MAX_REQUESTS_PER_HOUR` questions
 par heure, `503` fournisseur d'IA indisponible.

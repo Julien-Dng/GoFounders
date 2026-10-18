@@ -116,6 +116,9 @@ import { AuthService } from '../../../core/services/auth.service';
 
               @if (analysisError()) {
                 <p class="mt-4 text-sm text-destructive" role="alert">{{ analysisError() }}</p>
+                @if (analysisError().includes('Plus')) {
+                  <a routerLink="/tarifs" fragment="repreneurs" class="mt-2 inline-block text-sm font-semibold text-accent hover:underline">Découvrir l'accès Plus</a>
+                }
               }
 
               @if (analysis(); as result) {

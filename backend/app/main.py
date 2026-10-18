@@ -192,6 +192,8 @@ async def coaching_message(
 # --- Outils IA de la marketplace M&A (refonte « reprise ») -------------------------------------------
 
 MA_AI_REQUESTS_PER_HOUR = 10
+# Analyses de dossier par mois avec l'accès repreneur 149 € ; illimitées avec l'accès Plus.
+FREE_ANALYSES_PER_MONTH = 3
 
 
 @app.post("/api/ma/brouillon-annonce", response_model=ListingDraft)
@@ -247,6 +249,17 @@ async def ma_listing_analysis(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Annonce introuvable")
 
     enforce_rate_limit(request, f"ma-analysis:{user_id}", MA_AI_REQUESTS_PER_HOUR)
+    try:
+        allowed = await supabase.consume_ai_analysis(user_id, FREE_ANALYSES_PER_MONTH)
+    except SupabaseError as error:
+        logger.error("Quota d'analyses illisible : %s", error)
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, "Données du profil indisponibles") from error
+    if not allowed:
+        raise HTTPException(
+            status.HTTP_402_PAYMENT_REQUIRED,
+            f"Vous avez utilisé vos {FREE_ANALYSES_PER_MONTH} analyses du mois. Passez à l'accès Plus pour des analyses illimitées.",
+        )
+
     try:
         return await ma_ai.analyse_listing(listing)
     except MaAiUnusable as error:

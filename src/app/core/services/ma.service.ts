@@ -3,14 +3,47 @@ import { Timestamp } from '@angular/fire/firestore';
 import { MA_LISTINGS, MaListingData, findMaListingById } from '../data/mock-platform.data';
 import { MaListing } from '../models/ma-listing.model';
 import { SupabaseMaListingInsert, SupabaseMaListingRow } from '../models/supabase-database.model';
+import { ProCategory } from '../models/user.model';
 import { AuthService } from './auth.service';
 import { SupabaseService } from './supabase.service';
 
 // Colonnes anonymisées lisibles par tous ; le dossier complet passe par get_ma_listing_detail (Supabase).
 const PUBLIC_LISTING_COLUMNS =
-  'id, sector, region, type, revenue, margin, age, price_min, price_max, public_summary, status, created_at, updated_at';
+  'id, sector, region, type, revenue, margin, age, price_min, price_max, public_summary, status, featured_until, verified, created_at, updated_at';
+
+const EARLY_ACCESS_MS = 48 * 3600 * 1000;
 
 type PublicListingRow = Omit<SupabaseMaListingRow, 'owner_id' | 'sale_reason' | 'confidential_description' | 'contact_info'>;
+
+export interface VerificationRequest {
+  id: string;
+  listing_id: string;
+  status: 'pending' | 'approved' | 'rejected';
+  evidence: string;
+  admin_note: string | null;
+  created_at: string;
+  decided_at: string | null;
+}
+
+export interface ProDirectoryEntry {
+  id: string;
+  display_name: string;
+  title: string | null;
+  pro_category: ProCategory | null;
+  location: string | null;
+  bio: string | null;
+  website_url: string | null;
+  linkedin_url: string | null;
+  photo_url: string | null;
+  has_pro_account: boolean;
+}
+
+// Mode démo (sans Supabase) : exemples de fiches pour visualiser l'annuaire.
+const DEMO_PRO_DIRECTORY: ProDirectoryEntry[] = [
+  { id: 'demo-pro-1', display_name: 'Claire Dubois', title: 'Transmission Conseil', pro_category: 'cabinet_cession', location: 'Lyon', bio: 'Accompagnement de cessions de PME et d’entreprises numériques, de la valorisation à la signature.', website_url: 'https://exemple.fr', linkedin_url: null, photo_url: null, has_pro_account: true },
+  { id: 'demo-pro-2', display_name: 'Karim Benali', title: 'Cabinet Benali Expertise', pro_category: 'expert_comptable', location: 'Paris', bio: 'Expert-comptable spécialisé dans l’audit d’acquisition et la reprise de TPE.', website_url: null, linkedin_url: null, photo_url: null, has_pro_account: false },
+  { id: 'demo-pro-3', display_name: 'Maître Sophie Laurent', title: 'Laurent Avocats', pro_category: 'avocat', location: 'Bordeaux', bio: 'Droit des sociétés, protocoles de cession et garanties d’actif et de passif.', website_url: null, linkedin_url: null, photo_url: null, has_pro_account: false },
+];
 
 export interface MaSearchFilters {
   sector?: string;
@@ -69,6 +102,60 @@ export class MaService {
     return row ? this.mapRowToListing(row) : null;
   }
 
+  // --- Offres « reprise » : vérification des dossiers et annuaire des pros -------------------------
+
+  // Demandes de vérification de l'utilisateur connecté (les plus récentes d'abord).
+  async getMyVerificationRequests(): Promise<VerificationRequest[]> {
+    if (!this.supabase.isConfigured) {
+      return [];
+    }
+
+    const { data, error } = await this.supabase.client
+      .from('ma_verification_requests')
+      .select('id, listing_id, status, evidence, admin_note, created_at, decided_at')
+      .order('created_at', { ascending: false });
+
+    return error ? [] : ((data ?? []) as VerificationRequest[]);
+  }
+
+  // Admins : demandes en attente, avec le secteur et la région de l'annonce.
+  async getPendingVerifications(): Promise<Array<VerificationRequest & { listing?: MaListingData }>> {
+    if (!this.supabase.isConfigured) {
+      return [];
+    }
+
+    const { data, error } = await this.supabase.client
+      .from('ma_verification_requests')
+      .select('id, listing_id, status, evidence, admin_note, created_at, decided_at')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      return [];
+    }
+
+    const requests = (data ?? []) as VerificationRequest[];
+    return Promise.all(requests.map(async request => ({ ...request, listing: await this.getListingDetail(request.listing_id) })));
+  }
+
+  async decideVerification(requestId: string, approve: boolean, note: string): Promise<boolean> {
+    const { error } = await this.supabase.client.rpc('decide_listing_verification', {
+      p_request_id: requestId,
+      p_approve: approve,
+      p_note: note.trim() || null,
+    });
+    return !error;
+  }
+
+  async listProDirectory(category?: ProCategory): Promise<ProDirectoryEntry[]> {
+    if (!this.supabase.isConfigured) {
+      return DEMO_PRO_DIRECTORY.filter(entry => !category || entry.pro_category === category);
+    }
+
+    const { data, error } = await this.supabase.client.rpc('list_pro_directory', { p_category: category ?? null });
+    return error ? [] : ((data ?? []) as ProDirectoryEntry[]);
+  }
+
   // Annonces du vendeur connecté, y compris les champs confidentiels.
   async getMyListings(): Promise<MaListing[]> {
     if (!this.supabase.isConfigured) {
@@ -99,7 +186,10 @@ export class MaService {
       return [];
     }
 
-    const listings = ((data ?? []) as PublicListingRow[]).map(row => this.mapCardRow(row));
+    // Annonces en vedette d'abord, puis les plus récentes.
+    const listings = ((data ?? []) as PublicListingRow[])
+      .map(row => this.mapCardRow(row))
+      .sort((a, b) => Number(b.featured ?? false) - Number(a.featured ?? false));
     return listings.length === 0 && this.auth.isAdmin() ? MA_LISTINGS : listings;
   }
 
@@ -179,6 +269,8 @@ export class MaService {
       contactInfo: row.contact_info ?? '',
       status: row.status,
       createdAt: Timestamp.fromDate(new Date(row.created_at)),
+      featuredUntil: row.featured_until ?? undefined,
+      verified: row.verified ?? false,
     };
   }
 
@@ -197,6 +289,9 @@ export class MaService {
       summary: row.public_summary,
       description: row.public_summary,
       highlights: ['Annonce anonymisée', 'Accès M&A requis', 'Dossier confidentiel'],
+      featured: !!row.featured_until && new Date(row.featured_until).getTime() > Date.now(),
+      verified: row.verified ?? false,
+      isNew: !!row.created_at && Date.now() - new Date(row.created_at).getTime() < EARLY_ACCESS_MS,
     };
   }
 

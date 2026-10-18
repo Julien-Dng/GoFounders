@@ -1,4 +1,4 @@
-import { Plan, ProfileType } from './user.model';
+import { Plan, ProCategory, ProfileType } from './user.model';
 
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
@@ -61,7 +61,7 @@ export interface Database {
 // Colonnes de profiles lisibles depuis l'appli : toutes sauf l'email (2026-10-12-profils-par-role.sql).
 // Un select('*') sur profiles est refusé par Supabase.
 export const PROFILE_COLUMNS =
-  'id, display_name, role, plan, ma_access, ma_access_expires_at, is_admin, location, title, bio, photo_url, github_url, linkedin_url, website_url, skills, looking_for, availability_label, ma_sector, ma_budget, ma_region, created_at, updated_at';
+  'id, display_name, role, plan, ma_access, ma_access_expires_at, is_admin, location, title, bio, photo_url, github_url, linkedin_url, website_url, skills, looking_for, availability_label, ma_sector, ma_budget, ma_region, buyer_plus_until, pro_directory_until, pro_account_until, pro_category, created_at, updated_at';
 
 export interface SupabaseProfileRow {
   id: string;
@@ -72,6 +72,10 @@ export interface SupabaseProfileRow {
   plan: Plan;
   ma_access: boolean;
   ma_access_expires_at?: string | null;
+  buyer_plus_until?: string | null;
+  pro_directory_until?: string | null;
+  pro_account_until?: string | null;
+  pro_category?: ProCategory | null;
   is_admin?: boolean | null;
   location: string | null;
   title: string | null;
@@ -217,6 +221,9 @@ export interface SupabaseMaListingRow {
   confidential_description: string | null;
   contact_info: string | null;
   status: 'active' | 'sold' | 'withdrawn';
+  // Offres « reprise » : mise en avant payante et badge « dossier vérifié » (posés côté serveur).
+  featured_until?: string | null;
+  verified?: boolean | null;
   created_at: string;
   updated_at: string;
 }

@@ -69,6 +69,17 @@ class SupabaseClient:
             raise SupabaseError(f"has_active_ma_access impossible ({response.status_code}) : {response.text[:300]}")
         return response.json() is True
 
+    async def consume_ai_analysis(self, user_id: str, free_limit: int) -> bool:
+        """Décompte une analyse de dossier : True si elle est permise (Plus illimité, sinon free_limit par mois)."""
+        response = await self._http.post(
+            f"{self._url}/rest/v1/rpc/consume_ai_analysis",
+            json={"target_user": user_id, "free_limit": free_limit},
+            headers=self._service_headers(),
+        )
+        if response.status_code != 200:
+            raise SupabaseError(f"consume_ai_analysis impossible ({response.status_code}) : {response.text[:300]}")
+        return response.json() is True
+
     async def load_listing_for_analysis(self, listing_id: str) -> dict[str, Any] | None:
         """Dossier d'une annonce active, sans owner_id ni contact_info (jamais transmis au modèle)."""
         rows = await self._select(

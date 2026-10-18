@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { MaService } from '../../../core/services/ma.service';
+import { canPublishMa } from '../../../core/models/user.model';
 import { AiService, MaListingDraft } from '../../../core/services/ai.service';
 
 @Component({
@@ -28,7 +29,15 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
         </div>
 
         <div class="rounded-2xl border border-border bg-white p-6 shadow-lg sm:p-10">
-          @if (!checkoutRequested()) {
+          @if (!canPublish()) {
+            <div class="text-center">
+              <h2 class="mb-2 text-2xl font-bold">Compte pro requis</h2>
+              <p class="mx-auto mb-6 max-w-xl text-muted-foreground">
+                Pour publier des annonces pour vos clients et contacter les repreneurs, activez un compte pro.
+              </p>
+              <a routerLink="/tarifs" fragment="pros" class="rounded-lg bg-amber-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-amber-600">Voir les offres professionnelles</a>
+            </div>
+          } @else if (!checkoutRequested()) {
             <div class="space-y-8">
               @if (currentStep() === 1) {
                 <div class="rounded-2xl border-2 border-accent/20 bg-accent/[0.04] p-5">
@@ -227,8 +236,8 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
                   <a routerLink="/dashboard" class="rounded-lg bg-amber-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-amber-600">
                     Mon tableau de bord
                   </a>
-                  <a routerLink="/ma" class="rounded-lg border border-border px-6 py-3 font-semibold transition-colors hover:border-amber-500">
-                    Retour aux annonces
+                  <a routerLink="/ma/mes-annonces" class="rounded-lg border border-border px-6 py-3 font-semibold transition-colors hover:border-amber-500">
+                    Mettre en avant ou faire vérifier
                   </a>
                 </div>
               } @else {
@@ -263,6 +272,7 @@ export class MaDeposerComponent {
   readonly totalSteps = 5;
   readonly currentStep = signal(1);
   readonly checkoutRequested = signal(false);
+  readonly canPublish = computed(() => canPublishMa(this.auth.currentUser()));
   readonly isSubmitting = signal(false);
   readonly createdListingId = signal('');
 

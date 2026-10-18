@@ -443,6 +443,8 @@ export class DashboardComponent {
         return 'Vos opportunités de reprise';
       case 'seller':
         return 'Votre cession';
+      case 'pro':
+        return 'Annonces de la marketplace';
       default:
         return 'Vos matches du jour';
     }

@@ -61,10 +61,30 @@ La branche ne change que la **vitrine**. Toute la logique (rôles, sécurité, p
 - Pas de conseil juridique, comptable ou financier ni de valorisation dans l'analyse : rappel dans les instructions du modèle et sous chaque analyse.
 - Discours investisseurs : l'IA rend la cession rapide et sûre (annonce anonymisée en 5 minutes, dossier analysé pour le repreneur) ; les annonces et transactions accumulées deviennent un actif de données (multiples réels par secteur) difficile à copier.
 
+### Offres de la reprise (`/tarifs`)
+
+Pas de commission sur les ventes (une commission sur une cession de fonds de commerce demande la carte T, loi Hoguet). Prix : `src/app/core/config/offers.ts`.
+
+| Offre | Qui paie | Prix | Ce qu'elle donne |
+|---|---|---|---|
+| Accès repreneur | Acheteur | 149 € / an | Dossiers complets, contact des vendeurs, 3 analyses IA par mois |
+| Accès repreneur Plus | Acheteur | 390 € / an | Analyses IA illimitées, alerte à chaque nouvelle annonce, accès anticipé de 48 h |
+| Mise en avant | Vendeur ou pro | 14 € (7 j) ou 49 € (30 j) | Annonce en tête de liste, badge « En vedette » (`/ma/mes-annonces`) |
+| Dossier vérifié | Vendeur ou pro | 199 € une fois | Badge « Dossier vérifié » après contrôle **manuel** des justificatifs par un admin (`/admin/verifications`) |
+| Annuaire des pros | Rôle `pro` | 79 € / mois | Fiche dans `/pros`, contactable par tous les membres |
+| Compte pro | Rôle `pro` | 199 € / mois | Annuaire + publication de plusieurs annonces + contact direct des repreneurs |
+| PRO associés | Porteur de projet | 49 € / mois | Inchangé (V6) |
+| Accompagnement PREMIUM | Tous | Sur devis | Formulaire sur `/tarifs`, demande envoyée aux admins (`premium_requests`) |
+
+- Nouveau rôle **`pro`** (« Je suis un professionnel » à l'inscription) : expert-comptable, avocat, notaire, cabinet de cession.
+- Un pro peut écrire à un acheteur seulement avec un compte pro actif ; il n'y a pas de liste des acheteurs (confidentialité).
+- Le quota d'analyses IA est vérifié par le back Python (`consume_ai_analysis`, erreur 402 au-delà de 3 par mois sans Plus).
+
 ### Mise en route (à faire une fois)
-1. **Aucune migration propre à la branche.** Il suffit que la base ait reçu les migrations de `V6`.
-2. **Paiement** : comme sur `V6`, les achats passent par `PaymentService` (mode simulation tant que Stripe n'est pas branché). ⚠️ Supprimer `simulate_purchase` avant toute mise en ligne avec de vrais utilisateurs.
-3. **Modérer les annonces** : la publication est gratuite et immédiate. Il faut relire chaque nouvelle annonce et supprimer celles qui ne sont pas sérieuses.
+1. **Migrations** : après celles de `V6`, exécuter `supabase/2026-10-20a-role-pro.sql` **seule** (ajout d'une valeur d'enum, à valider avant usage), puis `supabase/2026-10-20b-offres-reprise.sql`.
+2. **Paiement** : comme sur `V6`, les achats passent par `PaymentService` (mode simulation tant que Stripe n'est pas branché). ⚠️ Supprimer `simulate_purchase` et `simulate_listing_purchase` avant toute mise en ligne avec de vrais utilisateurs.
+3. **Vérifications** : un admin traite les demandes « Dossier vérifié » sur `/admin/verifications` (objectif : 3 jours ouvrés).
+4. **Modérer les annonces** : la publication est gratuite et immédiate. Il faut relire chaque nouvelle annonce et supprimer celles qui ne sont pas sérieuses.
 
 ### Garder la branche à jour
 `V6` avance en parallèle. Récupérer régulièrement ses nouveautés :

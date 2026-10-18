@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MaListingData } from '../../../core/data/mock-platform.data';
-import { canAccessMaDetails, canPublishMaListing } from '../../../core/models/user.model';
+import { EARLY_ACCESS_HOURS } from '../../../core/config/offers';
+import { canAccessMaDetails, canPublishMaListing, hasBuyerPlus } from '../../../core/models/user.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { MaService } from '../../../core/services/ma.service';
 
@@ -164,6 +165,16 @@ type MaStatIcon = 'mask' | 'handshake' | 'certified';
             <span class="text-muted-foreground"> annonces disponibles</span>
           </div>
 
+          @if (showEarlyAccessHint()) {
+            <div class="mb-8 flex flex-col gap-3 rounded-2xl border border-accent/20 bg-accent/[0.05] p-5 sm:flex-row sm:items-center sm:justify-between">
+              <p class="text-sm text-foreground/85">
+                <strong>Accès anticipé :</strong> les repreneurs Plus voient les nouvelles annonces {{ earlyAccessHours }} h avant tout le monde
+                et reçoivent une alerte quand une annonce correspond à leur recherche.
+              </p>
+              <a routerLink="/tarifs" fragment="repreneurs" class="flex-shrink-0 rounded-lg bg-accent px-4 py-2 text-center text-sm font-semibold text-white hover:bg-accent/90">Découvrir l'accès Plus</a>
+            </div>
+          }
+
           @if (accessRequiredNotice()) {
             <div class="mb-8 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-950 shadow-sm">
               <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -199,6 +210,19 @@ type MaStatIcon = 'mask' | 'handshake' | 'certified';
                       <div>
                         <div class="mb-1 text-xs font-mono text-muted-foreground">{{ listing.id }}</div>
                         <div class="font-bold text-foreground">Entreprise confidentielle</div>
+                        @if (listing.featured || listing.verified || listing.isNew) {
+                          <div class="mt-1 flex flex-wrap gap-1.5">
+                            @if (listing.featured) {
+                              <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[11px] font-semibold text-white">En vedette</span>
+                            }
+                            @if (listing.verified) {
+                              <span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[11px] font-semibold text-white">Dossier vérifié</span>
+                            }
+                            @if (listing.isNew) {
+                              <span class="rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-white">Nouveau · accès anticipé</span>
+                            }
+                          </div>
+                        }
                       </div>
                     </div>
                     <span class="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-700">{{ listing.type }}</span>
@@ -347,6 +371,12 @@ export class MaHomeComponent implements OnInit {
 
   private readonly profileType = computed(() => this.auth.currentUser()?.profileType);
   // Dossier complet : acheteur avec accès payé. Dépôt : vendeur (ou visiteur, invité à s'inscrire).
+  readonly earlyAccessHours = EARLY_ACCESS_HOURS;
+  // Visiteurs et acheteurs sans accès Plus : les annonces de moins de 48 h leur sont masquées par Supabase.
+  readonly showEarlyAccessHint = computed(() => {
+    const user = this.auth.currentUser();
+    return !user || (user.profileType === 'buyer' && !hasBuyerPlus(user));
+  });
   readonly canViewSensitiveDetails = computed(() => canAccessMaDetails(this.profileType()) && this.auth.hasMaAccess());
   readonly canDepositListing = computed(() => !this.auth.isAuthenticated() || canPublishMaListing(this.profileType()));
   readonly showAccessCta = computed(() =>

@@ -3,14 +3,14 @@ import { NgClass } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
-import { ProfileType } from '../../core/models/user.model';
+import { PRO_CATEGORY_LABELS, ProCategory, ProfileType } from '../../core/models/user.model';
 import { EMAIL_POLICY_MESSAGES, registrationEmailValidator } from '../../core/validators/email-policy.validator';
 import { passwordPolicyValidator } from '../../core/validators/password-policy.validator';
 import { PasswordCriteriaComponent } from '../../shared/components/password-criteria/password-criteria.component';
 
 interface ProfileOption {
   id: ProfileType;
-  icon: 'project' | 'talent' | 'buyer' | 'seller';
+  icon: 'project' | 'talent' | 'buyer' | 'seller' | 'pro';
   title: string;
   description: string;
 }
@@ -103,6 +103,12 @@ interface ProfileOption {
                             <path d="M7 8h10"/>
                             <path d="M7 12h6"/>
                             <path d="M7 16h4"/>
+                          </svg>
+                        }
+                        @case ('pro') {
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 3 2 8l10 5 10-5-10-5z"/>
+                            <path d="M6 10.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-5.5"/>
                           </svg>
                         }
                       }
@@ -359,6 +365,39 @@ interface ProfileOption {
                 </div>
               }
 
+              @if (selectedType() === 'pro') {
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
+                  <div>
+                    <label class="mb-2 block text-sm font-semibold" for="pro-category">Votre métier</label>
+                    <select
+                      id="pro-category"
+                      formControlName="proCategory"
+                      class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
+                    >
+                      <option value="">Choisir…</option>
+                      @for (category of proCategories; track category.value) {
+                        <option [value]="category.value">{{ category.label }}</option>
+                      }
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="mb-2 block text-sm font-semibold" for="pro-company">Cabinet ou société</label>
+                    <input
+                      id="pro-company"
+                      type="text"
+                      formControlName="proCompany"
+                      class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
+                      placeholder="Cabinet Martin & Associés"
+                    >
+                  </div>
+
+                  <p class="text-sm text-muted-foreground md:col-span-2">
+                    Après l'inscription, activez votre fiche dans l'annuaire des professionnels ou un compte pro (publication d'annonces pour vos clients, contact des repreneurs) depuis la page Tarifs.
+                  </p>
+                </div>
+              }
+
               @if (selectedType() === 'seller') {
                 <div class="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
                   <div>
@@ -482,7 +521,11 @@ export class InscriptionComponent {
     maSector: [''],
     maBudget: [''],
     maRegion: [''],
+    proCategory: [''],
+    proCompany: [''],
   });
+
+  readonly proCategories = (Object.keys(PRO_CATEGORY_LABELS) as ProCategory[]).map(value => ({ value, label: PRO_CATEGORY_LABELS[value] }));
 
   readonly progressPercent = computed(() =>
     Math.round((this.currentStep() / this.totalSteps) * 100)
@@ -499,6 +542,8 @@ export class InscriptionComponent {
         return 'acheteur / repreneur';
       case 'seller':
         return 'vendeur M&A';
+      case 'pro':
+        return 'professionnel';
       default:
         return 'GoFounders';
     }
@@ -520,6 +565,8 @@ export class InscriptionComponent {
         return 'Indiquez ce que vous souhaitez reprendre pour recevoir des opportunités M&A cohérentes.';
       case 'seller':
         return 'Cadrez votre projet de cession pour préparer une annonce claire et confidentielle.';
+      case 'pro':
+        return 'Présentez votre activité pour apparaître auprès des cédants et des repreneurs.';
       default:
         return 'Complétez les informations utiles pour personnaliser votre parcours.';
     }
@@ -549,6 +596,12 @@ export class InscriptionComponent {
       icon: 'seller',
       title: 'Je veux céder mon entreprise',
       description: 'Je souhaite préparer une annonce confidentielle et qualifier des repreneurs.',
+    },
+    {
+      id: 'pro',
+      icon: 'pro',
+      title: 'Je suis un professionnel',
+      description: 'Expert-comptable, avocat, notaire ou cabinet de cession : je veux être visible et accompagner des cessions.',
     },
   ];
 
@@ -647,6 +700,8 @@ export class InscriptionComponent {
           maSector: this.detailsForm.controls.maSector.getRawValue(),
           maBudget: this.detailsForm.controls.maBudget.getRawValue(),
           maRegion: this.detailsForm.controls.maRegion.getRawValue(),
+          proCategory: (this.detailsForm.controls.proCategory.getRawValue() || undefined) as ProCategory | undefined,
+          proCompany: this.detailsForm.controls.proCompany.getRawValue(),
         },
         this.returnUrl()
       );
@@ -667,6 +722,8 @@ export class InscriptionComponent {
       talentSkill,
       maSector,
       maBudget,
+      proCategory,
+      proCompany,
     } = this.detailsForm.controls;
 
     projectName.clearValidators();
@@ -675,6 +732,8 @@ export class InscriptionComponent {
     talentSkill.clearValidators();
     maSector.clearValidators();
     maBudget.clearValidators();
+    proCategory.clearValidators();
+    proCompany.clearValidators();
 
     if (profileType === 'entrepreneur') {
       projectName.setValidators([Validators.required]);
@@ -682,6 +741,9 @@ export class InscriptionComponent {
     } else if (profileType === 'talent') {
       talentHeadline.setValidators([Validators.required]);
       talentSkill.setValidators([Validators.required]);
+    } else if (profileType === 'pro') {
+      proCategory.setValidators([Validators.required]);
+      proCompany.setValidators([Validators.required]);
     } else {
       maSector.setValidators([Validators.required]);
       maBudget.setValidators([Validators.required]);
@@ -693,5 +755,7 @@ export class InscriptionComponent {
     talentSkill.updateValueAndValidity({ emitEvent: false });
     maSector.updateValueAndValidity({ emitEvent: false });
     maBudget.updateValueAndValidity({ emitEvent: false });
+    proCategory.updateValueAndValidity({ emitEvent: false });
+    proCompany.updateValueAndValidity({ emitEvent: false });
   }
 }

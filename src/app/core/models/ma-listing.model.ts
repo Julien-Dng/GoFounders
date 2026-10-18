@@ -19,4 +19,7 @@ export interface MaListing {
   contactInfo: string;
   status: MaListingStatus;
   createdAt: Timestamp;
+  // Offres « reprise » : mise en avant et badge « dossier vérifié ».
+  featuredUntil?: string;
+  verified?: boolean;
 }

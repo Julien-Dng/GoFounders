@@ -8,6 +8,7 @@ import { ProjectService } from '../../../core/services/project.service';
 import { ProjectAccessRequest, ProjectAccessService } from '../../../core/services/project-access.service';
 import { downloadTextFile, ndaProofDocument } from '../../../core/legal/nda';
 import { ProjectAccessStatus } from '../../../core/models/supabase-database.model';
+import { PRO_CATEGORY_LABELS, ProCategory } from '../../../core/models/user.model';
 
 @Component({
   selector: 'app-modifier-profil',
@@ -217,6 +218,24 @@ import { ProjectAccessStatus } from '../../../core/models/supabase-database.mode
                   <p class="mt-2 text-xs text-muted-foreground">Ces tags aident à comprendre rapidement votre objectif.</p>
                 </div>
               </div>
+
+              @if (isPro()) {
+                <div class="rounded-2xl border border-accent/20 bg-accent/[0.035] p-5 sm:p-6">
+                  <h2 class="text-xl font-bold text-primary">Votre fiche professionnelle</h2>
+                  <p class="mt-1 text-sm text-muted-foreground">
+                    Votre métier, votre intitulé, votre localisation, votre présentation et votre site apparaissent dans l'annuaire
+                    quand votre fiche ou votre compte pro est actif.
+                  </p>
+                  <label for="pro-category" class="mb-2 mt-4 block text-sm font-semibold">Métier</label>
+                  <select id="pro-category" [value]="proCategory()" (change)="proCategory.set($any($event.target).value)" class="w-full rounded-xl border border-border bg-white px-4 py-3 outline-none focus:border-accent sm:max-w-sm">
+                    <option value="">Non renseigné</option>
+                    @for (category of proCategories; track category.value) {
+                      <option [value]="category.value">{{ category.label }}</option>
+                    }
+                  </select>
+                  <a routerLink="/tarifs" fragment="pros" class="mt-3 block text-sm font-semibold text-accent hover:underline">Gérer ma fiche annuaire et mon compte pro</a>
+                </div>
+              }
 
               @if (isMaRole()) {
                 <div class="rounded-2xl border border-[#D97706]/30 bg-[#D97706]/[0.04] p-5 sm:p-6" [formGroup]="maForm">
@@ -614,6 +633,9 @@ export class ModifierComponent implements OnInit {
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
   readonly isEntrepreneur = computed(() => this.currentUser()?.profileType === 'entrepreneur');
+  readonly isPro = computed(() => this.currentUser()?.profileType === 'pro');
+  readonly proCategory = signal<ProCategory | ''>(this.auth.currentUser()?.proCategory ?? '');
+  readonly proCategories = (Object.keys(PRO_CATEGORY_LABELS) as ProCategory[]).map(value => ({ value, label: PRO_CATEGORY_LABELS[value] }));
   readonly isMaRole = computed(() => {
     const profileType = this.currentUser()?.profileType;
     return profileType === 'buyer' || profileType === 'seller';
@@ -649,6 +671,8 @@ export class ModifierComponent implements OnInit {
         return 'Repreneur actif, entrepreneur en acquisition...';
       case 'seller':
         return 'Dirigeant cédant, fondateur SaaS...';
+      case 'pro':
+        return 'Cabinet de cession, expert-comptable spécialisé transmission...';
       default:
         return 'Fondateur SaaS, porteur de projet, CEO...';
     }
@@ -790,6 +814,7 @@ export class ModifierComponent implements OnInit {
       profileTitle: value.profileTitle,
       availabilityLabel: value.availabilityLabel,
       ...(this.isMaRole() ? { maSector: maValue.sector, maBudget: maValue.budget, maRegion: maValue.region } : {}),
+      ...(this.isPro() ? { proCategory: this.proCategory() } : {}),
       bio: value.bio,
       skills: this.splitTags(value.skills),
       lookingFor: this.splitTags(value.lookingFor),

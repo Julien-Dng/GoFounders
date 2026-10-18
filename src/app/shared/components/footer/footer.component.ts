@@ -84,6 +84,7 @@ export class FooterComponent {
         { label: 'Entreprises à reprendre', href: '/ma' },
         { label: 'Céder mon entreprise', href: '/ma/deposer' },
         { label: 'Trouver un associé', href: '/recherche' },
+        { label: 'Annuaire des professionnels', href: '/pros' },
         { label: 'Tarifs', href: '/tarifs' },
       ]
     },

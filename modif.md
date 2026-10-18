@@ -930,3 +930,13 @@ npm install @stripe/stripe-js
 - `/ma/deposer` : encadré « Préparer mon annonce avec l'IA », nouveaux champs région, accroche publique, description détaillée, raison de la cession ; alerte sur les détails identifiants ; plus de valeurs d'exemple pré-remplies
 - `/ma/annonce/:id` : « Analyser ce dossier » (repreneurs), avec mention « ni valorisation, ni conseil juridique, comptable ou financier »
 - Tests : 29 tests back (15 nouveaux), parcours vérifiés en mode démo avec réponses du back simulées
+
+## Session du 20 octobre 2026 - Offres de la reprise (`refonte-reprise`)
+
+- Migrations `2026-10-20a-role-pro.sql` (rôle `pro`, à exécuter seule) et `2026-10-20b-offres-reprise.sql` (accès Plus, mise en avant, dossier vérifié, annuaire et compte pro, PREMIUM, quota d'analyses IA), testées sur un Postgres local.
+- Page `/tarifs` refaite : repreneurs, cédants, professionnels, PREMIUM sur devis, puis offres associés de V6.
+- Nouvelles pages : `/ma/mes-annonces` (mise en avant, demande de vérification), `/pros` (annuaire public), `/admin/verifications`.
+- Badges « En vedette », « Dossier vérifié », « Nouveau » et accès anticipé de 48 h des repreneurs Plus sur `/ma`.
+- Inscription : carte « Je suis un professionnel » avec métier et cabinet.
+- Back Python : 3 analyses IA par mois sans Plus (erreur 402).
+- Paiements toujours simulés : supprimer `simulate_purchase` et `simulate_listing_purchase` avant la mise en production.

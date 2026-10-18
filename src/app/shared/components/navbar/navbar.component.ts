@@ -267,7 +267,12 @@ export class NavbarComponent {
   // et les vendeurs (/ma/deposer leur est réservée) ; l'assistant IA sort de la navigation (route conservée).
   private readonly hidesVendre = computed(() => {
     const profileType = this.auth.currentUser()?.profileType;
-    return !!profileType && profileType !== 'seller';
+    return !!profileType && profileType !== 'seller' && profileType !== 'pro';
+  });
+
+  private readonly ownsListings = computed(() => {
+    const profileType = this.auth.currentUser()?.profileType;
+    return profileType === 'seller' || profileType === 'pro';
   });
 
   private readonly allNavLinks = [
@@ -288,6 +293,9 @@ export class NavbarComponent {
     { id: 'ma',         label: 'Annonces',     icon: 'search', path: '/ma',          badge: null, exact: true  },
     { id: 'vendre',     label: 'Vendre',       icon: 'chart', path: '/ma/deposer',  badge: null, exact: true  },
     { id: 'recherche',  label: 'Trouver un associé', icon: 'users', path: '/recherche', badge: null, exact: true  },
+    { id: 'mes-annonces', label: 'Mes annonces', icon: 'chart', path: '/ma/mes-annonces', badge: null, exact: true },
+    { id: 'annuaire',   label: 'Annuaire des pros', icon: 'users', path: '/pros',      badge: null, exact: true  },
+    { id: 'verifications', label: 'Vérifications', icon: 'settings', path: '/admin/verifications', badge: null, exact: true },
     { id: 'messages',   label: 'Messages',     icon: 'messages', path: '/messages',    badge: null, exact: false },
     { id: 'abonnement', label: 'Abonnement',   icon: 'credit-card', path: '/tarifs',      badge: null, exact: true  },
     { id: 'parametres', label: 'Paramètres',   icon: 'settings', path: '/parametres',  badge: null, exact: true  },
@@ -295,7 +303,10 @@ export class NavbarComponent {
 
   readonly navItems = computed(() =>
     this.allNavItems.filter(item =>
-      !(item.id === 'recherche' && this.hidesRecherche()) && !(item.id === 'vendre' && this.hidesVendre())
+      !(item.id === 'recherche' && this.hidesRecherche())
+      && !(item.id === 'vendre' && this.hidesVendre())
+      && !(item.id === 'mes-annonces' && !this.ownsListings())
+      && !(item.id === 'verifications' && !this.auth.isAdmin())
     )
   );
 

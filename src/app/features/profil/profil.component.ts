@@ -571,6 +571,10 @@ export class ProfilComponent implements OnInit {
         return 'Vendeur M&A';
       }
 
+      if (profileType === 'pro') {
+        return 'Professionnel';
+      }
+
       return 'Porteur de projet';
     }
 

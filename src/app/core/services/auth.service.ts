@@ -3,7 +3,7 @@ import { Timestamp } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { User as SupabaseAuthUser } from '@supabase/supabase-js';
 import { SupabaseProfileInsert, SupabaseProfileRow, SupabaseProjectInsert, PROFILE_COLUMNS } from '../models/supabase-database.model';
-import { Plan, ProfileType, User } from '../models/user.model';
+import { Plan, ProCategory, ProfileType, User } from '../models/user.model';
 import { validateRegistrationEmail } from '../validators/email-policy.validator';
 import { SupabaseService } from './supabase.service';
 
@@ -32,6 +32,10 @@ interface StoredUserRecord {
   plan: Plan;
   maAccess: boolean;
   maAccessExpiresAt?: string;
+  buyerPlusUntil?: string;
+  proDirectoryUntil?: string;
+  proAccountUntil?: string;
+  proCategory?: ProCategory;
   isAdmin?: boolean;
   stripeCustomerId?: string;
   createdAt: string;
@@ -60,6 +64,9 @@ export interface SignUpPayload {
   maSector?: string;
   maBudget?: string;
   maRegion?: string;
+  proCategory?: ProCategory;
+  // Pro : nom du cabinet ou de l'activité, affiché comme intitulé du profil.
+  proCompany?: string;
 }
 
 export interface AuthResult {
@@ -78,6 +85,8 @@ export interface UpdateProfilePayload {
   maSector?: string;
   maBudget?: string;
   maRegion?: string;
+  // Pros uniquement : métier affiché dans l'annuaire.
+  proCategory?: ProCategory | '';
   githubUrl: string;
   linkedinUrl: string;
   websiteUrl: string;
@@ -162,7 +171,14 @@ export class AuthService {
   }
 
   // Mode local sans Supabase uniquement : applique les droits d'un paiement simulé.
-  applyLocalEntitlements(entitlements: { plan?: Exclude<Plan, 'FREE'>; maAccess?: boolean; maAccessExpiresAt?: string }): boolean {
+  applyLocalEntitlements(entitlements: {
+    plan?: Exclude<Plan, 'FREE'>;
+    maAccess?: boolean;
+    maAccessExpiresAt?: string;
+    buyerPlusUntil?: string;
+    proDirectoryUntil?: string;
+    proAccountUntil?: string;
+  }): boolean {
     const activeUser = this._currentUser();
 
     if (!activeUser || this.supabase.isConfigured) {
@@ -402,6 +418,7 @@ export class AuthService {
           ma_sector: this.initialMaField(payload, payload.maSector) ?? '',
           ma_budget: this.initialMaField(payload, payload.maBudget) ?? '',
           ma_region: this.initialMaField(payload, payload.maRegion) ?? '',
+          pro_category: payload.profileType === 'pro' ? payload.proCategory ?? '' : '',
         },
       },
     });
@@ -537,6 +554,7 @@ export class AuthService {
         ma_sector: this.cleanOptionalText(payload.maSector) ?? null,
         ma_budget: this.cleanOptionalText(payload.maBudget) ?? null,
         ma_region: this.cleanOptionalText(payload.maRegion) ?? null,
+        ...(payload.proCategory !== undefined ? { pro_category: payload.proCategory || null } : {}),
         github_url: this.cleanOptionalText(payload.githubUrl) ?? null,
         linkedin_url: this.cleanOptionalText(payload.linkedinUrl) ?? null,
         website_url: this.cleanOptionalText(payload.websiteUrl) ?? null,
@@ -768,6 +786,7 @@ export class AuthService {
       maSector: this.initialMaField(payload, payload.maSector),
       maBudget: this.initialMaField(payload, payload.maBudget),
       maRegion: this.initialMaField(payload, payload.maRegion),
+      proCategory: payload.profileType === 'pro' ? payload.proCategory : undefined,
       plan: 'FREE',
       maAccess: false,
       createdAt: now,
@@ -816,6 +835,7 @@ export class AuthService {
       maSector: this.cleanOptionalText(payload.maSector),
       maBudget: this.cleanOptionalText(payload.maBudget),
       maRegion: this.cleanOptionalText(payload.maRegion),
+      ...(payload.proCategory !== undefined ? { proCategory: payload.proCategory || undefined } : {}),
       githubUrl: this.cleanOptionalText(payload.githubUrl),
       linkedinUrl: this.cleanOptionalText(payload.linkedinUrl),
       websiteUrl: this.cleanOptionalText(payload.websiteUrl),
@@ -933,6 +953,10 @@ export class AuthService {
       return this.cleanOptionalText(payload.maSector) ? `Recherche M&A - ${payload.maSector?.trim()}` : undefined;
     }
 
+    if (payload.profileType === 'pro') {
+      return this.cleanOptionalText(payload.proCompany);
+    }
+
     return this.cleanOptionalText(payload.maSector) ? `Cession M&A - ${payload.maSector?.trim()}` : undefined;
   }
 
@@ -982,6 +1006,10 @@ export class AuthService {
       plan: user.plan,
       maAccess: this.isMaAccessActive(user.maAccess, user.maAccessExpiresAt),
       maAccessExpiresAt: user.maAccessExpiresAt,
+      buyerPlusUntil: user.buyerPlusUntil,
+      proDirectoryUntil: user.proDirectoryUntil,
+      proAccountUntil: user.proAccountUntil,
+      proCategory: user.proCategory,
       isAdmin: user.isAdmin ?? false,
       stripeCustomerId: user.stripeCustomerId,
       createdAt: Timestamp.fromDate(new Date(user.createdAt)),
@@ -1014,6 +1042,10 @@ export class AuthService {
       plan: profile.plan,
       maAccess: this.isMaAccessActive(profile.ma_access, profile.ma_access_expires_at),
       maAccessExpiresAt: profile.ma_access_expires_at ?? undefined,
+      buyerPlusUntil: profile.buyer_plus_until ?? undefined,
+      proDirectoryUntil: profile.pro_directory_until ?? undefined,
+      proAccountUntil: profile.pro_account_until ?? undefined,
+      proCategory: profile.pro_category ?? undefined,
       isAdmin: profile.is_admin ?? false,
       createdAt: Timestamp.fromDate(new Date(profile.created_at)),
       lastActive: Timestamp.fromDate(new Date(profile.updated_at)),

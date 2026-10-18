@@ -66,6 +66,10 @@ export interface MaListingData {
   summary: string;
   description: string;
   highlights: string[];
+  // Offres « reprise » : annonce en vedette, dossier vérifié, publiée depuis moins de 48 h (accès anticipé).
+  featured?: boolean;
+  verified?: boolean;
+  isNew?: boolean;
 }
 
 export const MARKETPLACE_PROFILES: MarketplaceProfile[] = [
