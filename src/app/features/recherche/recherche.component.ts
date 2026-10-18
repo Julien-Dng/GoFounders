@@ -17,7 +17,7 @@ import { Subscription } from 'rxjs';
 import { MarketplaceProfile } from '../../core/data/mock-platform.data';
 import { ProfileType } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
-import { MatchingService } from '../../core/services/matching.service';
+import { MatchingService, searchTargetFor } from '../../core/services/matching.service';
 
 type SearchProfileType = ProfileType;
 
@@ -322,9 +322,7 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly allProfiles = signal<MarketplaceProfile[]>([]);
 
   readonly viewerType = computed<ProfileType>(() => this.auth.currentUser()?.profileType ?? 'entrepreneur');
-  readonly visibleProfileType = computed<SearchProfileType>(() =>
-    this.viewerType() === 'entrepreneur' ? 'talent' : 'entrepreneur'
-  );
+  readonly visibleProfileType = computed<SearchProfileType>(() => searchTargetFor(this.viewerType()));
 
   readonly filteredProfiles = computed<MarketplaceProfile[]>(() => {
     const targetType = this.visibleProfileType();
@@ -352,19 +350,24 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly audiencePanelTitle = computed(() =>
     this.visibleProfileType() === 'talent' ? 'Vous voyez uniquement les talents' : 'Vous voyez uniquement les projets'
   );
-  readonly audiencePanelDescription = computed(() =>
-    this.visibleProfileType() === 'talent'
-      ? "En tant qu'entrepreneur, la recherche affiche seulement des talents afin de garder un matching clair."
-      : this.viewerType() === 'talent'
-        ? 'En tant que talent, la recherche affiche seulement les projets publiés par des entrepreneurs.'
-        : 'Votre compte M&A garde accès aux projets côté marketplace talents ; les opportunités de reprise restent dans la verticale M&A.'
-  );
+  readonly audiencePanelDescription = computed(() => {
+    switch (this.viewerType()) {
+      case 'talent':
+        return 'En tant que talent, la recherche affiche les projets publiés par des porteurs de projet.';
+      case 'buyer':
+        return "En tant que repreneur, la recherche affiche les talents qui peuvent vous aider à faire tourner l'entreprise que vous reprenez.";
+      case 'seller':
+        return "En tant que cédant, la recherche affiche les talents, par exemple un associé qui reprendrait progressivement l'activité.";
+      default:
+        return "En tant qu'entrepreneur, la recherche affiche les talents qui peuvent rejoindre votre projet.";
+    }
+  });
   readonly searchResultLabel = computed(() =>
     this.visibleProfileType() === 'talent' ? 'talents disponibles' : 'projets disponibles'
   );
   readonly highlightedBannerTitle = computed(() =>
     this.visibleProfileType() === 'talent'
-      ? 'Les talents les plus alignés avec votre projet'
+      ? 'Les talents les plus alignés avec votre recherche'
       : 'Les projets les plus alignés avec votre profil'
   );
   readonly hasActiveFilters = computed(() =>

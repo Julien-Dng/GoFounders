@@ -7,6 +7,12 @@ import { ProfileType } from '../models/user.model';
 import { AuthService } from './auth.service';
 import { SupabaseService } from './supabase.service';
 
+// "Trouver un associé" : tous ceux qui cherchent quelqu'un pour les rejoindre (porteur de projet,
+// repreneur, cédant) voient les talents ; les talents voient les projets.
+export function searchTargetFor(viewerType: ProfileType): 'talent' | 'entrepreneur' {
+  return viewerType === 'talent' ? 'entrepreneur' : 'talent';
+}
+
 @Injectable({ providedIn: 'root' })
 export class MatchingService {
   private readonly supabase = inject(SupabaseService);
@@ -38,7 +44,7 @@ export class MatchingService {
       const profileRows = (profilesResult.data ?? []) as SupabaseProfileRow[];
       const projectRows = (projectsResult.data ?? []) as SupabaseProjectRow[];
 
-      if (viewerType === 'entrepreneur') {
+      if (searchTargetFor(viewerType) === 'talent') {
         const profiles = profileRows
           .filter(profile => profile.role === 'talent')
           .map(profile => this.mapProfileRowToMarketplaceProfile(profile));

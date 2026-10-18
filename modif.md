@@ -857,3 +857,8 @@ npm install @stripe/stripe-js
 
 - Retour de la recherche de talents et de projets dans les menus (navbar, menu latéral, footer, carte « Associés » de la landing) sous le libellé **« Trouver un associé »** → `/recherche`
 - Navbar : les liens s'affichent à partir de 1024 px (menu hamburger en dessous) pour ne plus couper le logo
+
+### Ajout du 18 octobre 2026
+
+- « Trouver un associé » (`/recherche`) : les repreneurs et les cédants voient désormais les **talents** (avant : les projets). Les porteurs de projet voient toujours les talents, les talents voient toujours les projets
+- La règle est centralisée dans `searchTargetFor()` (`matching.service.ts`), utilisée par le service et par la page
