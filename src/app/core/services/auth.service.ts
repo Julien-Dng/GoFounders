@@ -1007,6 +1007,7 @@ export class AuthService {
       availabilityLabel: profile.availability_label ?? undefined,
       maSector: profile.ma_sector ?? undefined,
       maBudget: profile.ma_budget ?? undefined,
+      profileVerifiedAt: profile.verified_at ?? undefined,
       maRegion: profile.ma_region ?? undefined,
       githubUrl: profile.github_url ?? undefined,
       linkedinUrl: profile.linkedin_url ?? undefined,

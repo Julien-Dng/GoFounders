@@ -30,6 +30,10 @@ export interface MarketplaceProfile {
   ownerName?: string;
   // Mode démo uniquement : contenu de la partie confidentielle, révélé après acceptation de la demande.
   confidentialDetails?: string;
+  // Projets uniquement : porteur en PRO ou PREMIUM, projet affiché en tête de la recherche des associés.
+  featured?: boolean;
+  // Profil (ou porteur du projet) vérifié par l'équipe GoFounders.
+  verified?: boolean;
 }
 
 export interface ConversationMessage {
@@ -100,6 +104,7 @@ export const MARKETPLACE_PROFILES: MarketplaceProfile[] = [
   {
     id: 'talent-thomas-dupont',
     profileType: 'talent',
+    verified: true,
     displayName: 'Thomas Dupont',
     title: 'Développeur full-stack',
     location: 'Lyon',
@@ -268,6 +273,7 @@ export const MARKETPLACE_PROFILES: MarketplaceProfile[] = [
   {
     id: 'projet-healthpilot',
     profileType: 'entrepreneur',
+    verified: true,
     displayName: 'HealthPilot',
     openToEquity: true,
     hasConfidential: true,
@@ -301,6 +307,7 @@ export const MARKETPLACE_PROFILES: MarketplaceProfile[] = [
   {
     id: 'projet-greenbox',
     profileType: 'entrepreneur',
+    featured: true,
     displayName: 'GreenBox',
     title: 'Fondateur · Thomas Leroy',
     location: 'Lyon',

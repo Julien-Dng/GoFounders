@@ -61,7 +61,7 @@ export interface Database {
 // Colonnes de profiles lisibles depuis l'appli : toutes sauf l'email (2026-10-12-profils-par-role.sql).
 // Un select('*') sur profiles est refusé par Supabase.
 export const PROFILE_COLUMNS =
-  'id, display_name, role, plan, ma_access, ma_access_expires_at, is_admin, location, title, bio, photo_url, github_url, linkedin_url, website_url, skills, looking_for, availability_label, ma_sector, ma_budget, ma_region, created_at, updated_at';
+  'id, display_name, role, plan, ma_access, ma_access_expires_at, is_admin, location, title, bio, photo_url, github_url, linkedin_url, website_url, skills, looking_for, availability_label, ma_sector, ma_budget, ma_region, verified_at, created_at, updated_at';
 
 export interface SupabaseProfileRow {
   id: string;
@@ -86,6 +86,8 @@ export interface SupabaseProfileRow {
   ma_sector: string | null;
   ma_budget: string | null;
   ma_region: string | null;
+  // Badge « Profil vérifié », posé par un admin (2026-10-21-moderation-verification-stats.sql).
+  verified_at?: string | null;
   created_at: string;
   updated_at: string;
 }

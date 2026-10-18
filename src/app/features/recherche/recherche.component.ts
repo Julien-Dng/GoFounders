@@ -15,7 +15,7 @@ import {
 import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { MarketplaceProfile } from '../../core/data/mock-platform.data';
-import { ProfileType, MATCH_REASONS_UPSELL, canSeeMatchReasons } from '../../core/models/user.model';
+import { ProfileType, MATCH_REASONS_UPSELL, canSeeMatchReasons, canUseAdvancedSearch } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { MatchingService } from '../../core/services/matching.service';
 
@@ -116,6 +116,68 @@ type SearchProfileType = ProfileType;
                     </p>
                   </div>
                 }
+
+                <div class="border-t border-border pt-6">
+                  <div class="mb-3 flex items-center justify-between gap-2">
+                    <h3 class="text-sm font-bold">Recherche avancée</h3>
+                    <span class="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">PRO</span>
+                  </div>
+
+                  @if (canUseAdvanced()) {
+                    <div class="space-y-5">
+                      <div>
+                        <label class="mb-2 block text-xs font-semibold text-foreground/80" for="search-keywords">Mots-clés</label>
+                        <input
+                          id="search-keywords"
+                          type="search"
+                          [value]="keywords()"
+                          (input)="onKeywordsInput($event)"
+                          placeholder="Ex. SaaS, fintech, growth"
+                          class="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm outline-none focus:border-accent"
+                        >
+                      </div>
+
+                      @if (skillOptions().length > 0) {
+                        <div>
+                          <span class="mb-2 block text-xs font-semibold text-foreground/80" id="search-skills-label">{{ skillsFilterLabel() }}</span>
+                          <div class="flex flex-wrap gap-2" role="group" aria-labelledby="search-skills-label">
+                            @for (skill of skillOptions(); track skill) {
+                              <button
+                                type="button"
+                                (click)="toggleSkill(skill)"
+                                [attr.aria-pressed]="selectedSkills().includes(skill)"
+                                class="rounded-lg px-2.5 py-1 text-xs font-semibold transition-all"
+                                [ngClass]="selectedSkills().includes(skill) ? 'bg-accent text-white shadow-md' : 'border border-border bg-white hover:border-accent'"
+                              >{{ skill }}</button>
+                            }
+                          </div>
+                        </div>
+                      }
+
+                      <div>
+                        <label class="mb-2 flex items-center justify-between text-xs font-semibold text-foreground/80" for="search-min-score">
+                          <span>Compatibilité minimale</span>
+                          <span class="text-accent">{{ minScore() === 0 ? 'Toutes' : minScore() + ' %' }}</span>
+                        </label>
+                        <input
+                          id="search-min-score"
+                          type="range"
+                          min="0"
+                          max="90"
+                          step="10"
+                          [value]="minScore()"
+                          (input)="onMinScoreInput($event)"
+                          class="w-full accent-[#2563EB]"
+                        >
+                      </div>
+                    </div>
+                  } @else {
+                    <p class="text-xs leading-relaxed text-muted-foreground">
+                      Mots-clés, compétences précises et compatibilité minimale pour aller droit aux profils qui comptent.
+                    </p>
+                    <a routerLink="/tarifs" class="mt-3 inline-block text-sm font-semibold text-accent hover:underline">Passer en PRO</a>
+                  }
+                </div>
               </div>
             </div>
           </aside>
@@ -126,7 +188,7 @@ type SearchProfileType = ProfileType;
                 <span class="font-bold text-primary">{{ filteredProfiles().length }}</span>
                 <span class="text-muted-foreground"> {{ searchResultLabel() }}</span>
               </div>
-              <span class="text-sm font-medium text-muted-foreground">Triés par compatibilité</span>
+              <span class="text-sm font-medium text-muted-foreground">{{ sortLabel() }}</span>
             </div>
 
             <div
@@ -209,7 +271,8 @@ type SearchProfileType = ProfileType;
               @for (profile of filteredProfiles(); track profile.id; let profileIndex = $index) {
                 <div
                   #searchCard
-                  class="search-card-reveal flex min-h-[21.5rem] flex-col rounded-2xl border-2 border-border bg-white p-6 shadow-sm transition-all hover:shadow-lg"
+                  class="search-card-reveal flex min-h-[21.5rem] flex-col rounded-2xl border-2 bg-white p-6 shadow-sm transition-all hover:shadow-lg"
+                  [ngClass]="profile.featured ? 'border-accent/50' : 'border-border'"
                   [style.--reveal-delay]="revealDelay(profileIndex)"
                 >
                   <div class="mb-4 flex items-start justify-between">
@@ -221,9 +284,20 @@ type SearchProfileType = ProfileType;
                         }
                       </div>
                       <div>
-                        <h3 class="text-lg font-bold">{{ profile.displayName }}</h3>
+                        <h3 class="flex items-center gap-1.5 text-lg font-bold">
+                          {{ profile.displayName }}
+                          @if (profile.verified) {
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="#2563EB" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Profil vérifié">
+                              <title>{{ profile.profileType === 'entrepreneur' ? 'Porteur de projet vérifié par GoFounders' : 'Profil vérifié par GoFounders' }}</title>
+                              <circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/>
+                            </svg>
+                          }
+                        </h3>
                         <div class="mt-1 flex flex-wrap items-center gap-2">
                           <span class="rounded-full bg-accent px-2.5 py-0.5 text-xs font-semibold text-white">{{ cardBadgeLabel() }}</span>
+                          @if (profile.featured) {
+                            <span class="whitespace-nowrap rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-semibold text-white" title="Projet d'un porteur PRO, affiché en priorité">Mis en avant</span>
+                          }
                           @if (profile.ndaRequired) {
                             <span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-white" title="Détails partagés après engagement de confidentialité">
                               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -312,6 +386,10 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly selectedLocation = signal('');
   readonly isAvailableNow = signal(false);
   readonly openToEquityOnly = signal(false);
+  readonly keywords = signal('');
+  readonly selectedSkills = signal<string[]>([]);
+  readonly minScore = signal(0);
+  readonly canUseAdvanced = computed(() => canUseAdvancedSearch(this.auth.plan()));
 
   readonly sectors = ['Tous', 'Tech', 'Santé', 'Commerce', 'Finance', 'Industrie', 'Éducation', 'Marketing'];
   readonly projectStages = ['Idée', 'MVP', 'En croissance', 'Établi'];
@@ -329,6 +407,10 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
     const location = this.selectedLocation().trim().toLowerCase();
     const availableNowOnly = this.isAvailableNow();
     const equityOnly = this.openToEquityOnly() && targetType === 'entrepreneur';
+    const advanced = this.canUseAdvanced();
+    const keywords = advanced ? this.normalize(this.keywords()).split(/\s+/).filter(Boolean) : [];
+    const skills = advanced ? this.selectedSkills().map(skill => this.normalize(skill)) : [];
+    const minScore = advanced ? this.minScore() : 0;
 
     return this.allProfiles().filter(profile => {
       const matchesRole = profile.profileType === targetType;
@@ -337,12 +419,43 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
       const matchesLocation = location.length === 0 || profile.location.toLowerCase().includes(location);
       const matchesAvailability = !availableNowOnly || profile.availableNow;
       const matchesEquity = !equityOnly || profile.openToEquity === true;
+      const profileSkills = profile.skills.map(skill => this.normalize(skill));
+      const haystack = this.normalize([profile.displayName, profile.title, profile.bio, profile.sector, ...profile.skills, ...profile.lookingFor].join(' '));
+      const matchesKeywords = keywords.every(keyword => haystack.includes(keyword));
+      const matchesSkills = skills.every(skill => profileSkills.includes(skill));
+      const matchesScore = profile.match >= minScore;
 
-      return matchesRole && matchesSector && matchesStage && matchesLocation && matchesAvailability && matchesEquity;
+      return matchesRole && matchesSector && matchesStage && matchesLocation && matchesAvailability && matchesEquity
+        && matchesKeywords && matchesSkills && matchesScore;
     });
   });
 
   readonly highlightedProfiles = computed(() => this.filteredProfiles().slice(0, 3));
+  // Compétences les plus fréquentes parmi les profils affichables, proposées en filtre (recherche avancée).
+  readonly skillOptions = computed(() => {
+    const counts = new Map<string, number>();
+
+    for (const profile of this.allProfiles()) {
+      if (profile.profileType !== this.visibleProfileType()) {
+        continue;
+      }
+
+      for (const skill of profile.skills) {
+        counts.set(skill, (counts.get(skill) ?? 0) + 1);
+      }
+    }
+
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'fr'))
+      .slice(0, 12)
+      .map(([skill]) => skill);
+  });
+  readonly skillsFilterLabel = computed(() =>
+    this.visibleProfileType() === 'talent' ? 'Compétences (toutes requises)' : 'Compétences recherchées (toutes requises)'
+  );
+  readonly sortLabel = computed(() =>
+    this.visibleProfileType() === 'entrepreneur' ? 'Projets mis en avant, puis par compatibilité' : 'Triés par compatibilité'
+  );
   readonly audiencePanelTitle = computed(() =>
     this.visibleProfileType() === 'talent' ? 'Vous voyez uniquement les associés' : 'Vous voyez uniquement les projets'
   );
@@ -365,6 +478,7 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
     || this.selectedLocation().trim().length > 0
     || this.isAvailableNow()
     || this.openToEquityOnly()
+    || (this.canUseAdvanced() && (this.keywords().trim().length > 0 || this.selectedSkills().length > 0 || this.minScore() > 0))
   );
   readonly emptyBannerDescription = computed(() => {
     if (this.hasActiveFilters()) {
@@ -392,6 +506,22 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectedLocation.set(input?.value ?? '');
   }
 
+  onKeywordsInput(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    this.keywords.set(input?.value ?? '');
+  }
+
+  onMinScoreInput(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    this.minScore.set(Number(input?.value ?? 0));
+  }
+
+  toggleSkill(skill: string): void {
+    this.selectedSkills.update(skills =>
+      skills.includes(skill) ? skills.filter(activeSkill => activeSkill !== skill) : [...skills, skill]
+    );
+  }
+
   toggleStage(stage: string): void {
     this.selectedStage.update(stages =>
       stages.includes(stage) ? stages.filter(activeStage => activeStage !== stage) : [...stages, stage]
@@ -404,6 +534,9 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectedLocation.set('');
     this.isAvailableNow.set(false);
     this.openToEquityOnly.set(false);
+    this.keywords.set('');
+    this.selectedSkills.set([]);
+    this.minScore.set(0);
   }
 
   revealDelay(index: number): string {
@@ -476,6 +609,10 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
     return typeof window === 'undefined'
       || typeof IntersectionObserver === 'undefined'
       || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  private normalize(value: string): string {
+    return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   }
 
   private async loadProfiles(): Promise<void> {

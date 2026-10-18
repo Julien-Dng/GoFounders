@@ -429,9 +429,18 @@ export class DashboardComponent {
     { id: 'profil', label: 'Mon profil', icon: 'user', path: this.ownProfilePath(), badge: null },
     { id: 'messages', label: 'Messages', icon: 'messages', path: '/messages', badge: this.messageUnreadCount() || null },
     { id: 'ma', label: 'M&A', icon: 'ma', path: '/ma', badge: null },
+    ...(this.profileType() === 'seller'
+      ? [{ id: 'statistiques', label: 'Mes statistiques', icon: 'ma' as const, path: '/ma/statistiques', badge: null }]
+      : []),
     { id: 'assistant', label: 'Assistant IA', icon: 'sparkles', path: '/coaching-ia', badge: null },
     { id: 'abonnement', label: 'Abonnement', icon: 'credit-card', path: '/tarifs', badge: null },
     { id: 'parametres', label: 'Paramètres', icon: 'settings', path: '/parametres', badge: null },
+    ...(this.auth.isAdmin()
+      ? [
+          { id: 'admin-annonces', label: 'Modération des annonces', icon: 'settings' as const, path: '/admin/annonces', badge: null },
+          { id: 'admin-profils', label: 'Profils à vérifier', icon: 'settings' as const, path: '/admin/profils', badge: null },
+        ]
+      : []),
   ]);
 
   readonly matches = signal<MarketplaceProfile[]>([]);
@@ -479,7 +488,7 @@ export class DashboardComponent {
       ? { label: 'Analyser mes matches', icon: 'target', path: '/recherche' }
       : { label: 'Explorer le M&A', icon: 'target', path: '/ma' },
     { label: 'Améliorer mon profil', icon: 'user', path: '/profil/modifier' },
-    { label: 'Comprendre mes statistiques', icon: 'chart', path: '/dashboard' },
+    { label: 'Comprendre mes statistiques', icon: 'chart', path: this.profileType() === 'seller' ? '/ma/statistiques' : '/dashboard' },
   ]);
 
   constructor() {

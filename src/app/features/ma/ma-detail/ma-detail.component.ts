@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { MaListingData } from '../../../core/data/mock-platform.data';
 import { MaService } from '../../../core/services/ma.service';
+import { StatsService } from '../../../core/services/stats.service';
 
 @Component({
   selector: 'app-ma-detail',
@@ -102,6 +103,7 @@ import { MaService } from '../../../core/services/ma.service';
 export class MaDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly maService = inject(MaService);
+  private readonly stats = inject(StatsService);
   private readonly loadedListing = signal<MaListingData | undefined>(undefined);
 
   private readonly listingId = toSignal(
@@ -118,5 +120,11 @@ export class MaDetailComponent implements OnInit {
   private async loadListing(): Promise<void> {
     const listing = await this.maService.getListingDetail(this.listingId());
     this.loadedListing.set(listing);
+
+    // Page protégée par l'accès repreneur : chaque ouverture est aussi une consultation du dossier.
+    if (listing) {
+      void this.stats.recordListingView(this.listingId(), 'page');
+      void this.stats.recordListingView(this.listingId(), 'dossier');
+    }
   }
 }

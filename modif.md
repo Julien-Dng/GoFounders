@@ -874,3 +874,17 @@ npm install @stripe/stripe-js
 - Build Angular OK
 - Migration testée sur un Postgres 16 local reproduisant les règles de V6 : 22 scénarios (lecture directe refusée, concurrent sans accès, NDA obligatoire, auto-approbation impossible, preuve et notifications, retrait d'accès, preuve conservée après suppression de compte)
 - Parcours testés en mode démo local : associé (badge, carte, NDA, demande) et porteur (champs, demandes, acceptation, téléchargement de la preuve)
+
+## Session du 21 octobre 2026 - Fonctions « Bientôt », modération, profils vérifiés, statistiques (V6)
+
+- `/tarifs` : plus aucune mention « Bientôt ».
+  - Recherche avancée PRO/PREMIUM sur `/recherche` : mots-clés, compétences (toutes requises), compatibilité minimale ; encart « Passer en PRO » en FREE.
+  - Projets mis en avant : les projets des porteurs PRO/PREMIUM passent en tête de la recherche des associés avec le badge « Mis en avant ».
+- Correction : stades « Idée » et « Établi » sans accent dans les données Supabase, le filtre Stade ne les trouvait pas.
+- Migration `2026-10-21-moderation-verification-stats.sql` (testée sur un Postgres local) :
+  - modération des annonces (relue, retirée avec motif, remise en ligne) et notification des admins à chaque nouvelle annonce ;
+  - vérification manuelle des profils et badge `verified_at` ;
+  - statistiques de vues des annonces et des contacts reçus.
+- Nouvelles pages : `/admin/annonces`, `/admin/profils`, `/ma/statistiques` ; demande de vérification sur `/profil/modifier`.
+- Badge « Profil vérifié » réel dans la recherche et sur le profil (avant : affiché pour tout le monde, comme « Répond sous 24h », retiré).
+- Correction : la page profil se recharge quand on passe d'un profil à un autre.

@@ -35,6 +35,16 @@ export function canSeeMatchReasons(plan: Plan | undefined): boolean {
   return plan === 'PRO' || plan === 'PREMIUM';
 }
 
+// Recherche avancée (mots-clés, compétences, score minimum) : PRO et PREMIUM.
+export function canUseAdvancedSearch(plan: Plan | undefined): boolean {
+  return plan === 'PRO' || plan === 'PREMIUM';
+}
+
+// Projets mis en avant dans la recherche des associés : porteur de projet en PRO ou PREMIUM.
+export function isFeaturedProjectPlan(plan: Plan | undefined | null): boolean {
+  return plan === 'PRO' || plan === 'PREMIUM';
+}
+
 export interface User {
   uid: string;
   email: string;
@@ -50,6 +60,8 @@ export interface User {
   // Infos M&A des acheteurs (cible recherchée) et vendeurs (entreprise cédée).
   maSector?: string;
   maBudget?: string;
+  // Date de vérification du profil par l'équipe (badge « Profil vérifié »).
+  profileVerifiedAt?: string;
   maRegion?: string;
   githubUrl?: string;
   linkedinUrl?: string;

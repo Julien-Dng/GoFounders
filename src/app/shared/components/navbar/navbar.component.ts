@@ -8,7 +8,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { UserMenuComponent } from '../user-menu/user-menu.component';
 import { NotificationMenuComponent } from '../notification-menu/notification-menu.component';
 
-type DrawerIcon = 'home' | 'search' | 'messages' | 'chart' | 'sparkles' | 'credit-card' | 'settings';
+type DrawerIcon = 'home' | 'search' | 'messages' | 'chart' | 'sparkles' | 'credit-card' | 'settings' | 'bars' | 'shield';
 
 @Component({
   selector: 'app-navbar',
@@ -165,6 +165,20 @@ type DrawerIcon = 'home' | 'search' | 'messages' | 'chart' | 'sparkles' | 'credi
                       <path d="M17 19h4"/>
                     </svg>
                   }
+                  @case ('bars') {
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 20V10"/>
+                      <path d="M10 20V4"/>
+                      <path d="M16 20v-7"/>
+                      <path d="M22 20H2"/>
+                    </svg>
+                  }
+                  @case ('shield') {
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                      <path d="m9 12 2 2 4-4"/>
+                    </svg>
+                  }
                   @case ('credit-card') {
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
                       <rect x="2" y="5" width="20" height="14" rx="2"/>
@@ -270,14 +284,34 @@ export class NavbarComponent {
     { id: 'recherche',  label: 'Recherche',    icon: 'search', path: '/recherche',   badge: null, exact: true  },
     { id: 'messages',   label: 'Messages',     icon: 'messages', path: '/messages',    badge: null, exact: false },
     { id: 'ma',         label: 'M&A',          icon: 'chart', path: '/ma',          badge: null, exact: true  },
+    { id: 'statistiques', label: 'Mes statistiques', icon: 'bars', path: '/ma/statistiques', badge: null, exact: true },
     { id: 'assistant',  label: 'Assistant IA', icon: 'sparkles', path: '/coaching-ia', badge: null, exact: true  },
     { id: 'abonnement', label: 'Abonnement',   icon: 'credit-card', path: '/tarifs',      badge: null, exact: true  },
     { id: 'parametres', label: 'Paramètres',   icon: 'settings', path: '/parametres',  badge: null, exact: true  },
+    { id: 'admin-annonces', label: 'Modération des annonces', icon: 'shield', path: '/admin/annonces', badge: null, exact: true },
+    { id: 'admin-profils', label: 'Profils à vérifier', icon: 'shield', path: '/admin/profils', badge: null, exact: true },
   ];
 
-  readonly navItems = computed(() =>
-    this.hidesRecherche() ? this.allNavItems.filter(item => item.id !== 'recherche') : this.allNavItems
-  );
+  readonly navItems = computed(() => {
+    const isSeller = this.auth.currentUser()?.profileType === 'seller';
+    const isAdmin = this.auth.isAdmin();
+
+    return this.allNavItems.filter(item => {
+      if (item.id === 'recherche') {
+        return !this.hidesRecherche();
+      }
+
+      if (item.id === 'statistiques') {
+        return isSeller;
+      }
+
+      if (item.id.startsWith('admin-')) {
+        return isAdmin;
+      }
+
+      return true;
+    });
+  });
 
   private readonly currentUrl = toSignal(
     this.router.events.pipe(

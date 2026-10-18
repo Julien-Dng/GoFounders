@@ -1,6 +1,6 @@
 import { NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { MarketplaceProfile } from '../../core/data/mock-platform.data';
@@ -55,12 +55,14 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                         </div>
                       }
                     </div>
-                    <div class="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-full bg-accent shadow-lg">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="#2563EB" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                        <polyline points="22 4 12 14.01 9 11.01"/>
-                      </svg>
-                    </div>
+                    @if (isVerified()) {
+                      <div class="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-full bg-accent shadow-lg" title="Profil vérifié par GoFounders">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="#2563EB" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Profil vérifié">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                          <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                      </div>
+                    }
                   </div>
 
                   <div class="flex-1 pt-2">
@@ -497,6 +499,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
 })
 export class ProfilComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly auth = inject(AuthService);
   private readonly matchingService = inject(MatchingService);
   private readonly projectService = inject(ProjectService);
@@ -649,11 +652,17 @@ export class ProfilComponent implements OnInit {
           `${this.publicProfile()?.skills.slice(0, 2).join(' et ') || 'Compétences à préciser'} comme premiers points forts`,
         ]
   );
-  readonly trustSignals = computed(() =>
-    this.isOwnProfile()
-      ? ['Profil connecté', 'Actif récemment', `Plan ${this.currentUser()?.plan ?? 'FREE'}`]
-      : ['Profil vérifié', 'Actif récemment', 'Répond sous 24h']
+  // Badge réel : profil vérifié par un admin (pour un projet, celui de son porteur).
+  readonly isVerified = computed(() =>
+    this.isOwnProfile() ? Boolean(this.currentUser()?.profileVerifiedAt) : this.publicProfile()?.verified === true
   );
+  readonly trustSignals = computed(() => {
+    const verified = this.isVerified() ? ['Profil vérifié'] : [];
+
+    return this.isOwnProfile()
+      ? [...verified, 'Profil connecté', `Plan ${this.currentUser()?.plan ?? 'FREE'}`]
+      : [...verified, 'Actif récemment'];
+  });
   readonly matchReasons = computed(() => {
     const profile = this.publicProfile();
     const firstNeed = profile?.lookingFor?.[0];
@@ -705,7 +714,11 @@ export class ProfilComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    void this.loadProfile();
+    // Rechargé à chaque changement d'id : le composant est réutilisé d'un profil à l'autre.
+    this.route.params.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.loadedPublicProfile.set(undefined);
+      void this.loadProfile();
+    });
   }
 
   toggleBookmark(): void {
