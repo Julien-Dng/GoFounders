@@ -940,3 +940,25 @@ npm install @stripe/stripe-js
 - Inscription : carte « Je suis un professionnel » avec métier et cabinet.
 - Back Python : 3 analyses IA par mois sans Plus (erreur 402).
 - Paiements toujours simulés : supprimer `simulate_purchase` et `simulate_listing_purchase` avant la mise en production.
+
+## Session du 21 octobre 2026 - Fonctions « Bientôt », modération, profils vérifiés, statistiques (V6)
+
+- `/tarifs` : plus aucune mention « Bientôt ».
+  - Recherche avancée PRO/PREMIUM sur `/recherche` : mots-clés, compétences (toutes requises), compatibilité minimale ; encart « Passer en PRO » en FREE.
+  - Projets mis en avant : les projets des porteurs PRO/PREMIUM passent en tête de la recherche des associés avec le badge « Mis en avant ».
+- Correction : stades « Idée » et « Établi » sans accent dans les données Supabase, le filtre Stade ne les trouvait pas.
+- Migration `2026-10-21-moderation-verification-stats.sql` (testée sur un Postgres local) :
+  - modération des annonces (relue, retirée avec motif, remise en ligne) et notification des admins à chaque nouvelle annonce ;
+  - vérification manuelle des profils et badge `verified_at` ;
+  - statistiques de vues des annonces et des contacts reçus.
+- Nouvelles pages : `/admin/annonces`, `/admin/profils`, `/ma/statistiques` ; demande de vérification sur `/profil/modifier`.
+- Badge « Profil vérifié » réel dans la recherche et sur le profil (avant : affiché pour tout le monde, comme « Répond sous 24h », retiré).
+- Correction : la page profil se recharge quand on passe d'un profil à un autre.
+
+## Session du 22 octobre 2026 - Rattrapage V6 (modération, profils vérifiés, statistiques) dans `refonte-reprise`
+
+- Fusion de V6 : recherche avancée, projets mis en avant, modération, profils vérifiés, statistiques vendeur.
+- Migration `2026-10-22-reprise-moderation-stats-pros.sql` (testée sur un Postgres local) :
+  - le dossier complet respecte à la fois l'annonce active (modération) et l'accès anticipé de 48 h ;
+  - statistiques des pros : vues de la fiche, clics vers le site depuis l'annuaire.
+- `/ma/statistiques` ouverte aux pros ; lien « Voir la fiche » dans l'annuaire ; menu admin : annonces, profils, dossiers.

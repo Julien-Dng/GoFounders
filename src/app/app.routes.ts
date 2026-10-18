@@ -105,6 +105,22 @@ export const routes: Routes = [
         loadComponent: () => import('./features/admin/verifications.component').then(m => m.VerificationsComponent)
       },
       {
+        path: 'ma/statistiques',
+        canActivate: [authGuard, roleGuard],
+        data: { allowedRoles: ['seller', 'pro'] },
+        loadComponent: () => import('./features/ma/ma-statistiques/ma-statistiques.component').then(m => m.MaStatistiquesComponent)
+      },
+      {
+        path: 'admin/annonces',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/admin/admin-annonces.component').then(m => m.AdminAnnoncesComponent)
+      },
+      {
+        path: 'admin/profils',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/admin/admin-profils.component').then(m => m.AdminProfilsComponent)
+      },
+      {
         path: 'ma/annonce/:id',
         canActivate: [authGuard, maAccessGuard],
         loadComponent: () => import('./features/ma/ma-detail/ma-detail.component').then(m => m.MaDetailComponent)

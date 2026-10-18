@@ -80,8 +80,17 @@ Pas de commission sur les ventes (une commission sur une cession de fonds de com
 - Un pro peut écrire à un acheteur seulement avec un compte pro actif ; il n'y a pas de liste des acheteurs (confidentialité).
 - Le quota d'analyses IA est vérifié par le back Python (`consume_ai_analysis`, erreur 402 au-delà de 3 par mois sans Plus).
 
+### Modération, vérification et statistiques (venues de `V6`, adaptées)
+
+- `/admin/annonces` : relire, retirer (motif envoyé au vendeur) ou remettre en ligne une annonce. `/admin/profils` : badge « Profil vérifié ». `/admin/verifications` : badge « Dossier vérifié » des annonces.
+- `/ma/statistiques` (vendeurs et pros) : vues des annonces, dossiers consultés, contacts reçus ; pour un pro, vues de sa fiche et clics vers son site depuis `/pros`.
+
 ### Mise en route (à faire une fois)
-1. **Migrations** : après celles de `V6`, exécuter `supabase/2026-10-20a-role-pro.sql` **seule** (ajout d'une valeur d'enum, à valider avant usage), puis `supabase/2026-10-20b-offres-reprise.sql`.
+1. **Migrations**, dans cet ordre, après celles de `V6` jusqu'au 19 octobre :
+   1. `supabase/2026-10-20a-role-pro.sql` **seule** (ajout d'une valeur d'enum, à valider avant usage) ;
+   2. `supabase/2026-10-20b-offres-reprise.sql` ;
+   3. `supabase/2026-10-21-moderation-verification-stats.sql` (venue de `V6`) ;
+   4. `supabase/2026-10-22-reprise-moderation-stats-pros.sql`, qui remet l'accès anticipé de 48 h dans le dossier complet et ajoute les statistiques des pros.
 2. **Paiement** : comme sur `V6`, les achats passent par `PaymentService` (mode simulation tant que Stripe n'est pas branché). ⚠️ Supprimer `simulate_purchase` et `simulate_listing_purchase` avant toute mise en ligne avec de vrais utilisateurs.
 3. **Vérifications** : un admin traite les demandes « Dossier vérifié » sur `/admin/verifications` (objectif : 3 jours ouvrés).
 4. **Modérer les annonces** : la publication est gratuite et immédiate. Il faut relire chaque nouvelle annonce et supprimer celles qui ne sont pas sérieuses.

@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { PRO_CATEGORY_LABELS, ProCategory } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { MaService, ProDirectoryEntry } from '../../core/services/ma.service';
+import { StatsService } from '../../core/services/stats.service';
 
 // Annuaire public des professionnels de la transmission (refonte « reprise »).
 @Component({
@@ -66,8 +67,11 @@ import { MaService, ProDirectoryEntry } from '../../core/services/ma.service';
                   } @else {
                     <a routerLink="/connexion" [queryParams]="{ returnUrl: '/pros' }" class="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent/90">Se connecter pour écrire</a>
                   }
+                  @if (isAuthenticated()) {
+                    <a [routerLink]="['/profil', entry.id]" class="rounded-lg border border-border px-4 py-2 text-sm font-semibold transition-colors hover:border-accent">Voir la fiche</a>
+                  }
                   @if (entry.website_url) {
-                    <a [href]="entry.website_url" target="_blank" rel="noopener noreferrer" class="rounded-lg border border-border px-4 py-2 text-sm font-semibold transition-colors hover:border-accent">Site web</a>
+                    <a [href]="entry.website_url" (click)="trackWebsite(entry.id)" target="_blank" rel="noopener noreferrer" class="rounded-lg border border-border px-4 py-2 text-sm font-semibold transition-colors hover:border-accent">Site web</a>
                   }
                 </div>
               </article>
@@ -90,6 +94,7 @@ import { MaService, ProDirectoryEntry } from '../../core/services/ma.service';
 export class ProsComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly maService = inject(MaService);
+  private readonly stats = inject(StatsService);
 
   readonly categories = (Object.keys(PRO_CATEGORY_LABELS) as ProCategory[]).map(value => ({ value, label: PRO_CATEGORY_LABELS[value] }));
   readonly category = signal<ProCategory | null>(null);
@@ -113,6 +118,10 @@ export class ProsComponent implements OnInit {
 
   categoryLabel(category: ProCategory): string {
     return PRO_CATEGORY_LABELS[category];
+  }
+
+  trackWebsite(proId: string): void {
+    void this.stats.recordProEvent(proId, 'website');
   }
 
   initials(name: string): string {

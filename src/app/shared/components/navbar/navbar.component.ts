@@ -8,7 +8,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { UserMenuComponent } from '../user-menu/user-menu.component';
 import { NotificationMenuComponent } from '../notification-menu/notification-menu.component';
 
-type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles' | 'credit-card' | 'settings';
+type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles' | 'credit-card' | 'settings' | 'bars' | 'shield';
 
 @Component({
   selector: 'app-navbar',
@@ -173,6 +173,20 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
                       <path d="M17 19h4"/>
                     </svg>
                   }
+                  @case ('bars') {
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 20V10"/>
+                      <path d="M10 20V4"/>
+                      <path d="M16 20v-7"/>
+                      <path d="M22 20H2"/>
+                    </svg>
+                  }
+                  @case ('shield') {
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                      <path d="m9 12 2 2 4-4"/>
+                    </svg>
+                  }
                   @case ('credit-card') {
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
                       <rect x="2" y="5" width="20" height="14" rx="2"/>
@@ -294,19 +308,22 @@ export class NavbarComponent {
     { id: 'vendre',     label: 'Vendre',       icon: 'chart', path: '/ma/deposer',  badge: null, exact: true  },
     { id: 'recherche',  label: 'Trouver un associé', icon: 'users', path: '/recherche', badge: null, exact: true  },
     { id: 'mes-annonces', label: 'Mes annonces', icon: 'chart', path: '/ma/mes-annonces', badge: null, exact: true },
+    { id: 'statistiques', label: 'Mes statistiques', icon: 'bars', path: '/ma/statistiques', badge: null, exact: true },
     { id: 'annuaire',   label: 'Annuaire des pros', icon: 'users', path: '/pros',      badge: null, exact: true  },
-    { id: 'verifications', label: 'Vérifications', icon: 'settings', path: '/admin/verifications', badge: null, exact: true },
     { id: 'messages',   label: 'Messages',     icon: 'messages', path: '/messages',    badge: null, exact: false },
     { id: 'abonnement', label: 'Abonnement',   icon: 'credit-card', path: '/tarifs',      badge: null, exact: true  },
     { id: 'parametres', label: 'Paramètres',   icon: 'settings', path: '/parametres',  badge: null, exact: true  },
+    { id: 'admin-annonces', label: 'Modération des annonces', icon: 'shield', path: '/admin/annonces', badge: null, exact: true },
+    { id: 'admin-profils', label: 'Profils à vérifier', icon: 'shield', path: '/admin/profils', badge: null, exact: true },
+    { id: 'verifications', label: 'Dossiers à vérifier', icon: 'shield', path: '/admin/verifications', badge: null, exact: true },
   ];
 
   readonly navItems = computed(() =>
     this.allNavItems.filter(item =>
       !(item.id === 'recherche' && this.hidesRecherche())
       && !(item.id === 'vendre' && this.hidesVendre())
-      && !(item.id === 'mes-annonces' && !this.ownsListings())
-      && !(item.id === 'verifications' && !this.auth.isAdmin())
+      && !((item.id === 'mes-annonces' || item.id === 'statistiques') && !this.ownsListings())
+      && !((item.id === 'verifications' || item.id.startsWith('admin-')) && !this.auth.isAdmin())
     )
   );
 

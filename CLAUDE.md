@@ -58,14 +58,15 @@ PREMIUM = accompagnement humain. Les talents n'ont pas besoin de payer.
 | Score de compatibilité (%) | ✅ | ✅ | ✅ |
 | Matching intelligent (raisons détaillées du score) | ❌ | ✅ | ✅ |
 | Assistant IA personnel (`/coaching-ia`) | ❌ | ✅ | ✅ |
-| Recherche avancée | ❌ | Bientôt | Bientôt |
-| Projet mis en avant dans les résultats | ❌ | Bientôt | Bientôt |
+| Recherche avancée (mots-clés, compétences, score minimum) | ❌ | ✅ | ✅ |
+| Projet mis en avant dans les résultats (porteur de projet) | ❌ | ✅ | ✅ |
 | Présentations qualifiées d'associés | ❌ | ❌ | ✅ |
 | Mise en relation investisseurs et experts juridiques partenaires | ❌ | ❌ | ✅ |
 | Interlocuteur dédié | ❌ | ❌ | ✅ |
 
 - Quotas vérifiés par Supabase (`free_quota_limits`) : 3 nouveaux contacts par mois pour les porteurs de projet en FREE, aucune limite de messages
 - Raisons du score : `canSeeMatchReasons()` dans `user.model.ts` (PRO et PREMIUM)
+- Recherche avancée : `canUseAdvancedSearch()` ; projets mis en avant : `isFeaturedProjectPlan()` (plan du porteur), triés en tête de `/recherche` avec le badge « Mis en avant »
 - Le générateur de pitch a été retiré (hors promesse de mise en relation)
 
 ### M&A (indépendant de l'abonnement, réservé aux rôles acheteur et vendeur)
@@ -96,6 +97,11 @@ PREMIUM = accompagnement humain. Les talents n'ont pas besoin de payer.
 /ma                        Marketplace M&A — accueil (publique, détails verrouillés)
 /ma/annonce/:id            Détail d'une annonce M&A (accès repreneur requis)
 /ma/deposer                Déposer une annonce M&A (paiement 149€ requis)
+
+/ma/statistiques           Statistiques du vendeur : vues, dossiers consultés, contacts reçus (vendeur)
+
+/admin/annonces            Modération des annonces M&A (admin)
+/admin/profils             Vérification des profils (admin)
 
 /abonnement                Gérer son abonnement Stripe (protégé)
 /parametres                Paramètres : email, mot de passe, visibilité dans la recherche, suppression du compte (protégé)
@@ -501,6 +507,9 @@ Tu proposes des actions concrètes sur la plateforme GoFounders.
 - **L'email n'est pas lisible dans `profiles`** : jamais de `select('*')` sur cette table, utiliser `PROFILE_COLUMNS` (`supabase-database.model.ts`)
 - **Partie confidentielle des projets** (`2026-10-19-projets-confidentiels-nda.sql`) : `projects.confidential_details` n'est jamais lisible directement (jamais de `select('*')` sur `projects`, utiliser `PROJECT_COLUMNS`). Elle passe par `get_project_confidential()` : propriétaire, admins et associés dont la demande est acceptée. Demandes via `request_project_access()` / `decide_project_access()` uniquement (table `project_access_requests`, aucune écriture directe)
 - **NDA** : optionnel, activé par le porteur (`projects.nda_required`). Texte et version dans `core/legal/nda.ts` (**provisoire, à faire valider par un avocat** ; toute modification = nouvelle `NDA_VERSION`). Preuve enregistrée à l'acceptation (version, date, IP, navigateur, noms figés) et conservée même si un compte est supprimé. Toujours rappeler que GoFounders n'est pas partie à l'engagement et n'assure pas de conseil juridique
+- **Modération des annonces** (`2026-10-21-moderation-verification-stats.sql`) : une annonce est en ligne dès sa publication, un admin la relit sur `/admin/annonces` (`admin_list_ma_listings`, `moderate_ma_listing`). Une annonce retirée n'est lisible que par son propriétaire et les admins (politique restrictive `ma_listings_moderation`) et le vendeur ne peut pas la republier seul. Une annonce modifiée repasse « à relire »
+- **Profil vérifié** : `profiles.verified_at`, posé uniquement par `decide_profile_verification` (admin, `/admin/profils`) après une demande `request_profile_verification` (liens LinkedIn, site, SIREN ; jamais de pièce d'identité). Le badge ne s'affiche que pour un profil réellement vérifié
+- **Statistiques vendeur** : `record_ma_listing_view` (une vue par membre et par jour, propriétaire et admins non comptés), lues via `get_my_listing_stats`, `get_my_listing_daily_views`, `get_my_contact_stats` ; tables sans accès direct
 - Les profils avec `confidential: true` masquent les infos de contact côté Firestore Rules
 - La limite FREE (3 nouveaux contacts par mois, porteurs de projet uniquement) est vérifiée par des triggers Supabase (`2026-10-11-free-quotas.sql`, règles mises à jour par `2026-10-12-offres.sql`) ; compteurs dans `usage_counters`, lus via `get_my_quota()`
 - L'assistant IA vérifie le plan côté back Python, pas seulement via le `PlanGuard`
@@ -530,8 +539,8 @@ Tu proposes des actions concrètes sur la plateforme GoFounders.
 ### Phase 4 — Polish
 12. Notifications
 13. Système de NDA digital
-14. Vérification de profils
-15. Dashboard analytics utilisateur
+14. Vérification de profils (fait, manuelle)
+15. Dashboard analytics utilisateur (fait pour les vendeurs : `/ma/statistiques`)
 
 ---
 

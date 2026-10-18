@@ -21,9 +21,12 @@ import { PaymentService } from '../../../core/services/payment.service';
             <h1 class="text-3xl font-bold text-primary sm:text-4xl">Mes annonces</h1>
             <p class="mt-2 text-muted-foreground">Donnez plus de visibilité et de crédibilité à vos annonces.</p>
           </div>
-          @if (canPublish()) {
-            <a routerLink="/ma/deposer" class="rounded-lg bg-amber-500 px-5 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-amber-600">Déposer une annonce</a>
-          }
+          <div class="flex flex-wrap gap-2">
+            <a routerLink="/ma/statistiques" class="rounded-lg border border-border bg-white px-5 py-3 text-center text-sm font-semibold transition-colors hover:border-amber-500">Mes statistiques</a>
+            @if (canPublish()) {
+              <a routerLink="/ma/deposer" class="rounded-lg bg-amber-500 px-5 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-amber-600">Déposer une annonce</a>
+            }
+          </div>
         </div>
 
         @if (message()) {

@@ -3,7 +3,7 @@ import { MARKETPLACE_PROFILES, MarketplaceProfile, findMarketplaceProfileById } 
 import { Match } from '../models/match.model';
 import { Profile } from '../models/project.model';
 import { SupabaseProfileRow, SupabaseProjectRow, PROFILE_COLUMNS, PROJECT_COLUMNS } from '../models/supabase-database.model';
-import { PROFILE_TYPE_LABELS, ProfileType, isTalentMarketplaceRole } from '../models/user.model';
+import { PROFILE_TYPE_LABELS, ProfileType, isFeaturedProjectPlan, isTalentMarketplaceRole } from '../models/user.model';
 import { ProjectSide, TalentSide, computeCompatibility } from '../matching/compatibility';
 import { AuthService } from './auth.service';
 import { ProjectService } from './project.service';
@@ -23,12 +23,12 @@ export class MatchingService {
     return [];
   }
 
-  // Profils proposés à l'utilisateur connecté, triés par compatibilité décroissante.
+  // Profils proposés à l'utilisateur connecté : projets mis en avant d'abord, puis compatibilité décroissante.
   async getMarketplaceProfilesForSearch(viewerType: ProfileType): Promise<MarketplaceProfile[]> {
     const [profiles, viewer] = await Promise.all([this.loadMarketplaceProfiles(viewerType), this.loadViewerSide()]);
     return profiles
       .map(profile => this.withCompatibility(profile, viewer))
-      .sort((a, b) => b.match - a.match);
+      .sort((a, b) => Number(b.featured === true) - Number(a.featured === true) || b.match - a.match);
   }
 
   private async loadMarketplaceProfiles(viewerType: ProfileType): Promise<MarketplaceProfile[]> {
@@ -146,6 +146,7 @@ export class MatchingService {
       match: 0,
       initials: this.initials(profile.display_name),
       photoURL: profile.photo_url ?? undefined,
+      verified: Boolean(profile.verified_at),
       availableNow: (profile.availability_label ?? '').toLowerCase().includes('disponible'),
       availabilityLabel: profile.availability_label ?? 'Disponibilite a confirmer',
       lookingFor,
@@ -202,6 +203,8 @@ export class MatchingService {
       hasConfidential: project.has_confidential_details ?? false,
       ndaRequired: project.nda_required ?? false,
       ownerName,
+      featured: isFeaturedProjectPlan(owner?.plan),
+      verified: Boolean(owner?.verified_at),
     };
   }
 
@@ -212,11 +215,11 @@ export class MatchingService {
   private stageLabel(stage: string | null): string {
     switch (stage) {
       case 'idea':
-        return 'Idee';
+        return 'Idée';
       case 'growth':
         return 'En croissance';
       case 'established':
-        return 'Etabli';
+        return 'Établi';
       default:
         return 'MVP';
     }

@@ -9,11 +9,12 @@ import { ProjectAccessRequest, ProjectAccessService } from '../../../core/servic
 import { downloadTextFile, ndaProofDocument } from '../../../core/legal/nda';
 import { ProjectAccessStatus } from '../../../core/models/supabase-database.model';
 import { PRO_CATEGORY_LABELS, ProCategory } from '../../../core/models/user.model';
+import { ProfileVerificationCardComponent } from '../../../shared/components/profile-verification-card/profile-verification-card.component';
 
 @Component({
   selector: 'app-modifier-profil',
   standalone: true,
-  imports: [NgClass, ReactiveFormsModule, RouterLink],
+  imports: [NgClass, ReactiveFormsModule, RouterLink, ProfileVerificationCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   // Champ invalide après une tentative d'enregistrement : bordure rouge.
   styles: [`
@@ -609,6 +610,8 @@ import { PRO_CATEGORY_LABELS, ProCategory } from '../../../core/models/user.mode
               </div>
             </div>
           </section>
+
+          <app-profile-verification-card class="block xl:col-start-2" />
         </div>
       </div>
     </div>
