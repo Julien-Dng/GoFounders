@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { PricingCardComponent, PricingFeature } from '../../shared/components/pricing-card/pricing-card.component';
 import { AuthService } from '../../core/services/auth.service';
-import { PaymentService } from '../../core/services/payment.service';
 
 interface Plan {
   name: string;
@@ -29,7 +28,7 @@ interface Plan {
         <div class="mb-16 text-center">
           <h1 class="mb-6 text-4xl font-bold tracking-tight text-primary sm:text-5xl lg:text-6xl">Choisissez votre formule</h1>
           <p class="mx-auto max-w-2xl text-lg text-muted-foreground sm:text-xl">
-            Des solutions adaptées à chaque étape de votre parcours entrepreneurial.
+            Gratuit pour se faire connaître, PRO pour trouver son associé plus vite, PREMIUM pour être accompagné.
           </p>
         </div>
 
@@ -136,24 +135,24 @@ interface Plan {
               </svg>
             </div>
             <div class="flex-1">
-              <h2 class="mb-3 text-3xl font-semibold">Accès M&A - Achat & cession d'entreprise</h2>
+              <h2 class="mb-3 text-3xl font-semibold">M&A - Achat & cession d'entreprise</h2>
               <p class="mb-1 text-lg text-white/90">
-                Disponible en accès one-shot à <span class="font-bold">149€</span> - indépendant de votre abonnement.
+                Indépendant de l'abonnement, réservé aux comptes acheteur et vendeur.
               </p>
               <ul class="mb-6 space-y-2 text-white/90">
                 <li class="flex items-start gap-2">
                   <svg width="20" height="20" class="mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  <span>Consultation des dossiers complets (le dépôt d'annonce est gratuit)</span>
+                  <span><strong>Vendeur : publication gratuite</strong> de votre annonce anonymisée (offre de lancement)</span>
                 </li>
                 <li class="flex items-start gap-2">
                   <svg width="20" height="20" class="mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  <span>Mise en relation directe acheteur / vendeur</span>
+                  <span><strong>Acheteur : 149 € pour 12 mois</strong> — dossiers complets, motif de cession et contact direct des vendeurs</span>
                 </li>
               </ul>
               <div class="flex flex-col gap-3 sm:flex-row">
-                <button type="button" (click)="unlockMaAccess()" class="inline-block rounded-full bg-white px-8 py-4 text-center font-bold text-amber-600 shadow-xl transition-all hover:scale-105 active:scale-95">
-                  Débloquer l'accès M&A - 149€
-                </button>
+                <a routerLink="/abonnement" class="inline-block rounded-full bg-white px-8 py-4 text-center font-bold text-amber-600 shadow-xl transition-all hover:scale-105 active:scale-95">
+                  Accès repreneur - 149 € / 12 mois
+                </a>
                 <a routerLink="/ma" class="inline-block rounded-full border border-white/70 px-8 py-4 text-center font-bold text-white transition-all hover:scale-105 hover:bg-white/10 active:scale-95">
                   Voir les annonces
                 </a>
@@ -167,28 +166,25 @@ interface Plan {
 })
 export class TarifsComponent {
   private readonly auth = inject(AuthService);
-  private readonly payment = inject(PaymentService);
-  private readonly router = inject(Router);
 
   readonly plans: Plan[] = [
     {
       name: 'FREE',
       price: '0€',
       period: 'gratuit',
-      description: 'Pour explorer la plateforme',
+      description: 'Pour rejoindre la communauté et se faire connaître',
       features: [
-        { text: 'Création de profil', included: true },
-        { text: 'Voir 5 profils par mois', included: true },
-        { text: '3 contacts par mois', included: true },
-        { text: '5 messages par mois', included: true },
-        { text: 'Score de compatibilité IA', included: false },
-        { text: 'Suggestions personnalisées', included: false },
-        { text: 'Générateur de pitch IA', included: false },
-        { text: 'Recherche investisseurs', included: false },
-        { text: 'Support prioritaire', included: false },
+        { text: 'Profil complet et visible', included: true },
+        { text: 'Recherche et profils illimités', included: true },
+        { text: 'Score de compatibilité', included: true },
+        { text: 'Réponses illimitées à vos conversations', included: true },
+        { text: 'Porteurs de projet : 3 nouveaux contacts par mois', included: true },
+        { text: 'Talents : contacts illimités', included: true },
+        { text: 'Raisons détaillées du score', included: false },
+        { text: 'Assistant IA personnel', included: false },
       ],
-      highlights: ['5 profils/mois', '3 contacts', '5 messages/mois'],
-      cta: 'Commencer',
+      highlights: ['Gratuit pour les talents', 'Recherche illimitée', 'Réponses illimitées'],
+      cta: 'Créer mon profil',
       href: '/inscription',
       reassurance: '',
       variant: 'free',
@@ -197,61 +193,55 @@ export class TarifsComponent {
       name: 'PRO',
       price: '49€',
       period: '/mois',
-      badge: 'Populaire',
-      description: 'Pour entrepreneurs sérieux',
+      badge: 'Porteurs de projet',
+      description: 'Trouvez votre associé plus vite',
       features: [
         { text: 'Tout de FREE, plus :', included: true },
-        { text: 'Profils illimités', included: true },
         { text: 'Contacts illimités', included: true },
-        { text: 'Messages illimités', included: true },
-        { text: 'Score de compatibilité IA', included: true },
-        { text: 'Suggestions personnalisées', included: true },
-        { text: 'Générateur de pitch IA basique', included: true },
-        { text: 'Analytics avancés', included: true },
-        { text: 'Recherche investisseurs', included: false },
+        { text: 'Matching intelligent : pourquoi chaque profil vous correspond', included: true },
+        { text: 'Assistant IA personnel', included: true },
+        { text: 'Recherche avancée (compétences, score minimum…)', included: true, soon: true },
+        { text: 'Projet mis en avant dans les résultats', included: true, soon: true },
       ],
-      highlights: ['Illimité', 'Match IA', 'Recherche avancée'],
-      cta: 'Souscrire',
+      highlights: ['Contacts illimités', 'Matching intelligent', 'Assistant IA'],
+      cta: 'Passer en PRO',
       href: '/abonnement',
-      reassurance: 'Annulation simple',
+      reassurance: 'Sans engagement',
       variant: 'pro',
     },
     {
       name: 'PREMIUM',
-      price: 'Sur mesure',
+      price: 'Sur devis',
       period: '',
-      description: 'Solutions personnalisées',
+      description: 'On vous présente les bonnes personnes',
       features: [
         { text: 'Tout de PRO, plus :', included: true },
-        { text: 'Générateur de pitch IA complet', included: true },
-        { text: 'Recherche investisseurs', included: true },
-        { text: 'Coaching humain dédié', included: true },
-        { text: 'Matching assisté par expert', included: true },
+        { text: "Présentations qualifiées d'associés et de talents", included: true },
+        { text: 'Mise en relation avec des investisseurs', included: true },
         { text: 'Mise en relation avec des experts juridiques partenaires', included: true },
-        { text: 'Événements exclusifs', included: true },
-        { text: 'Support 24/7', included: true },
+        { text: 'Un interlocuteur dédié', included: true },
       ],
-      highlights: ['Accompagnement', 'Experts', 'Priorité'],
-      cta: 'Nous contacter',
+      highlights: ['Accompagnement', 'Investisseurs', 'Experts partenaires'],
+      cta: 'Premier échange gratuit',
       href: '/abonnement',
-      reassurance: 'Réponse sous 24h',
+      reassurance: 'Réponse sous 48 h',
       variant: 'premium',
     },
   ];
 
   readonly comparisonRows: string[][] = [
-    ['Profils visibles/mois', '5', 'Illimité', 'Illimité'],
-    ['Contacts/mois', '3', 'Illimité', 'Illimité'],
-    ['Messages/mois', '5', 'Illimité', 'Illimité'],
-    ['Score IA', 'Aperçu partiel (flouté)', '✓', '✓'],
-    ['Générateur de pitch', '✗', 'IA (auto)', 'IA + relecture par expert'],
-    ['Matching IA', '✗', '✓', '✓ avancé'],
-    ['Recherche avancée', '✗', '✓', '✓'],
-    ['Visibilité premium dans les résultats', '✗', '✓', '✓'],
-    ['Recherche investisseurs', '✗', '✗', '✓'],
-    ['Coaching humain', '✗', '✗', '✓ (inclut relecture pitch)'],
-    ['Account manager dédié', '✗', '✗', '✓'],
-    ['Support', 'Email', 'Email + Chat', '24/7 dédié'],
+    ['Profil et recherche', 'Illimités', 'Illimités', 'Illimités'],
+    ['Nouveaux contacts par mois', 'Talents : illimités · Porteurs de projet : 3', 'Illimités', 'Illimités'],
+    ['Réponses dans vos conversations', 'Illimitées', 'Illimitées', 'Illimitées'],
+    ['Score de compatibilité', '✓', '✓', '✓'],
+    ['Matching intelligent (raisons détaillées)', '✗', '✓', '✓'],
+    ['Assistant IA personnel', '✗', '✓', '✓'],
+    ['Recherche avancée', '✗', 'Bientôt', 'Bientôt'],
+    ['Projet mis en avant dans les résultats', '✗', 'Bientôt', 'Bientôt'],
+    ["Présentations qualifiées d'associés", '✗', '✗', '✓'],
+    ['Mise en relation investisseurs et experts juridiques partenaires', '✗', '✗', '✓'],
+    ['Interlocuteur dédié', '✗', '✗', '✓'],
+    ['Support', 'Email', 'Email prioritaire', 'Interlocuteur dédié'],
   ];
 
   planHref(plan: Plan): string {
@@ -260,18 +250,5 @@ export class TarifsComponent {
     }
 
     return plan.href;
-  }
-
-  async unlockMaAccess(): Promise<void> {
-    const user = this.auth.currentUser();
-
-    if (!user) {
-      await this.router.navigate(['/connexion'], { queryParams: { returnUrl: '/tarifs#ma-access' } });
-      return;
-    }
-
-    if (!this.payment.purchaseMaAccess(user)) {
-      await this.router.navigate(['/abonnement']);
-    }
   }
 }

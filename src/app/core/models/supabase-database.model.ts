@@ -46,14 +46,7 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
-      get_my_profile: {
-        Args: Record<string, never>;
-        Returns: SupabaseProfileRow[];
-      };
-      get_ma_listing_detail: {
-        Args: { listing_id: string };
-        Returns: SupabaseMaListingRow[];
-      };
+      [_ in never]: never;
     };
     Enums: {
       profile_role: ProfileType;
@@ -65,13 +58,20 @@ export interface Database {
   };
 }
 
+// Colonnes de profiles lisibles depuis l'appli : toutes sauf l'email (2026-10-12-profils-par-role.sql).
+// Un select('*') sur profiles est refusé par Supabase.
+export const PROFILE_COLUMNS =
+  'id, display_name, role, plan, ma_access, ma_access_expires_at, is_admin, location, title, bio, photo_url, github_url, linkedin_url, website_url, skills, looking_for, availability_label, ma_sector, ma_budget, ma_region, created_at, updated_at';
+
 export interface SupabaseProfileRow {
   id: string;
-  email: string;
+  // Non lisible depuis l'appli (seul le back avec la clé service_role y a accès).
+  email?: string;
   display_name: string;
   role: ProfileType;
   plan: Plan;
   ma_access: boolean;
+  ma_access_expires_at?: string | null;
   is_admin?: boolean | null;
   location: string | null;
   title: string | null;
@@ -83,14 +83,12 @@ export interface SupabaseProfileRow {
   skills: string[] | null;
   looking_for: string[] | null;
   availability_label: string | null;
+  ma_sector: string | null;
+  ma_budget: string | null;
+  ma_region: string | null;
   created_at: string;
   updated_at: string;
 }
-
-// Colonnes lisibles sur le profil des autres membres (voir supabase/2026-10-18-profiles-private-columns.sql).
-export const PUBLIC_PROFILE_COLUMNS = 'id, display_name, role, plan, location, title, bio, photo_url, github_url, linkedin_url, website_url, skills, looking_for, availability_label, created_at, updated_at';
-
-export type SupabasePublicProfileRow = Omit<SupabaseProfileRow, 'email' | 'ma_access' | 'is_admin'>;
 
 export interface SupabaseProfileInsert {
   id: string;
@@ -110,11 +108,15 @@ export interface SupabaseProfileInsert {
   skills?: string[] | null;
   looking_for?: string[] | null;
   availability_label?: string | null;
+  ma_sector?: string | null;
+  ma_budget?: string | null;
+  ma_region?: string | null;
   created_at?: string;
   updated_at?: string;
 }
 
 export interface SupabaseProfileUpdate {
+  is_visible?: boolean;
   display_name?: string;
   location?: string | null;
   title?: string | null;
@@ -126,6 +128,10 @@ export interface SupabaseProfileUpdate {
   skills?: string[] | null;
   looking_for?: string[] | null;
   availability_label?: string | null;
+  ma_sector?: string | null;
+  ma_budget?: string | null;
+  ma_region?: string | null;
+  is_admin?: boolean | null;
   updated_at?: string;
 }
 

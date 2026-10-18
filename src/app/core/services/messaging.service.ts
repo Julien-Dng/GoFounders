@@ -2,7 +2,7 @@ import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { ConversationMessage, MarketplaceProfile } from '../data/mock-platform.data';
 import { Conversation, Message } from '../models/message.model';
-import { PUBLIC_PROFILE_COLUMNS, SupabasePublicProfileRow } from '../models/supabase-database.model';
+import { SupabaseProfileRow, PROFILE_COLUMNS } from '../models/supabase-database.model';
 import { User } from '../models/user.model';
 import { AuthService } from './auth.service';
 import { MatchingService } from './matching.service';
@@ -23,6 +23,29 @@ interface SupabaseMessageRow {
   read_at: string | null;
   created_at: string;
 }
+
+// Consommation du mois en cours ; une limite null signifie illimité (PRO, PREMIUM, M&A).
+export interface MessagingQuota {
+  contactsUsed: number;
+  contactsLimit: number | null;
+  messagesUsed: number;
+  messagesLimit: number | null;
+}
+
+interface SupabaseQuotaRow {
+  contacts_used: number;
+  contacts_limit: number | null;
+  messages_used: number;
+  messages_limit: number | null;
+}
+
+// Codes levés par les triggers Supabase (2026-10-11-free-quotas.sql, 2026-10-12-profils-par-role.sql).
+const QUOTA_ERROR_MESSAGES: Record<string, string> = {
+  ROLE_CONTACT_INTERDIT: "Ce profil ne peut pas être contacté avec votre type de compte (porteurs de projet et talents d'un côté, acheteurs et vendeurs de l'autre).",
+  FREE_QUOTA_CONTACTS: 'Vous avez atteint la limite de 3 nouveaux contacts ce mois-ci avec le plan FREE. Passez en PRO pour des contacts illimités.',
+  // Ancienne limite de messages (avant 2026-10-12-offres.sql), gardée si la migration n'est pas encore passée.
+  FREE_QUOTA_MESSAGES: 'Vous avez atteint la limite de messages de votre plan ce mois-ci. Passez en PRO pour une messagerie illimitée.',
+};
 
 export interface ConversationThread {
   id: string;
@@ -48,6 +71,8 @@ export class MessagingService {
   private refreshTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly conversationThreads = signal<ConversationThread[]>([]);
+  readonly quota = signal<MessagingQuota | null>(null);
+  readonly lastError = signal('');
   readonly unreadCount = computed(() =>
     this.conversationThreads().reduce((total, conversation) => total + conversation.unread, 0)
   );
@@ -116,16 +141,16 @@ export class MessagingService {
 
       const { data: profilesData } = await this.supabase.client
         .from('profiles')
-        .select(PUBLIC_PROFILE_COLUMNS)
+        .select(PROFILE_COLUMNS)
         .in('id', participantIds);
 
       const messageRows = (messagesData ?? []) as SupabaseMessageRow[];
-      const profileRows = (profilesData ?? []) as SupabasePublicProfileRow[];
+      const profileRows = (profilesData ?? []) as SupabaseProfileRow[];
 
       const threads = await Promise.all(conversationRows.map(async conversation => {
         const participantProfileId = conversation.participant_a === user.uid ? conversation.participant_b : conversation.participant_a;
         const profileRow = profileRows.find(profile => profile.id === participantProfileId);
-        const profile = await this.matching.getMarketplaceProfileById(participantProfileId);
+        const profile = await this.matching.getMarketplaceProfileById(participantProfileId, false);
         const messages = messageRows
           .filter(message => message.conversation_id === conversation.id)
           .map(message => this.mapMessage(message, user.uid));
@@ -194,9 +219,11 @@ export class MessagingService {
       .single();
 
     if (error || !data) {
+      this.lastError.set(this.toErrorMessage(error?.message, "Impossible d'ouvrir cette conversation."));
       return null;
     }
 
+    void this.refreshQuota();
     return (data as { id: string }).id;
   }
 
@@ -216,9 +243,12 @@ export class MessagingService {
       .single();
 
     if (error || !data) {
+      this.lastError.set(this.toErrorMessage(error?.message, "Le message n'a pas pu être envoyé."));
       return null;
     }
 
+    this.lastError.set('');
+    void this.refreshQuota();
     return this.mapMessage(data as SupabaseMessageRow, senderId);
   }
 
@@ -243,6 +273,32 @@ export class MessagingService {
     if (error) {
       await this.refreshConversationThreads();
     }
+  }
+
+  async refreshQuota(): Promise<void> {
+    if (!this.supabase.isConfigured || !this.auth.currentUser()) {
+      this.quota.set(null);
+      return;
+    }
+
+    const { data, error } = await this.supabase.client.rpc('get_my_quota').maybeSingle();
+
+    if (error || !data) {
+      this.quota.set(null);
+      return;
+    }
+
+    const row = data as SupabaseQuotaRow;
+    this.quota.set({
+      contactsUsed: row.contacts_used,
+      contactsLimit: row.contacts_limit,
+      messagesUsed: row.messages_used,
+      messagesLimit: row.messages_limit,
+    });
+  }
+
+  private toErrorMessage(rawMessage: string | undefined, fallback: string): string {
+    return (rawMessage && QUOTA_ERROR_MESSAGES[rawMessage]) ?? fallback;
   }
 
   async refreshConversationThreads(): Promise<void> {

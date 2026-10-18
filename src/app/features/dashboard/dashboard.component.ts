@@ -1,7 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { MarketplaceProfile } from '../../core/data/mock-platform.data';
+import { isTalentMarketplaceRole } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
+import { MaService } from '../../core/services/ma.service';
+import { MatchingService } from '../../core/services/matching.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { MessagingService } from '../../core/services/messaging.service';
+import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
 import { NotificationMenuComponent } from '../../shared/components/notification-menu/notification-menu.component';
 import { UserMenuComponent } from '../../shared/components/user-menu/user-menu.component';
 
@@ -31,7 +37,7 @@ interface QuickActionItem {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, NotificationMenuComponent, UserMenuComponent],
+  imports: [RouterLink, RouterLinkActive, AvatarComponent, NotificationMenuComponent, UserMenuComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex min-h-screen bg-secondary">
@@ -179,10 +185,10 @@ interface QuickActionItem {
                 <div class="mb-4">
                   <div class="mb-2 flex items-center justify-between">
                     <span class="text-sm text-muted-foreground">Complétion</span>
-                    <span class="text-sm font-bold text-accent">65%</span>
+                    <span class="text-sm font-bold text-accent">{{ profileComplete() }}%</span>
                   </div>
                   <div class="h-2 overflow-hidden rounded-full bg-secondary">
-                    <div class="h-full rounded-full bg-accent" style="width: 65%"></div>
+                    <div class="h-full rounded-full bg-accent" [style.width.%]="profileComplete()"></div>
                   </div>
                 </div>
                 <p class="mb-4 text-sm text-muted-foreground">Complétez votre profil pour augmenter vos chances de match.</p>
@@ -191,17 +197,19 @@ interface QuickActionItem {
                 </a>
               </div>
 
-              <div class="animate-fade-in-up delay-100 rounded-2xl bg-gradient-to-br from-accent to-primary p-6 text-white shadow-lg">
-                <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/20">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m2 4 3 12h14l3-12-6 5-4-5-4 5-6-5z"/>
-                    <path d="M5 20h14"/>
-                  </svg>
+              @if (showProUpsell()) {
+                <div class="animate-fade-in-up delay-100 rounded-2xl bg-gradient-to-br from-accent to-primary p-6 text-white shadow-lg">
+                  <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/20">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m2 4 3 12h14l3-12-6 5-4-5-4 5-6-5z"/>
+                      <path d="M5 20h14"/>
+                    </svg>
+                  </div>
+                  <h3 class="mb-2 text-lg font-bold">Passez en PRO</h3>
+                  <p class="mb-4 text-sm leading-relaxed opacity-90">Contacts illimités, raisons détaillées de chaque score et assistant IA personnel.</p>
+                  <a routerLink="/tarifs" class="block w-full rounded-lg bg-white py-2.5 text-center font-semibold text-accent shadow-md transition-colors hover:bg-white/95">Découvrir PRO</a>
                 </div>
-                <h3 class="mb-2 text-lg font-bold">Passez en PRO</h3>
-                <p class="mb-4 text-sm leading-relaxed opacity-90">Débloquez l'IA de matching, les messages illimités et davantage de visibilité.</p>
-                <a routerLink="/tarifs" class="block w-full rounded-lg bg-white py-2.5 text-center font-semibold text-accent shadow-md transition-colors hover:bg-white/95">Découvrir PRO</a>
-              </div>
+              }
             </div>
 
             <div class="col-span-6 space-y-6">
@@ -211,31 +219,39 @@ interface QuickActionItem {
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
                     </svg>
-                    <h2 class="text-xl font-bold">Vos matches du jour</h2>
+                    <h2 class="text-xl font-bold">{{ matchesTitle() }}</h2>
                   </div>
-                  <a routerLink="/recherche" class="text-sm font-semibold text-accent hover:underline">Voir tous</a>
+                  <a [routerLink]="matchesLink()" class="text-sm font-semibold text-accent hover:underline">Voir tous</a>
                 </div>
 
                 <div class="space-y-4">
-                  @for (match of matches; track $index) {
+                  @if (!usesTalentMarketplace()) {
+                    <div class="rounded-xl bg-secondary p-4">
+                      <p class="mb-4 text-sm text-foreground/80">{{ maPrompt() }}</p>
+                      <a [routerLink]="maCtaLink()" class="inline-block rounded-lg bg-[#D97706] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#D97706]/90">
+                        {{ maCtaLabel() }}
+                      </a>
+                    </div>
+                  } @else if (matches().length === 0) {
+                    <p class="rounded-xl bg-secondary p-4 text-sm text-muted-foreground">Aucun profil à vous proposer pour le moment. Complétez votre profil pour améliorer vos suggestions.</p>
+                  }
+                  @for (match of matches(); track match.id) {
                     <div class="group flex items-center gap-4 rounded-xl border border-transparent bg-secondary p-4 transition-colors hover:border-accent/20 hover:bg-accent/5">
-                      <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary font-bold text-white">
-                        {{ match.avatar }}
-                      </div>
+                      <app-avatar class="h-14 w-14" [photoUrl]="match.photoURL" [initials]="match.initials" [name]="match.displayName" />
                       <div class="min-w-0 flex-1">
                         <div class="mb-1 flex items-center gap-2">
-                          <h3 class="font-bold">{{ match.name }}</h3>
+                          <h3 class="font-bold">{{ match.displayName }}</h3>
                           <span class="rounded bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">{{ match.stage }}</span>
                         </div>
-                        <div class="mb-1 text-sm text-muted-foreground">{{ match.role }}</div>
-                        <div class="truncate text-sm text-foreground/70">{{ match.project }}</div>
+                        <div class="mb-1 text-sm text-muted-foreground">{{ match.title }}</div>
+                        <div class="truncate text-sm text-foreground/70">{{ match.sector }}</div>
                       </div>
                       <div class="flex flex-shrink-0 items-center gap-3">
                         <div class="flex items-center gap-1 rounded-full bg-accent/10 px-3 py-1.5 text-accent">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
                           </svg>
-                          <span class="text-sm font-bold">{{ match.compatibility }}%</span>
+                          <span class="text-sm font-bold">{{ match.match }}%</span>
                         </div>
                         <a [routerLink]="['/profil', match.id]" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white opacity-0 transition-opacity hover:bg-primary/90 group-hover:opacity-100">
                           Voir le profil
@@ -249,17 +265,24 @@ interface QuickActionItem {
               <div class="animate-fade-in-up delay-200 rounded-2xl border border-border bg-white p-6 shadow-sm">
                 <h2 class="mb-6 text-xl font-bold">Activité récente</h2>
                 <div class="space-y-4">
-                  @for (activity of activities; track $index) {
-                    <div class="flex items-start gap-3 border-b border-border pb-4 last:border-0 last:pb-0">
-                      <div class="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-accent"></div>
+                  @for (activity of activities(); track activity.id) {
+                    <a
+                      [routerLink]="activity.href"
+                      [queryParams]="activity.queryParams"
+                      (click)="markActivityAsRead(activity.id)"
+                      class="flex items-start gap-3 border-b border-border pb-4 last:border-0 last:pb-0"
+                    >
+                      <div class="mt-2 h-2 w-2 flex-shrink-0 rounded-full" [class.bg-accent]="activity.unread" [class.bg-border]="!activity.unread"></div>
                       <div class="flex-1">
-                        <p class="text-sm font-medium text-foreground">{{ activity.text }}</p>
+                        <p class="text-sm font-medium text-foreground">{{ activity.title }}</p>
                         <p class="mt-1 text-xs text-muted-foreground">{{ activity.time }}</p>
                       </div>
-                      <svg width="16" height="16" class="mt-1 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <svg width="16" height="16" class="mt-1 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <polyline points="9 18 15 12 9 6"/>
                       </svg>
-                    </div>
+                    </a>
+                  } @empty {
+                    <p class="text-sm text-muted-foreground">Aucune activité récente pour le moment.</p>
                   }
                 </div>
               </div>
@@ -277,7 +300,7 @@ interface QuickActionItem {
                 </div>
                 <p class="mb-4 text-sm text-foreground/80">Bonjour {{ firstName() }}.<br>Que puis-je faire pour vous aujourd'hui ?</p>
                 <div class="space-y-2">
-                  @for (action of quickActions; track action.label) {
+                  @for (action of quickActions(); track action.label) {
                     <a [routerLink]="action.path" class="group flex w-full items-center gap-3 rounded-lg border border-border bg-white px-3 py-2.5 text-left text-sm font-medium transition-all hover:border-accent/30 hover:bg-accent/5">
                       <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-accent/10 text-accent" aria-hidden="true">
                         @switch (action.icon) {
@@ -314,7 +337,7 @@ interface QuickActionItem {
               <div class="animate-fade-in-up delay-300 rounded-2xl border border-border bg-white p-6 shadow-sm">
                 <h3 class="mb-4 text-lg font-bold">Statistiques</h3>
                 <div class="space-y-4">
-                  @for (stat of stats; track stat.label) {
+                  @for (stat of stats(); track stat.label) {
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-2">
                         <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-muted-foreground" aria-hidden="true">
@@ -369,6 +392,9 @@ interface QuickActionItem {
 export class DashboardComponent {
   private readonly auth = inject(AuthService);
   private readonly messaging = inject(MessagingService);
+  private readonly matchingService = inject(MatchingService);
+  private readonly maService = inject(MaService);
+  private readonly notifications = inject(NotificationService);
 
   readonly currentUser = this.auth.currentUser;
   private readonly failedPhotoUrl = signal('');
@@ -390,9 +416,16 @@ export class DashboardComponent {
     return uid ? `/profil/${uid}` : '/dashboard';
   });
 
+  readonly profileType = computed(() => this.currentUser()?.profileType);
+  readonly usesTalentMarketplace = computed(() => isTalentMarketplaceRole(this.profileType()));
+  // PRO concerne la marketplace Talents & Associés ; acheteurs et vendeurs ont leur offre M&A.
+  readonly showProUpsell = computed(() => this.usesTalentMarketplace() && this.planLabel() === 'FREE');
+
   readonly sidebarItems = computed<SidebarItem[]>(() => [
     { id: 'accueil', label: 'Accueil', icon: 'home', path: '/dashboard', badge: null },
-    { id: 'recherche', label: 'Recherche', icon: 'search', path: '/recherche', badge: null },
+    ...(this.usesTalentMarketplace()
+      ? [{ id: 'recherche', label: 'Recherche', icon: 'search' as const, path: '/recherche', badge: null }]
+      : []),
     { id: 'profil', label: 'Mon profil', icon: 'user', path: this.ownProfilePath(), badge: null },
     { id: 'messages', label: 'Messages', icon: 'messages', path: '/messages', badge: this.messageUnreadCount() || null },
     { id: 'ma', label: 'M&A', icon: 'ma', path: '/ma', badge: null },
@@ -401,28 +434,82 @@ export class DashboardComponent {
     { id: 'parametres', label: 'Paramètres', icon: 'settings', path: '/parametres', badge: null },
   ]);
 
-  readonly matches = [
-    { id: 'talent-sophie-martin', name: 'Sophie Martin', role: 'CTO freelance', avatar: 'SM', stage: 'MVP', compatibility: 94, project: 'SaaS B2B pour la logistique' },
-    { id: 'talent-marc-laurent', name: 'Marc Laurent', role: 'Développeur full-stack', avatar: 'ML', stage: 'Idée', compatibility: 87, project: 'Marketplace locale bio' },
-  ];
+  readonly matches = signal<MarketplaceProfile[]>([]);
+  readonly matchesTitle = computed(() => {
+    switch (this.profileType()) {
+      case 'talent':
+        return 'Projets du jour';
+      case 'buyer':
+        return 'Vos opportunités de reprise';
+      case 'seller':
+        return 'Votre cession';
+      default:
+        return 'Vos matches du jour';
+    }
+  });
+  readonly matchesLink = computed(() => (this.usesTalentMarketplace() ? '/recherche' : '/ma'));
+  readonly maPrompt = computed(() =>
+    this.profileType() === 'seller'
+      ? 'Publiez votre annonce anonymisée pour être visible des repreneurs qualifiés.'
+      : 'Consultez les entreprises à reprendre sur la marketplace M&A.'
+  );
+  readonly maCtaLabel = computed(() => (this.profileType() === 'seller' ? 'Déposer mon annonce' : 'Voir les annonces'));
+  readonly maCtaLink = computed(() => (this.profileType() === 'seller' ? '/ma/deposer' : '/ma'));
 
-  readonly activities = [
-    { text: '3 personnes ont consulté votre profil', time: 'Il y a 2 h', type: 'view' },
-    { text: 'Nouveau match disponible', time: 'Il y a 5 h', type: 'match' },
-    { text: 'Votre profil a été mis en avant', time: 'Il y a 2 j', type: 'boost' },
-  ];
+  readonly profileComplete = computed(() => this.currentUser()?.profileComplete ?? 0);
+  readonly activities = computed(() => this.notifications.notifications().slice(0, 3));
 
-  readonly stats: StatItem[] = [
-    { label: 'Vues profil', value: '127', icon: 'views' },
-    { label: 'Messages reçus', value: '0', icon: 'messages' },
-    { label: 'Matches', value: '24', icon: 'target' },
-  ];
+  // Profils proposés (entrepreneur/talent), annonces actives (acheteur) ou annonces publiées (vendeur).
+  private readonly opportunityCount = signal<number | null>(null);
+  readonly stats = computed<StatItem[]>(() => {
+    const opportunityCount = this.opportunityCount();
+    const opportunityLabel = this.usesTalentMarketplace()
+      ? 'Profils compatibles'
+      : this.profileType() === 'seller' ? 'Mes annonces M&A' : 'Annonces M&A actives';
 
-  readonly quickActions: Array<QuickActionItem & { path: string }> = [
-    { label: 'Analyser mes matches', icon: 'target', path: '/recherche' },
+    return [
+      { label: 'Conversations', value: String(this.messaging.conversationThreads().length), icon: 'messages' },
+      { label: 'Messages non lus', value: String(this.messageUnreadCount()), icon: 'views' },
+      { label: opportunityLabel, value: opportunityCount === null ? '…' : String(opportunityCount), icon: 'target' },
+    ];
+  });
+
+  readonly quickActions = computed<Array<QuickActionItem & { path: string }>>(() => [
+    this.usesTalentMarketplace()
+      ? { label: 'Analyser mes matches', icon: 'target', path: '/recherche' }
+      : { label: 'Explorer le M&A', icon: 'target', path: '/ma' },
     { label: 'Améliorer mon profil', icon: 'user', path: '/profil/modifier' },
     { label: 'Comprendre mes statistiques', icon: 'chart', path: '/dashboard' },
-  ];
+  ]);
+
+  constructor() {
+    void this.loadDashboardData();
+  }
+
+  private async loadDashboardData(): Promise<void> {
+    await this.auth.ensureSessionReady();
+    const profileType = this.profileType();
+
+    if (!profileType) {
+      return;
+    }
+
+    if (!isTalentMarketplaceRole(profileType)) {
+      const listings = profileType === 'seller' ? await this.maService.getMyListings() : await this.maService.getListings();
+      this.opportunityCount.set(
+        profileType === 'seller' ? listings.length : listings.filter(listing => listing.status === 'active').length
+      );
+      return;
+    }
+
+    const profiles = await this.matchingService.getMarketplaceProfilesForSearch(profileType);
+    this.opportunityCount.set(profiles.length);
+    this.matches.set([...profiles].sort((a, b) => b.match - a.match).slice(0, 2));
+  }
+
+  markActivityAsRead(notificationId: string): void {
+    this.notifications.markAsRead(notificationId);
+  }
 
   handlePhotoError(): void {
     this.failedPhotoUrl.set(this.photoUrl());

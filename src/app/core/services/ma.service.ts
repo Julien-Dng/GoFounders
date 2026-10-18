@@ -6,8 +6,11 @@ import { SupabaseMaListingInsert, SupabaseMaListingRow } from '../models/supabas
 import { AuthService } from './auth.service';
 import { SupabaseService } from './supabase.service';
 
-// Colonnes lisibles sans accès M&A (voir supabase/2026-10-12-ma-listings-confidential-columns.sql).
-const PUBLIC_LISTING_COLUMNS = 'id, owner_id, sector, region, type, revenue, margin, age, price_min, price_max, public_summary, status, created_at, updated_at';
+// Colonnes anonymisées lisibles par tous ; le dossier complet passe par get_ma_listing_detail (Supabase).
+const PUBLIC_LISTING_COLUMNS =
+  'id, sector, region, type, revenue, margin, age, price_min, price_max, public_summary, status, created_at, updated_at';
+
+type PublicListingRow = Omit<SupabaseMaListingRow, 'owner_id' | 'sale_reason' | 'confidential_description' | 'contact_info'>;
 
 export interface MaSearchFilters {
   sector?: string;
@@ -58,16 +61,27 @@ export class MaService {
       return [];
     }
 
-    return ((data ?? []) as SupabaseMaListingRow[]).map(row => this.mapRowToListing(row));
+    return ((data ?? []) as PublicListingRow[]).map(row => this.mapRowToListing(row));
   }
 
   async getListingById(id: string): Promise<MaListing | null> {
+    const row = await this.fetchListingDetailRow(id);
+    return row ? this.mapRowToListing(row) : null;
+  }
+
+  // Annonces du vendeur connecté, y compris les champs confidentiels.
+  async getMyListings(): Promise<MaListing[]> {
     if (!this.supabase.isConfigured) {
-      return null;
+      return [];
     }
 
-    const row = await this.fetchConfidentialRow(id);
-    return row ? this.mapRowToListing(row) : null;
+    const { data, error } = await this.supabase.client.rpc('get_my_ma_listings');
+
+    if (error) {
+      return [];
+    }
+
+    return ((data ?? []) as SupabaseMaListingRow[]).map(row => this.mapRowToListing(row));
   }
 
   async getListingCards(): Promise<MaListingData[]> {
@@ -77,7 +91,7 @@ export class MaService {
 
     const { data, error } = await this.supabase.client
       .from('ma_listings')
-      .select('id, sector, region, type, revenue, margin, age, price_min, price_max, public_summary, status, created_at')
+      .select(PUBLIC_LISTING_COLUMNS)
       .eq('status', 'active')
       .order('created_at', { ascending: false });
 
@@ -85,7 +99,7 @@ export class MaService {
       return [];
     }
 
-    const listings = ((data ?? []) as SupabaseMaListingRow[]).map(row => this.mapCardRow(row));
+    const listings = ((data ?? []) as PublicListingRow[]).map(row => this.mapCardRow(row));
     return listings.length === 0 && this.auth.isAdmin() ? MA_LISTINGS : listings;
   }
 
@@ -94,7 +108,7 @@ export class MaService {
       return findMaListingById(listingId);
     }
 
-    const row = await this.fetchConfidentialRow(listingId);
+    const row = await this.fetchListingDetailRow(listingId);
 
     if (!row) {
       return this.auth.isAdmin() ? findMaListingById(listingId) : undefined;
@@ -103,17 +117,17 @@ export class MaService {
     return this.mapDetailRow(row);
   }
 
-  // Le dossier complet n'est renvoyé par la base qu'au propriétaire, aux comptes avec accès M&A et aux admins.
-  private async fetchConfidentialRow(listingId: string): Promise<SupabaseMaListingRow | null> {
+  // Le serveur ne renvoie le dossier qu'à un acheteur avec accès M&A, au propriétaire ou à un admin.
+  private async fetchListingDetailRow(listingId: string): Promise<SupabaseMaListingRow | null> {
+    if (!this.supabase.isConfigured) {
+      return null;
+    }
+
     const { data, error } = await this.supabase.client
       .rpc('get_ma_listing_detail', { listing_id: listingId })
       .maybeSingle();
 
-    if (error || !data) {
-      return null;
-    }
-
-    return data as SupabaseMaListingRow;
+    return error || !data ? null : (data as SupabaseMaListingRow);
   }
 
   async createListing(data: Omit<MaListing, 'id' | 'createdAt'>): Promise<string> {
@@ -121,7 +135,10 @@ export class MaService {
       return '';
     }
 
+    // Id généré côté client : l'insert ne relit pas la ligne, dont les colonnes confidentielles ne sont pas lisibles.
+    const id = crypto.randomUUID();
     const insert: SupabaseMaListingInsert = {
+      id,
       owner_id: data.ownerId,
       sector: data.sector,
       region: data.region,
@@ -138,23 +155,17 @@ export class MaService {
       status: data.status,
     };
 
-    const { data: createdListing, error } = await this.supabase.client
+    const { error } = await this.supabase.client
       .from('ma_listings')
-      .insert(insert)
-      .select('id')
-      .single();
+      .insert(insert);
 
-    if (error || !createdListing) {
-      return '';
-    }
-
-    return (createdListing as { id: string }).id;
+    return error ? '' : id;
   }
 
-  private mapRowToListing(row: SupabaseMaListingRow): MaListing {
+  private mapRowToListing(row: PublicListingRow & Partial<SupabaseMaListingRow>): MaListing {
     return {
       id: row.id,
-      ownerId: row.owner_id,
+      ownerId: row.owner_id ?? '',
       sector: row.sector,
       region: row.region,
       type: row.type,

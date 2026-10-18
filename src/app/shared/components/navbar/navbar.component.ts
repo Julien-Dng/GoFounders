@@ -3,11 +3,12 @@ import { ChangeDetectionStrategy, Component, HostListener, computed, inject, sig
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs/operators';
+import { isTalentMarketplaceRole } from '../../../core/models/user.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserMenuComponent } from '../user-menu/user-menu.component';
 import { NotificationMenuComponent } from '../notification-menu/notification-menu.component';
 
-type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles' | 'credit-card' | 'settings';
+type DrawerIcon = 'home' | 'search' | 'messages' | 'chart' | 'sparkles' | 'credit-card' | 'settings';
 
 @Component({
   selector: 'app-navbar',
@@ -24,7 +25,7 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
             (click)="toggleDrawer($event)"
             [class]="auth.isAuthenticated()
               ? 'absolute left-4 top-0 z-10 flex h-20 items-center px-1 text-muted-foreground transition-colors hover:text-foreground sm:left-6'
-              : 'absolute left-4 top-0 z-10 flex h-20 items-center px-1 text-muted-foreground transition-colors hover:text-foreground lg:hidden'"
+              : 'absolute left-4 top-0 z-10 flex h-20 items-center px-1 text-muted-foreground transition-colors hover:text-foreground md:hidden'"
             aria-label="Menu de navigation"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -37,7 +38,7 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
         <div class="mx-auto flex h-20 max-w-[1400px] items-center overflow-visible pl-12 pr-4 sm:pl-16 md:pr-6">
 
           <!-- Logo -->
-          <a [routerLink]="logoLink()" class="group flex flex-shrink-0 items-center gap-2 px-2 sm:gap-3 sm:px-4">
+          <a [routerLink]="logoLink()" class="group flex min-w-0 items-center gap-2 px-2 sm:gap-3 sm:px-4">
             <div class="brand-logo-mark h-9 w-9 flex-shrink-0 transition-transform group-hover:scale-105 sm:h-11 sm:w-11">
               <img
                 src="/assets/images/gofounders-logo.png"
@@ -49,18 +50,18 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
           </a>
 
           <!-- Nav links (center) -->
-          <div class="hidden flex-1 items-center justify-center gap-5 lg:flex xl:gap-8">
-            @for (link of navLinks; track link.href) {
+          <div class="hidden flex-1 items-center justify-center gap-8 md:flex">
+            @for (link of navLinks(); track link.href) {
               <a
                 [routerLink]="link.href"
                 routerLinkActive="!text-accent"
-                class="whitespace-nowrap py-2 text-base font-medium text-foreground/70 transition-colors hover:text-accent"
+                class="text-base font-medium transition-colors py-2 text-foreground/70 hover:text-accent"
               >{{ link.label }}</a>
             }
           </div>
 
           <!-- Right actions -->
-          <div class="ml-auto hidden items-center gap-3 px-2 md:flex lg:ml-0 lg:px-8">
+          <div class="hidden items-center gap-3 px-2 md:flex lg:px-8">
             @if (auth.isAuthenticated()) {
 
               <a routerLink="/dashboard" class="px-5 py-2 text-foreground font-medium hover:text-accent transition-colors">
@@ -122,7 +123,7 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
         </div>
 
         <div class="flex-1 overflow-y-auto p-3 space-y-0.5">
-          @for (item of navItems; track item.id) {
+          @for (item of navItems(); track item.id) {
             <a
               [routerLink]="item.path"
               routerLinkActive="bg-accent/10 text-accent"
@@ -142,14 +143,6 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
                       <circle cx="11" cy="11" r="7"/>
                       <path d="m20 20-3.5-3.5"/>
-                    </svg>
-                  }
-                  @case ('users') {
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                      <circle cx="9" cy="7" r="4"/>
-                      <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                     </svg>
                   }
                   @case ('messages') {
@@ -256,24 +249,35 @@ export class NavbarComponent {
     if (saved) this.doc.documentElement.classList.add('dark');
   }
 
-  // Repositionnement "reprise" : les annonces passent au premier plan, la recherche de talents
-  // reste accessible comme "Trouver un associé" ; l'assistant IA sort de la navigation (route conservée).
-  readonly navLinks = [
-    { href: '/ma', label: 'Annonces' },
-    { href: '/ma/deposer', label: 'Vendre' },
-    { href: '/recherche', label: 'Trouver un associé' },
+  // Acheteurs et vendeurs n'ont pas accès à la recherche Talents & Associés.
+  private readonly hidesRecherche = computed(() => {
+    const profileType = this.auth.currentUser()?.profileType;
+    return !!profileType && !isTalentMarketplaceRole(profileType);
+  });
+
+  private readonly allNavLinks = [
+    { href: '/recherche', label: 'Recherche' },
+    { href: '/ma', label: 'M&A' },
     { href: '/tarifs', label: 'Tarifs' },
   ];
 
-  readonly navItems: Array<{ id: string; label: string; icon: DrawerIcon; path: string; badge: number | null; exact: boolean }> = [
+  readonly navLinks = computed(() =>
+    this.hidesRecherche() ? this.allNavLinks.filter(link => link.href !== '/recherche') : this.allNavLinks
+  );
+
+  private readonly allNavItems: Array<{ id: string; label: string; icon: DrawerIcon; path: string; badge: number | null; exact: boolean }> = [
     { id: 'accueil',    label: 'Accueil',     icon: 'home', path: '/dashboard',   badge: null, exact: true  },
-    { id: 'ma',         label: 'Annonces',     icon: 'search', path: '/ma',          badge: null, exact: true  },
-    { id: 'vendre',     label: 'Vendre',       icon: 'chart', path: '/ma/deposer',  badge: null, exact: true  },
-    { id: 'associe',    label: 'Trouver un associé', icon: 'users', path: '/recherche', badge: null, exact: true  },
+    { id: 'recherche',  label: 'Recherche',    icon: 'search', path: '/recherche',   badge: null, exact: true  },
     { id: 'messages',   label: 'Messages',     icon: 'messages', path: '/messages',    badge: null, exact: false },
+    { id: 'ma',         label: 'M&A',          icon: 'chart', path: '/ma',          badge: null, exact: true  },
+    { id: 'assistant',  label: 'Assistant IA', icon: 'sparkles', path: '/coaching-ia', badge: null, exact: true  },
     { id: 'abonnement', label: 'Abonnement',   icon: 'credit-card', path: '/tarifs',      badge: null, exact: true  },
     { id: 'parametres', label: 'Paramètres',   icon: 'settings', path: '/parametres',  badge: null, exact: true  },
   ];
+
+  readonly navItems = computed(() =>
+    this.hidesRecherche() ? this.allNavItems.filter(item => item.id !== 'recherche') : this.allNavItems
+  );
 
   private readonly currentUrl = toSignal(
     this.router.events.pipe(

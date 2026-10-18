@@ -44,7 +44,7 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
             <section>
               <h2 class="mb-3 text-xl font-bold text-primary">Abonnements et accès M&A</h2>
               <p class="leading-relaxed">
-                Les fonctionnalités peuvent varier selon le plan choisi. L'accès one-shot M&A est distinct des abonnements mensuels et doit être
+                Les fonctionnalités peuvent varier selon le plan choisi. L'accès repreneur M&A (12 mois) est distinct des abonnements mensuels et doit être
                 encadré par des conditions de paiement, de remboursement et d'accès à finaliser.
               </p>
             </section>

@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { maAccessGuard } from './core/guards/ma-access.guard';
 import { planGuard } from './core/guards/plan.guard';
+import { roleGuard } from './core/guards/role.guard';
+import { TALENT_MARKETPLACE_ROLES } from './core/models/user.model';
 
 export const routes: Routes = [
   // Routes publiques (avec navbar)
@@ -39,13 +41,18 @@ export const routes: Routes = [
         loadComponent: () => import('./features/auth/connexion/connexion.component').then(m => m.ConnexionComponent)
       },
       {
+        path: 'reinitialiser-mot-de-passe',
+        loadComponent: () => import('./features/auth/reinitialiser/reinitialiser.component').then(m => m.ReinitialiserComponent)
+      },
+      {
         path: 'ma',
         loadComponent: () => import('./features/ma/ma-home/ma-home.component').then(m => m.MaHomeComponent)
       },
       // Routes protégées (auth requise)
       {
         path: 'recherche',
-        canActivate: [authGuard],
+        canActivate: [authGuard, roleGuard],
+        data: { allowedRoles: TALENT_MARKETPLACE_ROLES },
         loadComponent: () => import('./features/recherche/recherche.component').then(m => m.RechercheComponent)
       },
       {
@@ -75,14 +82,9 @@ export const routes: Routes = [
         loadComponent: () => import('./features/coaching-ia/coaching-ia.component').then(m => m.CoachingIaComponent)
       },
       {
-        path: 'generateur-pitch',
-        canActivate: [authGuard, planGuard],
-        data: { requiredPlan: 'PRO' },
-        loadComponent: () => import('./features/pitch/pitch.component').then(m => m.PitchComponent)
-      },
-      {
         path: 'ma/deposer',
-        canActivate: [authGuard],
+        canActivate: [authGuard, roleGuard],
+        data: { allowedRoles: ['seller'] },
         loadComponent: () => import('./features/ma/ma-deposer/ma-deposer.component').then(m => m.MaDeposerComponent)
       },
       {

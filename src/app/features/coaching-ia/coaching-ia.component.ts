@@ -1,13 +1,31 @@
 import { NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AiAction, AiContext, AiMessage, AiService } from '../../core/services/ai.service';
 import { AuthService } from '../../core/services/auth.service';
+
+type ActionIcon = 'profile' | 'matches' | 'insights';
+
+interface ChatAction {
+  label: string;
+  icon: ActionIcon;
+  path: string;
+}
 
 interface ChatMessage {
   type: 'user' | 'ai';
   text: string;
-  actions?: Array<{ label: string; icon: 'profile' | 'matches' | 'insights' }>;
+  actions?: ChatAction[];
 }
+
+const ACTION_LINKS: Record<AiAction, ChatAction> = {
+  completer_profil: { label: 'Compléter mon profil', icon: 'profile', path: '/profil/modifier' },
+  voir_recherche: { label: 'Explorer les profils', icon: 'matches', path: '/recherche' },
+  voir_messages: { label: 'Ouvrir mes messages', icon: 'matches', path: '/messages' },
+  voir_ma: { label: 'Voir les annonces M&A', icon: 'insights', path: '/ma' },
+  deposer_annonce: { label: 'Déposer mon annonce', icon: 'insights', path: '/ma/deposer' },
+  voir_abonnement: { label: 'Mon abonnement', icon: 'insights', path: '/abonnement' },
+};
 
 @Component({
   selector: 'app-coaching-ia',
@@ -63,47 +81,34 @@ interface ChatMessage {
               <div class="mb-6 border-b border-border pb-6">
                 <h3 class="mb-3 text-sm font-bold uppercase text-muted-foreground">Votre profil</h3>
                 <div class="space-y-2 text-sm">
-                  @for (info of profileInfo(); track info) {
+                  @for (info of profileInfo(); track info.label) {
                     <div class="flex items-center gap-2">
                       <div class="h-1.5 w-1.5 rounded-full bg-accent"></div>
-                      <span>{{ info }}</span>
+                      <span>{{ info.label }} : {{ info.value }}</span>
                     </div>
                   }
                 </div>
               </div>
 
               <div class="mb-6 border-b border-border pb-6">
-                <h3 class="mb-3 text-sm font-bold uppercase text-muted-foreground">Vos matches</h3>
-                <div class="text-sm">
-                  <div class="mb-1 font-semibold">8 matches actifs</div>
-                  <div class="text-muted-foreground">2 nouveaux cette semaine</div>
-                </div>
-              </div>
-
-              <div class="mb-6 border-b border-border pb-6">
                 <h3 class="mb-3 text-sm font-bold uppercase text-muted-foreground">Votre activité</h3>
                 <div class="space-y-2 text-sm">
-                  <div class="flex items-center gap-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-                    </svg>
-                    <span>Profil consulté 24 fois ce mois</span>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
-                      <polyline points="16 7 22 7 22 13"/>
-                    </svg>
-                    <span>+12% vs mois dernier</span>
-                  </div>
+                  @for (item of activity(); track item.label) {
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="text-muted-foreground">{{ item.label }}</span>
+                      <span class="font-semibold">{{ item.value }}</span>
+                    </div>
+                  } @empty {
+                    <p class="text-muted-foreground">Chargement de vos données…</p>
+                  }
                 </div>
               </div>
 
               <div>
                 <h3 class="mb-3 text-sm font-bold uppercase text-muted-foreground">Questions suggérées</h3>
                 <div class="space-y-2">
-                  @for (question of suggestedQuestions; track question) {
-                    <button type="button" class="group w-full rounded-lg border border-border bg-white px-4 py-2.5 text-left text-sm transition-all hover:border-accent hover:bg-accent/5">
+                  @for (question of suggestedQuestions(); track question) {
+                    <button type="button" (click)="ask(question)" [disabled]="isSending()" class="group w-full rounded-lg border border-border bg-white px-4 py-2.5 text-left text-sm transition-all hover:border-accent hover:bg-accent/5">
                       <span class="group-hover:text-accent">{{ question }}</span>
                     </button>
                   }
@@ -116,7 +121,12 @@ interface ChatMessage {
             <div class="flex h-[calc(100vh-240px)] min-h-[38rem] flex-col rounded-2xl border border-border bg-white shadow-lg">
               <div class="flex-1 overflow-y-auto p-6 sm:p-8">
                 <div class="space-y-6">
-                  @for (msg of chatHistory; track $index) {
+                  @if (chatHistory().length === 0) {
+                    <div class="rounded-2xl bg-secondary p-4 leading-relaxed text-foreground">
+                      Bonjour {{ firstName() }}, je connais votre profil et votre activité sur GoFounders. Posez-moi une question ou choisissez une question suggérée.
+                    </div>
+                  }
+                  @for (msg of chatHistory(); track $index) {
                     <div class="flex gap-4" [ngClass]="msg.type === 'user' ? 'justify-end' : 'justify-start'">
                       @if (msg.type === 'ai') {
                         <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary">
@@ -135,7 +145,7 @@ interface ChatMessage {
                         @if (msg.actions) {
                           <div class="mt-3 flex flex-wrap gap-2">
                             @for (action of msg.actions; track action.label) {
-                              <button type="button" class="group flex items-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium transition-all hover:border-accent hover:bg-accent/5">
+                              <a [routerLink]="action.path" class="group flex items-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium transition-all hover:border-accent hover:bg-accent/5">
                                 <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 text-accent" aria-hidden="true">
                                   @switch (action.icon) {
                                     @case ('profile') {
@@ -160,7 +170,7 @@ interface ChatMessage {
                                   }
                                 </span>
                                 <span class="group-hover:text-accent">{{ action.label }}</span>
-                              </button>
+                              </a>
                             }
                           </div>
                         }
@@ -173,24 +183,31 @@ interface ChatMessage {
                       }
                     </div>
                   }
+                  @if (isSending()) {
+                    <div class="rounded-2xl bg-secondary p-4 text-muted-foreground" aria-live="polite">L'assistant réfléchit…</div>
+                  }
                 </div>
               </div>
 
               <div class="border-t border-border p-6">
+                @if (errorMessage()) {
+                  <p class="mb-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-2 text-sm text-destructive" role="alert">{{ errorMessage() }}</p>
+                }
                 <div class="flex flex-col gap-3 sm:flex-row">
                   <input
                     type="text"
                     [value]="message()"
                     (input)="message.set($any($event.target).value)"
                     (keyup.enter)="handleSend()"
+                    aria-label="Votre question"
                     placeholder="Posez votre question à votre assistant..."
                     class="flex-1 rounded-lg border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
                   >
                   <button
                     type="button"
                     (click)="handleSend()"
-                    [disabled]="!message().trim()"
-                    [ngClass]="message().trim()
+                    [disabled]="!message().trim() || isSending()"
+                    [ngClass]="message().trim() && !isSending()
                       ? 'rounded-lg bg-accent px-6 py-3 text-white transition-all hover:scale-105 hover:bg-accent/90 active:scale-95'
                       : 'cursor-not-allowed rounded-lg bg-muted px-6 py-3 text-muted-foreground'"
                     class="flex items-center justify-center gap-2 font-semibold"
@@ -210,56 +227,72 @@ interface ChatMessage {
     </div>
   `
 })
-export class CoachingIaComponent {
+export class CoachingIaComponent implements OnInit {
   private readonly auth = inject(AuthService);
+  private readonly ai = inject(AiService);
 
   readonly message = signal('');
   readonly currentUser = this.auth.currentUser;
   readonly userInitials = computed(() => this.auth.initials() || 'GF');
-  readonly profileInfo = computed(() => [
-    `Nom : ${this.currentUser()?.displayName ?? 'Membre GoFounders'}`,
-    `Localisation : ${this.currentUser()?.location ?? 'France'}`,
-    `Type : ${this.profileTypeLabel()}`,
-    `Plan : ${this.currentUser()?.plan ?? 'PRO'}`,
-  ]);
+  readonly firstName = computed(() => this.currentUser()?.displayName.split(' ')[0] || 'membre');
 
-  private profileTypeLabel(): string {
-    switch (this.currentUser()?.profileType) {
-      case 'talent':
-        return 'Talent / Expert';
-      case 'buyer':
-        return 'Acheteur / Repreneur';
-      case 'seller':
-        return 'Vendeur M&A';
-      default:
-        return 'Porteur de projet';
+  private readonly context = signal<AiContext | null>(null);
+  readonly profileInfo = computed(() => this.context()?.profile ?? []);
+  readonly activity = computed(() => this.context()?.activity ?? []);
+  readonly suggestedQuestions = computed(() => this.context()?.suggested_questions ?? []);
+
+  readonly chatHistory = signal<ChatMessage[]>([]);
+  readonly isSending = signal(false);
+  readonly errorMessage = signal('');
+
+  ngOnInit(): void {
+    void this.loadContext();
+  }
+
+  handleSend(): void {
+    void this.ask(this.message());
+  }
+
+  async ask(question: string): Promise<void> {
+    const text = question.trim();
+
+    if (!text || this.isSending()) {
+      return;
+    }
+
+    this.message.set('');
+    this.errorMessage.set('');
+    this.chatHistory.update(history => [...history, { type: 'user', text }]);
+    this.isSending.set(true);
+
+    try {
+      const answer = await this.ai.sendMessage(this.toApiHistory());
+      this.chatHistory.update(history => [
+        ...history,
+        { type: 'ai', text: answer.reply, actions: answer.actions.map(action => ACTION_LINKS[action]) },
+      ]);
+    } catch (error) {
+      // La question non traitée est retirée pour que l'historique reste cohérent.
+      this.chatHistory.update(history => history.slice(0, -1));
+      this.message.set(text);
+      this.errorMessage.set(error instanceof Error ? error.message : "L'assistant est indisponible pour le moment.");
+    } finally {
+      this.isSending.set(false);
     }
   }
 
-  readonly suggestedQuestions = [
-    'Pourquoi ai-je eu moins de matches cette semaine ?',
-    'Comment améliorer mon profil pour être plus crédible ?',
-    'Quel type de profil me correspond le mieux ?',
-    'Comment aborder un premier contact efficacement ?',
-  ];
-
-  readonly chatHistory: ChatMessage[] = [
-    { type: 'user', text: "Pourquoi je n'ai pas eu beaucoup de matches cette semaine ?" },
-    {
-      type: 'ai',
-      text: "En regardant votre profil, je vois surtout trois leviers : clarifier votre recherche, détailler davantage votre contexte actuel et enrichir votre présentation. Les profils complets et plus spécifiques génèrent généralement plus de réponses qualifiées.",
-      actions: [
-        { label: 'Compléter mon profil', icon: 'profile' },
-        { label: 'Voir mes matches', icon: 'matches' },
-        { label: 'Comprendre mes stats', icon: 'insights' },
-      ],
-    },
-  ];
-
-  handleSend(): void {
-    if (this.message().trim()) {
-      console.log('Sending:', this.message());
-      this.message.set('');
+  private async loadContext(): Promise<void> {
+    try {
+      this.context.set(await this.ai.getContext());
+    } catch (error) {
+      this.errorMessage.set(error instanceof Error ? error.message : "L'assistant est indisponible pour le moment.");
     }
+  }
+
+  private toApiHistory(): AiMessage[] {
+    return this.chatHistory().map(message => ({
+      role: message.type === 'user' ? 'user' : 'assistant',
+      content: message.text,
+    }));
   }
 }

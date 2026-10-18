@@ -48,3 +48,8 @@ ui-debug.log
 # Temporary
 *.tmp
 *.temp
+
+# Back Python
+__pycache__/
+.venv/
+.pytest_cache/

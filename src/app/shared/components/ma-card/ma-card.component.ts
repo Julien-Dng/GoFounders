@@ -27,7 +27,7 @@ export interface MaCardData {
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
-            <p class="text-sm font-semibold">Accès one-shot 149€</p>
+            <p class="text-sm font-semibold">Accès repreneur 149 € / 12 mois</p>
           </div>
         </div>
       }

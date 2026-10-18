@@ -1,6 +1,7 @@
 import { NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, NgZone, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { AuthService, UpdateProfilePayload } from '../../../core/services/auth.service';
 import { ProjectService } from '../../../core/services/project.service';
@@ -10,6 +11,14 @@ import { ProjectService } from '../../../core/services/project.service';
   standalone: true,
   imports: [NgClass, ReactiveFormsModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  // Champ invalide après une tentative d'enregistrement : bordure rouge.
+  styles: [`
+    input.ng-invalid.ng-touched,
+    textarea.ng-invalid.ng-touched,
+    select.ng-invalid.ng-touched {
+      border-color: var(--destructive);
+    }
+  `],
   template: `
     <div class="min-h-screen bg-secondary px-4 pb-14 pt-24 sm:px-6 lg:px-8">
       <div class="mx-auto w-full max-w-6xl">
@@ -206,6 +215,49 @@ import { ProjectService } from '../../../core/services/project.service';
                 </div>
               </div>
 
+              @if (isMaRole()) {
+                <div class="rounded-2xl border border-[#D97706]/30 bg-[#D97706]/[0.04] p-5 sm:p-6" [formGroup]="maForm">
+                  <div class="text-xs font-bold uppercase tracking-[0.16em] text-[#D97706]">Marketplace M&A</div>
+                  <h2 class="mt-1 text-xl font-bold text-primary">{{ maLabels().title }}</h2>
+                  <p class="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">{{ maLabels().description }}</p>
+
+                  <div class="mt-6 grid gap-5 md:grid-cols-2">
+                    <div>
+                      <label for="ma-sector" class="mb-2 block text-sm font-semibold">{{ maLabels().sector }}</label>
+                      <input
+                        id="ma-sector"
+                        type="text"
+                        formControlName="sector"
+                        class="w-full rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
+                        placeholder="SaaS, commerce, services B2B..."
+                      >
+                    </div>
+
+                    <div>
+                      <label for="ma-budget" class="mb-2 block text-sm font-semibold">{{ maLabels().budget }}</label>
+                      <input
+                        id="ma-budget"
+                        type="text"
+                        formControlName="budget"
+                        class="w-full rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
+                        [placeholder]="maLabels().budgetPlaceholder"
+                      >
+                    </div>
+
+                    <div class="md:col-span-2">
+                      <label for="ma-region" class="mb-2 block text-sm font-semibold">{{ maLabels().region }}</label>
+                      <input
+                        id="ma-region"
+                        type="text"
+                        formControlName="region"
+                        class="w-full rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
+                        placeholder="Toute la France, Île-de-France, Auvergne-Rhône-Alpes..."
+                      >
+                    </div>
+                  </div>
+                </div>
+              }
+
               @if (isEntrepreneur()) {
                 <div class="rounded-2xl border border-accent/20 bg-accent/[0.035] p-5 sm:p-6" [formGroup]="projectForm">
                   <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -276,7 +328,10 @@ import { ProjectService } from '../../../core/services/project.service';
                       </div>
 
                       <div class="md:col-span-2">
-                        <label for="project-description" class="mb-2 block text-sm font-semibold">Présentation de l'annonce</label>
+                        <label for="project-description" class="mb-2 block text-sm font-semibold">
+                          Présentation de l'annonce
+                          <span class="font-normal text-muted-foreground">{{ isProjectPublished() ? '(obligatoire pour publier)' : '(facultative en brouillon)' }}</span>
+                        </label>
                         <textarea
                           id="project-description"
                           formControlName="description"
@@ -357,7 +412,7 @@ import { ProjectService } from '../../../core/services/project.service';
               </div>
 
               @if (errorMessage()) {
-                <div class="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive">
+                <div class="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive" role="alert">
                   {{ errorMessage() }}
                 </div>
               }
@@ -414,6 +469,29 @@ export class ModifierComponent implements OnInit {
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
   readonly isEntrepreneur = computed(() => this.currentUser()?.profileType === 'entrepreneur');
+  readonly isMaRole = computed(() => {
+    const profileType = this.currentUser()?.profileType;
+    return profileType === 'buyer' || profileType === 'seller';
+  });
+  readonly maLabels = computed(() =>
+    this.currentUser()?.profileType === 'seller'
+      ? {
+          title: 'Mon entreprise à céder',
+          description: 'Ces informations résument votre projet de cession. Le détail de votre annonce se gère depuis le dépôt M&A.',
+          sector: "Secteur de l'entreprise",
+          budget: 'Ordre de grandeur',
+          budgetPlaceholder: "CA, prix cible ou taille de l'activité",
+          region: 'Région',
+        }
+      : {
+          title: 'Ma recherche de reprise',
+          description: "Précisez le type d'entreprise que vous souhaitez reprendre pour être identifié par les vendeurs.",
+          sector: "Type d'entreprise recherchée",
+          budget: 'Budget indicatif',
+          budgetPlaceholder: 'Ex. 150 k€ - 500 k€',
+          region: 'Zone ou région visée',
+        }
+  );
   readonly profileLink = computed(() => {
     const userId = this.currentUser()?.uid;
     return userId ? ['/profil', userId] : ['/dashboard'];
@@ -444,16 +522,34 @@ export class ModifierComponent implements OnInit {
     websiteUrl: [this.currentUser()?.websiteUrl ?? '', Validators.maxLength(160)],
   });
 
+  readonly maForm = this.fb.nonNullable.group({
+    sector: [this.currentUser()?.maSector ?? '', [Validators.required, Validators.maxLength(80)]],
+    budget: [this.currentUser()?.maBudget ?? '', [Validators.required, Validators.maxLength(80)]],
+    region: [this.currentUser()?.maRegion ?? '', Validators.maxLength(100)],
+  });
+
   readonly projectForm = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(120)]],
     sector: ['', [Validators.required, Validators.maxLength(80)]],
     stage: ['mvp', Validators.required],
     location: ['', Validators.maxLength(100)],
+    // Obligatoire uniquement quand l'annonce est publiée (voir syncDescriptionRequirement).
     description: ['', [Validators.required, Validators.maxLength(900)]],
     lookingFor: ['', Validators.maxLength(260)],
     skillsNeeded: ['', Validators.maxLength(260)],
     isActive: [true],
   });
+
+  // Une annonce publiée doit avoir une présentation ; un brouillon peut rester incomplet.
+  private readonly syncDescriptionRequirement = this.projectForm.controls.isActive.valueChanges
+    .pipe(takeUntilDestroyed())
+    .subscribe(isActive => {
+      const description = this.projectForm.controls.description;
+      description.setValidators(isActive ? [Validators.required, Validators.maxLength(900)] : [Validators.maxLength(900)]);
+      description.updateValueAndValidity();
+    });
+
+  readonly isProjectPublished = toSignal(this.projectForm.controls.isActive.valueChanges, { initialValue: true });
 
   readonly projectStages = [
     { value: 'idea', label: 'Idée' },
@@ -523,20 +619,29 @@ export class ModifierComponent implements OnInit {
     if (this.isEntrepreneur()) {
       this.projectForm.markAllAsTouched();
     }
+    if (this.isMaRole()) {
+      this.maForm.markAllAsTouched();
+    }
     this.errorMessage.set('');
     this.successMessage.set('');
 
-    if (this.profileForm.invalid || (this.isEntrepreneur() && this.projectForm.invalid)) {
-      this.errorMessage.set('Vérifiez les champs obligatoires et les longueurs maximales.');
+    if (
+      this.profileForm.invalid ||
+      (this.isEntrepreneur() && this.projectForm.invalid) ||
+      (this.isMaRole() && this.maForm.invalid)
+    ) {
+      this.errorMessage.set(`À compléter ou raccourcir : ${this.invalidFieldLabels().join(', ')}.`);
       return;
     }
 
     const value = this.profileForm.getRawValue();
+    const maValue = this.maForm.getRawValue();
     const payload: UpdateProfilePayload = {
       displayName: value.displayName,
       location: value.location,
       profileTitle: value.profileTitle,
       availabilityLabel: value.availabilityLabel,
+      ...(this.isMaRole() ? { maSector: maValue.sector, maBudget: maValue.budget, maRegion: maValue.region } : {}),
       bio: value.bio,
       skills: this.splitTags(value.skills),
       lookingFor: this.splitTags(value.lookingFor),
@@ -565,7 +670,9 @@ export class ModifierComponent implements OnInit {
       }
 
       this.successMessage.set(this.isEntrepreneur()
-        ? 'Profil et annonce de projet mis à jour.'
+        ? this.projectForm.controls.isActive.value
+          ? 'Profil et annonce de projet mis à jour.'
+          : 'Profil mis à jour, annonce enregistrée en brouillon (non visible par les talents).'
         : 'Profil mis à jour. Vous pouvez ouvrir votre profil pour vérifier le rendu.'
       );
       this.photoMessage.set('');
@@ -635,6 +742,51 @@ export class ModifierComponent implements OnInit {
 
     this.projectId.set(result.project?.id ?? this.projectId());
     return true;
+  }
+
+  // Libellés des champs invalides, dans l'ordre du formulaire.
+  private invalidFieldLabels(): string[] {
+    const labels: string[] = [];
+    const collect = (controls: Record<string, { invalid: boolean }>, names: Record<string, string>) => {
+      for (const [name, label] of Object.entries(names)) {
+        if (controls[name]?.invalid) {
+          labels.push(label);
+        }
+      }
+    };
+
+    collect(this.profileForm.controls, {
+      displayName: 'Nom complet',
+      location: 'Localisation',
+      profileTitle: 'Titre du profil (90 caractères max.)',
+      availabilityLabel: 'Disponibilité (90 caractères max.)',
+      bio: 'Bio (700 caractères max.)',
+      skills: 'Compétences (240 caractères max.)',
+      lookingFor: 'Ce que vous recherchez (240 caractères max.)',
+      githubUrl: 'GitHub',
+      linkedinUrl: 'LinkedIn',
+      websiteUrl: 'Site / portfolio',
+    });
+
+    if (this.isEntrepreneur()) {
+      collect(this.projectForm.controls, {
+        name: 'Nom du projet',
+        sector: 'Secteur',
+        stage: 'Stade du projet',
+        location: 'Localisation du projet',
+        description: this.projectForm.controls.description.hasError('required')
+          ? "Présentation de l'annonce (obligatoire pour publier ; décochez « Annonce publiée » pour enregistrer un brouillon)"
+          : "Présentation de l'annonce (900 caractères max.)",
+        lookingFor: 'Profils recherchés',
+        skillsNeeded: 'Compétences attendues',
+      });
+    }
+
+    if (this.isMaRole()) {
+      collect(this.maForm.controls, { sector: 'Secteur M&A', budget: 'Budget / ordre de grandeur', region: 'Région' });
+    }
+
+    return labels;
   }
 
   private splitTags(value: string): string[] {

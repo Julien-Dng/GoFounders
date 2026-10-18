@@ -5,6 +5,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { ProfileType } from '../../core/models/user.model';
 import { EMAIL_POLICY_MESSAGES, registrationEmailValidator } from '../../core/validators/email-policy.validator';
+import { passwordPolicyValidator } from '../../core/validators/password-policy.validator';
+import { PasswordCriteriaComponent } from '../../shared/components/password-criteria/password-criteria.component';
 
 interface ProfileOption {
   id: ProfileType;
@@ -16,7 +18,7 @@ interface ProfileOption {
 @Component({
   selector: 'app-inscription',
   standalone: true,
-  imports: [NgClass, ReactiveFormsModule, RouterLink],
+  imports: [NgClass, ReactiveFormsModule, RouterLink, PasswordCriteriaComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-white px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
@@ -185,7 +187,8 @@ interface ProfileOption {
                       [type]="isPasswordVisible() ? 'text' : 'password'"
                       formControlName="password"
                       class="w-full rounded-lg border border-border bg-secondary py-3 pl-4 pr-12 outline-none transition-colors focus:border-accent"
-                      placeholder="6 caractères minimum"
+                      placeholder="8 caractères minimum"
+                      aria-describedby="signup-password-criteria"
                     >
                     <button
                       type="button"
@@ -210,12 +213,13 @@ interface ProfileOption {
                       }
                     </button>
                   </div>
+                  <app-password-criteria id="signup-password-criteria" [password]="basicsForm.controls.password.value" />
                 </div>
               </div>
 
               @if (basicsForm.invalid && basicsForm.touched) {
                 <p class="mt-5 text-sm text-destructive">
-                  Renseignez un nom, une localisation, un email valide et un mot de passe d'au moins 6 caractères.
+                  Renseignez un nom, une localisation, un email valide et un mot de passe qui respecte les critères ci-dessus.
                 </p>
               }
 
@@ -464,7 +468,7 @@ export class InscriptionComponent {
   readonly basicsForm = this.fb.nonNullable.group({
     displayName: ['', Validators.required],
     email: ['', [Validators.required, Validators.email, registrationEmailValidator()]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
+    password: ['', [Validators.required, passwordPolicyValidator]],
     location: ['', Validators.required],
   });
 

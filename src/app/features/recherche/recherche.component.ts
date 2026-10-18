@@ -15,9 +15,9 @@ import {
 import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { MarketplaceProfile } from '../../core/data/mock-platform.data';
-import { ProfileType } from '../../core/models/user.model';
+import { ProfileType, MATCH_REASONS_UPSELL, canSeeMatchReasons } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
-import { MatchingService, searchTargetFor } from '../../core/services/matching.service';
+import { MatchingService } from '../../core/services/matching.service';
 
 type SearchProfileType = ProfileType;
 
@@ -110,12 +110,7 @@ type SearchProfileType = ProfileType;
                 <span class="font-bold text-primary">{{ filteredProfiles().length }}</span>
                 <span class="text-muted-foreground"> {{ searchResultLabel() }}</span>
               </div>
-              <select class="cursor-pointer rounded-lg border border-border bg-secondary px-4 py-2.5 text-sm font-medium outline-none focus:border-accent">
-                <option>Pertinence IA</option>
-                <option>Plus récents</option>
-                <option>Compatibilité décroissante</option>
-                <option>Localisation</option>
-              </select>
+              <span class="text-sm font-medium text-muted-foreground">Triés par compatibilité</span>
             </div>
 
             <div
@@ -200,7 +195,6 @@ type SearchProfileType = ProfileType;
                   #searchCard
                   class="search-card-reveal flex min-h-[21.5rem] flex-col rounded-2xl border-2 border-border bg-white p-6 shadow-sm transition-all hover:shadow-lg"
                   [style.--reveal-delay]="revealDelay(profileIndex)"
-                  [class.blur-sm]="isLockedCard(profileIndex)"
                 >
                   <div class="mb-4 flex items-start justify-between">
                     <div class="flex items-center gap-3">
@@ -244,7 +238,7 @@ type SearchProfileType = ProfileType;
                   </div>
 
                   <div class="mt-auto flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div class="flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1.5 text-accent">
+                    <div class="flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1.5 text-accent" [title]="canSeeReasons() ? (profile.matchReasons ?? []).join(' · ') : reasonsUpsell">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
                       </svg>
@@ -267,35 +261,6 @@ type SearchProfileType = ProfileType;
                 </div>
               }
 
-              @if (showLockedOverlay()) {
-                <div class="absolute inset-x-0 bottom-0 top-[60%] flex items-center justify-center px-4">
-                  <div class="locked-upgrade-panel pointer-events-auto max-w-md rounded-2xl border-2 border-accent bg-white/95 p-8 text-center shadow-2xl backdrop-blur-md">
-                    <div class="locked-upgrade-icon mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary shadow-lg">
-                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m2 4 3 12h14l3-12-6 5-4-5-4 5-6-5z"/>
-                        <path d="M5 20h14"/>
-                      </svg>
-                    </div>
-                    <h3 class="mb-3 text-2xl font-bold text-primary dark:text-foreground">Passez en PRO</h3>
-                    <p class="mb-6 leading-relaxed text-muted-foreground dark:text-muted-foreground">
-                      Débloquez les {{ lockedProfilesCount() }} {{ searchResultLabel() }} restants, la recherche avancée et la messagerie illimitée.
-                    </p>
-                    <a
-                      routerLink="/tarifs"
-                      class="locked-upgrade-cta mb-3 block w-full rounded-lg bg-accent py-4 text-lg font-bold text-white shadow-lg shadow-accent/20 transition-colors hover:bg-accent/90"
-                    >
-                      Découvrir PRO - 49€/mois
-                    </a>
-                    <button
-                      type="button"
-                      (click)="activateProDemo()"
-                      class="locked-demo-link text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      Aperçu démo (pour ce test)
-                    </button>
-                  </div>
-                </div>
-              }
             </div>
           </div>
         </div>
@@ -305,6 +270,8 @@ type SearchProfileType = ProfileType;
 })
 export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly auth = inject(AuthService);
+  readonly canSeeReasons = computed(() => canSeeMatchReasons(this.auth.plan()));
+  readonly reasonsUpsell = MATCH_REASONS_UPSELL;
   private readonly matchingService = inject(MatchingService);
   private intersectionObserver: IntersectionObserver | null = null;
   private cardsChangesSubscription: Subscription | null = null;
@@ -322,7 +289,9 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly allProfiles = signal<MarketplaceProfile[]>([]);
 
   readonly viewerType = computed<ProfileType>(() => this.auth.currentUser()?.profileType ?? 'entrepreneur');
-  readonly visibleProfileType = computed<SearchProfileType>(() => searchTargetFor(this.viewerType()));
+  readonly visibleProfileType = computed<SearchProfileType>(() =>
+    this.viewerType() === 'entrepreneur' ? 'talent' : 'entrepreneur'
+  );
 
   readonly filteredProfiles = computed<MarketplaceProfile[]>(() => {
     const targetType = this.visibleProfileType();
@@ -343,31 +312,20 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
   });
 
   readonly highlightedProfiles = computed(() => this.filteredProfiles().slice(0, 3));
-  readonly showLockedOverlay = computed(() =>
-    this.auth.plan() === 'FREE' && this.filteredProfiles().length > 6
-  );
-  readonly lockedProfilesCount = computed(() => Math.max(this.filteredProfiles().length - 6, 0));
   readonly audiencePanelTitle = computed(() =>
     this.visibleProfileType() === 'talent' ? 'Vous voyez uniquement les talents' : 'Vous voyez uniquement les projets'
   );
-  readonly audiencePanelDescription = computed(() => {
-    switch (this.viewerType()) {
-      case 'talent':
-        return 'En tant que talent, la recherche affiche les projets publiés par des porteurs de projet.';
-      case 'buyer':
-        return "En tant que repreneur, la recherche affiche les talents qui peuvent vous aider à faire tourner l'entreprise que vous reprenez.";
-      case 'seller':
-        return "En tant que cédant, la recherche affiche les talents, par exemple un associé qui reprendrait progressivement l'activité.";
-      default:
-        return "En tant qu'entrepreneur, la recherche affiche les talents qui peuvent rejoindre votre projet.";
-    }
-  });
+  readonly audiencePanelDescription = computed(() =>
+    this.visibleProfileType() === 'talent'
+      ? "En tant qu'entrepreneur, la recherche affiche seulement des talents afin de garder un matching clair."
+      : 'En tant que talent, la recherche affiche seulement les projets publiés par des entrepreneurs.'
+  );
   readonly searchResultLabel = computed(() =>
     this.visibleProfileType() === 'talent' ? 'talents disponibles' : 'projets disponibles'
   );
   readonly highlightedBannerTitle = computed(() =>
     this.visibleProfileType() === 'talent'
-      ? 'Les talents les plus alignés avec votre recherche'
+      ? 'Les talents les plus alignés avec votre projet'
       : 'Les projets les plus alignés avec votre profil'
   );
   readonly hasActiveFilters = computed(() =>
@@ -413,14 +371,6 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectedStage.set([]);
     this.selectedLocation.set('');
     this.isAvailableNow.set(false);
-  }
-
-  isLockedCard(index: number): boolean {
-    return this.showLockedOverlay() && index >= 6;
-  }
-
-  activateProDemo(): void {
-    void this.auth.grantDemoPlan('PRO');
   }
 
   revealDelay(index: number): string {

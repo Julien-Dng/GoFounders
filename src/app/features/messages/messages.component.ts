@@ -1,6 +1,6 @@
 import { NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, HostListener, OnInit, computed, effect, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
 import {
@@ -8,7 +8,10 @@ import {
   MarketplaceProfile,
   findMarketplaceProfileById
 } from '../../core/data/mock-platform.data';
+import { MATCH_REASONS_UPSELL, canSeeMatchReasons } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
+import { MatchingService } from '../../core/services/matching.service';
+import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
 import { ConversationThread, MessagingService } from '../../core/services/messaging.service';
 
 interface ConversationPreview {
@@ -26,7 +29,7 @@ interface ConversationPreview {
 @Component({
   selector: 'app-messages',
   standalone: true,
-  imports: [NgClass],
+  imports: [NgClass, RouterLink, AvatarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="mt-20 h-[calc(100vh-80px)] bg-secondary px-4 py-4 sm:px-6 lg:px-8">
@@ -38,9 +41,7 @@ interface ConversationPreview {
         <!-- Top bar : infos conversation -->
         <div class="flex flex-shrink-0 items-center gap-3 border-b border-border bg-white px-4 py-3">
           @if (selectedConv()) {
-            <div class="w-9 h-9 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-              {{ selectedConv()!.initials }}
-            </div>
+            <app-avatar class="h-9 w-9 text-sm" [photoUrl]="selectedConv()!.profile?.photoURL" [initials]="selectedConv()!.initials" [name]="selectedConv()!.name" />
             <div class="flex-1 min-w-0">
               <div class="font-bold text-sm">{{ selectedConv()!.name }}</div>
               <div class="text-xs text-green-500 font-medium flex items-center gap-1">
@@ -73,6 +74,15 @@ interface ConversationPreview {
 
           <!-- Barre de saisie -->
           <div class="bg-white border-t border-border p-3 flex-shrink-0 sm:p-4">
+            @if (sendError()) {
+              <div class="mb-3 flex flex-col gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between" role="alert">
+                <span>{{ sendError() }}</span>
+                <a routerLink="/tarifs" class="font-semibold text-accent hover:underline">Voir l'offre PRO</a>
+              </div>
+            }
+            @if (messageQuotaLabel()) {
+              <p class="mb-2 text-xs text-muted-foreground" aria-live="polite">{{ messageQuotaLabel() }}</p>
+            }
             <div class="flex items-center gap-2">
 
               <input #fileInput type="file" accept="image/*,.pdf,.doc,.docx" class="hidden" (change)="onFileSelected($event)">
@@ -159,24 +169,25 @@ interface ConversationPreview {
         <!-- MINI PROFIL -->
         <aside class="order-2 hidden h-full w-72 flex-shrink-0 overflow-hidden rounded-2xl border border-border bg-white shadow-sm xl:block">
           @if (selectedConv()) {
-            <div class="bg-gradient-to-br from-accent to-primary px-5 pb-12 pt-6 text-white">
-              <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white/20 text-lg font-bold ring-4 ring-white/15">
-                {{ selectedProfile()?.initials ?? selectedConv()!.initials }}
-              </div>
-            </div>
+            <div class="h-20 bg-gradient-to-br from-accent to-primary" aria-hidden="true"></div>
 
             <div class="-mt-8 px-5 pb-5 text-center">
-              <div class="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary text-lg font-bold text-white shadow-lg ring-4 ring-white">
-                {{ selectedProfile()?.initials ?? selectedConv()!.initials }}
-              </div>
+              <app-avatar
+                class="mx-auto mb-3 h-16 w-16 text-lg shadow-lg ring-4 ring-white"
+                [photoUrl]="selectedProfile()?.photoURL"
+                [initials]="selectedProfile()?.initials ?? selectedConv()!.initials"
+                [name]="selectedProfile()?.displayName ?? selectedConv()!.name"
+              />
               <h3 class="text-base font-bold">{{ selectedProfile()?.displayName ?? selectedConv()!.name }}</h3>
               <p class="mt-1 text-xs font-medium text-muted-foreground">{{ selectedProfile()?.title ?? 'Profil GoFounders' }}</p>
 
-              <div class="mt-4 grid grid-cols-2 gap-2 text-left">
-                <div class="rounded-xl bg-secondary p-3">
-                  <div class="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Match</div>
-                  <div class="mt-1 text-lg font-bold text-accent">{{ selectedProfile()?.match ?? 0 }}%</div>
-                </div>
+              <div class="mt-4 grid gap-2 text-left" [class.grid-cols-2]="selectedCompatibility() !== null">
+                @if (selectedCompatibility(); as compatibility) {
+                  <div class="rounded-xl bg-secondary p-3" [title]="canSeeReasons() ? compatibility.reasons.join(' · ') : reasonsUpsell">
+                    <div class="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Compatibilité</div>
+                    <div class="mt-1 text-lg font-bold text-accent">{{ compatibility.score }}%</div>
+                  </div>
+                }
                 <div class="rounded-xl bg-secondary p-3">
                   <div class="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Ville</div>
                   <div class="mt-1 truncate text-sm font-bold">{{ selectedProfile()?.location ?? 'France' }}</div>
@@ -231,9 +242,7 @@ interface ConversationPreview {
                 ? 'bg-accent/5 border-l-4 border-l-accent'
                 : 'hover:bg-secondary'"
             >
-              <div class="w-10 h-10 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                {{ conv.initials }}
-              </div>
+              <app-avatar class="h-10 w-10 text-sm" [photoUrl]="conv.profile?.photoURL" [initials]="conv.initials" [name]="conv.name" />
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between mb-0.5">
                   <span class="font-semibold text-sm truncate">{{ conv.name }}</span>
@@ -267,7 +276,10 @@ export class MessagesComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
+  readonly canSeeReasons = computed(() => canSeeMatchReasons(this.auth.plan()));
+  readonly reasonsUpsell = MATCH_REASONS_UPSELL;
   private readonly messagingService = inject(MessagingService);
+  private readonly matchingService = inject(MatchingService);
 
   readonly conversations = signal<ConversationPreview[]>([]);
 
@@ -285,8 +297,29 @@ export class MessagesComponent implements OnInit {
     const activeConversation = this.selectedConv();
     return activeConversation?.profile ?? findMarketplaceProfileById(activeConversation?.participantProfileId ?? '');
   });
+  // Score calculé à l'ouverture d'une conversation ; null quand il n'a pas de sens (deux talents, acheteur...).
+  readonly selectedCompatibility = signal<{ score: number; reasons: string[] } | null>(null);
+  private readonly selectedCompatibilityEffect = effect(() => {
+    const participantId = this.selectedConv()?.participantProfileId;
+    this.selectedCompatibility.set(null);
+
+    if (participantId) {
+      void this.loadCompatibility(participantId);
+    }
+  }, { allowSignalWrites: true });
   readonly selectedProfileSkills = computed(() => this.selectedProfile()?.skills.slice(0, 4) ?? []);
   readonly newMessage = signal('');
+  readonly sendError = this.messagingService.lastError;
+  // Compteur visible pour les porteurs de projet en FREE (limite de nouveaux contacts ; null = illimité).
+  readonly messageQuotaLabel = computed(() => {
+    const quota = this.messagingService.quota();
+
+    if (!quota || quota.contactsLimit === null) {
+      return '';
+    }
+
+    return `Plan FREE : ${quota.contactsUsed}/${quota.contactsLimit} nouveaux contacts ce mois-ci · réponses illimitées`;
+  });
   readonly emojiPickerOpen = signal(false);
 
   readonly localMessages = signal<Record<string, ConversationMessage[]>>({});
@@ -378,6 +411,14 @@ export class MessagesComponent implements OnInit {
     }
   }
 
+  private async loadCompatibility(participantId: string): Promise<void> {
+    const profile = await this.matchingService.getMarketplaceProfileById(participantId);
+
+    if (this.selectedConv()?.participantProfileId === participantId) {
+      this.selectedCompatibility.set(profile?.matchReasons ? { score: profile.match, reasons: profile.matchReasons } : null);
+    }
+  }
+
   private async loadConversations(): Promise<void> {
     await this.auth.ensureSessionReady();
     const user = this.auth.currentUser();
@@ -386,6 +427,8 @@ export class MessagesComponent implements OnInit {
       return;
     }
 
+    this.messagingService.lastError.set('');
+    void this.messagingService.refreshQuota();
     const requestedConversationOrProfileId = this.requestedConversationId();
     let threads = await this.messagingService.getConversationThreads(user);
     let selectedConversationId = requestedConversationOrProfileId;

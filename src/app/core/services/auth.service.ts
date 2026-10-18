@@ -2,7 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Timestamp } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { User as SupabaseAuthUser } from '@supabase/supabase-js';
-import { SupabaseProfileInsert, SupabaseProfileRow, SupabaseProjectInsert } from '../models/supabase-database.model';
+import { SupabaseProfileInsert, SupabaseProfileRow, SupabaseProjectInsert, PROFILE_COLUMNS } from '../models/supabase-database.model';
 import { Plan, ProfileType, User } from '../models/user.model';
 import { validateRegistrationEmail } from '../validators/email-policy.validator';
 import { SupabaseService } from './supabase.service';
@@ -23,11 +23,15 @@ interface StoredUserRecord {
   skills?: string[];
   lookingFor?: string[];
   availabilityLabel?: string;
+  maSector?: string;
+  maBudget?: string;
+  maRegion?: string;
   githubUrl?: string;
   linkedinUrl?: string;
   websiteUrl?: string;
   plan: Plan;
   maAccess: boolean;
+  maAccessExpiresAt?: string;
   isAdmin?: boolean;
   stripeCustomerId?: string;
   createdAt: string;
@@ -71,6 +75,9 @@ export interface UpdateProfilePayload {
   skills: string[];
   lookingFor: string[];
   availabilityLabel: string;
+  maSector?: string;
+  maBudget?: string;
+  maRegion?: string;
   githubUrl: string;
   linkedinUrl: string;
   websiteUrl: string;
@@ -143,47 +150,22 @@ export class AuthService {
     return this.signUpLocally(payload, returnUrl);
   }
 
-  async grantMaAccess(): Promise<boolean> {
+  // Recharge le profil après un changement de droits fait côté serveur (paiement simulé ou webhook Stripe).
+  async reloadCurrentProfile(): Promise<boolean> {
     const activeUser = this._currentUser();
 
-    if (!activeUser) {
+    if (!activeUser || !this.supabase.isConfigured) {
       return false;
     }
 
-    // Sur Supabase, l'accès M&A ne s'accorde jamais depuis le navigateur (paiement + activation côté serveur).
-    if (this.supabase.isConfigured) {
-      return false;
-    }
-
-    const users = this.readUsers();
-    const userIndex = users.findIndex(user => user.uid === activeUser.uid);
-
-    if (userIndex < 0) {
-      return false;
-    }
-
-    const updatedUser: StoredUserRecord = {
-      ...users[userIndex],
-      maAccess: true,
-      lastActive: new Date().toISOString(),
-    };
-
-    users[userIndex] = updatedUser;
-    this.writeUsers(users);
-    this.setAuthenticatedUser(updatedUser);
-
-    return true;
+    return this.loadSupabaseProfile(activeUser.uid);
   }
 
-  async grantDemoPlan(plan: Exclude<Plan, 'FREE'> = 'PRO'): Promise<boolean> {
+  // Mode local sans Supabase uniquement : applique les droits d'un paiement simulé.
+  applyLocalEntitlements(entitlements: { plan?: Exclude<Plan, 'FREE'>; maAccess?: boolean; maAccessExpiresAt?: string }): boolean {
     const activeUser = this._currentUser();
 
-    if (!activeUser) {
-      return false;
-    }
-
-    // Sur Supabase, le plan ne se change jamais depuis le navigateur (abonnement Stripe côté serveur).
-    if (this.supabase.isConfigured) {
+    if (!activeUser || this.supabase.isConfigured) {
       return false;
     }
 
@@ -196,7 +178,7 @@ export class AuthService {
 
     const updatedUser: StoredUserRecord = {
       ...users[userIndex],
-      plan,
+      ...entitlements,
       lastActive: new Date().toISOString(),
     };
 
@@ -215,14 +197,154 @@ export class AuthService {
     return this.updateProfileLocally(payload);
   }
 
-  async signOut(): Promise<void> {
+  // Envoie l'email de réinitialisation ; le lien ramène sur /reinitialiser-mot-de-passe.
+  // Réponse identique que le compte existe ou non, pour ne pas révéler les emails inscrits.
+  async requestPasswordReset(email: string): Promise<AuthResult> {
+    if (!this.supabase.isConfigured) {
+      return { success: false, message: 'La réinitialisation nécessite Supabase (indisponible en mode local).' };
+    }
+
+    const { error } = await this.supabase.client.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo: `${window.location.origin}/reinitialiser-mot-de-passe`,
+    });
+
+    if (error?.status === 429) {
+      return { success: false, message: 'Trop de demandes. Réessayez dans quelques minutes.' };
+    }
+
+    return {
+      success: true,
+      message: 'Si un compte existe avec cet email, vous allez recevoir un lien pour choisir un nouveau mot de passe.',
+    };
+  }
+
+  // Session de récupération ouverte par le lien de l'email (lu automatiquement dans l'URL par Supabase).
+  async hasRecoverySession(): Promise<boolean> {
+    if (!this.supabase.isConfigured) {
+      return false;
+    }
+
+    const { data } = await this.supabase.client.auth.getSession();
+    return !!data.session;
+  }
+
+  // context : 'reset' depuis le lien « mot de passe oublié », 'settings' depuis /parametres.
+  async updatePassword(password: string, context: 'reset' | 'settings' = 'reset'): Promise<AuthResult> {
+    if (!this.supabase.isConfigured) {
+      return { success: false, message: 'Le changement de mot de passe nécessite Supabase (indisponible en mode local).' };
+    }
+
+    // Même nettoyage qu'à la connexion (signIn), pour que le nouveau mot de passe fonctionne ensuite.
+    const { error } = await this.supabase.client.auth.updateUser({ password: password.trim() });
+
+    if (error) {
+      return {
+        success: false,
+        message: error.code === 'same_password'
+          ? "Choisissez un mot de passe différent de l'ancien."
+          : error.code === 'weak_password'
+            ? 'Mot de passe refusé : il ne respecte pas les critères de sécurité.'
+            : error.code === 'reauthentication_needed'
+              ? 'Par sécurité, reconnectez-vous puis réessayez (ou utilisez « Mot de passe oublié » sur la page de connexion).'
+              : context === 'settings'
+                ? 'Impossible de modifier le mot de passe pour le moment. Réessayez dans quelques minutes.'
+                : 'Le lien a expiré ou est invalide. Refaites une demande de réinitialisation.',
+      };
+    }
+
+    return { success: true };
+  }
+
+  // Changement d'email : Supabase envoie un lien de confirmation (aux deux adresses si
+  // « Secure email change » est activé) ; l'email ne change qu'après confirmation.
+  async updateEmail(email: string): Promise<AuthResult> {
+    if (!this.supabase.isConfigured) {
+      return { success: false, message: "Le changement d'email nécessite Supabase (indisponible en mode local)." };
+    }
+
+    const policy = validateRegistrationEmail(email);
+    if (!policy.valid) {
+      return { success: false, message: policy.message ?? 'Adresse email refusée.' };
+    }
+
+    const { error } = await this.supabase.client.auth.updateUser(
+      { email: email.trim().toLowerCase() },
+      { emailRedirectTo: `${window.location.origin}/parametres` }
+    );
+
+    if (error) {
+      return {
+        success: false,
+        message: error.code === 'email_exists'
+          ? 'Cette adresse est déjà utilisée par un autre compte.'
+          : error.status === 429
+            ? 'Trop de demandes. Réessayez dans quelques minutes.'
+            : "Impossible de modifier l'email pour le moment.",
+      };
+    }
+
+    return {
+      success: true,
+      message: 'Un lien de confirmation vient d’être envoyé. Votre email changera une fois le lien ouvert (vérifiez aussi votre ancienne adresse).',
+    };
+  }
+
+  // Visibilité dans la recherche (colonne is_visible, 2026-10-12-parametres.sql).
+  async getProfileVisibility(): Promise<boolean | null> {
+    const user = this._currentUser();
+    if (!user || !this.supabase.isConfigured) {
+      return null;
+    }
+
+    const { data, error } = await this.supabase.client.from('profiles').select('is_visible').eq('id', user.uid).maybeSingle();
+    return error || !data ? null : (data as { is_visible: boolean }).is_visible;
+  }
+
+  async setProfileVisibility(isVisible: boolean): Promise<AuthResult> {
+    const user = this._currentUser();
+    if (!user || !this.supabase.isConfigured) {
+      return { success: false, message: 'La visibilité nécessite Supabase (indisponible en mode local).' };
+    }
+
+    const { error } = await this.supabase.client.from('profiles').update({ is_visible: isVisible }).eq('id', user.uid);
+    return error
+      ? { success: false, message: 'Impossible de modifier la visibilité pour le moment.' }
+      : { success: true, message: isVisible ? 'Votre profil apparaît de nouveau dans la recherche.' : 'Votre profil est masqué de la recherche.' };
+  }
+
+  // Suppression définitive du compte et de ses données (fonction Supabase delete_my_account).
+  async deleteAccount(): Promise<AuthResult> {
+    if (!this.supabase.isConfigured) {
+      const user = this._currentUser();
+      this.writeUsers(this.readUsers().filter(stored => stored.uid !== user?.uid));
+      await this.signOut({ compteSupprime: '1' });
+      return { success: true };
+    }
+
+    const userId = this._currentUser()?.uid;
+    if (userId) {
+      // Avant la suppression du compte : ensuite, la session ne permet plus d'accéder au stockage.
+      await this.removeAvatarFiles(userId);
+    }
+
+    const { error } = await this.supabase.client.rpc('delete_my_account');
+
+    if (error) {
+      return { success: false, message: 'La suppression a échoué. Réessayez ou contactez support@gofounders.fr.' };
+    }
+
+    await this.signOut({ compteSupprime: '1' });
+    return { success: true };
+  }
+
+  async signOut(connexionQueryParams?: Record<string, string>): Promise<void> {
     if (this.supabase.isConfigured) {
       await this.supabase.client.auth.signOut();
     }
 
     this._currentUser.set(null);
     this.removeSession();
-    await this.router.navigate(['/connexion']);
+    await this.router.navigate(['/connexion'], { queryParams: connexionQueryParams });
   }
 
   private async signInWithSupabase(payload: SignInPayload, returnUrl?: string | null): Promise<AuthResult> {
@@ -246,7 +368,7 @@ export class AuthService {
       };
     }
 
-    const loaded = await this.loadSupabaseProfile(data.user);
+    const loaded = await this.loadSupabaseProfile(data.user.id, data.user);
 
     if (!loaded) {
       return {
@@ -277,6 +399,9 @@ export class AuthService {
           project_name: payload.projectName?.trim() ?? '',
           project_sector: payload.projectSector?.trim() ?? '',
           project_stage: payload.projectStage?.trim() ?? 'mvp',
+          ma_sector: this.initialMaField(payload, payload.maSector) ?? '',
+          ma_budget: this.initialMaField(payload, payload.maBudget) ?? '',
+          ma_region: this.initialMaField(payload, payload.maRegion) ?? '',
         },
       },
     });
@@ -284,7 +409,9 @@ export class AuthService {
     if (error || !data.user) {
       return {
         success: false,
-        message: error?.message ?? 'Creation du compte impossible.',
+        message: error?.code === 'weak_password'
+          ? 'Mot de passe trop faible : 8 caractères minimum, avec une minuscule, une majuscule, un chiffre et un symbole.'
+          : error?.message ?? 'Creation du compte impossible.',
       };
     }
 
@@ -331,10 +458,14 @@ export class AuthService {
     email: string,
     payload: SignUpPayload
   ): Promise<{ profile: SupabaseProfileRow | null; errorMessage?: string }> {
-    const existingProfile = await this.fetchOwnProfile();
+    const { data: existingProfile } = await this.supabase.client
+      .from('profiles')
+      .select(PROFILE_COLUMNS)
+      .eq('id', userId)
+      .maybeSingle();
 
     if (existingProfile) {
-      const { error } = await this.supabase.client
+      const { data, error } = await this.supabase.client
         .from('profiles')
         .update({
           display_name: payload.displayName.trim(),
@@ -343,23 +474,30 @@ export class AuthService {
           skills: this.buildInitialSkills(payload) ?? [],
           looking_for: this.buildInitialLookingFor(payload) ?? [],
           availability_label: payload.profileType === 'talent' && payload.talentAvailability ? 'Disponible rapidement' : null,
+          ma_sector: this.initialMaField(payload, payload.maSector) ?? null,
+          ma_budget: this.initialMaField(payload, payload.maBudget) ?? null,
+          ma_region: this.initialMaField(payload, payload.maRegion) ?? null,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', userId);
+        .eq('id', userId)
+        .select('*')
+        .single();
 
       return {
-        profile: error ? null : await this.fetchOwnProfile(),
+        profile: data as SupabaseProfileRow | null,
         errorMessage: error?.message,
       };
     }
 
     const profileInsert = this.buildSupabaseProfileInsert(userId, email, payload);
-    const { error } = await this.supabase.client
+    const { data, error } = await this.supabase.client
       .from('profiles')
-      .insert(profileInsert);
+      .insert(profileInsert)
+      .select(PROFILE_COLUMNS)
+      .single();
 
     return {
-      profile: error ? null : await this.fetchOwnProfile(),
+      profile: data as SupabaseProfileRow | null,
       errorMessage: error?.message,
     };
   }
@@ -381,7 +519,12 @@ export class AuthService {
       photoUrl = uploadedPhotoUrl ?? activeUser.photoURL ?? null;
     }
 
-    const { error } = await this.supabase.client
+    if (!photoUrl && activeUser.photoURL) {
+      // Photo retirée : le fichier n'est plus utilisé.
+      await this.removeAvatarFiles(activeUser.uid);
+    }
+
+    const { data, error } = await this.supabase.client
       .from('profiles')
       .update({
         display_name: payload.displayName.trim(),
@@ -391,15 +534,18 @@ export class AuthService {
         skills: this.cleanTags(payload.skills) ?? [],
         looking_for: this.cleanTags(payload.lookingFor) ?? [],
         availability_label: this.cleanOptionalText(payload.availabilityLabel) ?? null,
+        ma_sector: this.cleanOptionalText(payload.maSector) ?? null,
+        ma_budget: this.cleanOptionalText(payload.maBudget) ?? null,
+        ma_region: this.cleanOptionalText(payload.maRegion) ?? null,
         github_url: this.cleanOptionalText(payload.githubUrl) ?? null,
         linkedin_url: this.cleanOptionalText(payload.linkedinUrl) ?? null,
         website_url: this.cleanOptionalText(payload.websiteUrl) ?? null,
         photo_url: photoUrl,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', activeUser.uid);
-
-    const data = error ? null : await this.fetchOwnProfile();
+      .eq('id', activeUser.uid)
+      .select('*')
+      .single();
 
     if (error || !data) {
       return {
@@ -445,13 +591,15 @@ export class AuthService {
       return;
     }
 
-    await this.loadSupabaseProfile(authUser);
+    await this.loadSupabaseProfile(authUser.id, authUser);
   }
 
-  private async loadSupabaseProfile(authUser?: SupabaseAuthUser): Promise<boolean> {
+  private async loadSupabaseProfile(userId: string, authUser?: SupabaseAuthUser): Promise<boolean> {
     const { data, error } = await this.supabase.client
-      .rpc('get_my_profile')
-      .maybeSingle<SupabaseProfileRow>();
+      .from('profiles')
+      .select(PROFILE_COLUMNS)
+      .eq('id', userId)
+      .maybeSingle();
 
     if (error) {
       this._currentUser.set(null);
@@ -486,24 +634,17 @@ export class AuthService {
       availability_label: this.readMetadataText(metadata, 'availability_label') ?? null,
     };
 
-    const { error } = await this.supabase.client
+    const { data, error } = await this.supabase.client
       .from('profiles')
-      .insert(profileInsert);
+      .insert(profileInsert)
+      .select(PROFILE_COLUMNS)
+      .single();
 
-    if (error) {
+    if (error || !data) {
       return null;
     }
 
-    return this.fetchOwnProfile();
-  }
-
-  // Le profil complet (email, plan, accès M&A) n'est lisible que par son propriétaire, via get_my_profile().
-  private async fetchOwnProfile(): Promise<SupabaseProfileRow | null> {
-    const { data, error } = await this.supabase.client
-      .rpc('get_my_profile')
-      .maybeSingle<SupabaseProfileRow>();
-
-    return error ? null : data;
+    return data as SupabaseProfileRow;
   }
 
   private async createInitialProject(ownerId: string, payload: SignUpPayload): Promise<void> {
@@ -527,6 +668,27 @@ export class AuthService {
     }
   }
 
+  // Supprime les photos de l'utilisateur (dossier <id>/ du bucket avatars), sauf keepPath.
+  // Nécessite les règles de 2026-10-12-avatars.sql ; un échec n'empêche pas l'action en cours.
+  private async removeAvatarFiles(userId: string, keepPath?: string): Promise<void> {
+    const bucket = this.supabase.client.storage.from('avatars');
+    const { data, error } = await bucket.list(userId, { limit: 100 });
+
+    if (error || !data) {
+      console.warn('Photos de profil non listées :', error?.message);
+      return;
+    }
+
+    const paths = data.map(file => `${userId}/${file.name}`).filter(path => path !== keepPath);
+
+    if (paths.length > 0) {
+      const { error: removeError } = await bucket.remove(paths);
+      if (removeError) {
+        console.warn('Photos de profil non supprimées :', removeError.message);
+      }
+    }
+  }
+
   private async uploadAvatar(userId: string, dataUrl: string): Promise<string | null> {
     try {
       const response = await fetch(dataUrl);
@@ -544,6 +706,9 @@ export class AuthService {
         console.warn('Avatar non envoye dans Supabase Storage:', error.message);
         return null;
       }
+
+      // Les anciennes photos ne servent plus : on ne garde que la nouvelle.
+      await this.removeAvatarFiles(userId, filePath);
 
       const { data } = this.supabase.client.storage.from('avatars').getPublicUrl(filePath);
       return data.publicUrl;
@@ -600,6 +765,9 @@ export class AuthService {
       skills: this.buildInitialSkills(payload),
       lookingFor: this.buildInitialLookingFor(payload),
       availabilityLabel: payload.profileType === 'talent' && payload.talentAvailability ? 'Disponible rapidement' : undefined,
+      maSector: this.initialMaField(payload, payload.maSector),
+      maBudget: this.initialMaField(payload, payload.maBudget),
+      maRegion: this.initialMaField(payload, payload.maRegion),
       plan: 'FREE',
       maAccess: false,
       createdAt: now,
@@ -645,6 +813,9 @@ export class AuthService {
       skills: this.cleanTags(payload.skills),
       lookingFor: this.cleanTags(payload.lookingFor),
       availabilityLabel: this.cleanOptionalText(payload.availabilityLabel),
+      maSector: this.cleanOptionalText(payload.maSector),
+      maBudget: this.cleanOptionalText(payload.maBudget),
+      maRegion: this.cleanOptionalText(payload.maRegion),
       githubUrl: this.cleanOptionalText(payload.githubUrl),
       linkedinUrl: this.cleanOptionalText(payload.linkedinUrl),
       websiteUrl: this.cleanOptionalText(payload.websiteUrl),
@@ -743,6 +914,9 @@ export class AuthService {
       skills: this.buildInitialSkills(payload) ?? [],
       looking_for: this.buildInitialLookingFor(payload) ?? [],
       availability_label: payload.profileType === 'talent' && payload.talentAvailability ? 'Disponible rapidement' : null,
+      ma_sector: this.initialMaField(payload, payload.maSector) ?? null,
+      ma_budget: this.initialMaField(payload, payload.maBudget) ?? null,
+      ma_region: this.initialMaField(payload, payload.maRegion) ?? null,
     };
   }
 
@@ -779,7 +953,11 @@ export class AuthService {
       return this.cleanTags(['Projet entrepreneurial']);
     }
 
-    return this.cleanTags([payload.maBudget ?? '', payload.maRegion ?? '']);
+    return undefined;
+  }
+
+  private initialMaField(payload: SignUpPayload, value: string | undefined): string | undefined {
+    return payload.profileType === 'buyer' || payload.profileType === 'seller' ? this.cleanOptionalText(value) : undefined;
   }
 
   private toRuntimeUser(user: StoredUserRecord): User {
@@ -795,11 +973,15 @@ export class AuthService {
       skills: user.skills,
       lookingFor: user.lookingFor,
       availabilityLabel: user.availabilityLabel,
+      maSector: user.maSector,
+      maBudget: user.maBudget,
+      maRegion: user.maRegion,
       githubUrl: user.githubUrl,
       linkedinUrl: user.linkedinUrl,
       websiteUrl: user.websiteUrl,
       plan: user.plan,
-      maAccess: user.maAccess,
+      maAccess: this.isMaAccessActive(user.maAccess, user.maAccessExpiresAt),
+      maAccessExpiresAt: user.maAccessExpiresAt,
       isAdmin: user.isAdmin ?? false,
       stripeCustomerId: user.stripeCustomerId,
       createdAt: Timestamp.fromDate(new Date(user.createdAt)),
@@ -812,7 +994,8 @@ export class AuthService {
   private toRuntimeUserFromSupabaseProfile(profile: SupabaseProfileRow, authUser?: SupabaseAuthUser): User {
     return {
       uid: profile.id,
-      email: profile.email || authUser?.email || '',
+      // L'email n'est plus lisible dans profiles : il vient de la session Supabase.
+      email: profile.email || authUser?.email || this._currentUser()?.email || '',
       displayName: profile.display_name,
       photoURL: profile.photo_url ?? undefined,
       location: profile.location ?? '',
@@ -822,11 +1005,15 @@ export class AuthService {
       skills: profile.skills ?? undefined,
       lookingFor: profile.looking_for ?? undefined,
       availabilityLabel: profile.availability_label ?? undefined,
+      maSector: profile.ma_sector ?? undefined,
+      maBudget: profile.ma_budget ?? undefined,
+      maRegion: profile.ma_region ?? undefined,
       githubUrl: profile.github_url ?? undefined,
       linkedinUrl: profile.linkedin_url ?? undefined,
       websiteUrl: profile.website_url ?? undefined,
       plan: profile.plan,
-      maAccess: profile.ma_access,
+      maAccess: this.isMaAccessActive(profile.ma_access, profile.ma_access_expires_at),
+      maAccessExpiresAt: profile.ma_access_expires_at ?? undefined,
       isAdmin: profile.is_admin ?? false,
       createdAt: Timestamp.fromDate(new Date(profile.created_at)),
       lastActive: Timestamp.fromDate(new Date(profile.updated_at)),
@@ -842,6 +1029,11 @@ export class AuthService {
       ]),
       verified: Boolean(authUser?.email_confirmed_at),
     };
+  }
+
+  // Accès M&A valable 12 mois après l'achat (sans date : accès accordé avant la durée limitée).
+  private isMaAccessActive(maAccess: boolean, expiresAt: string | null | undefined): boolean {
+    return maAccess && (!expiresAt || new Date(expiresAt).getTime() > Date.now());
   }
 
   private computeInitials(displayName: string): string {
