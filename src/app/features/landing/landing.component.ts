@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild, computed, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, ViewChild, inject } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
@@ -9,6 +9,13 @@ interface PricingPreviewPlan {
   price: string;
   popular: boolean;
   features: string[];
+  href: string;
+  cta: string;
+}
+
+interface LandingFaqItem {
+  question: string;
+  answer: string;
 }
 
 type LandingIcon = 'rocket' | 'profile' | 'lock' | 'handshake' | 'briefcase' | 'building';
@@ -52,23 +59,23 @@ interface LandingAudience {
                   <path d="M14 6.5 17.5 3H21v3.5L17.5 10"/>
                   <path d="M8 16l-2 2"/>
                 </svg>
-                <span class="text-sm font-semibold">Plateforme en lancement</span>
+                <span class="text-sm font-semibold">Reprise d'entreprises numériques en France</span>
               </div>
 
               <h1 class="text-4xl font-bold mb-6 leading-tight text-primary sm:text-5xl lg:text-6xl">
-                Trouvez l'associé ou le projet qui fera avancer votre prochaine aventure
+                Reprenez une entreprise rentable, avec les bons associés
               </h1>
 
               <p class="text-lg text-muted-foreground mb-8 leading-relaxed sm:text-xl">
-                GoFounders prépare un espace de mise en relation pour les entrepreneurs qui lancent un projet et les associés qui veulent rejoindre une équipe ambitieuse.
+                SaaS, e-commerce, sites de contenu, petites agences : GoFounders met en relation les fondateurs qui veulent céder et les repreneurs qui préfèrent racheter une activité qui tourne plutôt que repartir de zéro.
               </p>
 
               <div class="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center">
-                <a [routerLink]="primaryCtaHref()" class="px-8 py-4 bg-accent text-white rounded-lg font-semibold shadow-lg shadow-accent/25 hover:bg-accent/90 transition-all hover:scale-105 active:scale-95 text-center">
-                  {{ primaryCtaLabel() }}
+                <a routerLink="/ma" class="px-8 py-4 bg-accent text-white rounded-lg font-semibold shadow-lg shadow-accent/25 hover:bg-accent/90 transition-all hover:scale-105 active:scale-95 text-center">
+                  Voir les entreprises à reprendre
                 </a>
-                <a routerLink="/recherche" class="px-8 py-4 border-2 border-border text-foreground rounded-lg font-semibold hover:border-accent transition-all hover:scale-105 active:scale-95 text-center">
-                  Explorer les opportunités
+                <a routerLink="/ma/deposer" class="px-8 py-4 border-2 border-border text-foreground rounded-lg font-semibold hover:border-amber-500 transition-all hover:scale-105 active:scale-95 text-center">
+                  Céder mon entreprise
                 </a>
               </div>
 
@@ -137,7 +144,7 @@ interface LandingAudience {
 
                   <div class="landing-hero-pill landing-hero-pill-top">
                     <span class="landing-hero-pill-dot"></span>
-                    Match qualifié
+                    Repreneur qualifié
                   </div>
 
                   <div class="landing-hero-pill landing-hero-pill-left">
@@ -147,7 +154,7 @@ interface LandingAudience {
                         <circle cx="12" cy="8" r="4"/>
                       </svg>
                     </span>
-                    Associé disponible
+                    Cédant discret
                   </div>
 
                   <div class="landing-hero-pill landing-hero-pill-bottom">
@@ -159,7 +166,7 @@ interface LandingAudience {
                         <path d="M8 17h5"/>
                       </svg>
                     </span>
-                    Projet cadré
+                    Dossier confidentiel
                   </div>
 
                   <div class="landing-hero-video-shell">
@@ -286,19 +293,19 @@ interface LandingAudience {
       <section class="px-4 py-16 bg-white sm:px-6 sm:py-20 lg:px-8">
         <div class="max-w-[1400px] mx-auto">
           <div class="text-center mb-16 animate-fade-in-up">
-            <h2 class="text-3xl font-bold mb-4 text-primary sm:text-4xl">Que souhaitez-vous faire ?</h2>
-            <p class="text-lg text-muted-foreground">Choisissez votre entrée dans la plateforme</p>
+            <h2 class="text-3xl font-bold mb-4 text-primary sm:text-4xl">Pourquoi reprendre plutôt que créer ?</h2>
+            <p class="text-lg text-muted-foreground">Construire un produit n'a jamais été aussi facile. Trouver des clients, si.</p>
           </div>
 
           <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
             @for (useCase of useCases; track $index) {
               <div
                 class="bg-card rounded-2xl p-8 shadow-md hover:shadow-2xl transition-all cursor-pointer border-2 hover:-translate-y-2 duration-300 animate-fade-in-up"
-                [ngClass]="$index === 2 ? 'border-amber-500/30' : 'border-border'"
+                [ngClass]="$index === 1 ? 'border-amber-500/30' : 'border-border'"
               >
                 <div
                   class="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl"
-                  [ngClass]="$index === 2 ? 'bg-amber-500/10 text-amber-600' : 'bg-accent/10 text-accent'"
+                  [ngClass]="$index === 1 ? 'bg-amber-500/10 text-amber-600' : 'bg-accent/10 text-accent'"
                   aria-hidden="true"
                 >
                   @switch (useCase.icon) {
@@ -348,26 +355,18 @@ interface LandingAudience {
           </div>
 
           <div class="text-center mb-12 animate-fade-in-up">
-            <h2 class="text-3xl font-bold mb-4 text-primary sm:text-4xl">Pensé pour des parcours exigeants</h2>
+            <h2 class="text-3xl font-bold mb-4 text-primary sm:text-4xl">Questions fréquentes</h2>
           </div>
 
-          <div class="grid grid-cols-1 gap-8 md:grid-cols-3">
-            @for (testimonial of testimonials; track testimonial.name) {
-              <div class="bg-white rounded-2xl p-6 shadow-md animate-fade-in-up" [class]="'delay-' + (($index + 1) * 100)">
-                <div class="flex items-center gap-4 mb-4">
-                  <div class="w-14 h-14 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center text-white font-bold">
-                    {{ testimonial.avatar }}
-                  </div>
-                  <div>
-                    <div class="font-bold">{{ testimonial.name }}</div>
-                    <div class="text-sm text-muted-foreground">{{ testimonial.role }}</div>
-                  </div>
-                </div>
-                <p class="text-muted-foreground italic leading-relaxed">"{{ testimonial.quote }}"</p>
-                <div class="mt-4 inline-flex rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
-                  Retour utilisateur pilote
-                </div>
-              </div>
+          <div class="mx-auto grid max-w-4xl gap-4">
+            @for (item of faq; track item.question) {
+              <details class="group rounded-2xl bg-white p-6 shadow-md">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-primary">
+                  {{ item.question }}
+                  <span class="text-accent transition-transform group-open:rotate-45" aria-hidden="true">+</span>
+                </summary>
+                <p class="mt-4 leading-relaxed text-muted-foreground">{{ item.answer }}</p>
+              </details>
             }
           </div>
         </div>
@@ -382,12 +381,12 @@ interface LandingAudience {
                 <polyline points="16 7 22 7 22 13"/>
               </svg>
             </div>
-            <h2 class="text-3xl font-bold mb-4 sm:text-4xl">Vous souhaitez céder ou acquérir une entreprise ?</h2>
+            <h2 class="text-3xl font-bold mb-4 sm:text-4xl">Vous êtes fondateur et pensez à passer la main ?</h2>
             <p class="text-lg opacity-90 mb-8 max-w-2xl mx-auto sm:text-xl">
-              Explorez une verticale dédiée aux opportunités d'achat et de cession, séparée du matching entre projets et associés.
+              Déposez votre annonce gratuitement. Elle reste anonyme : votre nom et votre activité ne sont communiqués qu'aux repreneurs que vous acceptez.
             </p>
-            <a routerLink="/ma" class="inline-block px-10 py-4 bg-amber-500 text-white rounded-lg font-bold shadow-2xl hover:bg-amber-600 transition-all hover:scale-105 active:scale-95">
-              Découvrir l'offre M&A
+            <a routerLink="/ma/deposer" class="inline-block px-10 py-4 bg-amber-500 text-white rounded-lg font-bold shadow-2xl hover:bg-amber-600 transition-all hover:scale-105 active:scale-95">
+              Déposer mon annonce gratuitement
             </a>
           </div>
         </div>
@@ -396,11 +395,11 @@ interface LandingAudience {
       <section class="px-4 py-16 bg-white sm:px-6 sm:py-20 lg:px-8">
         <div class="max-w-[1400px] mx-auto">
           <div class="text-center mb-16 animate-fade-in-up">
-            <h2 class="text-3xl font-bold mb-4 text-primary sm:text-4xl">Tarifs simples et transparents</h2>
-            <p class="text-lg text-muted-foreground">Chaque formule affiche maintenant ses fonctionnalités clés.</p>
+            <h2 class="text-3xl font-bold mb-4 text-primary sm:text-4xl">Un prix simple, sans abonnement</h2>
+            <p class="text-lg text-muted-foreground">Vendre est gratuit. Les repreneurs paient une seule fois pour accéder aux dossiers pendant 12 mois.</p>
           </div>
 
-          <div class="grid grid-cols-1 gap-8 mb-12 md:grid-cols-3">
+          <div class="mx-auto grid max-w-4xl grid-cols-1 gap-8 mb-12 md:grid-cols-2">
             @for (plan of pricingPreview; track plan.name) {
               <div
                 class="bg-card rounded-2xl p-8 border-2 shadow-md animate-fade-in-up transition-transform hover:-translate-y-1 duration-300"
@@ -408,7 +407,7 @@ interface LandingAudience {
               >
                 @if (plan.popular) {
                   <div class="inline-block px-4 py-1 bg-accent text-white rounded-full text-sm font-semibold mb-4">
-                    Populaire
+                    Sans abonnement
                   </div>
                 }
                 <h3 class="text-2xl font-bold mb-4">{{ plan.name }}</h3>
@@ -426,9 +425,9 @@ interface LandingAudience {
                 </ul>
 
                 <a
-                  routerLink="/tarifs"
+                  [routerLink]="plan.href"
                   [ngClass]="plan.popular ? 'block w-full py-3 rounded-lg font-semibold transition-colors cursor-pointer bg-accent text-white text-center' : 'block w-full py-3 rounded-lg font-semibold transition-colors cursor-pointer border-2 border-border text-center'"
-                >En savoir plus</a>
+                >{{ plan.cta }}</a>
               </div>
             }
           </div>
@@ -451,13 +450,10 @@ export class LandingComponent implements AfterViewInit {
   @ViewChild('heroVideo')
   private readonly heroVideo?: ElementRef<HTMLVideoElement>;
 
-  readonly primaryCtaHref = computed(() => this.auth.isAuthenticated() ? '/dashboard' : '/inscription');
-  readonly primaryCtaLabel = computed(() => this.auth.isAuthenticated() ? 'Aller au dashboard' : 'Créer mon compte');
-
   readonly trustBadges = [
-    'Inscription rapide',
+    'Annonces anonymisées',
+    'Dépôt gratuit pour les cédants',
     'Projets protégés par NDA',
-    'Mises en relation cadrées au lancement',
   ];
 
   readonly protectionPoints = [
@@ -480,83 +476,76 @@ export class LandingComponent implements AfterViewInit {
 
   readonly audienceCards: LandingAudience[] = [
     {
-      icon: 'rocket',
-      title: 'Entrepreneurs',
-      description: 'Déposez un projet et identifiez les bons associés.',
-      href: '/inscription',
-    },
-    {
       icon: 'briefcase',
-      title: 'Associés',
-      description: 'Repérez les projets qui correspondent à vos compétences.',
-      href: '/inscription',
+      title: 'Repreneurs',
+      description: 'Rachetez une activité rentable au lieu de repartir de zéro.',
+      href: '/ma',
     },
     {
       icon: 'building',
-      title: 'M&A',
-      description: 'Explorez les reprises, achats et cessions d’entreprise.',
-      href: '/ma',
+      title: 'Cédants',
+      description: 'Passez la main discrètement, à un repreneur qualifié.',
+      href: '/ma/deposer',
+    },
+    {
+      icon: 'rocket',
+      title: 'Associés',
+      description: 'Trouvez un associé, ou rejoignez un projet comme associé.',
+      href: '/recherche',
     },
   ];
 
   readonly steps: LandingStep[] = [
-    { icon: 'profile', title: 'Créez votre profil', description: 'Choisissez si vous déposez un projet ou si vous voulez devenir associé d’un projet.' },
-    { icon: 'lock', title: 'Connectez-vous', description: 'La recherche, les profils et la messagerie sont réservés aux membres authentifiés.' },
-    { icon: 'handshake', title: 'Entrez en contact', description: 'Discutez avec les profils visibles pour votre rôle et accélérez les mises en relation utiles.' },
+    { icon: 'profile', title: 'Parcourez les annonces', description: 'Secteur, chiffre d’affaires, marge, ancienneté et fourchette de prix : les teasers anonymisés sont visibles par tous.' },
+    { icon: 'lock', title: 'Débloquez les dossiers', description: 'Un accès repreneur à 149 € pour 12 mois : dossiers complets et contact direct des vendeurs, sans abonnement.' },
+    { icon: 'handshake', title: 'Échangez avec le cédant', description: 'Vous échangez directement avec le vendeur, et nous vous orientons vers des experts partenaires (comptables, avocats) pour la suite.' },
   ];
 
   readonly useCases: LandingUseCase[] = [
-    { icon: 'rocket', title: 'Je dépose un projet', description: 'Publiez votre ambition et trouvez des associés capables de faire avancer le produit, la vente ou l’exécution.' },
-    { icon: 'briefcase', title: 'Je veux devenir associé', description: 'Accédez uniquement aux projets publiés par les entrepreneurs pour vous concentrer sur les opportunités utiles.' },
-    { icon: 'building', title: "J'achète ou je vends une entreprise", description: 'Vendeurs : publication gratuite et anonymisée. Repreneurs : accès aux dossiers complets pendant 12 mois.' },
+    { icon: 'rocket', title: 'Des clients dès le premier jour', description: 'Avec l’IA, tout le monde peut lancer un produit. Ce qui reste rare, ce sont des clients qui paient déjà. Une reprise vous les apporte.' },
+    { icon: 'building', title: 'Un actif qui génère déjà du cash', description: 'Chiffre d’affaires, marge et historique sont connus avant d’acheter. Moins de pari, plus d’exécution.' },
+    { icon: 'briefcase', title: 'Les bons associés autour de vous', description: 'Besoin d’un profil commercial, technique ou métier pour faire grandir votre projet ? Trouvez votre associé sur GoFounders.' },
   ];
 
   readonly stats = [
-    { value: 'Profils cadrés', label: 'besoins, compétences et disponibilité lisibles avant contact' },
-    { value: 'Accès connecté', label: 'recherche, profils et messages réservés aux membres' },
-    { value: 'Rôles séparés', label: 'les porteurs de projet voient les associés, les associés voient les projets' },
-    { value: 'Mise en relation filtrée', label: 'des échanges guidés par l’intention, pas par un catalogue ouvert' },
+    { value: '50 k€ – 1 M€', label: 'de chiffre d’affaires : la taille des entreprises que nous ciblons' },
+    { value: '0 €', label: 'pour déposer une annonce de cession' },
+    { value: '149 €', label: 'pour 12 mois d’accès aux dossiers complets' },
+    { value: '100 %', label: 'des annonces anonymisées avant mise en relation' },
   ];
 
-  readonly testimonials = [
-    { name: 'Camille Martin', role: 'Fondatrice SaaS santé', avatar: 'CM', quote: 'J’ai pu formuler précisément le profil produit que je cherchais avant de lancer mes premiers contacts.' },
-    { name: 'Nadia Benali', role: 'Product designer freelance', avatar: 'NB', quote: 'Voir uniquement des projets côté associé rend la recherche plus simple et évite de perdre du temps.' },
-    { name: 'Marc Lefèvre', role: 'Repreneur commerce local', avatar: 'ML', quote: 'La verticale M&A séparée clarifie tout de suite le parcours pour une reprise ou une cession.' },
+  readonly faq: LandingFaqItem[] = [
+    { question: 'Quel type d’entreprises trouve-t-on sur GoFounders ?', answer: 'Principalement des entreprises numériques françaises : SaaS, e-commerce, sites de contenu, petites agences, avec un chiffre d’affaires entre 50 k€ et 1 M€. Des TPE plus classiques peuvent aussi être proposées.' },
+    { question: 'Mon annonce de cession est-elle confidentielle ?', answer: 'Oui. Seul un teaser anonymisé est public. Le dossier complet et vos coordonnées ne sont accessibles qu’aux repreneurs ayant un accès en cours.' },
+    { question: 'Que comprend l’accès repreneur à 149 € ?', answer: 'Pendant 12 mois, la lecture des dossiers complets de toutes les annonces actives et le contact direct des vendeurs. C’est un paiement unique, sans abonnement.' },
+    { question: 'Mon idée de projet est-elle protégée ?', answer: 'Votre projet n’est visible que par les associés, jamais par les autres porteurs de projet. Les détails sensibles restent dans une partie confidentielle, et vous pouvez exiger un engagement de confidentialité (NDA) avant d’y donner accès.' },
+    { question: 'GoFounders m’accompagne-t-il juridiquement ?', answer: 'Non, nous ne fournissons pas de conseil juridique. Nous vous mettons en relation avec des experts juridiques et comptables partenaires pour sécuriser la transaction.' },
   ];
 
   readonly pricingPreview: PricingPreviewPlan[] = [
     {
-      name: 'FREE',
-      price: '0€',
+      name: 'Cédant',
+      price: 'Gratuit',
       popular: false,
       features: [
-        'Profil, recherche et score de compatibilité',
-        'Réponses illimitées',
-        'Associés : contacts illimités',
-        'Porteurs de projet : 3 nouveaux contacts par mois',
+        'Dépôt d’annonce anonymisée',
+        'Contacté directement par des repreneurs qualifiés',
+        'Mise en relation avec des experts partenaires',
       ],
+      href: '/ma/deposer',
+      cta: 'Déposer mon annonce',
     },
     {
-      name: 'PRO',
-      price: '49€/mois',
+      name: 'Repreneur',
+      price: '149 € / 12 mois',
       popular: true,
       features: [
-        'Trouvez votre associé plus vite',
-        'Contacts illimités',
-        'Matching intelligent : pourquoi chaque profil vous correspond',
-        'Assistant IA personnel',
+        'Dossiers complets de toutes les annonces',
+        'Contact direct des vendeurs',
+        'Paiement unique, sans abonnement',
       ],
-    },
-    {
-      name: 'PREMIUM',
-      price: 'Sur devis',
-      popular: false,
-      features: [
-        'Tout PRO',
-        "Présentations qualifiées d'associés",
-        'Mise en relation avec des investisseurs',
-        'Interlocuteur dédié',
-      ],
+      href: '/ma',
+      cta: 'Voir les annonces',
     },
   ];
 

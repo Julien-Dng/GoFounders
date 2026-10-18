@@ -23,7 +23,7 @@ import { RouterLink } from '@angular/router';
               <span class="text-2xl font-bold">GoFounders</span>
             </div>
             <p class="text-primary-foreground/70 text-sm leading-relaxed">
-              La plateforme qui connecte porteurs de projet, associés et opportunités business.
+              La place de confiance pour reprendre ou céder une entreprise numérique en France, avec les bons associés.
             </p>
           </div>
 
@@ -81,8 +81,9 @@ export class FooterComponent {
     {
       category: 'Services',
       links: [
-        { label: 'M&A', href: '/ma' },
-        { label: 'Recherche', href: '/recherche' },
+        { label: 'Entreprises à reprendre', href: '/ma' },
+        { label: 'Céder mon entreprise', href: '/ma/deposer' },
+        { label: 'Trouver un associé', href: '/recherche' },
         { label: 'Tarifs', href: '/tarifs' },
       ]
     },

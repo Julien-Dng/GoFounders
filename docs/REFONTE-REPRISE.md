@@ -1,6 +1,6 @@
 # Refonte « Reprise » — note de discussion
 
-> Branche : `refonte-reprise` (partie de `V6`).
+> Branche : `refonte-reprise`, construite sur `V6` (dernier rattrapage : 19 octobre 2026). `V6` reste le projet de base.
 > But : en discuter entre associés avant de décider si on bascule.
 
 ---
@@ -29,38 +29,40 @@ C'est exactement ce qu'apporte une **reprise d'entreprise**. Notre verticale M&A
 |---|---|---|
 | Repreneur | Cadre ou dev en reconversion, indie hacker, 20 à 300 k€ d'apport | Un actif rentable déjà vérifié |
 | Cédant | Fondateur fatigué ou parti sur autre chose, produit rentable qui stagne | Céder vite, discrètement, au juste prix |
-| Associé | Profil commercial, technique ou métier | Rejoindre un repreneur pour opérer |
+| Associé | Profil commercial, technique ou métier | Rejoindre un projet comme associé |
 
 **Modèle de prix testé :**
 - Cédant : **gratuit** (c'est l'offre de vendeurs qui est rare, on ne la freine pas).
-- Repreneur : **149 € une fois** pour les dossiers complets et les mises en relation.
+- Repreneur : **149 € pour 12 mois** (paiement unique, déjà en place dans `V6`) pour les dossiers complets et le contact direct des vendeurs.
 - Plus tard, éventuellement une commission au succès. ⚠️ **À faire valider par un avocat avant** : les intermédiaires en cession de *fonds de commerce* relèvent de la loi Hoguet (carte professionnelle obligatoire).
 
-**Gardé en second plan :** la recherche de talents et de projets, présentée comme « Trouver un associé » (pour opérer une entreprise reprise, ou lancer un projet).
+**Gardé en second plan :** la marketplace porteurs de projet ↔ associés, présentée comme « Trouver un associé ». Elle reste réservée à ces deux rôles : `V6` sépare strictement les rôles en base, donc les acheteurs et vendeurs ne la voient pas.
 
 **Mis de côté pour l'instant (les routes restent dans le code) :** assistant IA, générateur de pitch, plans PRO/PREMIUM.
 
-## 3. Ce qui change dans cette branche
+## 3. Ce qui change dans cette branche (par rapport à `V6`)
+
+La branche ne change que la **vitrine**. Toute la logique (rôles, sécurité, paiements simulés, publication gratuite des vendeurs, partie confidentielle et NDA des projets) vient de `V6`.
 
 | Zone | Changement |
 |---|---|
-| Landing (`/`) | Nouveau discours « reprise ». Témoignages fictifs remplacés par une FAQ. Tarifs : Cédant gratuit / Repreneur 149 €. |
-| Navigation et footer | Annonces · Vendre · Trouver un associé · Tarifs. « Trouver un associé » mène à la recherche de talents et de projets (`/recherche`). Assistant IA et Pitch IA retirés des menus. |
-| `/ma` | Hero « Entreprises à reprendre ». Le bouton de déblocage mène au paiement Stripe. |
-| `/ma/deposer` | **Dépôt gratuit**, l'étape de paiement est supprimée. Plus de valeurs d'exemple pré-remplies. |
-| `/tarifs` | Le bouton 149 € mène au paiement Stripe. |
-| **Sécurité (profils)** | Avant : selon la config Supabase, tout membre connecté pouvait lire l'e-mail de tous les inscrits, et s'accorder lui-même l'accès M&A ou le plan PREMIUM depuis la page `/abonnement` (boutons « démo »). Après : e-mails privés, droits modifiables uniquement côté serveur ou dashboard Supabase (`supabase/2026-10-18-profiles-private-columns.sql`). Les boutons « démo » ne fonctionnent plus qu'en mode local sans Supabase. |
-| **Sécurité (annonces)** | Avant : la description, la raison de la cession et le contact des annonces partaient vers le navigateur de **tout le monde**, et le flou n'était que visuel. Après : la base ne renvoie ces colonnes qu'au propriétaire, aux comptes avec `ma_access` et aux admins (`supabase/2026-10-12-ma-listings-confidential-columns.sql`). |
+| Landing (`/`) | Discours « reprise » : « Reprenez une entreprise rentable, avec les bons associés ». Témoignages fictifs remplacés par une FAQ. Tarifs : Cédant gratuit / Repreneur 149 € pour 12 mois. La section « Votre idée reste protégée » (NDA) de `V6` est conservée. |
+| Navigation et footer | Annonces · Vendre · Trouver un associé · Tarifs. « Vendre » visible pour les visiteurs et les vendeurs, « Trouver un associé » pour les visiteurs, porteurs de projet et associés. Assistant IA retiré des menus (route conservée). |
+| `/ma` | Hero « Entreprises à reprendre », cible 50 k€ à 1 M€ de CA. |
 
 ### Mise en route (à faire une fois)
-1. **Exécuter les deux migrations SQL** dans l'éditeur SQL de Supabase, dans cet ordre, **en même temps que le déploiement du code** :
-   - `supabase/2026-10-12-ma-listings-confidential-columns.sql` (annonces : description, raison et contact réservés aux acheteurs qui ont payé)
-   - `supabase/2026-10-18-profiles-private-columns.sql` (profils : e-mails privés, et `plan`, `ma_access`, `is_admin` impossibles à modifier depuis le navigateur)
+1. **Aucune migration propre à la branche.** Il suffit que la base ait reçu les migrations de `V6`.
+2. **Paiement** : comme sur `V6`, les achats passent par `PaymentService` (mode simulation tant que Stripe n'est pas branché). ⚠️ Supprimer `simulate_purchase` avant toute mise en ligne avec de vrais utilisateurs.
+3. **Modérer les annonces** : la publication est gratuite et immédiate. Il faut relire chaque nouvelle annonce et supprimer celles qui ne sont pas sérieuses.
 
-   Sans elles, les failles restent ouvertes. Si on déploie le code sans les migrations, la page de détail d'une annonce et le chargement de son propre profil ne fonctionnent plus.
-2. **Créer un Stripe Payment Link** : produit « Accès repreneur GoFounders », 149 €, paiement unique. Coller l'URL dans `src/app/core/config/ma-offer.config.ts`. Tant que la constante est vide, les boutons renvoient vers `/abonnement` comme avant.
-3. **Après chaque paiement**, passer `profiles.ma_access = true` à la main dans Supabase. Le paiement Stripe contient l'uid de l'acheteur (`client_reference_id`) et son e-mail. Pas besoin de webhook pour 10 paiements.
-4. **Modérer les annonces** : le dépôt est gratuit et publie directement. Il faut relire chaque nouvelle annonce et supprimer celles qui ne sont pas sérieuses.
+### Garder la branche à jour
+`V6` avance en parallèle. Récupérer régulièrement ses nouveautés :
+```bash
+git checkout refonte-reprise
+git pull origin refonte-reprise
+git merge origin/V6
+```
+En cas de conflit sur la landing, les menus ou `/ma`, garder la version de cette branche pour les textes et celle de `V6` pour la logique.
 
 ## 4. Le test de validation (4 semaines)
 
@@ -69,7 +71,7 @@ C'est exactement ce qu'apporte une **reprise d'entreprise**. Notre verticale M&A
 | # | Hypothèse | ✅ Succès | ❌ Arrêt ou pivot |
 |---|---|---|---|
 | H1 | On trouve des vendeurs | ≥ 15 annonces qualifiées | < 5 |
-| H2 | Des repreneurs paient 149 € | ≥ 10 paiements | < 3 |
+| H2 | Des repreneurs paient 149 € (12 mois) | ≥ 10 paiements | < 3 |
 | H3 | Les mises en relation sont sérieuses | ≥ 5 rendez-vous acheteur-vendeur | 0 |
 
 On fixe ces seuils **avant** de commencer et on ne les modifie pas après coup.

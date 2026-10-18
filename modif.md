@@ -912,3 +912,14 @@ npm install @stripe/stripe-js
 - Build Angular OK
 - Migration testée sur un Postgres 16 local reproduisant les règles de V6 : 22 scénarios (lecture directe refusée, concurrent sans accès, NDA obligatoire, auto-approbation impossible, preuve et notifications, retrait d'accès, preuve conservée après suppression de compte)
 - Parcours testés en mode démo local : associé (badge, carte, NDA, demande) et porteur (champs, demandes, acceptation, téléchargement de la preuve)
+
+---
+
+## Session du 19 octobre 2026 - Rattrapage de V6 dans `refonte-reprise`
+
+- Intégration des dernières nouveautés de `V6` (rôle « Associé », entrée au capital, partie confidentielle et NDA des projets)
+- Les deux migrations de sécurité de la refonte (12 et 18 octobre) sont supprimées : `V6` protège déjà annonces et profils, de façon plus stricte
+- Lien de paiement Stripe de la refonte supprimé (`ma-offer.config.ts`) : la branche utilise `PaymentService` de `V6`
+- Vitrine « reprise » réappliquée sur la base `V6` : landing (accroche, FAQ, tarifs Cédant gratuit / Repreneur 149 € pour 12 mois, section NDA conservée), menus (Annonces · Vendre · Trouver un associé · Tarifs, selon le rôle), footer, hero de `/ma`
+- Dépôt gratuit des vendeurs : déjà en place dans `V6`, aucune migration propre à la branche
+- `docs/REFONTE-REPRISE.md` mis à jour (mise en route, maintien de la branche à jour)

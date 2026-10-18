@@ -24,9 +24,9 @@ type MaStatIcon = 'mask' | 'handshake' | 'certified';
               </svg>
             </div>
 
-            <h1 class="mb-4 text-4xl font-bold sm:text-5xl">Marketplace M&A - Achat & Cession d'entreprise</h1>
+            <h1 class="mb-4 text-4xl font-bold sm:text-5xl">Entreprises à reprendre</h1>
             <p class="mx-auto mb-8 max-w-3xl text-lg opacity-90 sm:text-xl lg:mx-0">
-              Trouvez votre prochaine acquisition ou cédez votre entreprise en toute confidentialité.
+              Des activités rentables, surtout numériques, dont les fondateurs veulent passer la main. Teasers publics, dossiers complets pour les repreneurs.
             </p>
 
             <div class="mb-12 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
@@ -340,7 +340,7 @@ export class MaHomeComponent implements OnInit {
   readonly types = ['Tous', 'Cession', 'Fonds de commerce', 'Parts sociales'];
   readonly stats: Array<{ label: string; icon: MaStatIcon }> = [
     { label: 'Annonces anonymisées', icon: 'mask' },
-    { label: 'Transactions de 50 k€ à 5 M€', icon: 'handshake' },
+    { label: 'Entreprises de 50 k€ à 1 M€ de CA', icon: 'handshake' },
     { label: 'Mise en relation après accès validé', icon: 'certified' },
   ];
   readonly bullets = ['Publication gratuite au lancement', 'Annonce anonymisée', 'Détails réservés aux repreneurs vérifiés'];
