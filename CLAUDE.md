@@ -119,7 +119,7 @@ PREMIUM = accompagnement humain. Les talents n'ont pas besoin de payer.
 ### `/inscription` — Onboarding (3 étapes)
 - **Étape 1** : Choix du type de profil (un seul rôle par utilisateur, non modifiable ensuite)
   - Porteur de projet
-  - Talent / Expert
+  - Profil (« Je propose mon profil »)
   - Acheteur / Repreneur
   - Vendeur M&A
 - **Étape 2** : Informations de base (nom, email, mot de passe, localisation)
