@@ -33,19 +33,19 @@ type SearchProfileType = ProfileType;
           <aside class="w-full xl:w-[280px] xl:flex-shrink-0">
             <div class="sticky top-28 rounded-2xl bg-secondary p-6">
               <div class="mb-6 rounded-2xl border border-accent/15 bg-accent/5 p-4">
-                <div class="mb-2 text-xs font-bold text-accent">Visibilité</div>
-                <h2 class="mb-2 text-xl font-bold text-primary">{{ audiencePanelTitle() }}</h2>
+                <div class="mb-2 text-sm font-semibold text-accent">Visibilité</div>
+                <h2 class="mb-2 text-xl font-semibold text-primary">{{ audiencePanelTitle() }}</h2>
                 <p class="text-sm leading-relaxed text-muted-foreground">{{ audiencePanelDescription() }}</p>
               </div>
 
               <div class="mb-6 flex items-center justify-between">
-                <h2 class="text-xl font-bold">Filtres</h2>
+                <h2 class="text-xl font-semibold">Filtres</h2>
                 <button type="button" (click)="resetFilters()" class="text-sm font-medium text-accent hover:underline">Réinitialiser</button>
               </div>
 
               <div class="space-y-6">
                 <div>
-                  <label class="mb-3 block text-sm font-bold" for="search-sector">Secteur</label>
+                  <label class="mb-3 block text-sm font-semibold" for="search-sector">Secteur</label>
                   <select
                     id="search-sector"
                     [value]="selectedSector()"
@@ -59,13 +59,13 @@ type SearchProfileType = ProfileType;
                 </div>
 
                 <div>
-                  <label class="mb-3 block text-sm font-bold">Stade</label>
+                  <label class="mb-3 block text-sm font-semibold">Stade</label>
                   <div class="flex flex-wrap gap-2">
                     @for (stage of projectStages; track stage) {
                       <button
                         type="button"
                         (click)="toggleStage(stage)"
-                        class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all"
+                        class="rounded-lg px-3 py-1.5 text-sm font-semibold transition-all"
                         [class.bg-accent]="selectedStage().includes(stage)"
                         [class.text-white]="selectedStage().includes(stage)"
                         [class.shadow-md]="selectedStage().includes(stage)"
@@ -79,7 +79,7 @@ type SearchProfileType = ProfileType;
                 </div>
 
                 <div>
-                  <label class="mb-3 block text-sm font-bold" for="search-location">Localisation</label>
+                  <label class="mb-3 block text-sm font-semibold" for="search-location">Localisation</label>
                   <input
                     id="search-location"
                     type="text"
@@ -92,11 +92,11 @@ type SearchProfileType = ProfileType;
 
                 <div>
                   <label class="flex cursor-pointer items-center justify-between">
-                    <span class="text-sm font-bold">Disponible maintenant</span>
+                    <span class="text-sm font-semibold">Disponible maintenant</span>
                     <div class="relative">
                       <input type="checkbox" [checked]="isAvailableNow()" (change)="isAvailableNow.set(!isAvailableNow())" class="peer sr-only">
                       <div class="h-6 w-11 rounded-full bg-border transition-colors peer-checked:bg-accent"></div>
-                      <div class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5"></div>
+                      <div class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform peer-checked:translate-x-5"></div>
                     </div>
                   </label>
                 </div>
@@ -104,14 +104,14 @@ type SearchProfileType = ProfileType;
                 @if (visibleProfileType() === 'entrepreneur') {
                   <div>
                     <label class="flex cursor-pointer items-center justify-between gap-3">
-                      <span class="text-sm font-bold">Ouvert à un associé avec apport</span>
+                      <span class="text-sm font-semibold">Ouvert à un associé avec apport</span>
                       <div class="relative flex-shrink-0">
                         <input type="checkbox" [checked]="openToEquityOnly()" (change)="openToEquityOnly.set(!openToEquityOnly())" class="peer sr-only" aria-describedby="equity-filter-help">
                         <div class="h-6 w-11 rounded-full bg-border transition-colors peer-checked:bg-accent"></div>
-                        <div class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5"></div>
+                        <div class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform peer-checked:translate-x-5"></div>
                       </div>
                     </label>
-                    <p id="equity-filter-help" class="mt-2 text-xs leading-relaxed text-muted-foreground">
+                    <p id="equity-filter-help" class="mt-2 text-sm leading-relaxed text-muted-foreground">
                       Projets dont le porteur accepte un associé qui entrerait au capital. Les conditions se négocient en privé ; GoFounders ne propose pas d'investissement.
                     </p>
                   </div>
@@ -119,14 +119,14 @@ type SearchProfileType = ProfileType;
 
                 <div class="border-t border-border pt-6">
                   <div class="mb-3 flex items-center justify-between gap-2">
-                    <h3 class="text-sm font-bold">Recherche avancée</h3>
-                    <span class="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-white">PRO</span>
+                    <h3 class="text-sm font-semibold">Recherche avancée</h3>
+                    <span class="rounded-full bg-primary px-2 py-0.5 text-sm font-semibold text-white">PRO</span>
                   </div>
 
                   @if (canUseAdvanced()) {
                     <div class="space-y-5">
                       <div>
-                        <label class="mb-2 block text-xs font-semibold text-foreground/80" for="search-keywords">Mots-clés</label>
+                        <label class="mb-2 block text-sm font-semibold text-foreground/80" for="search-keywords">Mots-clés</label>
                         <input
                           id="search-keywords"
                           type="search"
@@ -139,15 +139,15 @@ type SearchProfileType = ProfileType;
 
                       @if (skillOptions().length > 0) {
                         <div>
-                          <span class="mb-2 block text-xs font-semibold text-foreground/80" id="search-skills-label">{{ skillsFilterLabel() }}</span>
+                          <span class="mb-2 block text-sm font-semibold text-foreground/80" id="search-skills-label">{{ skillsFilterLabel() }}</span>
                           <div class="flex flex-wrap gap-2" role="group" aria-labelledby="search-skills-label">
                             @for (skill of skillOptions(); track skill) {
                               <button
                                 type="button"
                                 (click)="toggleSkill(skill)"
                                 [attr.aria-pressed]="selectedSkills().includes(skill)"
-                                class="rounded-lg px-2.5 py-1 text-xs font-semibold transition-all"
-                                [ngClass]="selectedSkills().includes(skill) ? 'bg-accent text-white shadow-md' : 'border border-border bg-white hover:border-accent'"
+                                class="rounded-lg px-2.5 py-1 text-sm font-semibold transition-all"
+                                [ngClass]="selectedSkills().includes(skill) ? 'bg-primary text-white ' : 'border border-border bg-white hover:border-accent'"
                               >{{ skill }}</button>
                             }
                           </div>
@@ -155,7 +155,7 @@ type SearchProfileType = ProfileType;
                       }
 
                       <div>
-                        <label class="mb-2 flex items-center justify-between text-xs font-semibold text-foreground/80" for="search-min-score">
+                        <label class="mb-2 flex items-center justify-between text-sm font-semibold text-foreground/80" for="search-min-score">
                           <span>Compatibilité minimale</span>
                           <span class="text-accent">{{ minScore() === 0 ? 'Toutes' : minScore() + ' %' }}</span>
                         </label>
@@ -172,7 +172,7 @@ type SearchProfileType = ProfileType;
                       </div>
                     </div>
                   } @else {
-                    <p class="text-xs leading-relaxed text-muted-foreground">
+                    <p class="text-sm leading-relaxed text-muted-foreground">
                       Mots-clés, compétences précises et compatibilité minimale pour aller droit aux profils qui comptent.
                     </p>
                     <a routerLink="/tarifs" class="mt-3 inline-block text-sm font-semibold text-accent hover:underline">Passer en PRO</a>
@@ -185,7 +185,7 @@ type SearchProfileType = ProfileType;
           <div class="min-w-0 flex-1">
             <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div class="text-lg">
-                <span class="font-bold text-primary">{{ filteredProfiles().length }}</span>
+                <span class="font-semibold text-primary">{{ filteredProfiles().length }}</span>
                 <span class="text-muted-foreground"> {{ searchResultLabel() }}</span>
               </div>
               <span class="text-sm font-medium text-muted-foreground">{{ sortLabel() }}</span>
@@ -196,7 +196,7 @@ type SearchProfileType = ProfileType;
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
                 </svg>
-                <h2 class="text-xl font-bold">{{ highlightedBannerTitle() }}</h2>
+                <h2 class="text-xl font-semibold">{{ highlightedBannerTitle() }}</h2>
               </div>
 
               @if (highlightedProfiles().length > 0) {
@@ -204,21 +204,21 @@ type SearchProfileType = ProfileType;
                   @for (profile of highlightedProfiles(); track profile.id) {
                     <div class="flex min-h-[12.5rem] w-[19rem] flex-shrink-0 flex-col rounded-xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
                       <div class="mb-3 flex items-center gap-3">
-                        <div class="relative flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/20 font-bold text-white">
+                        <div class="relative flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/20 font-semibold text-white">
                           <span>{{ profile.initials }}</span>
                           @if (profile.photoURL) {
                             <img [src]="profile.photoURL" [alt]="'Photo de ' + profile.displayName" (error)="hideBrokenImage($event)" class="absolute inset-0 h-full w-full object-cover">
                           }
                         </div>
                         <div class="min-w-0 flex-1">
-                          <h3 class="truncate font-bold">{{ profile.displayName }}</h3>
+                          <h3 class="truncate font-semibold">{{ profile.displayName }}</h3>
                           <div class="line-clamp-2 text-sm opacity-90">{{ profile.title }}</div>
                         </div>
                         <div class="flex flex-shrink-0 items-center gap-1 rounded-full bg-white/20 px-2.5 py-1">
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
                           </svg>
-                          <span class="text-sm font-bold">{{ profile.match }}%</span>
+                          <span class="text-sm font-semibold">{{ profile.match }}%</span>
                         </div>
                       </div>
                       <p class="mb-3 line-clamp-2 text-sm opacity-90">{{ profile.bio }}</p>
@@ -240,7 +240,7 @@ type SearchProfileType = ProfileType;
                     <button
                       type="button"
                       (click)="resetFilters()"
-                      class="shrink-0 rounded-lg bg-white px-4 py-2 text-sm font-bold text-accent transition-colors hover:bg-white/90"
+                      class="shrink-0 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-accent transition-colors hover:bg-white/90"
                     >
                       Réinitialiser les filtres
                     </button>
@@ -253,20 +253,20 @@ type SearchProfileType = ProfileType;
               @for (profile of filteredProfiles(); track profile.id; let profileIndex = $index) {
                 <div
                   #searchCard
-                  class="search-card-reveal flex min-h-[21.5rem] flex-col rounded-2xl border-2 bg-white p-6 shadow-sm transition-all hover:shadow-lg"
+                  class="search-card-reveal flex min-h-[21.5rem] flex-col rounded-2xl border bg-white p-6 transition-all"
                   [ngClass]="profile.featured ? 'border-accent/50' : 'border-border'"
                   [style.--reveal-delay]="revealDelay(profileIndex)"
                 >
                   <div class="mb-4 flex items-start justify-between">
                     <div class="flex items-center gap-3">
-                      <div class="relative flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-lg font-bold text-white">
+                      <div class="relative flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-lg font-semibold text-white">
                         <span>{{ profile.initials }}</span>
                         @if (profile.photoURL) {
                           <img [src]="profile.photoURL" [alt]="'Photo de ' + profile.displayName" (error)="hideBrokenImage($event)" class="absolute inset-0 h-full w-full object-cover">
                         }
                       </div>
                       <div>
-                        <h3 class="flex items-center gap-1.5 text-lg font-bold">
+                        <h3 class="flex items-center gap-1.5 text-lg font-semibold">
                           {{ profile.displayName }}
                           @if (profile.verified) {
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="#2563EB" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Profil vérifié">
@@ -276,12 +276,12 @@ type SearchProfileType = ProfileType;
                           }
                         </h3>
                         <div class="mt-1 flex flex-wrap items-center gap-2">
-                          <span class="rounded-full bg-accent px-2.5 py-0.5 text-xs font-semibold text-white">{{ cardBadgeLabel() }}</span>
+                          <span class="rounded-full bg-primary px-2.5 py-0.5 text-sm font-semibold text-white">{{ cardBadgeLabel() }}</span>
                           @if (profile.featured) {
-                            <span class="whitespace-nowrap rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-semibold text-white" title="Projet d'un porteur PRO, affiché en priorité">Mis en avant</span>
+                            <span class="whitespace-nowrap rounded-full bg-amber-500 px-2.5 py-0.5 text-sm font-semibold text-white" title="Projet d'un porteur PRO, affiché en priorité">Mis en avant</span>
                           }
                           @if (profile.ndaRequired) {
-                            <span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-white" title="Détails partagés après engagement de confidentialité">
+                            <span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-primary px-2.5 py-0.5 text-sm font-semibold text-white" title="Détails partagés après engagement de confidentialité">
                               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <rect x="3" y="11" width="18" height="11" rx="2"/>
                                 <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
@@ -290,7 +290,7 @@ type SearchProfileType = ProfileType;
                             </span>
                           }
                           @if (profile.openToEquity) {
-                            <span class="whitespace-nowrap rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent">Associé avec apport</span>
+                            <span class="whitespace-nowrap rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-sm font-semibold text-accent">Associé avec apport</span>
                           }
                         </div>
                       </div>
@@ -309,7 +309,7 @@ type SearchProfileType = ProfileType;
                       </svg>
                       {{ profile.location }}
                     </span>
-                    <span class="rounded bg-secondary px-2 py-0.5 text-xs font-medium">{{ profile.stage }}</span>
+                    <span class="rounded bg-secondary px-2 py-0.5 text-sm font-medium">{{ profile.stage }}</span>
                   </div>
 
                   <div class="mb-2 text-sm font-semibold text-primary">{{ profile.title }}</div>
@@ -317,7 +317,7 @@ type SearchProfileType = ProfileType;
 
                   <div class="mb-4 flex min-h-[2rem] flex-wrap gap-2">
                     @for (skill of profile.skills; track skill) {
-                      <span class="rounded-lg bg-secondary px-3 py-1 text-xs font-medium text-foreground">{{ skill }}</span>
+                      <span class="rounded-lg bg-secondary px-3 py-1 text-sm font-medium text-foreground">{{ skill }}</span>
                     }
                   </div>
 
@@ -326,7 +326,7 @@ type SearchProfileType = ProfileType;
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
                       </svg>
-                      <span class="text-sm font-bold">{{ profile.match }}% compatible</span>
+                      <span class="text-sm font-semibold">{{ profile.match }}% compatible</span>
                     </div>
                     <a
                       [routerLink]="['/profil', profile.id]"

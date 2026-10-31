@@ -18,7 +18,7 @@ import { PaymentService } from '../../../core/services/payment.service';
       <div class="mx-auto max-w-5xl">
         <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 class="text-3xl font-bold text-primary sm:text-4xl">Mes annonces</h1>
+            <h1 class="text-3xl font-semibold text-primary sm:text-4xl">Mes annonces</h1>
             <p class="mt-2 text-muted-foreground">Donnez plus de visibilité et de crédibilité à vos annonces.</p>
           </div>
           <div class="flex flex-wrap gap-2">
@@ -35,7 +35,7 @@ import { PaymentService } from '../../../core/services/payment.service';
 
         @if (!canPublish()) {
           <div class="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-950">
-            <h2 class="mb-1 text-lg font-bold">Compte pro requis</h2>
+            <h2 class="mb-1 text-lg font-semibold">Compte pro requis</h2>
             <p class="text-sm">Pour publier des annonces pour vos clients, activez un compte pro.</p>
             <a routerLink="/tarifs" fragment="pros" class="mt-3 inline-block text-sm font-semibold text-amber-700 hover:underline">Voir les offres professionnelles</a>
           </div>
@@ -48,16 +48,16 @@ import { PaymentService } from '../../../core/services/payment.service';
         } @else {
           <ul class="space-y-6">
             @for (listing of listings(); track listing.id) {
-              <li class="rounded-2xl border border-border bg-white p-6 shadow-sm">
+              <li class="rounded-2xl border border-border bg-white p-6">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <div class="flex flex-wrap items-center gap-2">
-                      <h2 class="text-lg font-bold">{{ listing.sector }} · {{ listing.region }}</h2>
+                      <h2 class="text-lg font-semibold">{{ listing.sector }} · {{ listing.region }}</h2>
                       @if (isFeatured(listing)) {
-                        <span class="rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-semibold text-white">En vedette jusqu'au {{ formatDate(listing.featuredUntil!) }}</span>
+                        <span class="rounded-full bg-amber-500 px-2.5 py-0.5 text-sm font-semibold text-white">En vedette jusqu'au {{ formatDate(listing.featuredUntil!) }}</span>
                       }
                       @if (listing.verified) {
-                        <span class="rounded-full bg-emerald-600 px-2.5 py-0.5 text-xs font-semibold text-white">Dossier vérifié</span>
+                        <span class="rounded-full bg-emerald-600 px-2.5 py-0.5 text-sm font-semibold text-white">Dossier vérifié</span>
                       }
                     </div>
                     <p class="mt-1 text-sm text-muted-foreground">{{ listing.description }}</p>
@@ -73,10 +73,10 @@ import { PaymentService } from '../../../core/services/payment.service';
                 <div class="mt-5 grid gap-4 md:grid-cols-2">
                   <div class="rounded-xl bg-secondary/60 p-4">
                     <h3 class="font-semibold">Mise en avant</h3>
-                    <p class="mt-1 text-xs text-muted-foreground">Votre annonce en tête de liste avec le badge « En vedette ».</p>
+                    <p class="mt-1 text-sm text-muted-foreground">Votre annonce en tête de liste avec le badge « En vedette ».</p>
                     <div class="mt-3 flex flex-wrap gap-2">
-                      <button type="button" (click)="buy('FEATURE_7D', listing)" [disabled]="busy()" class="rounded-lg border border-border bg-white px-3 py-2 text-xs font-semibold transition-colors hover:border-amber-500 disabled:opacity-50">7 jours · {{ prices.FEATURE_7D.amount }} €</button>
-                      <button type="button" (click)="buy('FEATURE_30D', listing)" [disabled]="busy()" class="rounded-lg bg-amber-500 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-amber-600 disabled:opacity-50">30 jours · {{ prices.FEATURE_30D.amount }} €</button>
+                      <button type="button" (click)="buy('FEATURE_7D', listing)" [disabled]="busy()" class="rounded-lg border border-border bg-white px-3 py-2 text-sm font-semibold transition-colors hover:border-amber-500 disabled:opacity-50">7 jours · {{ prices.FEATURE_7D.amount }} €</button>
+                      <button type="button" (click)="buy('FEATURE_30D', listing)" [disabled]="busy()" class="rounded-lg bg-amber-500 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-amber-600 disabled:opacity-50">30 jours · {{ prices.FEATURE_30D.amount }} €</button>
                     </div>
                   </div>
 
@@ -88,9 +88,9 @@ import { PaymentService } from '../../../core/services/payment.service';
                       <p class="mt-1 text-sm text-foreground/80">Demande envoyée le {{ formatDate(pendingRequest(listing.id)!.created_at) }}, en cours d'examen par l'équipe.</p>
                     } @else {
                       @if (lastRejected(listing.id); as rejected) {
-                        <p class="mt-1 text-xs text-destructive">Précédente demande non validée{{ rejected.admin_note ? ' : ' + rejected.admin_note : '.' }}</p>
+                        <p class="mt-1 text-sm text-destructive">Précédente demande non validée{{ rejected.admin_note ? ' : ' + rejected.admin_note : '.' }}</p>
                       }
-                      <p class="mt-1 text-xs text-muted-foreground">
+                      <p class="mt-1 text-sm text-muted-foreground">
                         Indiquez où trouver vos justificatifs : captures de votre tableau de bord Stripe ou Shopify sur 12 mois, derniers bilans
                         (par exemple un lien de partage Drive). Un membre de l'équipe les contrôle sous 3 jours ouvrés.
                       </p>
@@ -104,7 +104,7 @@ import { PaymentService } from '../../../core/services/payment.service';
                         class="mt-2 w-full resize-y rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-emerald-600"
                         placeholder="Lien vers vos justificatifs et précisions utiles"
                       ></textarea>
-                      <button type="button" (click)="requestVerification(listing)" [disabled]="busy() || (evidence()[listing.id] ?? '').trim().length < 20" class="mt-2 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50">
+                      <button type="button" (click)="requestVerification(listing)" [disabled]="busy() || (evidence()[listing.id] ?? '').trim().length < 20" class="mt-2 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50">
                         Demander la vérification
                       </button>
                     }

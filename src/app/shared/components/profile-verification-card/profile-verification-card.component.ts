@@ -8,7 +8,7 @@ import { ProfileVerificationRequest, VerificationService } from '../../../core/s
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <section class="rounded-3xl border border-border bg-white p-6 shadow-lg sm:p-8" aria-labelledby="verification-title">
+    <section class="rounded-3xl border border-border bg-white p-6 sm:p-8" aria-labelledby="verification-title">
       <div class="flex items-start gap-3">
         <span class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent" aria-hidden="true">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -16,7 +16,7 @@ import { ProfileVerificationRequest, VerificationService } from '../../../core/s
           </svg>
         </span>
         <div class="min-w-0 flex-1">
-          <h2 id="verification-title" class="text-xl font-bold text-primary">Profil vérifié</h2>
+          <h2 id="verification-title" class="text-xl font-semibold text-primary">Profil vérifié</h2>
 
           @if (verifiedAt()) {
             <p class="mt-1 text-sm text-emerald-700">Votre profil affiche le badge « Profil vérifié » depuis le {{ formatDate(verifiedAt()!) }}.</p>
@@ -28,7 +28,7 @@ import { ProfileVerificationRequest, VerificationService } from '../../../core/s
               que vous présentez : lien LinkedIn, site de votre entreprise, numéro SIREN… Aucune pièce d'identité n'est demandée.
             </p>
             @if (request()?.status === 'rejected') {
-              <p class="mt-2 text-xs text-destructive">Précédente demande non validée{{ request()!.admin_note ? ' : ' + request()!.admin_note : '.' }}</p>
+              <p class="mt-2 text-sm text-destructive">Précédente demande non validée{{ request()!.admin_note ? ' : ' + request()!.admin_note : '.' }}</p>
             }
             <label class="sr-only" for="verification-evidence">Éléments de vérification</label>
             <textarea
@@ -44,7 +44,7 @@ import { ProfileVerificationRequest, VerificationService } from '../../../core/s
               type="button"
               (click)="submit()"
               [disabled]="busy() || evidence().trim().length < 20"
-              class="mt-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
+              class="mt-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
             >Demander la vérification</button>
           }
 

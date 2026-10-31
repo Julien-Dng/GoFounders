@@ -23,10 +23,10 @@ export interface ProfileCardData {
   imports: [RouterLink, CompatibilityBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="bg-card rounded-2xl border border-border p-6 shadow-sm hover:shadow-lg transition-all hover:-translate-y-0.5 duration-200 flex flex-col gap-4">
+    <div class="bg-card rounded-2xl border border-border p-6 transition-all  duration-200 flex flex-col gap-4">
       <div class="flex items-start justify-between">
         <div class="flex items-center gap-3">
-          <div class="relative flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-primary font-bold text-white">
+          <div class="relative flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-primary font-semibold text-white">
             <span>{{ profile.initials }}</span>
             @if (profile.photoURL) {
               <img
@@ -38,7 +38,7 @@ export interface ProfileCardData {
             }
           </div>
           <div>
-            <div class="font-bold">{{ profile.displayName }}</div>
+            <div class="font-semibold">{{ profile.displayName }}</div>
             <div class="text-sm text-muted-foreground">{{ profile.role }}</div>
           </div>
         </div>
@@ -51,19 +51,19 @@ export interface ProfileCardData {
 
       <div class="flex flex-wrap gap-1.5">
         @for (skill of profile.skills.slice(0, 4); track skill) {
-          <span class="px-2 py-1 bg-secondary text-xs font-medium rounded-md">{{ skill }}</span>
+          <span class="px-2 py-1 bg-secondary text-sm font-medium rounded-md">{{ skill }}</span>
         }
       </div>
 
       <div class="flex items-center justify-between pt-2 border-t border-border">
-        <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <div class="flex items-center gap-1.5 text-sm text-muted-foreground">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
           </svg>
           {{ profile.location }}
         </div>
         @if (profile.available) {
-          <span class="flex items-center gap-1 text-xs text-green-600 font-medium">
+          <span class="flex items-center gap-1 text-sm text-green-600 font-medium">
             <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
             Disponible
           </span>
@@ -72,7 +72,7 @@ export interface ProfileCardData {
 
       <a
         [routerLink]="['/profil', profile.id]"
-        class="block text-center py-2.5 bg-accent text-white rounded-lg text-sm font-semibold hover:bg-accent/90 transition-colors"
+        class="block text-center py-2.5 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
       >
         Voir le profil
       </a>

@@ -16,7 +16,7 @@ const EMPTY_STATS: SellerStats = { listings: [], daily: [], contacts: { contacts
       <div class="mx-auto max-w-5xl">
         <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 class="text-3xl font-bold text-primary sm:text-4xl">Mes statistiques</h1>
+            <h1 class="text-3xl font-semibold text-primary sm:text-4xl">Mes statistiques</h1>
             <p class="mt-2 text-muted-foreground">L'intérêt suscité par vos annonces auprès des repreneurs.</p>
           </div>
           <div class="flex gap-2" role="group" aria-label="Période">
@@ -34,9 +34,9 @@ const EMPTY_STATS: SellerStats = { listings: [], daily: [], contacts: { contacts
         </div>
 
         @if (!isLoading() && proStats(); as pro) {
-          <section class="mb-6 rounded-2xl border border-border bg-white p-6 shadow-sm" aria-labelledby="pro-stats-title">
+          <section class="mb-6 rounded-2xl border border-border bg-white p-6" aria-labelledby="pro-stats-title">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
-              <h2 id="pro-stats-title" class="text-lg font-bold">Votre fiche dans l'annuaire</h2>
+              <h2 id="pro-stats-title" class="text-lg font-semibold">Votre fiche dans l'annuaire</h2>
               @if (!pro.is_listed) {
                 <a routerLink="/tarifs" fragment="pros" class="text-sm font-semibold text-accent hover:underline">Apparaître dans l'annuaire</a>
               }
@@ -45,16 +45,16 @@ const EMPTY_STATS: SellerStats = { listings: [], daily: [], contacts: { contacts
               <div class="mt-4 grid gap-4 sm:grid-cols-2">
                 <div class="rounded-xl bg-secondary/60 p-4">
                   <div class="text-sm font-semibold text-muted-foreground">Vues de votre fiche</div>
-                  <div class="mt-1 text-3xl font-bold text-primary">{{ pro.profile_views_period }}</div>
-                  <div class="text-xs text-muted-foreground">sur {{ days() }} jours · {{ pro.profile_views_total }} au total</div>
+                  <div class="mt-1 text-3xl font-semibold text-primary">{{ pro.profile_views_period }}</div>
+                  <div class="text-sm text-muted-foreground">sur {{ days() }} jours · {{ pro.profile_views_total }} au total</div>
                 </div>
                 <div class="rounded-xl bg-secondary/60 p-4">
                   <div class="text-sm font-semibold text-muted-foreground">Clics vers votre site</div>
-                  <div class="mt-1 text-3xl font-bold text-primary">{{ pro.website_clicks_period }}</div>
-                  <div class="text-xs text-muted-foreground">sur {{ days() }} jours · {{ pro.website_clicks_total }} au total</div>
+                  <div class="mt-1 text-3xl font-semibold text-primary">{{ pro.website_clicks_period }}</div>
+                  <div class="text-sm text-muted-foreground">sur {{ days() }} jours · {{ pro.website_clicks_total }} au total</div>
                 </div>
               </div>
-              <p class="mt-3 text-xs text-muted-foreground">Les messages reçus sont comptés dans « Contacts reçus ».</p>
+              <p class="mt-3 text-sm text-muted-foreground">Les messages reçus sont comptés dans « Contacts reçus ».</p>
             } @else {
               <p class="mt-2 text-sm text-muted-foreground">Votre fiche n'est pas visible dans l'annuaire. Activez l'offre Annuaire ou Compte pro pour être trouvé par les cédants et les repreneurs.</p>
             }
@@ -72,22 +72,22 @@ const EMPTY_STATS: SellerStats = { listings: [], daily: [], contacts: { contacts
         } @else {
           <div class="grid gap-4 sm:grid-cols-3">
             @for (tile of tiles(); track tile.label) {
-              <div class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+              <div class="rounded-2xl border border-border bg-white p-5">
                 <div class="text-sm font-semibold text-muted-foreground">{{ tile.label }}</div>
-                <div class="mt-2 text-4xl font-bold text-primary">{{ tile.value }}</div>
-                <div class="mt-1 text-xs text-muted-foreground">{{ tile.detail }}</div>
+                <div class="mt-2 text-4xl font-semibold text-primary">{{ tile.value }}</div>
+                <div class="mt-1 text-sm text-muted-foreground">{{ tile.detail }}</div>
               </div>
             }
           </div>
 
-          <section class="mt-6 rounded-2xl border border-border bg-white p-6 shadow-sm" aria-labelledby="chart-title">
+          <section class="mt-6 rounded-2xl border border-border bg-white p-6" aria-labelledby="chart-title">
             <div class="flex items-baseline justify-between gap-3">
-              <h2 id="chart-title" class="text-lg font-bold">Vues de vos annonces par jour</h2>
+              <h2 id="chart-title" class="text-lg font-semibold">Vues de vos annonces par jour</h2>
               <span class="h-5 text-sm text-foreground/80" aria-live="polite">{{ hoveredLabel() }}</span>
             </div>
 
             <div class="mt-4 flex gap-3">
-              <div class="flex h-40 flex-col justify-between text-right text-xs text-muted-foreground" aria-hidden="true">
+              <div class="flex h-40 flex-col justify-between text-right text-sm text-muted-foreground" aria-hidden="true">
                 <span>{{ chartMax() }}</span>
                 <span>0</span>
               </div>
@@ -105,14 +105,14 @@ const EMPTY_STATS: SellerStats = { listings: [], daily: [], contacts: { contacts
                     >
                       <div
                         class="w-full rounded-t-[4px] transition-colors"
-                        [class]="hovered() === index ? 'bg-primary' : 'bg-accent'"
+                        [class]="hovered() === index ? 'bg-primary' : 'bg-primary'"
                         [style.height.%]="barHeight(point)"
                         [style.min-height.px]="point.page_views > 0 ? 2 : 0"
                       ></div>
                     </div>
                   }
                 </div>
-                <div class="mt-2 flex justify-between text-xs text-muted-foreground" aria-hidden="true">
+                <div class="mt-2 flex justify-between text-sm text-muted-foreground" aria-hidden="true">
                   <span>{{ shortDate(firstDay()) }}</span>
                   <span>{{ shortDate(lastDay()) }}</span>
                 </div>
@@ -123,7 +123,7 @@ const EMPTY_STATS: SellerStats = { listings: [], daily: [], contacts: { contacts
               <summary class="cursor-pointer font-semibold text-accent">Voir les données</summary>
               <div class="mt-3 max-h-64 overflow-y-auto">
                 <table class="w-full text-left text-sm">
-                  <thead class="text-xs text-muted-foreground">
+                  <thead class="text-sm text-muted-foreground">
                     <tr><th class="py-1 pr-4">Jour</th><th class="py-1 pr-4">Vues</th><th class="py-1">Dossiers consultés</th></tr>
                   </thead>
                   <tbody>
@@ -136,11 +136,11 @@ const EMPTY_STATS: SellerStats = { listings: [], daily: [], contacts: { contacts
             </details>
           </section>
 
-          <section class="mt-6 rounded-2xl border border-border bg-white p-6 shadow-sm">
-            <h2 class="text-lg font-bold">Détail par annonce</h2>
+          <section class="mt-6 rounded-2xl border border-border bg-white p-6">
+            <h2 class="text-lg font-semibold">Détail par annonce</h2>
             <div class="mt-4 overflow-x-auto">
               <table class="w-full min-w-[620px] text-left text-sm">
-                <thead class="text-xs text-muted-foreground">
+                <thead class="text-sm text-muted-foreground">
                   <tr>
                     <th class="py-2 pr-4">Annonce</th>
                     <th class="py-2 pr-4">Statut</th>
@@ -168,7 +168,7 @@ const EMPTY_STATS: SellerStats = { listings: [], daily: [], contacts: { contacts
                 </tbody>
               </table>
             </div>
-            <p class="mt-4 text-xs text-muted-foreground">
+            <p class="mt-4 text-sm text-muted-foreground">
               Une vue est comptée au plus une fois par jour pour un membre connecté ; vos propres visites ne sont pas comptées.
               « Dossier consulté » : un repreneur avec un accès en cours a ouvert le dossier complet.
             </p>

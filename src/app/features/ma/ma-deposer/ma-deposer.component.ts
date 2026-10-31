@@ -14,7 +14,7 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
     <div class="min-h-screen bg-secondary pb-12 pt-20">
       <div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         <div class="mb-10 text-center">
-          <h1 class="mb-2 text-4xl font-bold">Déposer une annonce M&A</h1>
+          <h1 class="mb-2 text-4xl font-semibold">Déposer une annonce M&A</h1>
           <p class="text-muted-foreground">Publication gratuite pendant le lancement. Votre annonce reste anonymisée.</p>
         </div>
 
@@ -28,10 +28,10 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
           </div>
         </div>
 
-        <div class="rounded-2xl border border-border bg-white p-6 shadow-lg sm:p-10">
+        <div class="rounded-2xl border border-border bg-white p-6 sm:p-10">
           @if (!canPublish()) {
             <div class="text-center">
-              <h2 class="mb-2 text-2xl font-bold">Compte pro requis</h2>
+              <h2 class="mb-2 text-2xl font-semibold">Compte pro requis</h2>
               <p class="mx-auto mb-6 max-w-xl text-muted-foreground">
                 Pour publier des annonces pour vos clients et contacter les repreneurs, activez un compte pro.
               </p>
@@ -40,12 +40,12 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
           } @else if (!checkoutRequested()) {
             <div class="space-y-8">
               @if (currentStep() === 1) {
-                <div class="rounded-2xl border-2 border-accent/20 bg-accent/[0.04] p-5">
+                <div class="rounded-2xl border border-accent/20 bg-accent/[0.04] p-5">
                   <div class="flex flex-wrap items-center gap-2">
                     <svg class="text-accent" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                       <path d="m12 3-1.9 5.1L5 10l5.1 1.9L12 17l1.9-5.1L19 10l-5.1-1.9z"/>
                     </svg>
-                    <h2 class="text-lg font-bold text-primary">Préparer mon annonce avec l'IA</h2>
+                    <h2 class="text-lg font-semibold text-primary">Préparer mon annonce avec l'IA</h2>
                   </div>
                   <p class="mt-1 text-sm leading-relaxed text-muted-foreground">
                     Décrivez votre entreprise comme à un ami : activité, chiffres, clients, raison de la vente. L'IA rédige une annonce anonymisée,
@@ -62,12 +62,12 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
                     placeholder="Ex. : Boutique Shopify de décoration créée en 2021, 180 k€ de CA l'an dernier, environ 25 % de marge, 3 000 clients dont 40 % reviennent. Je vends pour me consacrer à un nouveau projet, idéalement entre 150 et 220 k€."
                   ></textarea>
                   <div class="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <p class="text-xs text-muted-foreground">Votre texte sert uniquement à préparer l'annonce, il n'est pas publié tel quel.</p>
+                    <p class="text-sm text-muted-foreground">Votre texte sert uniquement à préparer l'annonce, il n'est pas publié tel quel.</p>
                     <button
                       type="button"
                       (click)="prepareWithAi()"
                       [disabled]="aiLoading() || aiInput().trim().length < 40"
-                      class="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
+                      class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {{ aiLoading() ? 'Préparation…' : 'Préparer mon annonce' }}
                     </button>
@@ -83,7 +83,7 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
                           <li>« {{ detail.excerpt }} » : {{ detail.reason }}</li>
                         }
                       </ul>
-                      <p class="mt-2 text-xs text-amber-900/70">L'annonce proposée ci-dessous les a retirés. Vérifiez qu'il n'en reste aucun avant de publier.</p>
+                      <p class="mt-2 text-sm text-amber-900/70">L'annonce proposée ci-dessous les a retirés. Vérifiez qu'il n'en reste aucun avant de publier.</p>
                     </div>
                   } @else if (aiApplied()) {
                     <p class="mt-3 text-sm text-emerald-700" role="status">Annonce préparée : relisez les champs ci-dessous et à chaque étape.</p>
@@ -93,7 +93,7 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
               @switch (currentStep()) {
                 @case (1) {
                   <div>
-                    <h2 class="mb-3 text-2xl font-bold">1. Informations générales</h2>
+                    <h2 class="mb-3 text-2xl font-semibold">1. Informations générales</h2>
                     <p class="mb-6 text-muted-foreground">Décrivez rapidement l'activité que vous souhaitez mettre en vente.</p>
                     <div class="grid gap-4 sm:grid-cols-2">
                       <label class="space-y-2">
@@ -121,7 +121,7 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
                 }
                 @case (2) {
                   <div>
-                    <h2 class="mb-3 text-2xl font-bold">2. Indicateurs clés</h2>
+                    <h2 class="mb-3 text-2xl font-semibold">2. Indicateurs clés</h2>
                     <p class="mb-6 text-muted-foreground">Renseignez quelques repères financiers simples pour cadrer l'opportunité.</p>
                     <div class="grid gap-4 sm:grid-cols-3">
                       <label class="space-y-2">
@@ -141,7 +141,7 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
                 }
                 @case (3) {
                   <div>
-                    <h2 class="mb-3 text-2xl font-bold">3. Fourchette de prix</h2>
+                    <h2 class="mb-3 text-2xl font-semibold">3. Fourchette de prix</h2>
                     <p class="mb-6 text-muted-foreground">Donnez une fourchette indicative. Vous pourrez l'ajuster ensuite.</p>
                     <div class="grid gap-4 sm:grid-cols-2">
                       <label class="space-y-2">
@@ -153,12 +153,12 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
                         <input type="text" [value]="priceMax()" (input)="priceMax.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
                       </label>
                     </div>
-                    <p class="mt-4 text-xs text-muted-foreground">Estimation indicative, non contractuelle.</p>
+                    <p class="mt-4 text-sm text-muted-foreground">Estimation indicative, non contractuelle.</p>
                   </div>
                 }
                 @case (4) {
                   <div>
-                    <h2 class="mb-3 text-2xl font-bold">4. Confidentialité</h2>
+                    <h2 class="mb-3 text-2xl font-semibold">4. Confidentialité</h2>
                     <p class="mb-6 text-muted-foreground">Le détail complet restera réservé aux comptes avec accès M&A.</p>
                     <div class="rounded-2xl border border-border bg-secondary/50 p-5">
                       <ul class="space-y-3 text-sm text-foreground/80">
@@ -180,11 +180,11 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
                 }
                 @case (5) {
                   <div>
-                    <h2 class="mb-3 text-2xl font-bold">5. Aperçu et publication</h2>
+                    <h2 class="mb-3 text-2xl font-semibold">5. Aperçu et publication</h2>
                     <p class="mb-6 text-muted-foreground">
                       Relisez votre annonce avant de la publier.
                     </p>
-                    <div class="rounded-2xl border-2 border-amber-200 bg-amber-50 p-6">
+                    <div class="rounded-2xl border border-amber-200 bg-amber-50 p-6">
                       <div class="mb-3 text-sm font-semibold text-amber-700">Résumé</div>
                       <div class="space-y-2 text-sm text-foreground/80">
                         <div><strong>Accroche :</strong> {{ teaser() || 'À compléter' }}</div>
@@ -193,7 +193,7 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
                       </div>
                     </div>
                     <div class="mt-5 rounded-2xl border border-border bg-secondary/50 p-5">
-                      <div class="mb-2 text-sm font-bold text-foreground">Publication gratuite</div>
+                      <div class="mb-2 text-sm font-semibold text-foreground">Publication gratuite</div>
                       <p class="text-sm leading-relaxed text-muted-foreground">
                         Offre de lancement : la publication ne coûte rien. Votre annonce apparaît anonymisée sur la marketplace ;
                         seuls les repreneurs avec un accès M&A voient le dossier complet et peuvent vous contacter.
@@ -228,7 +228,7 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
                     <polyline points="22 4 12 14.01 9 11.01"/>
                   </svg>
                 </div>
-                <h2 class="mb-3 text-3xl font-bold">Annonce publiée</h2>
+                <h2 class="mb-3 text-3xl font-semibold">Annonce publiée</h2>
                 <p class="mx-auto mb-8 max-w-xl leading-relaxed text-muted-foreground">
                   Votre annonce a bien été enregistrée dans Supabase. Elle apparaît maintenant dans la marketplace M&A.
                 </p>
@@ -247,7 +247,7 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                   </svg>
                 </div>
-                <h2 class="mb-3 text-3xl font-bold">La publication a échoué</h2>
+                <h2 class="mb-3 text-3xl font-semibold">La publication a échoué</h2>
                 <p class="mx-auto mb-8 max-w-xl leading-relaxed text-muted-foreground" role="alert">
                   Votre annonce n'a pas pu être enregistrée. Vérifiez votre connexion puis réessayez.
                 </p>

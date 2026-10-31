@@ -14,7 +14,7 @@ import { MaService, VerificationRequest } from '../../core/services/ma.service';
   template: `
     <div class="min-h-screen bg-secondary px-4 pb-16 pt-28 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-4xl">
-        <h1 class="text-3xl font-bold text-primary">Dossiers à vérifier</h1>
+        <h1 class="text-3xl font-semibold text-primary">Dossiers à vérifier</h1>
 
         @if (!isAdmin()) {
           <p class="mt-4 text-muted-foreground">Page réservée aux administrateurs.</p>
@@ -28,11 +28,11 @@ import { MaService, VerificationRequest } from '../../core/services/ma.service';
           } @else {
             <ul class="mt-6 space-y-6">
               @for (request of requests(); track request.id) {
-                <li class="rounded-2xl border border-border bg-white p-6 shadow-sm">
+                <li class="rounded-2xl border border-border bg-white p-6">
                   <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <h2 class="font-bold">{{ request.listing?.sector ?? 'Annonce' }} · {{ request.listing?.region ?? '' }}</h2>
-                      <p class="text-xs text-muted-foreground">Demande du {{ formatDate(request.created_at) }}</p>
+                      <h2 class="font-semibold">{{ request.listing?.sector ?? 'Annonce' }} · {{ request.listing?.region ?? '' }}</h2>
+                      <p class="text-sm text-muted-foreground">Demande du {{ formatDate(request.created_at) }}</p>
                     </div>
                     <a [routerLink]="['/ma/annonce', request.listing_id]" class="text-sm font-semibold text-accent hover:underline">Voir l'annonce</a>
                   </div>

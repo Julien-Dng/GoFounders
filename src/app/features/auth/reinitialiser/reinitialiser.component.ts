@@ -16,11 +16,11 @@ import { PasswordCriteriaComponent } from '../../../shared/components/password-c
     <div class="flex min-h-screen items-center justify-center bg-white px-4 py-12 sm:px-8">
       <div class="w-full max-w-md">
         <div class="mb-10 text-center">
-          <h1 class="mb-2 text-3xl font-bold text-primary sm:text-4xl">Nouveau mot de passe</h1>
+          <h1 class="mb-2 text-3xl font-semibold text-primary sm:text-4xl">Nouveau mot de passe</h1>
           <p class="text-muted-foreground">Choisissez le mot de passe de votre compte GoFounders.</p>
         </div>
 
-        <div class="rounded-2xl border-2 border-border bg-white p-6 shadow-lg sm:p-10">
+        <div class="rounded-2xl border border-border bg-white p-6 sm:p-10">
           @switch (state()) {
             @case ('loading') {
               <p class="text-center text-muted-foreground" role="status">Vérification du lien…</p>
@@ -29,7 +29,7 @@ import { PasswordCriteriaComponent } from '../../../shared/components/password-c
               <p class="mb-6 rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive" role="alert">
                 Ce lien a expiré ou a déjà été utilisé. Refaites une demande depuis la page de connexion.
               </p>
-              <a routerLink="/connexion" class="block w-full rounded-lg bg-accent py-3 text-center font-bold text-white hover:bg-accent/90">
+              <a routerLink="/connexion" class="block w-full rounded-lg bg-primary py-3 text-center font-semibold text-white hover:bg-primary/90">
                 Retour à la connexion
               </a>
             }
@@ -67,7 +67,7 @@ import { PasswordCriteriaComponent } from '../../../shared/components/password-c
                 type="button"
                 (click)="submit()"
                 [disabled]="isSubmitting() || form.invalid"
-                class="mt-6 w-full rounded-lg bg-accent py-4 text-lg font-bold text-white shadow-lg transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
+                class="mt-6 w-full rounded-lg bg-primary py-4 text-lg font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {{ isSubmitting() ? 'Enregistrement…' : 'Enregistrer le mot de passe' }}
               </button>

@@ -30,7 +30,7 @@ import { AuthService } from '../../../core/services/auth.service';
         } @else {
           <div
             [ngClass]="avatarClass"
-            class="flex items-center justify-center rounded-full bg-primary font-bold text-white shadow-md"
+            class="flex items-center justify-center rounded-full bg-primary font-semibold text-white shadow-md"
           >
             {{ initials() }}
           </div>
@@ -52,14 +52,14 @@ import { AuthService } from '../../../core/services/auth.service';
                 class="h-11 w-11 rounded-full border border-border object-cover shadow-sm"
               >
             } @else {
-              <div class="flex h-11 w-11 items-center justify-center rounded-full bg-primary font-bold text-white shadow-md">
+              <div class="flex h-11 w-11 items-center justify-center rounded-full bg-primary font-semibold text-white shadow-md">
                 {{ initials() }}
               </div>
             }
 
             <div class="min-w-0">
               <div class="truncate font-semibold text-primary">{{ displayName() }}</div>
-              <div class="mt-1 text-xs text-muted-foreground">{{ planLabel() }}</div>
+              <div class="mt-1 text-sm text-muted-foreground">{{ planLabel() }}</div>
             </div>
           </div>
 
@@ -189,7 +189,7 @@ import { AuthService } from '../../../core/services/auth.service';
               </svg>
             </div>
             <div>
-              <h3 class="text-xl font-bold text-primary">Se déconnecter ?</h3>
+              <h3 class="text-xl font-semibold text-primary">Se déconnecter ?</h3>
               <p class="text-sm text-muted-foreground">Votre session actuelle sera fermée.</p>
             </div>
           </div>

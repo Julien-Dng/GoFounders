@@ -24,14 +24,14 @@ const RANGES: Array<[number, string]> = [
     <div class="min-h-screen bg-secondary px-4 pb-16 pt-28 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-3xl">
         <a routerLink="/ma/statistiques" class="text-sm font-semibold text-accent hover:underline">← Mes statistiques</a>
-        <h1 class="mt-3 text-3xl font-bold text-primary sm:text-4xl">J'ai vendu mon entreprise</h1>
+        <h1 class="mt-3 text-3xl font-semibold text-primary sm:text-4xl">J'ai vendu mon entreprise</h1>
 
         @if (isLoading()) {
           <p class="mt-6 text-muted-foreground">Chargement…</p>
         } @else if (!listing()) {
           <div class="mt-6 rounded-2xl border border-border bg-white p-10 text-center text-muted-foreground">Annonce introuvable.</div>
         } @else if (existing()) {
-          <div class="mt-6 rounded-2xl border border-border bg-white p-6 shadow-sm">
+          <div class="mt-6 rounded-2xl border border-border bg-white p-6">
             <p class="font-semibold">{{ listing()!.sector }} · {{ listing()!.region }}</p>
             <p class="mt-2 text-sm text-foreground/80">{{ statusLabel(existing()!) }}</p>
             @if (existing()!.admin_note && existing()!.status === 'rejected') {
@@ -47,7 +47,7 @@ const RANGES: Array<[number, string]> = [
             Votre témoignage aide les prochains cédants et repreneurs à faire confiance à la plateforme.
           </p>
 
-          <section class="mt-6 rounded-2xl border border-border bg-white p-6 shadow-sm">
+          <section class="mt-6 rounded-2xl border border-border bg-white p-6">
             <label class="block text-sm font-semibold" for="sale-price">Prix de vente final (€)</label>
             <input id="sale-price" type="number" min="1" step="1000" inputmode="numeric" [value]="salePrice() ?? ''" (input)="onPrice($event)" class="mt-1 w-full rounded-lg border border-border px-3 py-2.5 text-sm outline-none focus:border-accent" placeholder="Ex. 180000">
 
@@ -65,15 +65,15 @@ const RANGES: Array<[number, string]> = [
 
             <label class="mt-5 block text-sm font-semibold" for="story-quote">Votre témoignage</label>
             <textarea id="story-quote" rows="4" maxlength="600" [value]="quote()" (input)="quote.set($any($event.target).value)" class="mt-1 w-full resize-y rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-accent" placeholder="Comment s'est passée la vente ? Combien de repreneurs, en combien de temps, ce qui vous a aidé…"></textarea>
-            <p class="mt-1 text-xs text-muted-foreground">{{ quote().trim().length }} / 600 caractères (20 minimum). Ne citez ni le nom de l'entreprise ni celui du repreneur.</p>
+            <p class="mt-1 text-sm text-muted-foreground">{{ quote().trim().length }} / 600 caractères (20 minimum). Ne citez ni le nom de l'entreprise ni celui du repreneur.</p>
 
             <label class="mt-5 block text-sm font-semibold" for="story-author">Signature</label>
             <input id="story-author" type="text" maxlength="60" [value]="authorLabel()" (input)="authorLabel.set($any($event.target).value)" class="mt-1 w-full rounded-lg border border-border px-3 py-2.5 text-sm outline-none focus:border-accent" placeholder="Ex. Julie, fondatrice d'une boutique en ligne">
 
             <div class="mt-6 rounded-xl bg-secondary/60 p-4">
-              <div class="text-xs font-semibold text-muted-foreground">Aperçu</div>
+              <div class="text-sm font-semibold text-muted-foreground">Aperçu</div>
               <div class="mt-2 text-sm font-semibold">{{ listing()!.sector }} · {{ listing()!.region }}</div>
-              <div class="mt-1 text-xl font-bold text-amber-600">{{ previewPrice() }}</div>
+              <div class="mt-1 text-xl font-semibold text-amber-600">{{ previewPrice() }}</div>
               <p class="mt-2 text-sm italic text-foreground/80">« {{ quote().trim() || 'Votre témoignage' }} »</p>
               <p class="mt-2 text-sm font-semibold text-primary">{{ authorLabel().trim() || 'Votre signature' }}</p>
             </div>

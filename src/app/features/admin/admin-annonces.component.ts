@@ -13,7 +13,7 @@ import { ModeratedListing, ModerationAction, ModerationFilter, ModerationService
   template: `
     <div class="min-h-screen bg-secondary px-4 pb-16 pt-28 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-5xl">
-        <h1 class="text-3xl font-bold text-primary">Modération des annonces</h1>
+        <h1 class="text-3xl font-semibold text-primary">Modération des annonces</h1>
 
         @if (!isAdmin()) {
           <p class="mt-4 text-muted-foreground">Page réservée aux administrateurs.</p>
@@ -49,14 +49,14 @@ import { ModeratedListing, ModerationAction, ModerationFilter, ModerationService
           } @else {
             <ul class="mt-6 space-y-6">
               @for (listing of listings(); track listing.id) {
-                <li class="rounded-2xl border border-border bg-white p-6 shadow-sm">
+                <li class="rounded-2xl border border-border bg-white p-6">
                   <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <div class="flex flex-wrap items-center gap-2">
-                        <h2 class="text-lg font-bold">{{ listing.sector }} · {{ listing.region }}</h2>
+                        <h2 class="text-lg font-semibold">{{ listing.sector }} · {{ listing.region }}</h2>
                         <span [class]="statusClass(listing)">{{ statusLabel(listing) }}</span>
                       </div>
-                      <p class="mt-1 text-xs text-muted-foreground">
+                      <p class="mt-1 text-sm text-muted-foreground">
                         Publiée le {{ formatDate(listing.created_at) }} par {{ listing.owner_name ?? 'compte supprimé' }}
                         @if (listing.reviewed_at) {
                           · relue le {{ formatDate(listing.reviewed_at) }}
@@ -67,33 +67,33 @@ import { ModeratedListing, ModerationAction, ModerationFilter, ModerationService
                   </div>
 
                   <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-4">
-                    <div><dt class="text-xs font-semibold text-muted-foreground">CA</dt><dd>{{ money(listing.revenue) }}</dd></div>
-                    <div><dt class="text-xs font-semibold text-muted-foreground">Marge</dt><dd>{{ listing.margin ?? '–' }} %</dd></div>
-                    <div><dt class="text-xs font-semibold text-muted-foreground">Ancienneté</dt><dd>{{ listing.age ?? '–' }} ans</dd></div>
-                    <div><dt class="text-xs font-semibold text-muted-foreground">Prix</dt><dd>{{ money(listing.price_min) }} – {{ money(listing.price_max) }}</dd></div>
+                    <div><dt class="text-sm font-semibold text-muted-foreground">CA</dt><dd>{{ money(listing.revenue) }}</dd></div>
+                    <div><dt class="text-sm font-semibold text-muted-foreground">Marge</dt><dd>{{ listing.margin ?? '–' }} %</dd></div>
+                    <div><dt class="text-sm font-semibold text-muted-foreground">Ancienneté</dt><dd>{{ listing.age ?? '–' }} ans</dd></div>
+                    <div><dt class="text-sm font-semibold text-muted-foreground">Prix</dt><dd>{{ money(listing.price_min) }} – {{ money(listing.price_max) }}</dd></div>
                   </dl>
 
                   <div class="mt-4 space-y-3 text-sm">
                     <div>
-                      <div class="text-xs font-semibold text-muted-foreground">Résumé public (visible par tous)</div>
+                      <div class="text-sm font-semibold text-muted-foreground">Résumé public (visible par tous)</div>
                       <p class="mt-1 whitespace-pre-line">{{ listing.public_summary }}</p>
                     </div>
                     <div>
-                      <div class="text-xs font-semibold text-muted-foreground">Dossier confidentiel</div>
+                      <div class="text-sm font-semibold text-muted-foreground">Dossier confidentiel</div>
                       <p class="mt-1 whitespace-pre-line text-foreground/80">{{ listing.confidential_description || '–' }}</p>
                     </div>
                     <div class="grid gap-3 sm:grid-cols-2">
                       <div>
-                        <div class="text-xs font-semibold text-muted-foreground">Raison de la vente</div>
+                        <div class="text-sm font-semibold text-muted-foreground">Raison de la vente</div>
                         <p class="mt-1 text-foreground/80">{{ listing.sale_reason || '–' }}</p>
                       </div>
                       <div>
-                        <div class="text-xs font-semibold text-muted-foreground">Contact</div>
+                        <div class="text-sm font-semibold text-muted-foreground">Contact</div>
                         <p class="mt-1 text-foreground/80">{{ listing.contact_info || '–' }}</p>
                       </div>
                     </div>
                     @if (listing.moderation_note) {
-                      <p class="rounded-lg bg-secondary/70 px-3 py-2 text-xs"><span class="font-semibold">Note de modération :</span> {{ listing.moderation_note }}</p>
+                      <p class="rounded-lg bg-secondary/70 px-3 py-2 text-sm"><span class="font-semibold">Note de modération :</span> {{ listing.moderation_note }}</p>
                     }
                   </div>
 
@@ -114,7 +114,7 @@ import { ModeratedListing, ModerationAction, ModerationFilter, ModerationService
                       }
                       <button type="button" (click)="act(listing, 'withdraw')" [disabled]="busy() || (notes()[listing.id] ?? '').trim().length < 5" class="rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:border-destructive hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50">Retirer l'annonce</button>
                     } @else {
-                      <button type="button" (click)="act(listing, 'restore')" [disabled]="busy()" class="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent/90 disabled:opacity-50">Remettre en ligne</button>
+                      <button type="button" (click)="act(listing, 'restore')" [disabled]="busy()" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50">Remettre en ligne</button>
                     }
                   </div>
                 </li>
@@ -190,7 +190,7 @@ export class AdminAnnoncesComponent implements OnInit {
   }
 
   statusClass(listing: ModeratedListing): string {
-    const base = 'rounded-full px-2.5 py-0.5 text-xs font-semibold';
+    const base = 'rounded-full px-2.5 py-0.5 text-sm font-semibold';
 
     if (listing.status !== 'active') {
       return `${base} bg-secondary text-foreground/80`;

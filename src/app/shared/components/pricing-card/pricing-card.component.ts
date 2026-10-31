@@ -15,7 +15,7 @@ export interface PricingFeature {
   imports: [NgClass, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div [ngClass]="cardClasses" class="relative rounded-2xl p-8 border-2 transition-all h-full flex flex-col hover:-translate-y-2 duration-300">
+    <div [ngClass]="cardClasses" class="relative rounded-2xl p-8 border transition-all h-full flex flex-col duration-300">
       @if (variant === 'premium') {
         <div class="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
           <div class="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-amber-300/25 blur-3xl"></div>
@@ -37,7 +37,7 @@ export interface PricingFeature {
       <div class="relative z-10 mb-8">
         <div [ngClass]="labelClasses" class="mb-2 text-sm font-semibold opacity-90">{{ name }}</div>
         <div class="flex items-end gap-1 mb-2">
-          <span [ngClass]="priceClasses" class="text-5xl font-bold">{{ price }}</span>
+          <span [ngClass]="priceClasses" class="text-5xl font-semibold">{{ price }}</span>
           <span class="text-lg opacity-70 mb-2">{{ period }}</span>
         </div>
         <p class="opacity-80">{{ description }}</p>
@@ -45,7 +45,7 @@ export interface PricingFeature {
         @if (highlights.length > 0) {
           <div class="mt-5 flex flex-wrap gap-2">
             @for (highlight of highlights; track highlight) {
-              <span [ngClass]="highlightClasses" class="rounded-full px-3 py-1 text-xs font-bold">
+              <span [ngClass]="highlightClasses" class="rounded-full px-3 py-1 text-sm font-semibold">
                 {{ highlight }}
               </span>
             }
@@ -69,7 +69,7 @@ export interface PricingFeature {
               <span [class.opacity-50]="!feature.included">
                 {{ feature.text }}
                 @if (feature.soon) {
-                  <span class="ml-1 whitespace-nowrap rounded-full border border-current px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide opacity-70">Bientôt</span>
+                  <span class="ml-1 whitespace-nowrap rounded-full border border-current px-2 py-0.5 text-sm font-semibold uppercase tracking-wide opacity-70">Bientôt</span>
                 }
               </span>
             </li>
@@ -82,7 +82,7 @@ export interface PricingFeature {
       </a>
 
       @if (reassurance) {
-        <p [ngClass]="reassuranceClasses" class="relative z-10 mt-3 text-center text-xs font-semibold opacity-80">{{ reassurance }}</p>
+        <p [ngClass]="reassuranceClasses" class="relative z-10 mt-3 text-center text-sm font-semibold opacity-80">{{ reassurance }}</p>
       }
 
     </div>
@@ -109,9 +109,9 @@ export class PricingCardComponent {
 
   get cardClasses(): Record<string, boolean> {
     return {
-      'bg-accent border-accent shadow-2xl text-white scale-105': this.variant === 'pro',
+      'bg-primary border-accent shadow-2xl text-white scale-105': this.variant === 'pro',
       'bg-gradient-to-br from-[#0F1F3D] via-[#132C58] to-[#050B18] border-amber-300/50 shadow-[0_30px_80px_rgba(15,31,61,0.40),0_0_42px_rgba(251,191,36,0.14)] text-white': this.variant === 'premium',
-      'bg-card border-border shadow-lg': this.variant === 'free',
+      'bg-card border-border ': this.variant === 'free',
     };
   }
 

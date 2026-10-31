@@ -29,15 +29,15 @@ interface ProfileOption {
             <span class="text-sm font-semibold text-accent">{{ progressPercent() }}%</span>
           </div>
           <div class="h-2 overflow-hidden rounded-full bg-secondary">
-            <div class="h-full rounded-full bg-accent transition-all duration-500" [style.width]="progressPercent() + '%'"></div>
+            <div class="h-full rounded-full bg-primary transition-all duration-500" [style.width]="progressPercent() + '%'"></div>
           </div>
         </div>
 
-        <div class="animate-fade-in-scale delay-100 rounded-2xl border-2 border-border bg-white p-6 shadow-lg sm:p-8 lg:p-12">
+        <div class="animate-fade-in-scale delay-100 rounded-2xl border border-border bg-white p-6 sm:p-8 lg:p-12">
           @if (currentStep() === 1) {
             <div>
               <div class="mb-8 text-center sm:mb-10">
-                <h1 class="mb-3 text-3xl font-bold text-primary sm:text-4xl">Vous êtes plutôt…</h1>
+                <h1 class="mb-3 text-3xl font-semibold text-primary sm:text-4xl">Vous êtes plutôt…</h1>
                 <p class="mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
                   Un seul rôle par compte pour garder une recherche claire et pertinente des deux côtés.
                 </p>
@@ -49,8 +49,8 @@ interface ProfileOption {
                     type="button"
                     (click)="selectType(type.id)"
                     [ngClass]="selectedType() === type.id
-                      ? 'rounded-2xl border-2 border-accent bg-accent/5 p-6 text-left shadow-lg transition-all hover:scale-[1.01] sm:p-8'
-                      : 'rounded-2xl border-2 border-border bg-card p-6 text-left transition-all hover:scale-[1.01] hover:shadow-md sm:p-8'"
+                      ? 'rounded-2xl border border-accent bg-accent/5 p-6 text-left  transition-all hover:scale-[1.01] sm:p-8'
+                      : 'rounded-2xl border border-border bg-card p-6 text-left transition-all hover:scale-[1.01]  sm:p-8'"
                   >
                     <div class="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/5 text-primary">
                       @switch (type.icon) {
@@ -91,11 +91,11 @@ interface ProfileOption {
                       }
                     </div>
 
-                    <h3 class="mb-2 text-xl font-bold text-primary">{{ type.title }}</h3>
+                    <h3 class="mb-2 text-xl font-semibold text-primary">{{ type.title }}</h3>
                     <p class="leading-relaxed text-muted-foreground">{{ type.description }}</p>
 
                     @if (selectedType() === type.id) {
-                      <div class="mt-4 inline-flex items-center gap-2 rounded-full bg-accent px-3 py-1 text-sm font-semibold text-white animate-scale-in">
+                      <div class="mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-3 py-1 text-sm font-semibold text-white animate-scale-in">
                         Sélectionné
                       </div>
                     }
@@ -108,7 +108,7 @@ interface ProfileOption {
                 (click)="goToStep(2)"
                 [disabled]="!selectedType()"
                 [ngClass]="selectedType()
-                  ? 'w-full rounded-lg bg-accent py-4 text-lg font-semibold text-white shadow-lg transition-all hover:bg-accent/90'
+                  ? 'w-full rounded-lg bg-primary py-4 text-lg font-semibold text-white  transition-all hover:bg-primary/90'
                   : 'w-full cursor-not-allowed rounded-lg bg-muted py-4 text-lg font-semibold text-muted-foreground opacity-50'"
               >
                 Continuer
@@ -119,7 +119,7 @@ interface ProfileOption {
           @if (currentStep() === 2) {
             <div [formGroup]="basicsForm">
               <div class="mb-8 text-center sm:mb-10">
-                <h2 class="mb-3 text-3xl font-bold text-primary sm:text-4xl">Créez votre accès</h2>
+                <h2 class="mb-3 text-3xl font-semibold text-primary sm:text-4xl">Créez votre accès</h2>
                 <p class="text-sm text-muted-foreground sm:text-base">
                   Quelques informations pour ouvrir votre compte {{ selectedTypeLabel() }}.
                 </p>
@@ -210,14 +210,14 @@ interface ProfileOption {
                 <button
                   type="button"
                   (click)="goToStep(1)"
-                  class="rounded-lg border-2 border-border px-6 py-3 font-semibold transition-colors hover:border-accent"
+                  class="rounded-lg border border-border px-6 py-3 font-semibold transition-colors hover:border-accent"
                 >
                   Retour
                 </button>
                 <button
                   type="button"
                   (click)="goToStep(3)"
-                  class="flex-1 rounded-lg bg-accent py-4 text-lg font-semibold text-white shadow-lg transition-colors hover:bg-accent/90"
+                  class="flex-1 rounded-lg bg-primary py-4 text-lg font-semibold text-white transition-colors hover:bg-primary/90"
                 >
                   Continuer
                 </button>
@@ -228,7 +228,7 @@ interface ProfileOption {
           @if (currentStep() === 3) {
             <div [formGroup]="detailsForm">
               <div class="mb-8 text-center sm:mb-10">
-                <h2 class="mb-3 text-3xl font-bold text-primary sm:text-4xl">Derniers détails</h2>
+                <h2 class="mb-3 text-3xl font-semibold text-primary sm:text-4xl">Derniers détails</h2>
                 <p class="mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">{{ detailStepPrompt() }}</p>
               </div>
 
@@ -434,7 +434,7 @@ interface ProfileOption {
                 <button
                   type="button"
                   (click)="goToStep(2)"
-                  class="rounded-lg border-2 border-border px-6 py-3 font-semibold transition-colors hover:border-accent"
+                  class="rounded-lg border border-border px-6 py-3 font-semibold transition-colors hover:border-accent"
                 >
                   Retour
                 </button>
@@ -443,7 +443,7 @@ interface ProfileOption {
                   (click)="submitRegistration()"
                   [disabled]="isSubmitting()"
                   [ngClass]="isSubmitting() ? 'cursor-wait opacity-70' : ''"
-                  class="flex-1 rounded-lg bg-accent py-4 text-lg font-semibold text-white shadow-lg transition-colors hover:bg-accent/90"
+                  class="flex-1 rounded-lg bg-primary py-4 text-lg font-semibold text-white transition-colors hover:bg-primary/90"
                 >
                   {{ isSubmitting() ? 'Création du compte...' : 'Créer mon compte' }}
                 </button>

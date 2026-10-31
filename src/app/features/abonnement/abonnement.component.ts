@@ -11,9 +11,9 @@ import { PaymentService } from '../../core/services/payment.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-secondary pt-20 pb-12">
-      <div class="mx-auto max-w-5xl px-8 py-8">
-        <div class="mb-8 animate-fade-in-up">
-          <h1 class="mb-2 text-4xl font-bold">Mon abonnement</h1>
+      <div class="mx-auto max-w-[62rem] px-4 py-8 sm:px-6 lg:px-8">
+        <div class="mb-8">
+          <h1 class="mb-2 text-4xl font-semibold">Mon abonnement</h1>
           <p class="text-muted-foreground">Gérez votre abonnement GoFounders et l'accès M&A.</p>
         </div>
 
@@ -23,94 +23,59 @@ import { PaymentService } from '../../core/services/payment.service';
           </div>
         }
 
-        <div class="grid gap-6 lg:grid-cols-3">
-          <section class="rounded-2xl border border-border bg-white p-8 shadow-lg">
-            <div class="mb-6 flex items-start justify-between gap-4">
-              <div>
-                <div class="mb-1 text-sm text-muted-foreground">Plan actuel</div>
-                <div class="text-3xl font-bold text-primary">{{ currentPlan() }}</div>
-              </div>
-              <span class="rounded-full bg-secondary px-3 py-1 text-xs font-bold text-muted-foreground">Abonnement</span>
+        <div class="divide-y divide-border rounded-lg border border-border bg-white px-6">
+          <section class="grid gap-4 py-6 sm:grid-cols-[1fr_16rem] sm:items-center sm:gap-8" aria-labelledby="abo-plan">
+            <div>
+              <p class="text-sm text-muted-foreground">Votre plan actuel</p>
+              <h2 id="abo-plan" class="mt-1 text-2xl text-primary">{{ currentPlan() }}</h2>
+              <p class="mt-2 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
+                PRO : contacts illimités, raisons détaillées de chaque score de compatibilité et assistant IA personnel. 49 € par mois, sans engagement.
+              </p>
             </div>
-
-            <p class="mb-6 text-sm leading-relaxed text-muted-foreground">
-              Trouvez votre associé plus vite : contacts illimités, raisons détaillées de chaque score de compatibilité
-              et assistant IA personnel. 49 €/mois, sans engagement.
-            </p>
-
-            <button
-              type="button"
-              (click)="activatePlan('PRO')"
-              class="w-full rounded-full bg-accent px-6 py-3 font-bold text-white shadow-lg shadow-accent/20 transition-all hover:scale-[1.02] hover:bg-accent/90 active:scale-95"
-            >
+            <button type="button" (click)="activatePlan('PRO')" class="w-full rounded bg-primary px-5 py-3 font-medium text-white transition-colors hover:bg-primary/90">
               {{ isSimulation ? 'Activer PRO (paiement simulé)' : 'Passer en PRO' }}
             </button>
           </section>
 
-          <section class="rounded-2xl border border-primary bg-primary p-8 text-white shadow-2xl">
-            <div class="mb-6 flex items-start justify-between gap-4">
-              <div>
-                <div class="mb-1 text-sm text-white/70">PREMIUM</div>
-                <div class="text-3xl font-bold">Sur devis</div>
-              </div>
-              <span class="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-white/80">Accompagnement</span>
+          <section class="grid gap-4 py-6 sm:grid-cols-[1fr_16rem] sm:items-center sm:gap-8" aria-labelledby="abo-premium">
+            <div>
+              <p class="text-sm text-muted-foreground">Accompagnement</p>
+              <h2 id="abo-premium" class="mt-1 text-2xl text-primary">PREMIUM, sur devis</h2>
+              <p class="mt-2 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
+                On vous présente les bonnes personnes : associés qualifiés, investisseurs, experts juridiques partenaires, avec un interlocuteur dédié.
+              </p>
             </div>
-
-            <p class="mb-6 text-sm leading-relaxed text-white/75">
-              On vous présente les bonnes personnes : associés qualifiés, investisseurs, experts juridiques
-              partenaires, avec un interlocuteur dédié.
-            </p>
-
             @if (isSimulation) {
-              <button
-                type="button"
-                (click)="activatePlan('PREMIUM')"
-                class="w-full rounded-full bg-white px-6 py-3 font-bold text-primary shadow-xl transition-all hover:scale-[1.02] hover:bg-white/95 active:scale-95"
-              >
+              <button type="button" (click)="activatePlan('PREMIUM')" class="w-full rounded border border-primary px-5 py-3 font-medium text-primary transition-colors hover:bg-primary hover:text-white">
                 Activer PREMIUM (paiement simulé)
               </button>
             } @else {
-              <a
-                href="mailto:support@gofounders.fr?subject=Accompagnement%20PREMIUM"
-                class="block w-full rounded-full bg-white px-6 py-3 text-center font-bold text-primary shadow-xl transition-all hover:scale-[1.02] hover:bg-white/95"
-              >
+              <a href="mailto:support@gofounders.fr?subject=Accompagnement%20PREMIUM" class="block w-full rounded border border-primary px-5 py-3 text-center font-medium text-primary transition-colors hover:bg-primary hover:text-white">
                 Demander un premier échange gratuit
               </a>
             }
           </section>
 
-          <section class="rounded-2xl border border-amber-300 bg-amber-50 p-8 shadow-lg">
-            <div class="mb-6 flex items-start justify-between gap-4">
-              <div>
-                <div class="mb-1 text-sm text-amber-700">M&A</div>
-                <div class="text-3xl font-bold text-primary">{{ isSeller() ? 'Gratuit' : '149 €' }}</div>
-              </div>
-              <span class="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-700">{{ isSeller() ? 'Vendeurs' : '12 mois' }}</span>
+          <section class="grid gap-4 py-6 sm:grid-cols-[1fr_16rem] sm:items-center sm:gap-8" aria-labelledby="abo-ma">
+            <div>
+              <p class="text-sm text-muted-foreground">Reprise d'entreprise</p>
+              <h2 id="abo-ma" class="mt-1 text-2xl text-primary">{{ isSeller() ? 'Publication gratuite' : 'Accès repreneur, 149 € pour 12 mois' }}</h2>
+              <p class="mt-2 max-w-[60ch] text-base leading-relaxed text-muted-foreground">{{ maDescription() }}</p>
             </div>
-
-            <p class="mb-6 text-sm leading-relaxed text-muted-foreground">
-              {{ maDescription() }}
-            </p>
-
             @if (isBuyer()) {
-              <button
-                type="button"
-                (click)="activateMaAccess()"
-                class="w-full rounded-full bg-amber-500 px-6 py-3 font-bold text-white shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02] hover:bg-amber-600 active:scale-95 disabled:cursor-default disabled:hover:scale-100"
-                [disabled]="hasMaAccess()"
-              >
+              <button type="button" (click)="activateMaAccess()" [disabled]="hasMaAccess()" class="w-full rounded bg-primary px-5 py-3 font-medium text-white transition-colors hover:bg-primary/90 disabled:cursor-default disabled:bg-emerald-700">
                 {{ hasMaAccess() ? 'Accès actif jusqu’au ' + maAccessEnd() : isSimulation ? "Activer l'accès repreneur (paiement simulé)" : "Payer l'accès repreneur" }}
               </button>
             } @else if (isSeller()) {
-              <a routerLink="/ma/deposer" class="block w-full rounded-full bg-amber-500 px-6 py-3 text-center font-bold text-white shadow-lg shadow-amber-500/20 hover:bg-amber-600">Publier mon annonce</a>
+              <a routerLink="/ma/deposer" class="block w-full rounded bg-primary px-5 py-3 text-center font-medium text-white transition-colors hover:bg-primary/90">Publier mon annonce</a>
             } @else {
-              <a routerLink="/ma" class="block w-full rounded-full border border-amber-300 px-6 py-3 text-center font-bold text-amber-700">Voir les annonces anonymisées</a>
+              <a routerLink="/ma" class="block w-full rounded border border-primary px-5 py-3 text-center font-medium text-primary transition-colors hover:bg-primary hover:text-white">Voir les annonces</a>
             }
           </section>
         </div>
 
         @if (isSimulation) {
-        <div class="mt-8 rounded-2xl border border-border bg-white p-6 text-sm text-muted-foreground shadow-sm">
+        <div class="mt-6 rounded-lg border border-border bg-white p-5 text-sm text-muted-foreground">
           <strong class="text-primary">Note projet :</strong>
           les boutons ci-dessus simulent l'état après paiement. Le branchement Stripe réel viendra ensuite via Checkout + webhook.
         </div>

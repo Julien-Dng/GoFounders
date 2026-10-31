@@ -7,7 +7,7 @@ import { PASSWORD_RULES, PasswordRule } from '../../../core/validators/password-
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ul class="mt-2 grid gap-1 text-xs sm:grid-cols-2" aria-live="polite" aria-label="Critères du mot de passe">
+    <ul class="mt-2 grid gap-1 text-sm sm:grid-cols-2" aria-live="polite" aria-label="Critères du mot de passe">
       @for (rule of rules; track rule.id) {
         <li class="flex items-center gap-1.5" [class.text-success]="isMet(rule)" [class.text-muted-foreground]="!isMet(rule)">
           <span aria-hidden="true">{{ isMet(rule) ? '✓' : '○' }}</span>

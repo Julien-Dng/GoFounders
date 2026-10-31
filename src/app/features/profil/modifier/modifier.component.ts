@@ -38,15 +38,15 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
               </svg>
               Retour au profil
             </a>
-            <h1 class="text-3xl font-bold text-primary sm:text-4xl">Modifier mon profil</h1>
+            <h1 class="text-3xl font-semibold text-primary sm:text-4xl">Modifier mon profil</h1>
             <p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
               Ajoutez une bio, une photo et vos liens professionnels pour rendre votre profil plus crédible.
             </p>
           </div>
 
-          <div class="rounded-2xl border border-border bg-white px-5 py-4 shadow-sm">
-            <div class="text-xs font-semibold text-muted-foreground">Complétion actuelle</div>
-            <div class="mt-1 text-2xl font-bold text-accent">{{ currentUser()?.profileComplete ?? 0 }}%</div>
+          <div class="rounded-2xl border border-border bg-white px-5 py-4">
+            <div class="text-sm font-semibold text-muted-foreground">Complétion actuelle</div>
+            <div class="mt-1 text-2xl font-semibold text-accent">{{ currentUser()?.profileComplete ?? 0 }}%</div>
           </div>
         </div>
 
@@ -58,13 +58,13 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
         </div>
 
         <div class="grid gap-6 xl:grid-cols-[340px_minmax(0,1fr)]">
-          <aside class="self-start rounded-3xl border border-border bg-white p-6 shadow-lg">
+          <aside class="self-start rounded-3xl border border-border bg-white p-6">
             <div class="text-center">
-              <div class="mx-auto mb-4 h-32 w-32 overflow-hidden rounded-3xl border border-border bg-primary shadow-lg">
+              <div class="mx-auto mb-4 h-32 w-32 overflow-hidden rounded-3xl border border-border bg-primary">
                 @if (previewPhoto()) {
                   <img [src]="previewPhoto()" alt="Aperçu de la photo de profil" class="h-full w-full object-cover">
                 } @else {
-                  <div class="flex h-full w-full items-center justify-center text-4xl font-bold text-white">
+                  <div class="flex h-full w-full items-center justify-center text-4xl font-semibold text-white">
                     {{ initials() }}
                   </div>
                 }
@@ -74,7 +74,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
 
               <label
                 for="profile-photo-input"
-                class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-accent/90"
+                class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-primary/90"
               >
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
@@ -94,13 +94,13 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
               }
 
               @if (photoMessage()) {
-                <div class="mt-3 rounded-xl border border-accent/15 bg-accent/5 px-3 py-2 text-xs font-semibold text-accent">
+                <div class="mt-3 rounded-xl border border-accent/15 bg-accent/5 px-3 py-2 text-sm font-semibold text-accent">
                   {{ photoMessage() }}
                 </div>
               }
 
               @if (photoErrorMessage()) {
-                <div class="mt-3 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-xs font-semibold text-destructive">
+                <div class="mt-3 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm font-semibold text-destructive">
                   {{ photoErrorMessage() }}
                 </div>
               }
@@ -108,10 +108,10 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
 
           </aside>
 
-          <section class="rounded-3xl border border-border bg-white p-6 shadow-lg sm:p-8">
+          <section class="rounded-3xl border border-border bg-white p-6 sm:p-8">
             <div [formGroup]="profileForm" class="space-y-8">
               <div>
-                <h2 class="text-xl font-bold text-primary">Informations principales</h2>
+                <h2 class="text-xl font-semibold text-primary">Informations principales</h2>
                 <p class="mt-1 text-sm text-muted-foreground">Ce sont les premières informations vues sur votre profil.</p>
 
                 <div class="mt-5 grid gap-5 md:grid-cols-2">
@@ -171,7 +171,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                   class="w-full resize-none rounded-xl border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
                   placeholder="Présentez votre parcours, ce que vous construisez ou ce que vous pouvez apporter à un projet..."
                 ></textarea>
-                <div class="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+                <div class="mt-2 flex items-center justify-between text-sm text-muted-foreground">
                   <span>Un texte court, concret et humain fonctionne mieux qu'un CV complet.</span>
                   <span>{{ profileForm.controls.bio.getRawValue().length }}/700</span>
                 </div>
@@ -187,7 +187,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                     class="w-full resize-none rounded-xl border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
                     placeholder="Angular, Firebase, Sales B2B, Growth..."
                   ></textarea>
-                  <p class="mt-2 text-xs text-muted-foreground">Séparez les compétences par des virgules.</p>
+                  <p class="mt-2 text-sm text-muted-foreground">Séparez les compétences par des virgules.</p>
                 </div>
 
                 <div>
@@ -199,13 +199,13 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                     class="w-full resize-none rounded-xl border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
                     placeholder="Co-fondateur technique, projet SaaS, associé sales..."
                   ></textarea>
-                  <p class="mt-2 text-xs text-muted-foreground">Ces tags aident à comprendre rapidement votre objectif.</p>
+                  <p class="mt-2 text-sm text-muted-foreground">Ces tags aident à comprendre rapidement votre objectif.</p>
                 </div>
               </div>
 
               @if (isPro()) {
                 <div class="rounded-2xl border border-accent/20 bg-accent/[0.035] p-5 sm:p-6">
-                  <h2 class="text-xl font-bold text-primary">Votre fiche professionnelle</h2>
+                  <h2 class="text-xl font-semibold text-primary">Votre fiche professionnelle</h2>
                   <p class="mt-1 text-sm text-muted-foreground">
                     Votre métier, votre intitulé, votre localisation, votre présentation et votre site apparaissent dans l'annuaire
                     quand votre fiche ou votre compte pro est actif.
@@ -223,8 +223,8 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
 
               @if (isMaRole()) {
                 <div class="rounded-2xl border border-[#D97706]/30 bg-[#D97706]/[0.04] p-5 sm:p-6" [formGroup]="maForm">
-                  <div class="text-xs font-bold text-amber-700">Marketplace M&A</div>
-                  <h2 class="mt-1 text-xl font-bold text-primary">{{ maLabels().title }}</h2>
+                  <div class="text-sm font-semibold text-amber-700">Marketplace M&A</div>
+                  <h2 class="mt-1 text-xl font-semibold text-primary">{{ maLabels().title }}</h2>
                   <p class="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">{{ maLabels().description }}</p>
 
                   <div class="mt-6 grid gap-5 md:grid-cols-2">
@@ -268,12 +268,12 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                 <div class="rounded-2xl border border-accent/20 bg-accent/[0.035] p-5 sm:p-6" [formGroup]="projectForm">
                   <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <div class="text-xs font-bold text-accent">Annonce visible par les associés</div>
-                      <h2 class="mt-1 text-xl font-bold text-primary">Mon annonce de projet</h2>
+                      <div class="text-sm font-semibold text-accent">Annonce visible par les associés</div>
+                      <h2 class="mt-1 text-xl font-semibold text-primary">Mon annonce de projet</h2>
                       <p class="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
                         Modifiez ici le projet créé lors de votre inscription. Les informations publiées alimentent directement les résultats de recherche des associés.
                       </p>
-                      <p class="mt-3 flex max-w-2xl items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs leading-relaxed text-foreground/80">
+                      <p class="mt-3 flex max-w-2xl items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm leading-relaxed text-foreground/80">
                         <svg class="mt-0.5 flex-shrink-0 text-emerald-600" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                         </svg>
@@ -355,7 +355,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                           class="w-full resize-none rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
                           placeholder="Présentez le problème, votre solution et l'avancement du projet."
                         ></textarea>
-                        <div class="mt-2 text-right text-xs text-muted-foreground">{{ projectForm.controls.description.getRawValue().length }}/900</div>
+                        <div class="mt-2 text-right text-sm text-muted-foreground">{{ projectForm.controls.description.getRawValue().length }}/900</div>
                       </div>
 
                       <div>
@@ -367,7 +367,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                           class="w-full resize-none rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
                           placeholder="CTO, développeur frontend, commercial..."
                         ></textarea>
-                        <p class="mt-2 text-xs text-muted-foreground">Séparez les profils par des virgules.</p>
+                        <p class="mt-2 text-sm text-muted-foreground">Séparez les profils par des virgules.</p>
                       </div>
 
                       <div>
@@ -379,7 +379,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                           class="w-full resize-none rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
                           placeholder="Angular, UX/UI, vente B2B..."
                         ></textarea>
-                        <p class="mt-2 text-xs text-muted-foreground">Séparez les compétences par des virgules.</p>
+                        <p class="mt-2 text-sm text-muted-foreground">Séparez les compétences par des virgules.</p>
                       </div>
 
                       <div class="md:col-span-2">
@@ -393,7 +393,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                           >
                           <span>
                             <span class="block text-sm font-semibold">Ouvert à un associé avec apport financier</span>
-                            <span id="project-open-to-equity-help" class="mt-1 block text-xs leading-relaxed text-muted-foreground">
+                            <span id="project-open-to-equity-help" class="mt-1 block text-sm leading-relaxed text-muted-foreground">
                               Les associés verront que vous acceptez que l'un d'eux entre au capital en apportant aussi de l'argent.
                               N'indiquez ni montant ni pourcentage dans votre annonce : les conditions se discutent en privé, avec l'aide d'un professionnel.
                               GoFounders ne propose pas d'investissement.
@@ -402,19 +402,19 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                         </label>
                       </div>
 
-                      <div class="md:col-span-2 rounded-2xl border-2 border-primary/15 bg-white p-4 sm:p-5">
+                      <div class="md:col-span-2 rounded-2xl border border-primary/15 bg-white p-4 sm:p-5">
                         <div class="flex items-center gap-2">
                           <svg class="text-primary" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <rect x="3" y="11" width="18" height="11" rx="2"/>
                             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                           </svg>
-                          <h3 class="text-base font-bold text-primary">Partie confidentielle</h3>
+                          <h3 class="text-base font-semibold text-primary">Partie confidentielle</h3>
                         </div>
                         <p class="mt-1 text-sm leading-relaxed text-muted-foreground">
                           Invisible dans la recherche. Un associé doit vous demander l'accès, et vous acceptez ou refusez chaque demande.
                         </p>
 
-                        <div class="mt-4 rounded-xl bg-secondary/70 px-4 py-3 text-xs leading-relaxed text-foreground/80">
+                        <div class="mt-4 rounded-xl bg-secondary/70 px-4 py-3 text-sm leading-relaxed text-foreground/80">
                           <div class="mb-1 font-semibold text-foreground">Ce qu'il vaut mieux réserver à cette partie (ou au premier rendez-vous)</div>
                           <ul class="list-disc space-y-0.5 pl-4">
                             <li>le fonctionnement détaillé du produit, l'algorithme, le code ;</li>
@@ -435,7 +435,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                           class="w-full resize-y rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
                           placeholder="Ce que seuls les associés que vous acceptez pourront lire."
                         ></textarea>
-                        <div class="mt-2 text-right text-xs text-muted-foreground">{{ projectForm.controls.confidentialDetails.getRawValue().length }}/3000</div>
+                        <div class="mt-2 text-right text-sm text-muted-foreground">{{ projectForm.controls.confidentialDetails.getRawValue().length }}/3000</div>
 
                         <label for="project-nda-required" class="mt-3 flex cursor-pointer items-start gap-3 rounded-xl border border-primary/20 bg-primary/[0.03] px-4 py-3">
                           <input
@@ -448,9 +448,9 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                           <span>
                             <span class="flex flex-wrap items-center gap-2 text-sm font-semibold">
                               Exiger un engagement de confidentialité (NDA)
-                              <span class="rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-white">Recommandé</span>
+                              <span class="rounded-full bg-primary px-2 py-0.5 text-sm font-semibold text-white">Recommandé</span>
                             </span>
-                            <span id="project-nda-required-help" class="mt-1 block text-xs leading-relaxed text-muted-foreground">
+                            <span id="project-nda-required-help" class="mt-1 block text-sm leading-relaxed text-muted-foreground">
                               Avant de vous envoyer sa demande, l'associé doit accepter un engagement de confidentialité type. GoFounders conserve la preuve
                               (nom, date, version du texte) et vous pouvez la télécharger. GoFounders n'assure pas de conseil juridique : pour un accord sur mesure,
                               faites appel à nos experts juridiques partenaires.
@@ -464,7 +464,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
 
                 @if (projectId()) {
                   <div id="demandes-acces" class="rounded-2xl border border-border bg-white p-5 sm:p-6">
-                    <h2 class="text-xl font-bold text-primary">Demandes d'accès à la partie confidentielle</h2>
+                    <h2 class="text-xl font-semibold text-primary">Demandes d'accès à la partie confidentielle</h2>
                     <p class="mt-1 text-sm text-muted-foreground">Acceptez les associés avec qui vous voulez aller plus loin. Vous pouvez retirer un accès à tout moment.</p>
 
                     @if (accessRequests().length === 0) {
@@ -476,9 +476,9 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                             <div class="min-w-0">
                               <div class="flex flex-wrap items-center gap-2">
                                 <span class="font-semibold">{{ request.requesterName }}</span>
-                                <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold" [ngClass]="accessStatusClass(request.status)">{{ accessStatusLabel(request.status) }}</span>
+                                <span class="rounded-full px-2.5 py-0.5 text-sm font-semibold" [ngClass]="accessStatusClass(request.status)">{{ accessStatusLabel(request.status) }}</span>
                               </div>
-                              <div class="mt-1 text-xs text-muted-foreground">
+                              <div class="mt-1 text-sm text-muted-foreground">
                                 Demande du {{ formatDate(request.createdAt) }}
                                 @if (request.ndaAcceptedAt) {
                                   · NDA accepté le {{ formatDate(request.ndaAcceptedAt) }} (version {{ request.ndaVersion }})
@@ -489,22 +489,22 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                             </div>
                             <div class="flex flex-wrap gap-2">
                               @if (request.ndaAcceptedAt) {
-                                <button type="button" (click)="downloadNdaProof(request)" class="rounded-lg border border-border px-3 py-2 text-xs font-semibold transition-colors hover:border-accent">
+                                <button type="button" (click)="downloadNdaProof(request)" class="rounded-lg border border-border px-3 py-2 text-sm font-semibold transition-colors hover:border-accent">
                                   Télécharger la preuve
                                 </button>
                               }
                               @if (request.status !== 'approved') {
-                                <button type="button" (click)="decideAccess(request, true)" class="rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent/90">
+                                <button type="button" (click)="decideAccess(request, true)" class="rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90">
                                   Accepter
                                 </button>
                               }
                               @if (request.status === 'pending') {
-                                <button type="button" (click)="decideAccess(request, false)" class="rounded-lg border border-border px-3 py-2 text-xs font-semibold transition-colors hover:border-destructive hover:text-destructive">
+                                <button type="button" (click)="decideAccess(request, false)" class="rounded-lg border border-border px-3 py-2 text-sm font-semibold transition-colors hover:border-destructive hover:text-destructive">
                                   Refuser
                                 </button>
                               }
                               @if (request.status === 'approved') {
-                                <button type="button" (click)="decideAccess(request, false)" class="rounded-lg border border-border px-3 py-2 text-xs font-semibold transition-colors hover:border-destructive hover:text-destructive">
+                                <button type="button" (click)="decideAccess(request, false)" class="rounded-lg border border-border px-3 py-2 text-sm font-semibold transition-colors hover:border-destructive hover:text-destructive">
                                   Retirer l'accès
                                 </button>
                               }
@@ -518,7 +518,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
               }
 
               <div>
-                <h2 class="text-xl font-bold text-primary">Liens professionnels</h2>
+                <h2 class="text-xl font-semibold text-primary">Liens professionnels</h2>
                 <p class="mt-1 text-sm text-muted-foreground">Ajoutez seulement les liens utiles pour inspirer confiance.</p>
 
                 <div class="mt-5 grid gap-5 md:grid-cols-3">
@@ -582,7 +582,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                   (click)="saveProfile()"
                   [disabled]="isSaving()"
                   [ngClass]="isSaving() ? 'cursor-wait opacity-70' : ''"
-                  class="inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-accent/20 transition-colors hover:bg-accent/90"
+                  class="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary/90"
                 >
                   @if (isSaving()) {
                     Enregistrement...

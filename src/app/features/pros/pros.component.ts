@@ -15,7 +15,7 @@ import { StatsService } from '../../core/services/stats.service';
     <div class="min-h-screen bg-secondary px-4 pb-16 pt-28 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-[1200px]">
         <div class="mb-8">
-          <h1 class="text-3xl font-bold text-primary sm:text-4xl">Annuaire des professionnels</h1>
+          <h1 class="text-3xl font-semibold text-primary sm:text-4xl">Annuaire des professionnels</h1>
           <p class="mt-2 max-w-3xl text-muted-foreground">
             Experts-comptables, avocats, notaires et cabinets de cession qui accompagnent les cessions et les reprises.
           </p>
@@ -33,15 +33,15 @@ import { StatsService } from '../../core/services/stats.service';
         } @else {
           <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             @for (entry of entries(); track entry.id) {
-              <article class="flex flex-col rounded-2xl border-2 bg-white p-6 shadow-sm" [class]="entry.has_pro_account ? 'border-accent/40' : 'border-border'">
+              <article class="flex flex-col rounded-2xl border bg-white p-6" [class]="entry.has_pro_account ? 'border-accent/40' : 'border-border'">
                 <div class="flex items-start gap-3">
                   @if (entry.photo_url) {
                     <img [src]="entry.photo_url" [alt]="'Photo de ' + entry.display_name" class="h-12 w-12 flex-shrink-0 rounded-full object-cover">
                   } @else {
-                    <span class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary font-bold text-white" aria-hidden="true">{{ initials(entry.display_name) }}</span>
+                    <span class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary font-semibold text-white" aria-hidden="true">{{ initials(entry.display_name) }}</span>
                   }
                   <div class="min-w-0">
-                    <h2 class="font-bold">{{ entry.display_name }}</h2>
+                    <h2 class="font-semibold">{{ entry.display_name }}</h2>
                     @if (entry.title) {
                       <p class="text-sm text-muted-foreground">{{ entry.title }}</p>
                     }
@@ -49,13 +49,13 @@ import { StatsService } from '../../core/services/stats.service';
                 </div>
                 <div class="mt-3 flex flex-wrap gap-2">
                   @if (entry.pro_category) {
-                    <span class="rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent">{{ categoryLabel(entry.pro_category) }}</span>
+                    <span class="rounded-full bg-accent/10 px-2.5 py-0.5 text-sm font-semibold text-accent">{{ categoryLabel(entry.pro_category) }}</span>
                   }
                   @if (entry.location) {
-                    <span class="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold text-foreground/80">{{ entry.location }}</span>
+                    <span class="rounded-full bg-secondary px-2.5 py-0.5 text-sm font-semibold text-foreground/80">{{ entry.location }}</span>
                   }
                   @if (entry.has_pro_account) {
-                    <span class="rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-semibold text-white">Compte pro</span>
+                    <span class="rounded-full bg-amber-500 px-2.5 py-0.5 text-sm font-semibold text-white">Compte pro</span>
                   }
                 </div>
                 @if (entry.bio) {
@@ -63,9 +63,9 @@ import { StatsService } from '../../core/services/stats.service';
                 }
                 <div class="mt-5 flex flex-wrap gap-2">
                   @if (isAuthenticated()) {
-                    <a routerLink="/messages" [queryParams]="{ conversation: entry.id }" class="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent/90">Envoyer un message</a>
+                    <a routerLink="/messages" [queryParams]="{ conversation: entry.id }" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90">Envoyer un message</a>
                   } @else {
-                    <a routerLink="/connexion" [queryParams]="{ returnUrl: '/pros' }" class="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent/90">Se connecter pour écrire</a>
+                    <a routerLink="/connexion" [queryParams]="{ returnUrl: '/pros' }" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90">Se connecter pour écrire</a>
                   }
                   @if (isAuthenticated()) {
                     <a [routerLink]="['/profil', entry.id]" class="rounded-lg border border-border px-4 py-2 text-sm font-semibold transition-colors hover:border-accent">Voir la fiche</a>
@@ -84,7 +84,7 @@ import { StatsService } from '../../core/services/stats.service';
           <a routerLink="/tarifs" fragment="pros" class="mt-2 inline-block text-sm font-semibold text-accent hover:underline">Apparaître dans l'annuaire</a>
         </div>
 
-        <p class="mt-6 text-center text-xs text-muted-foreground">
+        <p class="mt-6 text-center text-sm text-muted-foreground">
           GoFounders met en relation avec ces professionnels mais n'assure pas de conseil juridique ou comptable.
         </p>
       </div>
@@ -112,7 +112,7 @@ export class ProsComponent implements OnInit {
 
   chipClass(active: boolean): string {
     return active
-      ? 'rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white'
+      ? 'rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white'
       : 'rounded-full border border-border bg-white px-4 py-2 text-sm font-semibold text-foreground/80 transition-colors hover:border-accent';
   }
 

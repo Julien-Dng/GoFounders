@@ -10,18 +10,18 @@ import { PaymentService } from '../../../core/services/payment.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="absolute inset-0 flex items-center justify-center z-20 bg-background/60 backdrop-blur-sm rounded-2xl">
-      <div class="locked-upgrade-panel bg-white/95 backdrop-blur-md rounded-2xl border-2 border-accent p-10 shadow-2xl max-w-md text-center animate-fade-in-scale">
+      <div class="locked-upgrade-panel bg-white/95 backdrop-blur-md rounded-2xl border border-accent p-10 shadow-2xl max-w-md text-center animate-fade-in-scale">
         <div class="locked-upgrade-icon w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-5 shadow-lg">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
           </svg>
         </div>
-        <h2 class="text-2xl font-bold mb-3 text-primary dark:text-foreground">Fonctionnalité {{ requiredPlan }}</h2>
+        <h2 class="text-2xl font-semibold mb-3 text-primary dark:text-foreground">Fonctionnalité {{ requiredPlan }}</h2>
         <p class="text-muted-foreground mb-6 leading-relaxed">{{ description }}</p>
         <a
           routerLink="/tarifs"
-          class="locked-upgrade-cta block w-full py-3 bg-accent text-white rounded-lg font-bold shadow-lg shadow-accent/20 hover:bg-accent/90 transition-colors mb-3"
+          class="locked-upgrade-cta block w-full py-3 bg-primary text-white rounded-lg font-semibold shadow-lg hover:bg-primary/90 transition-colors mb-3"
         >
           Passer en {{ requiredPlan }} — {{ requiredPlan === 'PRO' ? '49€/mois' : 'Sur mesure' }}
         </a>

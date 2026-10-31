@@ -13,11 +13,11 @@ import { AuthService } from '../../../core/services/auth.service';
       <div class="w-full max-w-md">
 
         <div class="text-center mb-10 animate-fade-in-up">
-          <h1 class="text-4xl font-bold text-primary mb-2">Bon retour !</h1>
+          <h1 class="text-4xl font-semibold text-primary mb-2">Bon retour !</h1>
           <p class="text-muted-foreground">Connectez-vous à votre compte GoFounders</p>
         </div>
 
-        <div class="bg-white rounded-2xl border-2 border-border p-10 shadow-lg animate-fade-in-scale delay-100">
+        <div class="bg-white rounded-2xl border border-border p-10 animate-fade-in-scale delay-100">
           @if (returnUrl()) {
             <div class="mb-6 rounded-xl border border-accent/20 bg-accent/5 px-4 py-3 text-sm text-accent">
               Connectez-vous pour accéder à la page demandée.
@@ -94,7 +94,7 @@ import { AuthService } from '../../../core/services/auth.service';
                 type="button"
                 (click)="handlePasswordReset()"
                 [disabled]="isSendingReset()"
-                class="w-full rounded-lg border-2 border-accent py-2.5 font-semibold text-accent transition-colors hover:bg-accent hover:text-white disabled:cursor-wait disabled:opacity-60"
+                class="w-full rounded-lg border border-accent py-2.5 font-semibold text-accent transition-colors hover:bg-accent hover:text-white disabled:cursor-wait disabled:opacity-60"
               >
                 {{ isSendingReset() ? 'Envoi…' : 'Recevoir le lien de réinitialisation' }}
               </button>
@@ -114,7 +114,7 @@ import { AuthService } from '../../../core/services/auth.service';
             (click)="handleLogin()"
             [disabled]="isSubmitting()"
             [ngClass]="isSubmitting() ? 'opacity-70 cursor-wait' : ''"
-            class="w-full py-4 bg-accent text-white rounded-lg font-bold text-lg shadow-lg hover:bg-accent/90 transition-colors"
+            class="w-full py-4 bg-primary text-white rounded-lg font-semibold text-lg hover:bg-primary/90 transition-colors"
           >
             {{ isSubmitting() ? 'Connexion...' : 'Se connecter' }}
           </button>

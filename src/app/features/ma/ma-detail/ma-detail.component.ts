@@ -25,14 +25,14 @@ import { StatsService } from '../../../core/services/stats.service';
 
         @if (listing()) {
           <div class="grid gap-8 xl:grid-cols-[1.4fr,0.8fr]">
-            <div class="rounded-2xl border border-border bg-white p-8 shadow-lg">
+            <div class="rounded-2xl border border-border bg-white p-8">
               <div class="mb-6 flex flex-wrap items-center gap-3">
                 <span class="rounded-full bg-amber-500/10 px-3 py-1 text-sm font-semibold text-amber-700">{{ listing()!.sector }}</span>
                 <span class="rounded-full bg-secondary px-3 py-1 text-sm font-semibold text-foreground">{{ listing()!.type }}</span>
                 <span class="rounded-full border border-border px-3 py-1 text-sm text-muted-foreground">{{ listing()!.region }}</span>
               </div>
 
-              <h1 class="mb-4 text-3xl font-bold text-primary">Annonce {{ listing()!.id }}</h1>
+              <h1 class="mb-4 text-3xl font-semibold text-primary">Annonce {{ listing()!.id }}</h1>
               <p class="mb-6 text-lg leading-relaxed text-foreground/80">{{ listing()!.description }}</p>
 
               <div class="mb-8 grid gap-4 sm:grid-cols-2">
@@ -50,37 +50,37 @@ import { StatsService } from '../../../core/services/stats.service';
               </div>
 
               <div class="rounded-2xl border border-border bg-secondary/40 p-6">
-                <h2 class="mb-4 text-xl font-bold">Raison de la cession</h2>
+                <h2 class="mb-4 text-xl font-semibold">Raison de la cession</h2>
                 <p class="leading-relaxed text-foreground/80">{{ listing()!.reason }}</p>
               </div>
             </div>
 
             <div class="space-y-6">
-              <div class="rounded-2xl border border-border bg-white p-6 shadow-lg">
-                <h2 class="mb-4 text-xl font-bold">Informations financières</h2>
+              <div class="rounded-2xl border border-border bg-white p-6">
+                <h2 class="mb-4 text-xl font-semibold">Informations financières</h2>
                 <div class="space-y-4">
                   <div class="border-b border-border pb-4">
-                    <div class="mb-1 text-xs font-semibold text-muted-foreground">Chiffre d'affaires</div>
+                    <div class="mb-1 text-sm font-semibold text-muted-foreground">Chiffre d'affaires</div>
                     <div class="font-semibold text-foreground">{{ listing()!.revenue }}</div>
                   </div>
                   <div class="border-b border-border pb-4">
-                    <div class="mb-1 text-xs font-semibold text-muted-foreground">Marge nette</div>
+                    <div class="mb-1 text-sm font-semibold text-muted-foreground">Marge nette</div>
                     <div class="font-semibold text-foreground">{{ listing()!.margin }}</div>
                   </div>
                   <div class="border-b border-border pb-4">
-                    <div class="mb-1 text-xs font-semibold text-muted-foreground">Ancienneté</div>
+                    <div class="mb-1 text-sm font-semibold text-muted-foreground">Ancienneté</div>
                     <div class="font-semibold text-foreground">{{ listing()!.age }}</div>
                   </div>
                   <div>
-                    <div class="mb-1 text-xs font-semibold text-muted-foreground">Fourchette de prix</div>
-                    <div class="text-2xl font-bold text-amber-600">{{ listing()!.priceMin }} - {{ listing()!.priceMax }}</div>
+                    <div class="mb-1 text-sm font-semibold text-muted-foreground">Fourchette de prix</div>
+                    <div class="text-2xl font-semibold text-amber-600">{{ listing()!.priceMin }} - {{ listing()!.priceMax }}</div>
                   </div>
                 </div>
-                <p class="mt-4 text-xs text-muted-foreground">Estimation indicative, non contractuelle.</p>
+                <p class="mt-4 text-sm text-muted-foreground">Estimation indicative, non contractuelle.</p>
               </div>
 
-              <div class="rounded-2xl border-2 border-amber-200 bg-amber-50 p-6 shadow-lg">
-                <h2 class="mb-3 text-xl font-bold">Passer à l'étape suivante</h2>
+              <div class="rounded-2xl border border-amber-200 bg-amber-50 p-6">
+                <h2 class="mb-3 text-xl font-semibold">Passer à l'étape suivante</h2>
                 <p class="mb-5 text-sm leading-relaxed text-foreground/80">
                   Vous avez accès au détail. La prochaine étape consiste à ouvrir un échange confidentiel avec le vendeur pour approfondir l'analyse.
                 </p>
@@ -95,21 +95,21 @@ import { StatsService } from '../../../core/services/stats.service';
           </div>
 
           @if (isBuyer()) {
-            <section class="mt-8 rounded-2xl border-2 border-accent/20 bg-white p-6 shadow-lg sm:p-8" aria-labelledby="analyse-title" aria-live="polite">
+            <section class="mt-8 rounded-2xl border border-accent/20 bg-white p-6 sm:p-8" aria-labelledby="analyse-title" aria-live="polite">
               <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <div class="flex items-center gap-2">
                     <svg class="text-accent" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                       <path d="m12 3-1.9 5.1L5 10l5.1 1.9L12 17l1.9-5.1L19 10l-5.1-1.9z"/>
                     </svg>
-                    <h2 id="analyse-title" class="text-xl font-bold text-primary">Analyse du dossier par l'IA</h2>
+                    <h2 id="analyse-title" class="text-xl font-semibold text-primary">Analyse du dossier par l'IA</h2>
                   </div>
                   <p class="mt-1 max-w-2xl text-sm text-muted-foreground">
                     Points forts, points de vigilance et questions à poser au vendeur, à partir des informations de l'annonce.
                   </p>
                 </div>
                 @if (!analysis()) {
-                  <button type="button" (click)="analyse()" [disabled]="analysing()" class="flex-shrink-0 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-wait disabled:opacity-60">
+                  <button type="button" (click)="analyse()" [disabled]="analysing()" class="flex-shrink-0 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-wait disabled:opacity-60">
                     {{ analysing() ? 'Analyse en cours…' : 'Analyser ce dossier' }}
                   </button>
                 }
@@ -128,7 +128,7 @@ import { StatsService } from '../../../core/services/stats.service';
                   @for (block of analysisBlocks(); track block.title) {
                     @if (block.items.length > 0) {
                       <div class="rounded-xl border border-border bg-secondary/40 p-5">
-                        <h3 class="mb-3 font-bold">{{ block.title }}</h3>
+                        <h3 class="mb-3 font-semibold">{{ block.title }}</h3>
                         <ul class="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-foreground/85">
                           @for (item of block.items; track item) {
                             <li>{{ item }}</li>
@@ -140,7 +140,7 @@ import { StatsService } from '../../../core/services/stats.service';
                 </div>
               }
 
-              <p class="mt-6 text-xs leading-relaxed text-muted-foreground">
+              <p class="mt-6 text-sm leading-relaxed text-muted-foreground">
                 Analyse générée automatiquement à partir des seules informations de l'annonce, sans vérification. Elle ne constitue ni une
                 valorisation, ni un conseil juridique, comptable ou financier : faites vérifier le dossier par un expert-comptable et un avocat
                 avant toute offre.
@@ -148,7 +148,7 @@ import { StatsService } from '../../../core/services/stats.service';
             </section>
           }
         } @else {
-          <div class="rounded-2xl border border-border bg-white p-10 text-center shadow-lg">
+          <div class="rounded-2xl border border-border bg-white p-10 text-center">
             <p class="py-12 text-muted-foreground">Cette annonce n'existe pas ou n'est plus disponible.</p>
           </div>
         }

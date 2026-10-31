@@ -12,7 +12,7 @@ import { PendingSuccessStory, PriceDisplay, SuccessStoriesService } from '../../
   template: `
     <div class="min-h-screen bg-secondary px-4 pb-16 pt-28 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-4xl">
-        <h1 class="text-3xl font-bold text-primary">Ventes à valider</h1>
+        <h1 class="text-3xl font-semibold text-primary">Ventes à valider</h1>
 
         @if (!isAdmin()) {
           <p class="mt-4 text-muted-foreground">Page réservée aux administrateurs.</p>
@@ -31,18 +31,18 @@ import { PendingSuccessStory, PriceDisplay, SuccessStoriesService } from '../../
           } @else {
             <ul class="mt-6 space-y-6">
               @for (story of stories(); track story.id) {
-                <li class="rounded-2xl border border-border bg-white p-6 shadow-sm">
+                <li class="rounded-2xl border border-border bg-white p-6">
                   <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <h2 class="font-bold">{{ story.sector }} · {{ story.region }}</h2>
-                      <p class="text-xs text-muted-foreground">Déclarée le {{ formatDate(story.created_at) }} par {{ story.owner_name ?? 'compte supprimé' }}</p>
+                      <h2 class="font-semibold">{{ story.sector }} · {{ story.region }}</h2>
+                      <p class="text-sm text-muted-foreground">Déclarée le {{ formatDate(story.created_at) }} par {{ story.owner_name ?? 'compte supprimé' }}</p>
                     </div>
                     <a [routerLink]="['/ma/annonce', story.listing_id]" class="text-sm font-semibold text-accent hover:underline">Voir l'annonce</a>
                   </div>
                   <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-3">
-                    <div><dt class="text-xs font-semibold text-muted-foreground">Prix déclaré</dt><dd class="font-semibold">{{ money(story.sale_price) }}</dd></div>
-                    <div><dt class="text-xs font-semibold text-muted-foreground">Fourchette de l'annonce</dt><dd>{{ money(story.price_min) }} – {{ money(story.price_max) }}</dd></div>
-                    <div><dt class="text-xs font-semibold text-muted-foreground">Affichage choisi</dt><dd>{{ displayLabel(story.price_display) }}</dd></div>
+                    <div><dt class="text-sm font-semibold text-muted-foreground">Prix déclaré</dt><dd class="font-semibold">{{ money(story.sale_price) }}</dd></div>
+                    <div><dt class="text-sm font-semibold text-muted-foreground">Fourchette de l'annonce</dt><dd>{{ money(story.price_min) }} – {{ money(story.price_max) }}</dd></div>
+                    <div><dt class="text-sm font-semibold text-muted-foreground">Affichage choisi</dt><dd>{{ displayLabel(story.price_display) }}</dd></div>
                   </dl>
                   <blockquote class="mt-4 rounded-lg bg-secondary/60 p-3 text-sm italic">« {{ story.quote }} »</blockquote>
                   <p class="mt-2 text-sm font-semibold">{{ story.author_label }}</p>

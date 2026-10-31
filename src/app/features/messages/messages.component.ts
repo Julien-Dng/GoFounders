@@ -36,15 +36,15 @@ interface ConversationPreview {
       <div class="mx-auto flex h-full w-full max-w-[1500px]">
 
       <!-- ZONE DE CHAT -->
-      <div class="flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
+      <div class="flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-white">
 
         <!-- Top bar : infos conversation -->
         <div class="flex flex-shrink-0 items-center gap-3 border-b border-border bg-white px-4 py-3">
           @if (selectedConv()) {
             <app-avatar class="h-9 w-9 text-sm" [photoUrl]="selectedConv()!.profile?.photoURL" [initials]="selectedConv()!.initials" [name]="selectedConv()!.name" />
             <div class="flex-1 min-w-0">
-              <div class="font-bold text-sm">{{ selectedConv()!.name }}</div>
-              <div class="text-xs text-green-500 font-medium flex items-center gap-1">
+              <div class="font-semibold text-sm">{{ selectedConv()!.name }}</div>
+              <div class="text-sm text-green-500 font-medium flex items-center gap-1">
                 <span class="w-1.5 h-1.5 bg-green-500 rounded-full inline-block"></span>
                 En ligne
               </div>
@@ -60,13 +60,13 @@ interface ConversationPreview {
             @for (msg of activeMessages(); track msg.id) {
               <div class="flex" [class.justify-end]="msg.senderId === 'me'">
                 <div
-                  class="max-w-xs rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-md sm:max-w-md"
+                  class="max-w-xs rounded-2xl px-4 py-2.5 text-sm leading-relaxed sm:max-w-md"
                   [ngClass]="msg.senderId === 'me'
                     ? 'text-white rounded-br-sm bubble-me'
                     : 'bg-white border border-border rounded-bl-sm'"
                 >
                   {{ msg.content }}
-                  <div class="text-xs mt-1 opacity-60 text-right">{{ msg.time }}</div>
+                  <div class="text-sm mt-1 opacity-60 text-right">{{ msg.time }}</div>
                 </div>
               </div>
             }
@@ -81,7 +81,7 @@ interface ConversationPreview {
               </div>
             }
             @if (messageQuotaLabel()) {
-              <p class="mb-2 text-xs text-muted-foreground" aria-live="polite">{{ messageQuotaLabel() }}</p>
+              <p class="mb-2 text-sm text-muted-foreground" aria-live="polite">{{ messageQuotaLabel() }}</p>
             }
             <div class="flex items-center gap-2">
 
@@ -143,7 +143,7 @@ interface ConversationPreview {
                 type="button"
                 (click)="sendMessage()"
                 [disabled]="!newMessage().trim()"
-                class="px-5 py-2.5 bg-accent text-white rounded-xl font-semibold text-sm hover:bg-accent/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+                class="px-5 py-2.5 bg-primary text-white rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
               >
                 Envoyer
               </button>
@@ -167,46 +167,46 @@ interface ConversationPreview {
 
       <div class="ml-3 flex w-72 flex-shrink-0 gap-3 xl:w-[37rem]">
         <!-- MINI PROFIL -->
-        <aside class="order-2 hidden h-full w-72 flex-shrink-0 overflow-hidden rounded-2xl border border-border bg-white shadow-sm xl:block">
+        <aside class="order-2 hidden h-full w-72 flex-shrink-0 overflow-hidden rounded-2xl border border-border bg-white xl:block">
           @if (selectedConv()) {
             <div class="h-20 bg-primary" aria-hidden="true"></div>
 
             <div class="-mt-8 px-5 pb-5 text-center">
               <app-avatar
-                class="mx-auto mb-3 h-16 w-16 text-lg shadow-lg ring-4 ring-white"
+                class="mx-auto mb-3 h-16 w-16 text-lg ring-4 ring-white"
                 [photoUrl]="selectedProfile()?.photoURL"
                 [initials]="selectedProfile()?.initials ?? selectedConv()!.initials"
                 [name]="selectedProfile()?.displayName ?? selectedConv()!.name"
               />
-              <h3 class="text-base font-bold">{{ selectedProfile()?.displayName ?? selectedConv()!.name }}</h3>
-              <p class="mt-1 text-xs font-medium text-muted-foreground">{{ selectedProfile()?.title ?? 'Profil GoFounders' }}</p>
+              <h3 class="text-base font-semibold">{{ selectedProfile()?.displayName ?? selectedConv()!.name }}</h3>
+              <p class="mt-1 text-sm font-medium text-muted-foreground">{{ selectedProfile()?.title ?? 'Profil GoFounders' }}</p>
 
               <div class="mt-4 grid gap-2 text-left" [class.grid-cols-2]="selectedCompatibility() !== null">
                 @if (selectedCompatibility(); as compatibility) {
                   <div class="rounded-xl bg-secondary p-3" [title]="canSeeReasons() ? compatibility.reasons.join(' · ') : reasonsUpsell">
-                    <div class="text-[11px] font-semibold text-muted-foreground">Compatibilité</div>
-                    <div class="mt-1 text-lg font-bold text-accent">{{ compatibility.score }}%</div>
+                    <div class="text-sm font-semibold text-muted-foreground">Compatibilité</div>
+                    <div class="mt-1 text-lg font-semibold text-accent">{{ compatibility.score }}%</div>
                   </div>
                 }
                 <div class="rounded-xl bg-secondary p-3">
-                  <div class="text-[11px] font-semibold text-muted-foreground">Ville</div>
-                  <div class="mt-1 truncate text-sm font-bold">{{ selectedProfile()?.location ?? 'France' }}</div>
+                  <div class="text-sm font-semibold text-muted-foreground">Ville</div>
+                  <div class="mt-1 truncate text-sm font-semibold">{{ selectedProfile()?.location ?? 'France' }}</div>
                 </div>
               </div>
 
               <div class="mt-4 rounded-xl border border-border bg-background/60 p-3 text-left">
-                <div class="mb-2 flex items-center gap-2 text-xs font-semibold text-green-600">
+                <div class="mb-2 flex items-center gap-2 text-sm font-semibold text-green-600">
                   <span class="h-2 w-2 rounded-full bg-green-500"></span>
                   {{ selectedProfile()?.availabilityLabel ?? 'Disponible pour échanger' }}
                 </div>
-                <p class="line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+                <p class="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
                   {{ selectedProfile()?.bio ?? 'Profil disponible pour échanger sur une opportunité GoFounders.' }}
                 </p>
               </div>
 
               <div class="mt-4 flex flex-wrap justify-center gap-1.5">
                 @for (skill of selectedProfileSkills(); track skill) {
-                  <span class="rounded-full bg-accent/10 px-2.5 py-1 text-[11px] font-semibold text-accent">{{ skill }}</span>
+                  <span class="rounded-full bg-accent/10 px-2.5 py-1 text-sm font-semibold text-accent">{{ skill }}</span>
                 }
               </div>
             </div>
@@ -218,18 +218,18 @@ interface ConversationPreview {
                   <circle cx="12" cy="8" r="4"/>
                 </svg>
               </div>
-              <h3 class="text-sm font-bold">Profil du contact</h3>
-              <p class="mt-1 text-xs leading-relaxed text-muted-foreground">Sélectionnez une conversation pour afficher le contexte du profil.</p>
+              <h3 class="text-sm font-semibold">Profil du contact</h3>
+              <p class="mt-1 text-sm leading-relaxed text-muted-foreground">Sélectionnez une conversation pour afficher le contexte du profil.</p>
             </div>
           }
         </aside>
 
         <!-- LISTE DES CONVERSATIONS -->
-        <aside class="order-1 flex min-h-0 w-72 flex-shrink-0 flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
+        <aside class="order-1 flex min-h-0 w-72 flex-shrink-0 flex-col overflow-hidden rounded-2xl border border-border bg-white">
 
         <div class="border-b border-border px-4 py-4">
-          <h2 class="text-lg font-bold">Messages</h2>
-          <p class="text-xs text-muted-foreground mt-0.5">{{ conversations().length }} conversation(s) active(s)</p>
+          <h2 class="text-lg font-semibold">Messages</h2>
+          <p class="text-sm text-muted-foreground mt-0.5">{{ conversations().length }} conversation(s) active(s)</p>
         </div>
 
         <div class="overflow-y-auto flex-1">
@@ -246,12 +246,12 @@ interface ConversationPreview {
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between mb-0.5">
                   <span class="font-semibold text-sm truncate">{{ conv.name }}</span>
-                  <span class="text-xs text-muted-foreground flex-shrink-0 ml-2">{{ conv.time }}</span>
+                  <span class="text-sm text-muted-foreground flex-shrink-0 ml-2">{{ conv.time }}</span>
                 </div>
-                <p class="text-xs text-muted-foreground truncate">{{ conv.lastMessage }}</p>
+                <p class="text-sm text-muted-foreground truncate">{{ conv.lastMessage }}</p>
               </div>
               @if (conv.unread > 0) {
-                <span class="w-5 h-5 bg-accent text-white text-xs rounded-full flex items-center justify-center font-bold flex-shrink-0 ml-1">
+                <span class="w-5 h-5 bg-primary text-white text-sm rounded-full flex items-center justify-center font-semibold flex-shrink-0 ml-1">
                   {{ conv.unread }}
                 </span>
               }
@@ -259,7 +259,7 @@ interface ConversationPreview {
           } @empty {
             <div class="text-center py-12 text-muted-foreground px-6">
               <p class="font-semibold text-sm mb-1">Aucun message</p>
-              <p class="text-xs">Contactez un profil depuis la recherche pour démarrer</p>
+              <p class="text-sm">Contactez un profil depuis la recherche pour démarrer</p>
             </div>
           }
         </div>

@@ -20,26 +20,26 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
   template: `
     @if (isUnavailable()) {
       <div class="flex min-h-screen items-center justify-center bg-secondary px-4 pt-20">
-        <div class="max-w-md rounded-2xl border border-border bg-white p-8 text-center shadow-sm" role="alert">
-          <h1 class="mb-3 text-2xl font-bold text-primary">Ce profil n'est pas accessible</h1>
+        <div class="max-w-md rounded-2xl border border-border bg-white p-8 text-center" role="alert">
+          <h1 class="mb-3 text-2xl font-semibold text-primary">Ce profil n'est pas accessible</h1>
           <p class="mb-6 text-sm leading-relaxed text-muted-foreground">
             Il n'existe pas, ou il ne correspond pas à votre type de compte : les porteurs de projet voient les associés,
             les associés voient les projets.
           </p>
-          <a routerLink="/dashboard" class="inline-block rounded-lg bg-accent px-6 py-3 font-semibold text-white hover:bg-accent/90">Retour au tableau de bord</a>
+          <a routerLink="/dashboard" class="inline-block rounded-lg bg-primary px-6 py-3 font-semibold text-white hover:bg-primary/90">Retour au tableau de bord</a>
         </div>
       </div>
     } @else {
       <div class="min-h-screen bg-secondary pt-20">
         <div class="h-40 bg-primary" aria-hidden="true"></div>
 
-        <div class="relative z-10 mx-auto -mt-12 max-w-[1400px] px-4 pb-12 sm:-mt-16 sm:px-6 lg:-mt-20 lg:px-8">
+        <div class="relative z-10 mx-auto -mt-12 max-w-[78rem] px-4 pb-12 sm:-mt-16 sm:px-6 lg:-mt-20 lg:px-8">
           <div class="grid grid-cols-1 gap-8 xl:grid-cols-12">
             <div class="xl:col-span-8">
-              <div class="mb-6 rounded-2xl border-2 border-border bg-white p-6 shadow-xl sm:p-8">
+              <div class="mb-6 rounded-2xl border border-border bg-white p-6 sm:p-8">
                 <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
                   <div class="relative lg:-mt-1">
-                    <div class="h-28 w-28 overflow-hidden rounded-2xl bg-primary text-3xl font-bold text-white shadow-lg sm:h-32 sm:w-32 sm:text-4xl">
+                    <div class="h-28 w-28 overflow-hidden rounded-2xl bg-primary text-3xl font-semibold text-white sm:h-32 sm:w-32 sm:text-4xl">
                       @if (profilePhotoUrl()) {
                         <img [src]="profilePhotoUrl()" [alt]="'Photo de profil de ' + profileName()" class="h-full w-full object-cover">
                       } @else {
@@ -49,7 +49,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                       }
                     </div>
                     @if (isVerified()) {
-                      <div class="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-full bg-accent shadow-lg" title="Profil vérifié par GoFounders">
+                      <div class="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary" title="Profil vérifié par GoFounders">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="#2563EB" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Profil vérifié">
                           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                           <polyline points="22 4 12 14.01 9 11.01"/>
@@ -61,8 +61,8 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                   <div class="flex-1 pt-2">
                     <div class="mb-3">
                       <div class="mb-2 flex flex-col gap-3 sm:flex-row sm:items-center">
-                        <h1 class="text-3xl font-bold">{{ profileName() }}</h1>
-                        <span class="inline-flex rounded-full bg-accent px-3 py-1 text-sm font-semibold text-white">{{ profileRole() }}</span>
+                        <h1 class="text-3xl font-semibold">{{ profileName() }}</h1>
+                        <span class="inline-flex rounded-full bg-primary px-3 py-1 text-sm font-semibold text-white">{{ profileRole() }}</span>
                       </div>
                       <div class="mb-3 flex items-center gap-2 text-muted-foreground">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -72,7 +72,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                       </div>
                       <div class="mb-3 flex flex-wrap gap-2">
                         @for (signal of trustSignals(); track signal) {
-                          <span class="rounded-full border border-border bg-secondary px-3 py-1 text-xs font-bold text-muted-foreground">
+                          <span class="rounded-full border border-border bg-secondary px-3 py-1 text-sm font-semibold text-muted-foreground">
                             {{ signal }}
                           </span>
                         }
@@ -83,13 +83,13 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                               <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
                             </svg>
-                            <span class="compatibility-score-shine font-bold">{{ compatibilityScore() }}% compatible</span>
+                            <span class="compatibility-score-shine font-semibold">{{ compatibilityScore() }}% compatible</span>
                             <span class="text-sm">avec votre profil</span>
                           </div>
                           @if (canSeeReasons()) {
-                            <div class="mt-1 text-xs font-medium text-muted-foreground">{{ compatibilityReasons() }}</div>
+                            <div class="mt-1 text-sm font-medium text-muted-foreground">{{ compatibilityReasons() }}</div>
                           } @else {
-                            <a routerLink="/tarifs" class="mt-1 inline-block text-xs font-semibold text-accent hover:underline">{{ reasonsUpsell }}</a>
+                            <a routerLink="/tarifs" class="mt-1 inline-block text-sm font-semibold text-accent hover:underline">{{ reasonsUpsell }}</a>
                           }
                         </div>
                       }
@@ -97,7 +97,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
 
                     <div class="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                       @if (isOwnProfile()) {
-                        <a routerLink="/profil/modifier" class="inline-flex items-center justify-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-5 py-2.5 text-sm font-bold text-accent shadow-sm transition-all hover:-translate-y-0.5 hover:bg-accent hover:text-white hover:shadow-lg hover:shadow-accent/20 active:translate-y-0">
+                        <a routerLink="/profil/modifier" class="inline-flex items-center justify-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-5 py-2.5 text-sm font-semibold text-accent transition-all  hover:bg-accent hover:text-white  hover:shadow-accent/20 active:translate-y-0">
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -105,7 +105,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                           Modifier mon profil
                         </a>
                       } @else {
-                        <a routerLink="/messages" [queryParams]="{ conversation: profileId() }" class="inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3 font-semibold text-white shadow-lg shadow-accent/25 transition-all hover:scale-105 hover:bg-accent/90 active:scale-95">
+                        <a routerLink="/messages" [queryParams]="{ conversation: profileId() }" class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-white transition-all hover:scale-105 hover:bg-primary/90 active:scale-95">
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                           </svg>
@@ -114,7 +114,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                         <button
                           type="button"
                           (click)="toggleBookmark()"
-                          class="inline-flex items-center justify-center gap-2 rounded-lg border-2 px-6 py-3 font-semibold transition-all hover:scale-105 active:scale-95"
+                          class="inline-flex items-center justify-center gap-2 rounded-lg border px-6 py-3 font-semibold transition-all hover:scale-105 active:scale-95"
                           [ngClass]="isBookmarked() ? 'border-accent bg-accent/10 text-accent' : 'border-border text-foreground'"
                         >
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" [attr.fill]="isBookmarked() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -128,11 +128,11 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
 
                   @if (!isOwnProfile()) {
                     <div class="rounded-2xl border border-accent/15 bg-accent/5 p-4 lg:w-60">
-                      <div class="mb-3 text-xs font-bold text-accent">Pourquoi ça matche</div>
+                      <div class="mb-3 text-sm font-semibold text-accent">Pourquoi ça matche</div>
                       <div class="space-y-2">
                         @for (reason of matchReasons(); track reason) {
                           <div class="flex items-start gap-2 text-sm font-semibold text-primary">
-                            <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-accent"></span>
+                            <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary"></span>
                             <span>{{ reason }}</span>
                           </div>
                         }
@@ -142,7 +142,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                 </div>
               </div>
 
-              <div class="mb-6 rounded-2xl border-2 border-border bg-white shadow-lg">
+              <div class="mb-6 rounded-2xl border border-border bg-white">
                 <div class="border-b border-border px-2">
                   <div class="flex flex-wrap gap-1">
                     @for (tab of tabs; track tab.id) {
@@ -156,7 +156,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                       >
                         {{ tab.label }}
                         @if (activeTab() === tab.id) {
-                          <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-accent"></div>
+                          <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>
                         }
                       </button>
                     }
@@ -167,15 +167,15 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                   @if (activeTab() === 'presentation') {
                     <div class="space-y-8">
                       <div>
-                        <h3 class="mb-4 text-xl font-bold">À propos</h3>
+                        <h3 class="mb-4 text-xl font-semibold">À propos</h3>
                         <p class="leading-relaxed text-foreground/80">{{ presentationText() }}</p>
                       </div>
 
                       <div class="rounded-2xl border border-border bg-secondary/40 p-5">
-                        <div class="mb-3 text-sm font-bold text-accent">Ce que {{ isOwnProfile() ? 'mon profil' : 'ce profil' }} apporte</div>
+                        <div class="mb-3 text-sm font-semibold text-accent">Ce que {{ isOwnProfile() ? 'mon profil' : 'ce profil' }} apporte</div>
                         <div class="grid gap-3 sm:grid-cols-3">
                           @for (point of contributionPoints(); track point) {
-                            <div class="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-primary shadow-sm">
+                            <div class="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-primary">
                               {{ point }}
                             </div>
                           }
@@ -183,7 +183,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                       </div>
 
                       <div>
-                        <h3 class="mb-4 text-xl font-bold">Ce que {{ isOwnProfile() ? 'je' : 'ce profil' }} recherche</h3>
+                        <h3 class="mb-4 text-xl font-semibold">Ce que {{ isOwnProfile() ? 'je' : 'ce profil' }} recherche</h3>
                         <div class="flex flex-wrap gap-3">
                           @for (item of searchingFor(); track item) {
                             <span class="rounded-lg border border-accent/20 bg-accent/10 px-4 py-2 font-semibold text-accent">{{ item }}</span>
@@ -192,7 +192,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                       </div>
 
                       <div>
-                        <h3 class="mb-4 text-xl font-bold">Compétences</h3>
+                        <h3 class="mb-4 text-xl font-semibold">Compétences</h3>
                         <div class="flex flex-wrap gap-2">
                           @for (skill of skills(); track skill) {
                             <span class="cursor-default rounded-lg bg-secondary px-4 py-2 font-medium text-foreground transition-colors hover:bg-accent/10 hover:text-accent">{{ skill }}</span>
@@ -209,7 +209,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                       </div>
 
                       <div>
-                        <h3 class="mb-4 text-xl font-bold">Disponibilité</h3>
+                        <h3 class="mb-4 text-xl font-semibold">Disponibilité</h3>
                         <div class="inline-flex items-center gap-2 rounded-lg bg-green-100 px-4 py-2 font-semibold text-green-700">
                           <div class="h-2 w-2 rounded-full bg-green-500"></div>
                           {{ availabilityText() }}
@@ -221,13 +221,13 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                   @if (activeTab() === 'projet') {
                     <div class="space-y-6">
                       <div>
-                        <h3 class="mb-4 text-xl font-bold">Projet</h3>
+                        <h3 class="mb-4 text-xl font-semibold">Projet</h3>
                         <p class="leading-relaxed text-foreground/80">{{ projectText() }}</p>
                       </div>
                       <div class="grid gap-4 sm:grid-cols-2">
                         @for (info of quickInfo(); track info.label) {
                           <div class="rounded-xl border border-border bg-secondary/50 p-4">
-                            <div class="mb-1 text-xs font-semibold text-muted-foreground">{{ info.label }}</div>
+                            <div class="mb-1 text-sm font-semibold text-muted-foreground">{{ info.label }}</div>
                             <div class="font-semibold text-foreground">{{ info.value }}</div>
                           </div>
                         }
@@ -238,15 +238,15 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                   @if (activeTab() === 'experience') {
                     <div class="space-y-6">
                       <div>
-                        <h3 class="mb-4 text-xl font-bold">Expérience</h3>
+                        <h3 class="mb-4 text-xl font-semibold">Expérience</h3>
                         <p class="leading-relaxed text-foreground/80">{{ experienceText() }}</p>
                       </div>
                       <div class="rounded-2xl border border-border bg-secondary/60 p-5">
-                        <h4 class="mb-2 font-bold text-primary">Points forts</h4>
+                        <h4 class="mb-2 font-semibold text-primary">Points forts</h4>
                         <ul class="space-y-2 text-sm text-foreground/80">
                           @for (item of strengths(); track item) {
                             <li class="flex items-start gap-2">
-                              <span class="mt-1 h-2 w-2 rounded-full bg-accent"></span>
+                              <span class="mt-1 h-2 w-2 rounded-full bg-primary"></span>
                               <span>{{ item }}</span>
                             </li>
                           }
@@ -265,12 +265,12 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
             </div>
 
             <div class="space-y-6 xl:col-span-4">
-              <div class="rounded-2xl border-2 border-border bg-white p-6 shadow-lg">
-                <h3 class="mb-4 text-lg font-bold">Informations clés</h3>
+              <div class="rounded-2xl border border-border bg-white p-6">
+                <h3 class="mb-4 text-lg font-semibold">Informations clés</h3>
                 <div class="space-y-4">
                   @for (info of quickInfo(); track info.label) {
                     <div class="border-b border-border pb-4 last:border-0 last:pb-0">
-                      <div class="mb-1 text-xs font-semibold text-muted-foreground">{{ info.label }}</div>
+                      <div class="mb-1 text-sm font-semibold text-muted-foreground">{{ info.label }}</div>
                       <div class="font-semibold text-foreground">{{ info.value }}</div>
                     </div>
                   }
@@ -278,12 +278,12 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
               </div>
 
               @if (openToEquity()) {
-                <div class="rounded-2xl border-2 border-accent/20 bg-accent/[0.04] p-6 shadow-lg">
-                  <h3 class="mb-2 text-lg font-bold">Ouvert à un associé avec apport</h3>
+                <div class="rounded-2xl border border-accent/20 bg-accent/[0.04] p-6">
+                  <h3 class="mb-2 text-lg font-semibold">Ouvert à un associé avec apport</h3>
                   <p class="text-sm leading-relaxed text-foreground/80">
                     Le porteur de ce projet accepte d'accueillir un associé qui entrerait au capital en apportant aussi de l'argent.
                   </p>
-                  <p class="mt-3 text-xs leading-relaxed text-muted-foreground">
+                  <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
                     GoFounders ne propose pas d'investissement. Les conditions d'entrée au capital se négocient directement entre les parties,
                     avec l'aide d'un professionnel (avocat, expert-comptable).
                   </p>
@@ -291,8 +291,8 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
               }
 
               @if (socialLinks().length > 0) {
-                <div class="rounded-2xl border-2 border-border bg-white p-6 shadow-lg">
-                  <h3 class="mb-4 text-lg font-bold">Liens professionnels</h3>
+                <div class="rounded-2xl border border-border bg-white p-6">
+                  <h3 class="mb-4 text-lg font-semibold">Liens professionnels</h3>
                   <div class="space-y-3">
                     @for (link of socialLinks(); track link.label) {
                       <a
@@ -313,15 +313,15 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
               }
 
               @if (isProjectProfile()) {
-                <div class="rounded-2xl border-2 border-primary/15 bg-white p-6 shadow-lg" aria-live="polite">
+                <div class="rounded-2xl border border-primary/15 bg-white p-6" aria-live="polite">
                   <div class="mb-3 flex flex-wrap items-center gap-2">
                     <svg class="text-primary" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                       <rect x="3" y="11" width="18" height="11" rx="2"/>
                       <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                     </svg>
-                    <h3 class="text-lg font-bold">Partie confidentielle</h3>
+                    <h3 class="text-lg font-semibold">Partie confidentielle</h3>
                     @if (publicProfile()?.ndaRequired) {
-                      <span class="rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-white">NDA requis</span>
+                      <span class="rounded-full bg-primary px-2.5 py-0.5 text-sm font-semibold text-white">NDA requis</span>
                     }
                   </div>
 
@@ -356,7 +356,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                             Le porteur partage les détails sensibles de son projet après avoir validé votre demande.
                           }
                         </p>
-                        <button type="button" (click)="startAccessRequest()" [disabled]="isRequestingAccess()" class="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-semibold text-white shadow-md transition-colors hover:bg-primary/90 disabled:cursor-wait disabled:opacity-70">
+                        <button type="button" (click)="startAccessRequest()" [disabled]="isRequestingAccess()" class="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-wait disabled:opacity-70">
                           Demander l'accès
                         </button>
                       }
@@ -370,7 +370,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
               }
 
               @if (!isOwnProfile() && !isProjectProfile()) {
-                <div class="relative overflow-hidden rounded-2xl border-2 border-amber-200 bg-amber-50 p-6 shadow-lg dark:border-amber-300/25 dark:from-amber-500/15 dark:to-orange-500/10">
+                <div class="relative overflow-hidden rounded-2xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-300/25 dark:from-amber-500/15 dark:to-orange-500/10">
                   <div class="relative z-10">
                     <div class="mb-4 flex items-center gap-3">
                       <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500">
@@ -378,19 +378,19 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                         </svg>
                       </div>
-                      <h3 class="text-lg font-bold dark:text-amber-50">Détails confidentiels</h3>
+                      <h3 class="text-lg font-semibold dark:text-amber-50">Détails confidentiels</h3>
                     </div>
                     <p class="mb-4 text-sm leading-relaxed text-foreground/80 dark:text-amber-100/85">
                       Accédez aux informations complètes en passant par un échange sécurisé et, si besoin, un cadre de confidentialité.
                     </p>
-                    <a routerLink="/messages" [queryParams]="{ conversation: profileId() }" class="flex w-full items-center justify-center gap-2 rounded-lg bg-amber-500 px-4 py-3 font-semibold text-white shadow-md transition-colors hover:bg-amber-600">
+                    <a routerLink="/messages" [queryParams]="{ conversation: profileId() }" class="flex w-full items-center justify-center gap-2 rounded-lg bg-amber-500 px-4 py-3 font-semibold text-white transition-colors hover:bg-amber-600">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                         <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                       </svg>
                       Ouvrir un échange
                     </a>
-                    <p class="mt-3 text-center text-xs text-muted-foreground dark:text-amber-100/70">Mise en relation avec des experts juridiques partenaires</p>
+                    <p class="mt-3 text-center text-sm text-muted-foreground dark:text-amber-100/70">Mise en relation avec des experts juridiques partenaires</p>
                   </div>
                   <div class="absolute -right-16 -top-16 h-32 w-32 rounded-full bg-amber-500/10 dark:bg-amber-300/10"></div>
                 </div>
@@ -423,7 +423,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
       @if (ndaModalOpen()) {
         <div class="flex max-h-[85vh] flex-col">
           <div class="border-b border-border px-6 py-5">
-            <h2 id="nda-title" class="text-xl font-bold text-primary">Engagement de confidentialité</h2>
+            <h2 id="nda-title" class="text-xl font-semibold text-primary">Engagement de confidentialité</h2>
             <p class="mt-1 text-sm text-muted-foreground">
               Le porteur de « {{ publicProfile()?.displayName }} » demande cet engagement avant de partager les détails de son projet.
             </p>
@@ -443,7 +443,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
               <input type="checkbox" [checked]="ndaChecked()" (change)="ndaChecked.set(!ndaChecked())" class="mt-0.5 h-4 w-4 flex-shrink-0 accent-accent">
               <span>J'ai lu et j'accepte cet engagement de confidentialité (version {{ ndaVersion }}).</span>
             </label>
-            <p class="mt-2 text-xs text-muted-foreground">
+            <p class="mt-2 text-sm text-muted-foreground">
               Votre acceptation est enregistrée comme preuve (nom, date, version du texte, adresse IP). GoFounders n'est pas partie à cet engagement et n'assure pas de conseil juridique.
             </p>
             <div class="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

@@ -35,7 +35,7 @@ import { NotificationService } from '../../../core/services/notification.service
           <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
         </svg>
         @if (unreadCount() > 0) {
-          <span class="absolute -right-0.5 -top-0.5 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold leading-none text-white">
+          <span class="absolute -right-0.5 -top-0.5 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-primary px-1 text-sm font-semibold leading-none text-white">
             {{ unreadCount() }}
           </span>
         }
@@ -50,9 +50,9 @@ import { NotificationService } from '../../../core/services/notification.service
           <div class="flex items-center justify-between border-b border-border bg-secondary/60 px-4 py-4">
             <div>
               <div class="font-semibold text-primary">Notifications</div>
-              <div class="text-xs text-muted-foreground">{{ unreadCount() }} nouvelle(s)</div>
+              <div class="text-sm text-muted-foreground">{{ unreadCount() }} nouvelle(s)</div>
             </div>
-            <a routerLink="/dashboard" class="text-xs font-semibold text-accent hover:underline" (click)="closeMenu()">
+            <a routerLink="/dashboard" class="text-sm font-semibold text-accent hover:underline" (click)="closeMenu()">
               Voir le tableau de bord
             </a>
           </div>
@@ -99,13 +99,13 @@ import { NotificationService } from '../../../core/services/notification.service
                 <div class="min-w-0 flex-1">
                   <div class="flex items-start justify-between gap-3">
                     <h3 class="truncate text-sm font-semibold text-primary">{{ notification.title }}</h3>
-                    <span class="flex-shrink-0 text-xs text-muted-foreground">{{ notification.time }}</span>
+                    <span class="flex-shrink-0 text-sm text-muted-foreground">{{ notification.time }}</span>
                   </div>
                   <p class="mt-1 text-sm leading-relaxed text-muted-foreground">{{ notification.description }}</p>
                 </div>
 
                 @if (notification.unread) {
-                  <span class="mt-2 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-accent" aria-hidden="true"></span>
+                  <span class="mt-2 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-primary" aria-hidden="true"></span>
                 }
               </a>
             } @empty {
@@ -117,7 +117,7 @@ import { NotificationService } from '../../../core/services/notification.service
                   </svg>
                 </div>
                 <p class="text-sm font-semibold text-primary">Aucune notification</p>
-                <p class="mt-1 text-xs leading-relaxed text-muted-foreground">Les nouvelles alertes apparaîtront ici.</p>
+                <p class="mt-1 text-sm leading-relaxed text-muted-foreground">Les nouvelles alertes apparaîtront ici.</p>
               </div>
             }
           </div>

@@ -19,7 +19,7 @@ export interface MaCardData {
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="bg-card rounded-2xl border border-border p-6 shadow-sm hover:shadow-lg transition-all duration-200 relative overflow-hidden">
+    <div class="bg-card rounded-2xl border border-border p-6 transition-all duration-200 relative overflow-hidden">
       @if (card.locked) {
         <div class="absolute inset-0 bg-background/70 backdrop-blur-sm z-10 flex items-center justify-center rounded-2xl">
           <div class="text-center">
@@ -33,27 +33,27 @@ export interface MaCardData {
       }
 
       <div class="flex items-center justify-between mb-4">
-        <span class="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full ">{{ card.sector }}</span>
-        <span class="text-xs text-muted-foreground">{{ card.region }}</span>
+        <span class="px-3 py-1 bg-amber-100 text-amber-700 text-sm font-semibold rounded-full">{{ card.sector }}</span>
+        <span class="text-sm text-muted-foreground">{{ card.region }}</span>
       </div>
 
       <div class="grid grid-cols-3 gap-3 mb-4">
         <div class="text-center p-2 bg-secondary rounded-lg">
-          <div class="text-sm font-bold">{{ card.revenue }}</div>
-          <div class="text-xs text-muted-foreground">CA annuel</div>
+          <div class="text-sm font-semibold">{{ card.revenue }}</div>
+          <div class="text-sm text-muted-foreground">CA annuel</div>
         </div>
         <div class="text-center p-2 bg-secondary rounded-lg">
-          <div class="text-sm font-bold">{{ card.margin }}</div>
-          <div class="text-xs text-muted-foreground">Marge</div>
+          <div class="text-sm font-semibold">{{ card.margin }}</div>
+          <div class="text-sm text-muted-foreground">Marge</div>
         </div>
         <div class="text-center p-2 bg-secondary rounded-lg">
-          <div class="text-sm font-bold">{{ card.age }}</div>
-          <div class="text-xs text-muted-foreground">Ancienneté</div>
+          <div class="text-sm font-semibold">{{ card.age }}</div>
+          <div class="text-sm text-muted-foreground">Ancienneté</div>
         </div>
       </div>
 
       <div class="flex items-center justify-between">
-        <span class="text-lg font-bold text-amber-600">{{ card.priceRange }}</span>
+        <span class="text-lg font-semibold text-amber-600">{{ card.priceRange }}</span>
         <a
           [routerLink]="['/ma/annonce', card.id]"
           class="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 transition-colors"

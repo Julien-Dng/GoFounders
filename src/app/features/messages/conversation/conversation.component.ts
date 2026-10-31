@@ -18,16 +18,16 @@ import { ConversationMessage, findConversationById, findMarketplaceProfileById }
               <polyline points="15 18 9 12 15 6"/>
             </svg>
           </a>
-          <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary font-bold text-white">{{ participantInitials() }}</div>
+          <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary font-semibold text-white">{{ participantInitials() }}</div>
           <div class="min-w-0">
-            <div class="truncate font-bold">{{ participantName() }}</div>
-            <div class="text-xs font-medium" [class.text-green-500]="isOnline()" [class.text-muted-foreground]="!isOnline()">
+            <div class="truncate font-semibold">{{ participantName() }}</div>
+            <div class="text-sm font-medium" [class.text-green-500]="isOnline()" [class.text-muted-foreground]="!isOnline()">
               {{ isOnline() ? 'En ligne' : 'Disponible sur la plateforme' }}
             </div>
           </div>
         </div>
 
-        <div class="flex h-[calc(100vh-220px)] flex-col rounded-2xl border border-border bg-white shadow-lg">
+        <div class="flex h-[calc(100vh-220px)] flex-col rounded-2xl border border-border bg-white">
           <div class="flex-1 overflow-y-auto p-6">
             @if (currentMessages().length > 0) {
               <div class="space-y-4">
@@ -40,7 +40,7 @@ import { ConversationMessage, findConversationById, findMarketplaceProfileById }
                       [class.bg-secondary]="msg.senderId !== 'me'"
                     >
                       {{ msg.content }}
-                      <div class="mt-1 text-right text-xs opacity-60">{{ msg.time }}</div>
+                      <div class="mt-1 text-right text-sm opacity-60">{{ msg.time }}</div>
                     </div>
                   </div>
                 }
@@ -71,7 +71,7 @@ import { ConversationMessage, findConversationById, findMarketplaceProfileById }
               type="button"
               (click)="sendMessage()"
               [disabled]="!newMessage().trim()"
-              class="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50"
+              class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Envoyer
             </button>

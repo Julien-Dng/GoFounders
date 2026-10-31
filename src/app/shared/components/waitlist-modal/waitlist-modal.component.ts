@@ -22,11 +22,11 @@ interface WaitlistEntry {
         <!-- Header -->
         <div class="flex items-start justify-between mb-6">
           <div>
-            <div class="inline-flex items-center gap-2 px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-bold mb-3">
+            <div class="inline-flex items-center gap-2 px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-semibold mb-3">
               <span class="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
               Bientôt disponible
             </div>
-            <h2 class="text-2xl font-bold text-primary">Fonctionnalité bientôt disponible</h2>
+            <h2 class="text-2xl font-semibold text-primary">Fonctionnalité bientôt disponible</h2>
           </div>
           <button
             (click)="close.emit()"
@@ -60,7 +60,7 @@ interface WaitlistEntry {
             <button
               (click)="joinWaitlist()"
               [disabled]="loading() || !email().trim()"
-              class="w-full py-4 bg-accent text-white rounded-lg font-bold shadow-lg hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              class="w-full py-4 bg-primary text-white rounded-lg font-semibold shadow-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               @if (loading()) {
                 <svg class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -81,7 +81,7 @@ interface WaitlistEntry {
                 <polyline points="20 6 9 17 4 12"/>
               </svg>
             </div>
-            <p class="font-bold text-lg text-primary mb-2">✓ Vous êtes sur la liste !</p>
+            <p class="font-semibold text-lg text-primary mb-2">✓ Vous êtes sur la liste !</p>
             <p class="text-muted-foreground text-sm">Nous vous contacterons en priorité.</p>
             <button (click)="close.emit()" class="mt-6 px-6 py-2.5 bg-secondary rounded-lg text-sm font-semibold hover:bg-border transition-colors">
               Fermer

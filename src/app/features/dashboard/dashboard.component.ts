@@ -51,7 +51,7 @@ interface QuickActionItem {
                 class="h-full w-full object-contain"
               >
             </div>
-            <span class="text-xl font-bold">GoFounders</span>
+            <span class="text-xl font-semibold">GoFounders</span>
           </a>
         </div>
 
@@ -119,7 +119,7 @@ interface QuickActionItem {
               </span>
               <span class="text-sm font-medium">{{ item.label }}</span>
               @if (item.badge) {
-                <span class="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
+                <span class="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white">
                   {{ item.badge }}
                 </span>
               }
@@ -139,10 +139,10 @@ interface QuickActionItem {
                   [src]="photoUrl()"
                   [alt]="'Photo de profil de ' + displayName()"
                   (error)="handlePhotoError()"
-                  class="h-10 w-10 flex-shrink-0 rounded-full border border-primary-foreground/10 object-cover shadow-sm"
+                  class="h-10 w-10 flex-shrink-0 rounded-full border border-primary-foreground/10 object-cover"
                 >
               } @else {
-                <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary font-bold text-white">
+                <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary font-semibold text-white">
                   {{ initials() }}
                 </div>
               }
@@ -150,7 +150,7 @@ interface QuickActionItem {
               <div class="min-w-0 flex-1">
                 <div class="truncate text-sm font-semibold">{{ displayName() }}</div>
                 <div class="flex items-center gap-1.5">
-                  <span class="rounded bg-muted/20 px-2 py-0.5 text-xs text-muted">{{ planLabel() }}</span>
+                  <span class="rounded bg-muted/20 px-2 py-0.5 text-sm text-muted">{{ planLabel() }}</span>
                 </div>
               </div>
             </div>
@@ -180,46 +180,46 @@ interface QuickActionItem {
         <div class="p-8">
           <div class="grid grid-cols-12 gap-6">
             <div class="col-span-3 space-y-6">
-              <div class="animate-fade-in-up rounded-2xl border border-border bg-white p-6 shadow-sm">
-                <h3 class="mb-4 text-lg font-bold">Mon profil</h3>
+              <div class="animate-fade-in-up rounded-2xl border border-border bg-white p-6">
+                <h3 class="mb-4 text-lg font-semibold">Mon profil</h3>
                 <div class="mb-4">
                   <div class="mb-2 flex items-center justify-between">
                     <span class="text-sm text-muted-foreground">Complétion</span>
-                    <span class="text-sm font-bold text-accent">{{ profileComplete() }}%</span>
+                    <span class="text-sm font-semibold text-accent">{{ profileComplete() }}%</span>
                   </div>
                   <div class="h-2 overflow-hidden rounded-full bg-secondary">
-                    <div class="h-full rounded-full bg-accent" [style.width.%]="profileComplete()"></div>
+                    <div class="h-full rounded-full bg-primary" [style.width.%]="profileComplete()"></div>
                   </div>
                 </div>
                 <p class="mb-4 text-sm text-muted-foreground">Complétez votre profil pour augmenter vos chances de match.</p>
-                <a routerLink="/profil/modifier" class="block w-full rounded-lg border-2 border-border py-2 text-center text-sm font-semibold transition-colors hover:border-accent">
+                <a routerLink="/profil/modifier" class="block w-full rounded-lg border border-border py-2 text-center text-sm font-semibold transition-colors hover:border-accent">
                   Compléter mon profil
                 </a>
               </div>
 
               @if (showProUpsell()) {
-                <div class="animate-fade-in-up delay-100 rounded-2xl bg-primary p-6 text-white shadow-lg">
+                <div class="animate-fade-in-up delay-100 rounded-2xl bg-primary p-6 text-white">
                   <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/20">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="m2 4 3 12h14l3-12-6 5-4-5-4 5-6-5z"/>
                       <path d="M5 20h14"/>
                     </svg>
                   </div>
-                  <h3 class="mb-2 text-lg font-bold">Passez en PRO</h3>
+                  <h3 class="mb-2 text-lg font-semibold">Passez en PRO</h3>
                   <p class="mb-4 text-sm leading-relaxed opacity-90">Contacts illimités, raisons détaillées de chaque score et assistant IA personnel.</p>
-                  <a routerLink="/tarifs" class="block w-full rounded-lg bg-white py-2.5 text-center font-semibold text-accent shadow-md transition-colors hover:bg-white/95">Découvrir PRO</a>
+                  <a routerLink="/tarifs" class="block w-full rounded-lg bg-white py-2.5 text-center font-semibold text-accent transition-colors hover:bg-white/95">Découvrir PRO</a>
                 </div>
               }
             </div>
 
             <div class="col-span-6 space-y-6">
-              <div class="animate-fade-in-up delay-100 rounded-2xl border border-border bg-white p-6 shadow-sm">
+              <div class="animate-fade-in-up delay-100 rounded-2xl border border-border bg-white p-6">
                 <div class="mb-6 flex items-center justify-between">
                   <div class="flex items-center gap-2">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
                     </svg>
-                    <h2 class="text-xl font-bold">{{ matchesTitle() }}</h2>
+                    <h2 class="text-xl font-semibold">{{ matchesTitle() }}</h2>
                   </div>
                   <a [routerLink]="matchesLink()" class="text-sm font-semibold text-accent hover:underline">Voir tous</a>
                 </div>
@@ -236,34 +236,20 @@ interface QuickActionItem {
                     <p class="rounded-xl bg-secondary p-4 text-sm text-muted-foreground">Aucun profil à vous proposer pour le moment. Complétez votre profil pour améliorer vos suggestions.</p>
                   }
                   @for (match of matches(); track match.id) {
-                    <div class="group flex items-center gap-4 rounded-xl border border-transparent bg-secondary p-4 transition-colors hover:border-accent/20 hover:bg-accent/5">
-                      <app-avatar class="h-14 w-14" [photoUrl]="match.photoURL" [initials]="match.initials" [name]="match.displayName" />
+                    <a [routerLink]="['/profil', match.id]" class="flex items-center gap-4 rounded-xl border border-border p-4 transition-colors hover:border-primary/30 hover:bg-secondary">
+                      <app-avatar class="h-12 w-12 flex-shrink-0" [photoUrl]="match.photoURL" [initials]="match.initials" [name]="match.displayName" />
                       <div class="min-w-0 flex-1">
-                        <div class="mb-1 flex items-center gap-2">
-                          <h3 class="font-bold">{{ match.displayName }}</h3>
-                          <span class="rounded bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">{{ match.stage }}</span>
-                        </div>
-                        <div class="mb-1 text-sm text-muted-foreground">{{ match.title }}</div>
-                        <div class="truncate text-sm text-foreground/70">{{ match.sector }}</div>
+                        <h3 class="truncate font-semibold text-primary">{{ match.displayName }}</h3>
+                        <p class="truncate text-sm text-muted-foreground">{{ match.title }}, {{ match.stage }}</p>
                       </div>
-                      <div class="flex flex-shrink-0 items-center gap-3">
-                        <div class="flex items-center gap-1 rounded-full bg-accent/10 px-3 py-1.5 text-accent">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
-                          </svg>
-                          <span class="text-sm font-bold">{{ match.match }}%</span>
-                        </div>
-                        <a [routerLink]="['/profil', match.id]" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white opacity-0 transition-opacity hover:bg-primary/90 group-hover:opacity-100">
-                          Voir le profil
-                        </a>
-                      </div>
-                    </div>
+                      <span class="tabular flex-shrink-0 text-lg font-semibold text-accent" [attr.aria-label]="match.match + ' % compatible'">{{ match.match }} %</span>
+                    </a>
                   }
                 </div>
               </div>
 
-              <div class="animate-fade-in-up delay-200 rounded-2xl border border-border bg-white p-6 shadow-sm">
-                <h2 class="mb-6 text-xl font-bold">Activité récente</h2>
+              <div class="animate-fade-in-up delay-200 rounded-2xl border border-border bg-white p-6">
+                <h2 class="mb-6 text-xl font-semibold">Activité récente</h2>
                 <div class="space-y-4">
                   @for (activity of activities(); track activity.id) {
                     <a
@@ -275,7 +261,7 @@ interface QuickActionItem {
                       <div class="mt-2 h-2 w-2 flex-shrink-0 rounded-full" [class.bg-accent]="activity.unread" [class.bg-border]="!activity.unread"></div>
                       <div class="flex-1">
                         <p class="text-sm font-medium text-foreground">{{ activity.title }}</p>
-                        <p class="mt-1 text-xs text-muted-foreground">{{ activity.time }}</p>
+                        <p class="mt-1 text-sm text-muted-foreground">{{ activity.time }}</p>
                       </div>
                       <svg width="16" height="16" class="mt-1 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <polyline points="9 18 15 12 9 6"/>
@@ -289,14 +275,14 @@ interface QuickActionItem {
             </div>
 
             <div class="col-span-3 space-y-6">
-              <div class="animate-fade-in-up delay-200 rounded-2xl border-2 border-accent/20 bg-secondary p-6">
+              <div class="animate-fade-in-up delay-200 rounded-2xl border border-accent/20 bg-secondary p-6">
                 <div class="mb-4 flex items-center gap-2">
-                  <div class="flex h-10 w-10 items-center justify-center rounded-full bg-accent">
+                  <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
                     </svg>
                   </div>
-                  <h3 class="font-bold">Assistant IA</h3>
+                  <h3 class="font-semibold">Assistant IA</h3>
                 </div>
                 <p class="mb-4 text-sm text-foreground/80">Bonjour {{ firstName() }}.<br>Que puis-je faire pour vous aujourd'hui ?</p>
                 <div class="space-y-2">
@@ -334,8 +320,8 @@ interface QuickActionItem {
                 </div>
               </div>
 
-              <div class="animate-fade-in-up delay-300 rounded-2xl border border-border bg-white p-6 shadow-sm">
-                <h3 class="mb-4 text-lg font-bold">Statistiques</h3>
+              <div class="animate-fade-in-up delay-300 rounded-2xl border border-border bg-white p-6">
+                <h3 class="mb-4 text-lg font-semibold">Statistiques</h3>
                 <div class="space-y-4">
                   @for (stat of stats(); track stat.label) {
                     <div class="flex items-center justify-between">
@@ -364,7 +350,7 @@ interface QuickActionItem {
                         </span>
                         <span class="text-sm text-muted-foreground">{{ stat.label }}</span>
                       </div>
-                      <span class="text-lg font-bold text-accent">{{ stat.value }}</span>
+                      <span class="text-lg font-semibold text-accent">{{ stat.value }}</span>
                     </div>
                   }
                 </div>
@@ -376,14 +362,14 @@ interface QuickActionItem {
 
       <a
         [routerLink]="floatingBubbleLink()"
-        class="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-white shadow-2xl shadow-accent/30 transition-all hover:scale-110 hover:bg-accent/90 active:scale-90"
+        class="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-2xl transition-all hover:scale-110 hover:bg-primary/90 active:scale-90"
         [attr.aria-label]="floatingBubbleLabel()"
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
         @if (floatingBubbleBadge() > 0) {
-          <span class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs font-bold text-white">{{ floatingBubbleBadge() }}</span>
+          <span class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-sm font-semibold text-white">{{ floatingBubbleBadge() }}</span>
         }
       </a>
     </div>

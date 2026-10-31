@@ -22,14 +22,14 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
     <div class="min-h-screen bg-secondary pb-12 pt-20">
       <div class="mx-auto max-w-3xl px-4 py-8 sm:px-8">
         <div class="mb-8 animate-fade-in-up">
-          <h1 class="mb-2 text-4xl font-bold">Paramètres</h1>
+          <h1 class="mb-2 text-4xl font-semibold">Paramètres</h1>
           <p class="text-muted-foreground">Gérez votre compte et la visibilité de votre profil</p>
         </div>
 
         <div class="space-y-4 animate-fade-in-up delay-100">
           <!-- COMPTE -->
-          <section class="rounded-2xl border border-border bg-white p-6 shadow-sm" aria-labelledby="compte-titre">
-            <h2 id="compte-titre" class="mb-4 text-lg font-bold">Compte</h2>
+          <section class="rounded-2xl border border-border bg-white p-6" aria-labelledby="compte-titre">
+            <h2 id="compte-titre" class="mb-4 text-lg font-semibold">Compte</h2>
 
             <div class="border-b border-border py-3">
               <div class="flex items-center justify-between gap-4">
@@ -37,7 +37,7 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
                   <div class="text-sm font-medium">Email</div>
                   <div class="truncate text-sm text-muted-foreground">{{ email() }}</div>
                 </div>
-                <button type="button" (click)="toggle('email')" [attr.aria-expanded]="openPanel() === 'email'" class="text-xs font-semibold text-accent hover:underline">
+                <button type="button" (click)="toggle('email')" [attr.aria-expanded]="openPanel() === 'email'" class="text-sm font-semibold text-accent hover:underline">
                   {{ openPanel() === 'email' ? 'Annuler' : 'Modifier' }}
                 </button>
               </div>
@@ -48,7 +48,7 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
                     <input id="new-email" type="email" formControlName="email" autocomplete="email" (keyup.enter)="saveEmail()"
                       class="flex-1 rounded-lg border border-border bg-secondary px-4 py-2.5 outline-none focus:border-accent">
                     <button type="button" (click)="saveEmail()" [disabled]="busy() || emailForm.invalid"
-                      class="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent/90 disabled:opacity-50">Envoyer le lien</button>
+                      class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50">Envoyer le lien</button>
                   </div>
                 </div>
               }
@@ -63,7 +63,7 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
                   <div class="text-sm font-medium">Mot de passe</div>
                   <div class="text-sm text-muted-foreground">••••••••</div>
                 </div>
-                <button type="button" (click)="toggle('password')" [attr.aria-expanded]="openPanel() === 'password'" class="text-xs font-semibold text-accent hover:underline">
+                <button type="button" (click)="toggle('password')" [attr.aria-expanded]="openPanel() === 'password'" class="text-sm font-semibold text-accent hover:underline">
                   {{ openPanel() === 'password' ? 'Annuler' : 'Modifier' }}
                 </button>
               </div>
@@ -75,7 +75,7 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
                       aria-describedby="settings-password-criteria"
                       class="flex-1 rounded-lg border border-border bg-secondary px-4 py-2.5 outline-none focus:border-accent">
                     <button type="button" (click)="savePassword()" [disabled]="busy() || passwordForm.invalid"
-                      class="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent/90 disabled:opacity-50">Enregistrer</button>
+                      class="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50">Enregistrer</button>
                   </div>
                   <app-password-criteria id="settings-password-criteria" [password]="passwordForm.controls.password.value" />
                 </div>
@@ -87,8 +87,8 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
           </section>
 
           <!-- CONFIDENTIALITÉ -->
-          <section class="rounded-2xl border border-border bg-white p-6 shadow-sm" aria-labelledby="confidentialite-titre">
-            <h2 id="confidentialite-titre" class="mb-4 text-lg font-bold">Confidentialité</h2>
+          <section class="rounded-2xl border border-border bg-white p-6" aria-labelledby="confidentialite-titre">
+            <h2 id="confidentialite-titre" class="mb-4 text-lg font-semibold">Confidentialité</h2>
             <div class="flex items-start justify-between gap-4">
               <div>
                 <div class="text-sm font-medium" id="visibilite-label">Profil visible dans la recherche</div>
@@ -108,10 +108,10 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
                   [class.bg-accent]="isVisible()"
                   [class.bg-border]="!isVisible()"
                 >
-                  <span class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform" [class.translate-x-5]="isVisible()"></span>
+                  <span class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform" [class.translate-x-5]="isVisible()"></span>
                 </button>
               } @else {
-                <span class="text-xs text-muted-foreground">Indisponible</span>
+                <span class="text-sm text-muted-foreground">Indisponible</span>
               }
             </div>
             @if (visibilityFeedback(); as feedback) {
@@ -120,8 +120,8 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
           </section>
 
           <!-- ZONE DE DANGER -->
-          <section class="rounded-2xl border border-destructive/20 bg-white p-6 shadow-sm" aria-labelledby="danger-titre">
-            <h2 id="danger-titre" class="mb-2 text-lg font-bold text-destructive">Zone de danger</h2>
+          <section class="rounded-2xl border border-destructive/20 bg-white p-6" aria-labelledby="danger-titre">
+            <h2 id="danger-titre" class="mb-2 text-lg font-semibold text-destructive">Zone de danger</h2>
             <p class="mb-4 text-sm text-muted-foreground">
               La suppression est définitive : profil, photo, projet, annonces M&A, conversations et messages sont effacés.
             </p>
