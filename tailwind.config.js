@@ -6,14 +6,14 @@ module.exports = {
     extend: {
       colors: {
         background: 'var(--background)',
-        foreground: 'var(--foreground)',
+        foreground: 'rgb(var(--foreground-rgb) / <alpha-value>)',
         card: {
           DEFAULT: 'var(--card)',
           foreground: 'var(--card-foreground)',
         },
         primary: {
-          DEFAULT: 'var(--primary)',
-          foreground: 'var(--primary-foreground)',
+          DEFAULT: 'rgb(var(--primary-rgb) / <alpha-value>)',
+          foreground: 'rgb(var(--primary-foreground-rgb) / <alpha-value>)',
         },
         secondary: {
           DEFAULT: 'var(--secondary)',
@@ -24,7 +24,7 @@ module.exports = {
           foreground: 'var(--muted-foreground)',
         },
         accent: {
-          DEFAULT: 'var(--accent)',
+          DEFAULT: 'rgb(var(--accent-rgb) / <alpha-value>)',
           foreground: 'var(--accent-foreground)',
         },
         destructive: {

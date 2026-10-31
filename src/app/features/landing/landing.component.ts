@@ -89,18 +89,21 @@ interface LandingFaqItem {
       </section>
 
       <section class="px-4 py-20 sm:px-6 lg:px-8 lg:py-28" aria-label="Notre conviction">
-        <div class="mx-auto grid max-w-[78rem] gap-10 lg:grid-cols-12">
-          <p class="font-display text-[1.9rem] leading-snug text-primary sm:text-4xl sm:leading-snug lg:col-span-8 lg:text-[2.6rem] lg:leading-[1.25]">
-            Une entreprise, ce sont des années de travail, des clients qui vous font confiance, parfois une équipe.
-            La transmettre mérite mieux qu'une petite annonce.
-          </p>
-          <div class="text-base leading-relaxed text-muted-foreground lg:col-span-4 lg:pt-4">
-            <p>
+        <div class="mx-auto grid max-w-[78rem] gap-12 lg:grid-cols-12 lg:items-center">
+          <div class="lg:col-span-7">
+            <p class="font-display text-[1.9rem] leading-snug text-primary sm:text-4xl sm:leading-snug lg:text-[2.6rem] lg:leading-[1.25]">
+              Une entreprise, ce sont des années de travail, des clients qui vous font confiance, parfois une équipe.
+              La transmettre mérite mieux qu'une petite annonce.
+            </p>
+            <p class="mt-8 max-w-[56ch] text-base leading-relaxed text-muted-foreground">
               Chaque année, des entreprises rentables ferment faute de repreneur, pendant que d'autres cherchent
               à racheter une activité qui tourne déjà. GoFounders les rapproche, discrètement et sans commission.
             </p>
             <p class="mt-5 font-medium text-primary">L'équipe GoFounders</p>
           </div>
+          <figure class="lg:col-span-5">
+            <img src="/assets/images/provisoire/fondateur-boutique.jpg" alt="Un commerçant derrière son comptoir, souriant, avec une cliente" width="1400" height="934" loading="lazy" class="aspect-[4/5] w-full rounded-md object-cover">
+          </figure>
         </div>
       </section>
 
@@ -110,6 +113,7 @@ interface LandingFaqItem {
           <div class="mt-10 grid gap-10 md:grid-cols-3 md:gap-0 md:divide-x md:divide-border">
             @for (audience of audiences; track audience.title; let first = $first) {
               <div [class]="first ? 'md:pr-8' : 'md:px-8'">
+                <img [src]="audience.image" [alt]="audience.imageAlt" width="1400" height="933" loading="lazy" class="mb-5 aspect-[3/2] w-full rounded-md object-cover">
                 <h3 class="text-lg font-semibold text-primary">{{ audience.title }}</h3>
                 <p class="mt-2 text-base leading-relaxed text-muted-foreground">{{ audience.description }}</p>
                 <a [routerLink]="audience.href" class="mt-4 inline-block font-medium text-accent underline-offset-4 hover:underline">{{ audience.cta }}</a>
@@ -141,6 +145,7 @@ interface LandingFaqItem {
             <p class="mt-4 max-w-[52ch] text-base leading-relaxed text-muted-foreground">
               Vendre une entreprise ou présenter un projet expose des informations sensibles. Vous décidez de ce qui est montré, à qui, et sous quel engagement.
             </p>
+            <img src="/assets/images/provisoire/dossier-chiffres.jpg" alt="Documents comptables et calculatrice posés sur un bureau" width="1400" height="803" loading="lazy" class="mt-8 hidden aspect-[4/3] w-full rounded-md object-cover lg:block">
           </div>
           <dl class="divide-y divide-border border-y border-border lg:col-span-7">
             @for (item of protectionPoints; track item.title) {
@@ -198,8 +203,10 @@ interface LandingFaqItem {
         </div>
       </section>
 
-      <section class="bg-primary px-4 py-14 text-primary-foreground sm:px-6 lg:px-8" aria-labelledby="sell-title">
-        <div class="mx-auto flex max-w-[78rem] flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+      <section class="relative overflow-hidden bg-primary px-4 py-20 text-primary-foreground sm:px-6 lg:px-8 lg:py-24" aria-labelledby="sell-title">
+        <img src="/assets/images/provisoire/proprietaire-restaurant.jpg" alt="" aria-hidden="true" width="1400" height="933" loading="lazy" class="absolute inset-0 h-full w-full object-cover object-[center_20%]">
+        <div class="absolute inset-0" style="background: rgba(15, 27, 45, 0.86)" aria-hidden="true"></div>
+        <div class="relative mx-auto flex max-w-[78rem] flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 id="sell-title" class="text-3xl sm:text-4xl">Vous pensez à passer la main ?</h2>
             <p class="mt-3 max-w-[60ch] text-base leading-relaxed text-primary-foreground/75">
@@ -234,18 +241,24 @@ export class LandingComponent implements OnInit {
       description: 'Rachetez une activité qui a déjà des clients et un historique, au lieu de repartir de zéro.',
       href: '/ma',
       cta: 'Voir les annonces',
+      image: '/assets/images/provisoire/rendez-vous-repreneur.jpg',
+      imageAlt: 'Deux personnes en rendez-vous autour d’un ordinateur',
     },
     {
       title: 'Cédants',
       description: 'Passez la main discrètement, à un repreneur qui a pris un accès payant et montré son sérieux.',
       href: '/ma/deposer',
       cta: 'Déposer une annonce',
+      image: '/assets/images/provisoire/cedant-cafe.jpg',
+      imageAlt: 'Le gérant d’un café sert un client au comptoir',
     },
     {
       title: 'Associés',
       description: 'Trouvez un associé pour votre projet, ou rejoignez un projet qui a besoin de vos compétences.',
       href: '/recherche',
       cta: 'Trouver un associé',
+      image: '/assets/images/provisoire/bureau-equipe.jpg',
+      imageAlt: 'Une équipe au travail dans un bureau lumineux',
     },
   ];
 

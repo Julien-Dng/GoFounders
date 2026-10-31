@@ -6,15 +6,19 @@
   /* Système de design « fiche de cession » : voir docs/DESIGN.md */
   --background: #ffffff;
   --foreground: #1E2633;
+  --foreground-rgb: 30 38 51;
   --card: #ffffff;
   --card-foreground: #1E2633;
   --primary: #0F1B2D;
   --primary-foreground: #ffffff;
+  --primary-rgb: 15 27 45;
+  --primary-foreground-rgb: 255 255 255;
   --secondary: #F5F6F8;
   --secondary-foreground: #0F1B2D;
   --muted: #8A93A1;
   --muted-foreground: #4A5463;
   --accent: #1D4ED8;
+  --accent-rgb: 29 78 216;
   --accent-foreground: #ffffff;
   --destructive: #B42318;
   --destructive-foreground: #ffffff;
@@ -30,15 +34,19 @@
 html.dark {
   --background: #0B1220;
   --foreground: #DCE7F3;
+  --foreground-rgb: 220 231 243;
   --card: #131D2C;
   --card-foreground: #E4EDF7;
   --primary: #111A2A;
   --primary-foreground: #E7EEF8;
+  --primary-rgb: 17 26 42;
+  --primary-foreground-rgb: 231 238 248;
   --secondary: #101827;
   --secondary-foreground: #C9D5E4;
   --muted: #243247;
   --muted-foreground: #91A1B5;
   --accent: #7AA2F7;
+  --accent-rgb: 122 162 247;
   --accent-foreground: #ffffff;
   --destructive: #F87171;
   --destructive-foreground: #ffffff;
