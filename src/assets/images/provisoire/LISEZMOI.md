@@ -13,3 +13,6 @@ Photos libres d'utilisation (licence Unsplash), utilisées pour visualiser la re
 | proprietaire-restaurant.jpg | photo-1556157382-97eda2d62296 |
 
 Pour remplacer une photo : garder le même nom de fichier (format paysage, 1400 px de large environ).
+
+Utilisation : accueil (section éditoriale, trois profils, discrétion, bandeau final), bandeau final de `/ma` (cedant-cafe), section Accompagnement de `/tarifs` (rendez-vous-repreneur).
+Pas de photo sur les fiches d'annonces (anonymes) ni sur les ventes réussies (jamais de visage de banque d'images à côté d'un vrai témoignage).

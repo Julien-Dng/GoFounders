@@ -108,6 +108,7 @@ interface Plan {
               <li>Un interlocuteur dédié jusqu'à la signature.</li>
             </ul>
             <p class="mt-4 text-sm leading-relaxed text-muted-foreground">GoFounders n'assure pas de conseil juridique : les actes sont réalisés par nos experts partenaires.</p>
+            <img src="/assets/images/provisoire/rendez-vous-repreneur.jpg" alt="Deux personnes en rendez-vous de travail" width="1400" height="933" loading="lazy" class="mt-6 hidden aspect-[3/2] w-full rounded-md object-cover lg:block">
           </div>
           <div class="rounded-lg border border-border p-6 lg:col-span-8">
             <div class="grid gap-4 sm:grid-cols-2">
