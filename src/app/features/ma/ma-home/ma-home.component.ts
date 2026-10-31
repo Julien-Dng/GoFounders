@@ -5,6 +5,9 @@ import { EARLY_ACCESS_HOURS, OFFER_PRICES } from '../../../core/config/offers';
 import { canAccessMaDetails, canPublishMaListing, hasBuyerPlus } from '../../../core/models/user.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { MaService } from '../../../core/services/ma.service';
+import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../../../core/ma/listing-metrics';
+
+type SortKey = 'pertinence' | 'recent' | 'prix-asc' | 'prix-desc' | 'ca-desc' | 'benefice-desc' | 'multiple-asc';
 import { SuccessStoriesComponent } from '../../../shared/components/success-stories/success-stories.component';
 
 
@@ -15,17 +18,17 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-white">
-      <section class="px-4 pb-8 pt-24 sm:px-6 lg:px-8 lg:pt-32">
+      <section class="px-4 pb-6 pt-20 sm:px-6 sm:pb-8 sm:pt-24 lg:px-8 lg:pt-32">
         <div class="mx-auto flex max-w-[78rem] flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h1 class="text-[2.25rem] leading-tight text-primary sm:text-5xl">Entreprises à reprendre</h1>
-            <p class="mt-4 max-w-[62ch] text-base leading-relaxed text-muted-foreground sm:text-base">
-              Des entreprises rentables, surtout numériques, entre 50 k€ et 1 M€ de chiffre d'affaires. Les annonces sont anonymisées :
-              le nom de l'entreprise n'est communiqué qu'aux repreneurs que le cédant accepte.
+            <p class="mt-3 max-w-[62ch] text-base leading-relaxed text-muted-foreground sm:mt-4">
+              Des entreprises rentables, surtout numériques, entre 50 k€ et 1 M€ de chiffre d'affaires.<span class="hidden sm:inline"> Les annonces sont anonymisées :
+              le nom de l'entreprise n'est communiqué qu'aux repreneurs que le cédant accepte.</span>
             </p>
           </div>
           @if (canDepositListing()) {
-            <a routerLink="/ma/deposer" class="flex-shrink-0 font-medium text-primary underline decoration-border decoration-2 underline-offset-4 hover:decoration-primary">
+            <a routerLink="/ma/deposer" class="hidden flex-shrink-0 font-medium text-primary underline sm:inline decoration-border decoration-2 underline-offset-4 hover:decoration-primary">
               Déposer une annonce gratuitement
             </a>
           }
@@ -34,7 +37,7 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
 
       @if (!canViewSensitiveDetails() || accessRequiredNotice()) {
         <section class="px-4 sm:px-6 lg:px-8">
-          <div class="mx-auto max-w-[78rem] rounded-lg border border-border bg-secondary p-5 sm:flex sm:items-center sm:justify-between sm:gap-8">
+          <div class="mx-auto max-w-[78rem] rounded-lg border border-border bg-secondary p-4 sm:flex sm:p-5 sm:items-center sm:justify-between sm:gap-8">
             <div class="text-base leading-relaxed text-foreground/85">
               @if (accessRequiredNotice()) {
                 <p class="font-semibold text-primary">Le dossier complet demande un accès repreneur.</p>
@@ -43,11 +46,11 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
                 Le motif de cession, le détail de l'activité et le contact du vendeur sont réservés aux repreneurs avec l'accès à {{ accessPrice }}.
               </p>
               @if (showEarlyAccessHint()) {
-                <p class="mt-1 text-muted-foreground">Avec l'accès Plus, les nouvelles annonces vous sont ouvertes {{ earlyAccessHours }} h avant les autres.</p>
+                <p class="mt-1 hidden text-muted-foreground sm:block">Avec l'accès Plus, les nouvelles annonces vous sont ouvertes {{ earlyAccessHours }} h avant les autres.</p>
               }
             </div>
             @if (showAccessCta()) {
-              <button type="button" (click)="continueToMaAccess()" class="mt-4 w-full flex-shrink-0 rounded bg-primary px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-primary/90 sm:mt-0 sm:w-auto">
+              <button type="button" (click)="continueToMaAccess()" class="mt-3 w-full flex-shrink-0 rounded bg-primary px-5 py-2.5 text-sm sm:mt-0 sm:py-3 font-medium text-white transition-colors hover:bg-primary/90 sm:w-auto">
                 {{ accessCtaLabel() }}
               </button>
             }
@@ -55,138 +58,186 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
         </section>
       }
 
-      <section id="ma-listings" class="scroll-mt-20 px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+      <section id="ma-listings" class="scroll-mt-20 px-4 pb-16 pt-5 sm:pt-8 sm:px-6 lg:px-8">
         <div class="mx-auto max-w-[78rem]">
-          <div class="mb-6">
-            <label for="ma-search" class="sr-only">Rechercher une entreprise</label>
+          <label for="ma-search" class="sr-only">Rechercher une entreprise</label>
+          <div class="relative">
+            <svg class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
             <input
               id="ma-search"
               type="search"
               [value]="query()"
               (input)="query.set($any($event.target).value)"
-              placeholder="Rechercher : SaaS, e-commerce, agence, Lyon…"
-              class="w-full rounded-lg border border-input bg-white px-4 py-3.5 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+              placeholder="SaaS, e-commerce, agence, Lyon…"
+              class="w-full rounded-lg border border-input bg-white py-3.5 pl-12 pr-4 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
             >
           </div>
-          <div class="flex items-center justify-between gap-4 border-b border-border pb-4">
-            <p class="text-base text-foreground/85" aria-live="polite">
-              <span class="tabular font-semibold text-primary">{{ filteredListings().length }}</span>
-              {{ filteredListings().length > 1 ? 'annonces' : 'annonce' }}
-              @if (activeFilterCount() > 0) {
-                <button type="button" (click)="resetFilters()" class="ml-3 text-sm font-medium text-accent underline-offset-4 hover:underline">Effacer les filtres</button>
-              }
-            </p>
-            <button
-              type="button"
-              (click)="filtersOpen.set(!filtersOpen())"
-              [attr.aria-expanded]="filtersOpen()"
-              aria-controls="ma-filters"
-              class="rounded border border-input px-4 py-2 text-sm font-medium text-primary lg:hidden"
-            >Filtrer{{ activeFilterCount() > 0 ? ' (' + activeFilterCount() + ')' : '' }}</button>
-          </div>
 
-          <div id="ma-filters" class="grid gap-4 border-b border-border py-5 sm:grid-cols-2 lg:grid lg:grid-cols-5" [class.hidden]="!filtersOpen()">
-            <div>
-              <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-sector">Secteur</label>
-              <select id="filter-sector" [value]="selectedSector()" (change)="selectedSector.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary">
-                <option value="">Tous les secteurs</option>
-                @for (sector of sectors(); track sector) {
-                  <option [value]="sector">{{ sector }}</option>
-                }
-              </select>
-            </div>
-            <div>
-              <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-type">Type de cession</label>
-              <select id="filter-type" [value]="selectedType()" (change)="selectedType.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary">
-                <option value="">Tous les types</option>
-                @for (type of types(); track type) {
-                  <option [value]="type">{{ type }}</option>
-                }
-              </select>
-            </div>
-            <div>
-              <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-revenue">Chiffre d'affaires</label>
-              <select id="filter-revenue" [value]="selectedRevenue()" (change)="selectedRevenue.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary">
-                @for (range of revenueRanges; track range.value) {
-                  <option [value]="range.value">{{ range.label }}</option>
-                }
-              </select>
-            </div>
-            <div>
-              <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-price">Prix demandé</label>
-              <select id="filter-price" [value]="selectedPrice()" (change)="selectedPrice.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary">
-                @for (range of priceRanges; track range.value) {
-                  <option [value]="range.value">{{ range.label }}</option>
-                }
-              </select>
-            </div>
-            <div>
-              <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-region">Région</label>
-              <input id="filter-region" type="search" [value]="region()" (input)="region.set($any($event.target).value)" placeholder="Toute la France" class="w-full rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary">
-            </div>
-          </div>
-
-          @if (filteredListings().length === 0) {
-            <div class="py-16 text-center">
-              <p class="text-base text-muted-foreground">Aucune annonce ne correspond à ces critères.</p>
-              @if (activeFilterCount() > 0) {
-                <button type="button" (click)="resetFilters()" class="mt-3 font-medium text-accent underline-offset-4 hover:underline">Effacer les filtres</button>
-              }
-            </div>
-          } @else {
-            <div class="mt-6 grid gap-6 lg:grid-cols-2">
-              @for (listing of filteredListings(); track listing.id) {
-                <article class="flex flex-col rounded-lg border border-border bg-white p-6" [class.border-amber-500]="listing.featured" [attr.aria-labelledby]="'listing-' + listing.id">
-                  <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
-                    <span>{{ listing.type }}</span>
-                    @if (listing.featured) {
-                      <span class="rounded-full border border-amber-500/40 px-2 py-0.5 text-sm font-medium text-amber-700">En vedette</span>
-                    }
-                    @if (listing.verified) {
-                      <span class="rounded-full border border-emerald-700/30 px-2 py-0.5 text-sm font-medium text-emerald-800">Dossier vérifié</span>
-                    }
-                    @if (listing.isNew) {
-                      <span class="rounded-full border border-accent/30 px-2 py-0.5 text-sm font-medium text-accent">Nouvelle, accès anticipé</span>
-                    }
-                  </div>
-                  <h2 [id]="'listing-' + listing.id" class="mt-2 text-2xl leading-snug text-primary sm:text-[1.75rem]">{{ listing.sector }}, {{ listing.region }}</h2>
-                  <p class="mt-3 text-lg leading-relaxed text-foreground/80">{{ listing.summary }}</p>
-
-                  <dl class="tabular mt-5 grid grid-cols-3 border-y border-border">
-                    <div class="py-3.5 pr-3">
-                      <dt class="text-sm text-muted-foreground"><span class="sm:hidden">CA</span><span class="hidden sm:inline">Chiffre d'affaires</span></dt>
-                      <dd class="mt-1 text-lg font-semibold text-primary sm:text-xl">{{ listing.revenue }}</dd>
-                    </div>
-                    <div class="border-l border-border px-3 py-3.5">
-                      <dt class="text-sm text-muted-foreground">Marge nette</dt>
-                      <dd class="mt-1 text-lg font-semibold text-primary sm:text-xl">{{ listing.margin }}</dd>
-                    </div>
-                    <div class="border-l border-border py-3.5 pl-3">
-                      <dt class="text-sm text-muted-foreground">Ancienneté</dt>
-                      <dd class="mt-1 text-lg font-semibold text-primary sm:text-xl">{{ listing.age }}</dd>
-                    </div>
-                  </dl>
-
-                  @if (canViewSensitiveDetails()) {
-                    <p class="mt-4 text-sm text-foreground/80"><span class="text-muted-foreground">Motif de cession :</span> {{ listing.reason }}</p>
-                  }
-
-                  <div class="mt-auto flex flex-col gap-4 pt-5 sm:flex-row sm:items-end sm:justify-between">
-                    <div>
-                      <p class="text-sm text-muted-foreground">Prix demandé</p>
-                      <p class="font-display tabular mt-0.5 text-3xl font-semibold text-amber-600">{{ listing.priceMin }} à {{ listing.priceMax }}</p>
-                      <p class="mt-0.5 text-sm text-muted-foreground">Estimation indicative, non contractuelle.</p>
-                    </div>
-                    @if (canViewSensitiveDetails()) {
-                      <a [routerLink]="['/ma/annonce', listing.id]" class="rounded border border-primary px-4 py-2.5 text-center text-sm font-medium text-primary transition-colors hover:bg-primary hover:text-white">
-                        Ouvrir le dossier
-                      </a>
-                    }
-                  </div>
-                </article>
+          @if (sectors().length > 1) {
+            <div class="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0" role="group" aria-label="Secteurs">
+              <button type="button" (click)="selectedSector.set('')" [attr.aria-pressed]="!selectedSector()" class="flex-shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition-colors" [class]="!selectedSector() ? 'border-primary bg-primary text-white' : 'border-border text-foreground/85 hover:border-primary/40'">Tous</button>
+              @for (sector of sectors(); track sector) {
+                <button type="button" (click)="selectedSector.set(selectedSector() === sector ? '' : sector)" [attr.aria-pressed]="selectedSector() === sector" class="flex-shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition-colors" [class]="selectedSector() === sector ? 'border-primary bg-primary text-white' : 'border-border text-foreground/85 hover:border-primary/40'">{{ sector }}</button>
               }
             </div>
           }
+
+          <div class="mt-5 grid gap-6 sm:mt-8 lg:grid-cols-[16.5rem,1fr] lg:gap-8">
+            <aside id="ma-filters" aria-label="Filtres" class="lg:block" [class.hidden]="!filtersOpen()">
+              <div class="space-y-5 rounded-xl border border-border p-5 lg:sticky lg:top-24">
+                <div class="flex items-center justify-between">
+                  <p class="font-semibold text-primary">Filtres</p>
+                  @if (activeFilterCount() > 0) {
+                    <button type="button" (click)="resetFilters()" class="text-sm font-medium text-accent underline-offset-4 hover:underline">Tout effacer</button>
+                  }
+                </div>
+                <div>
+                  <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-type">Type de cession</label>
+                  <select id="filter-type" [value]="selectedType()" (change)="selectedType.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary">
+                    <option value="">Tous les types</option>
+                    @for (type of types(); track type) {
+                      <option [value]="type">{{ type }}</option>
+                    }
+                  </select>
+                </div>
+                <div>
+                  <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-revenue">Chiffre d'affaires</label>
+                  <select id="filter-revenue" [value]="selectedRevenue()" (change)="selectedRevenue.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary">
+                    @for (range of revenueRanges; track range.value) {
+                      <option [value]="range.value">{{ range.label }}</option>
+                    }
+                  </select>
+                </div>
+                <div>
+                  <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-price">Prix demandé</label>
+                  <select id="filter-price" [value]="selectedPrice()" (change)="selectedPrice.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary">
+                    @for (range of priceRanges; track range.value) {
+                      <option [value]="range.value">{{ range.label }}</option>
+                    }
+                  </select>
+                </div>
+                <div>
+                  <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-margin">Marge nette</label>
+                  <select id="filter-margin" [value]="minMargin()" (change)="minMargin.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary">
+                    @for (option of marginOptions; track option.value) {
+                      <option [value]="option.value">{{ option.label }}</option>
+                    }
+                  </select>
+                </div>
+                <div>
+                  <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-region">Région</label>
+                  <input id="filter-region" type="search" [value]="region()" (input)="region.set($any($event.target).value)" placeholder="Toute la France" class="w-full rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary">
+                </div>
+                <label class="flex cursor-pointer items-center gap-3 border-t border-border pt-5 text-base text-foreground/85">
+                  <input type="checkbox" [checked]="verifiedOnly()" (change)="verifiedOnly.set($any($event.target).checked)" class="h-4 w-4 rounded border-input accent-[#1D4ED8]">
+                  Dossiers vérifiés uniquement
+                </label>
+              </div>
+            </aside>
+
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
+                <p class="text-base text-foreground/85" aria-live="polite">
+                  <span class="tabular font-semibold text-primary">{{ filteredListings().length }}</span>
+                  {{ filteredListings().length > 1 ? 'entreprises à reprendre' : 'entreprise à reprendre' }}
+                </p>
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    (click)="filtersOpen.set(!filtersOpen())"
+                    [attr.aria-expanded]="filtersOpen()"
+                    aria-controls="ma-filters"
+                    class="rounded border border-input px-4 py-2 text-sm font-medium text-primary lg:hidden"
+                  >Filtrer{{ activeFilterCount() > 0 ? ' (' + activeFilterCount() + ')' : '' }}</button>
+                  <label for="ma-sort" class="sr-only">Trier</label>
+                  <select id="ma-sort" [value]="sort()" (change)="sort.set($any($event.target).value)" class="rounded border border-input bg-white px-3 py-2 text-sm font-medium text-primary outline-none focus:border-primary">
+                    @for (option of sortOptions; track option.value) {
+                      <option [value]="option.value">{{ option.label }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+
+              @if (filteredListings().length === 0) {
+                <div class="py-16 text-center">
+                  <p class="text-base text-muted-foreground">Aucune annonce ne correspond à ces critères.</p>
+                  @if (activeFilterCount() > 0) {
+                    <button type="button" (click)="resetFilters()" class="mt-3 font-medium text-accent underline-offset-4 hover:underline">Effacer les filtres</button>
+                  }
+                </div>
+              } @else {
+                <ul class="mt-5 space-y-4">
+                  @for (item of filteredListings(); track item.listing.id) {
+                    <li>
+                      <article class="group relative grid rounded-xl border bg-white transition-colors md:grid-cols-[1fr,15rem]" [class]="item.listing.featured ? 'border-amber-500/60' : 'border-border hover:border-primary/30'" [attr.aria-labelledby]="'listing-' + item.listing.id">
+                        <div class="p-5 sm:p-6">
+                          <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
+                            <span>{{ item.listing.type }}</span>
+                            @if (item.published) {
+                              <span aria-hidden="true">·</span>
+                              <span>{{ item.published }}</span>
+                            }
+                            @if (item.listing.featured) {
+                              <span class="rounded-full border border-amber-500/40 px-2 py-0.5 font-medium text-amber-700">En vedette</span>
+                            }
+                            @if (item.listing.verified) {
+                              <span class="rounded-full border border-emerald-700/30 px-2 py-0.5 font-medium text-emerald-800">Dossier vérifié</span>
+                            }
+                            @if (item.listing.isNew) {
+                              <span class="rounded-full border border-accent/30 px-2 py-0.5 font-medium text-accent">Nouvelle</span>
+                            }
+                          </div>
+                          <h2 [id]="'listing-' + item.listing.id" class="mt-2 text-xl font-semibold leading-snug text-primary sm:text-2xl">
+                            @if (canViewSensitiveDetails()) {
+                              <a [routerLink]="['/ma/annonce', item.listing.id]" class="after:absolute after:inset-0 after:rounded-xl focus:outline-none focus-visible:underline">{{ item.listing.sector }}, {{ item.listing.region }}</a>
+                            } @else {
+                              {{ item.listing.sector }}, {{ item.listing.region }}
+                            }
+                          </h2>
+                          <p class="mt-2 line-clamp-2 text-base leading-relaxed text-foreground/80">{{ item.listing.summary }}</p>
+
+                          <dl class="tabular mt-4 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
+                            <div>
+                              <dt class="text-sm text-muted-foreground">Chiffre d'affaires</dt>
+                              <dd class="mt-0.5 text-lg font-semibold text-primary">{{ euros(item.metrics.revenue) }}</dd>
+                            </div>
+                            <div>
+                              <dt class="text-sm text-muted-foreground">Bénéfice net</dt>
+                              <dd class="mt-0.5 text-lg font-semibold text-primary">{{ euros(item.metrics.netProfit) }}</dd>
+                            </div>
+                            <div>
+                              <dt class="text-sm text-muted-foreground">Marge nette</dt>
+                              <dd class="mt-0.5 text-lg font-semibold text-primary">{{ item.listing.margin }}</dd>
+                            </div>
+                            <div>
+                              <dt class="text-sm text-muted-foreground">Ancienneté</dt>
+                              <dd class="mt-0.5 text-lg font-semibold text-primary">{{ item.listing.age }}</dd>
+                            </div>
+                          </dl>
+                        </div>
+
+                        <div class="flex flex-col justify-between gap-4 border-t border-border bg-secondary/50 p-5 sm:p-6 md:rounded-r-xl md:border-l md:border-t-0">
+                          <div>
+                            <p class="text-sm text-muted-foreground">Prix demandé</p>
+                            <p class="tabular mt-0.5 text-2xl font-semibold leading-tight text-amber-600"><span class="whitespace-nowrap">{{ item.listing.priceMin }}</span> à <span class="whitespace-nowrap">{{ item.listing.priceMax }}</span></p>
+                            @if (item.metrics.multiple !== null) {
+                              <p class="tabular mt-1 text-sm text-muted-foreground">Soit {{ multiple(item.metrics.multiple) }} le bénéfice annuel</p>
+                            }
+                          </div>
+                          @if (canViewSensitiveDetails()) {
+                            <span class="rounded border border-primary px-4 py-2.5 text-center text-sm font-medium text-primary transition-colors group-hover:bg-primary group-hover:text-white" aria-hidden="true">Voir l'annonce</span>
+                          }
+                        </div>
+                      </article>
+                    </li>
+                  }
+                </ul>
+                <p class="mt-6 text-sm text-muted-foreground">
+                  Chiffres déclarés par les cédants. Prix indicatifs, non contractuels ; le bénéfice et le multiple sont calculés à partir du chiffre d'affaires et de la marge annoncés.
+                </p>
+              }
+            </div>
+          </div>
         </div>
       </section>
 
@@ -226,6 +277,9 @@ export class MaHomeComponent implements OnInit {
   readonly selectedRevenue = signal('');
   readonly selectedPrice = signal('');
   readonly region = signal('');
+  readonly minMargin = signal('');
+  readonly verifiedOnly = signal(false);
+  readonly sort = signal<SortKey>('pertinence');
   // Recherche libre (secteur, région, résumé), préremplie depuis l'accueil (?q=).
   readonly query = signal('');
   // Mobile : filtres repliés pour que les annonces soient visibles dès le premier écran.
@@ -250,10 +304,27 @@ export class MaHomeComponent implements OnInit {
     { value: '500000-1000000', label: '500 k€ à 1 M€' },
     { value: '1000000-', label: 'Plus de 1 M€' },
   ];
+  readonly marginOptions = [
+    { value: '', label: 'Toutes les marges' },
+    { value: '10', label: '10 % et plus' },
+    { value: '20', label: '20 % et plus' },
+    { value: '30', label: '30 % et plus' },
+  ];
+  readonly sortOptions: Array<{ value: SortKey; label: string }> = [
+    { value: 'pertinence', label: 'Trier : en vedette' },
+    { value: 'recent', label: 'Plus récentes' },
+    { value: 'prix-asc', label: 'Prix croissant' },
+    { value: 'prix-desc', label: 'Prix décroissant' },
+    { value: 'ca-desc', label: "Chiffre d'affaires" },
+    { value: 'benefice-desc', label: 'Bénéfice net' },
+    { value: 'multiple-asc', label: 'Multiple le plus bas' },
+  ];
+  readonly euros = formatEuros;
+  readonly multiple = formatMultiple;
   readonly sectors = computed(() => [...new Set(this.listings().map(listing => listing.sector))].sort((a, b) => a.localeCompare(b, 'fr')));
   readonly types = computed(() => [...new Set(this.listings().map(listing => listing.type))].sort((a, b) => a.localeCompare(b, 'fr')));
   readonly activeFilterCount = computed(() =>
-    [this.selectedSector(), this.selectedType(), this.selectedRevenue(), this.selectedPrice(), this.region().trim(), this.query().trim()].filter(Boolean).length
+    [this.selectedSector(), this.selectedType(), this.selectedRevenue(), this.selectedPrice(), this.minMargin(), this.verifiedOnly(), this.region().trim(), this.query().trim()].filter(Boolean).length
   );
 
   private readonly profileType = computed(() => this.auth.currentUser()?.profileType);
@@ -275,15 +346,52 @@ export class MaHomeComponent implements OnInit {
   readonly filteredListings = computed(() => {
     const region = this.normalize(this.region());
     const words = this.normalize(this.query()).split(/\s+/).filter(Boolean);
+    const minMargin = Number(this.minMargin() || 0);
 
-    return this.listings().filter(listing =>
-      (!this.selectedSector() || listing.sector === this.selectedSector())
-      && (!this.selectedType() || listing.type === this.selectedType())
-      && this.inRange(this.parseAmount(listing.revenue), this.selectedRevenue())
-      && this.inRange(this.parseAmount(listing.priceMax) ?? this.parseAmount(listing.priceMin), this.selectedPrice())
-      && (!region || this.normalize(listing.region).includes(region))
-      && words.every(word => this.normalize(`${listing.sector} ${listing.region} ${listing.type} ${listing.summary}`).includes(word))
-    );
+    const items = this.listings()
+      .map(listing => {
+        const metrics = listingMetrics(listing);
+        return { listing, metrics, published: publishedLabel(metrics.publishedAt) };
+      })
+      .filter(({ listing, metrics }) =>
+        (!this.selectedSector() || listing.sector === this.selectedSector())
+        && (!this.selectedType() || listing.type === this.selectedType())
+        && this.inRange(metrics.revenue, this.selectedRevenue())
+        && this.inRange(metrics.priceMax ?? metrics.priceMin, this.selectedPrice())
+        && (!minMargin || (metrics.margin ?? -Infinity) >= minMargin)
+        && (!this.verifiedOnly() || !!listing.verified)
+        && (!region || this.normalize(listing.region).includes(region))
+        && words.every(word => this.normalize(`${listing.sector} ${listing.region} ${listing.type} ${listing.summary}`).includes(word))
+      );
+
+    // Les valeurs inconnues vont en fin de liste quel que soit le sens du tri.
+    const by = (value: (item: (typeof items)[number]) => number | null, direction: 1 | -1) =>
+      (a: (typeof items)[number], b: (typeof items)[number]) => {
+        const left = value(a);
+        const right = value(b);
+        if (left === null || right === null) {
+          return left === right ? 0 : left === null ? 1 : -1;
+        }
+        return (left - right) * direction;
+      };
+
+    switch (this.sort()) {
+      case 'recent':
+        return [...items].sort(by(item => item.metrics.publishedAt?.getTime() ?? null, -1));
+      case 'prix-asc':
+        return [...items].sort(by(item => item.metrics.price, 1));
+      case 'prix-desc':
+        return [...items].sort(by(item => item.metrics.price, -1));
+      case 'ca-desc':
+        return [...items].sort(by(item => item.metrics.revenue, -1));
+      case 'benefice-desc':
+        return [...items].sort(by(item => item.metrics.netProfit, -1));
+      case 'multiple-asc':
+        return [...items].sort(by(item => item.metrics.multiple, 1));
+      default:
+        // Ordre du serveur : annonces en vedette, puis les plus récentes.
+        return items;
+    }
   });
 
   ngOnInit(): void {
@@ -309,19 +417,9 @@ export class MaHomeComponent implements OnInit {
     this.selectedRevenue.set('');
     this.selectedPrice.set('');
     this.region.set('');
+    this.minMargin.set('');
+    this.verifiedOnly.set(false);
     this.query.set('');
-  }
-
-  // Montants affichés (« 280 k€/an », « 1,2 M€ ») ramenés en euros pour les filtres.
-  private parseAmount(text: string): number | null {
-    const match = text.replace(/\u202f|\u00a0/g, ' ').match(/([\d\s]+(?:[.,]\d+)?)\s*(k|M)€/);
-
-    if (!match) {
-      return null;
-    }
-
-    const value = Number(match[1].replace(/\s/g, '').replace(',', '.'));
-    return value * (match[2] === 'M' ? 1_000_000 : 1_000);
   }
 
   private inRange(value: number | null, range: string): boolean {

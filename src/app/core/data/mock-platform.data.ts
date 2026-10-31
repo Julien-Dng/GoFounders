@@ -74,6 +74,16 @@ export interface MaListingData {
   featured?: boolean;
   verified?: boolean;
   isNew?: boolean;
+  // Valeurs numériques (tri, bénéfice, multiple) et date de publication, renseignées depuis Supabase.
+  revenueValue?: number | null;
+  marginValue?: number | null;
+  ageValue?: number | null;
+  priceMinValue?: number | null;
+  priceMaxValue?: number | null;
+  publishedAt?: string;
+  // Dossier complet uniquement (acheteur avec accès, propriétaire, admin).
+  ownerId?: string;
+  contactInfo?: string;
 }
 
 export const MARKETPLACE_PROFILES: MarketplaceProfile[] = [
@@ -612,7 +622,12 @@ export const MA_LISTINGS: MaListingData[] = [
       "Le commerce profite d'un ancrage local fort, d'une activité stable et d'un local bien situé. La reprise est facilitée par une organisation rodée et une équipe qui connaît bien le fonctionnement quotidien.",
     highlights: ['Local bien situé', 'Équipe formée', 'Activité stable'],
   },
-];
+].map((listing, index) => ({
+  // Mode démo uniquement : date de publication relative et cédant fictif pour le bouton de contact.
+  ...listing,
+  publishedAt: new Date(Date.now() - (index * 5 + 1) * 86_400_000).toISOString(),
+  ownerId: 'demo-seller',
+}));
 
 export function findMarketplaceProfileById(profileId: string): MarketplaceProfile | undefined {
   return MARKETPLACE_PROFILES.find(profile => profile.id === profileId);

@@ -288,10 +288,16 @@ export class MaService {
       priceMax: this.formatMoney(row.price_max ?? null),
       summary: row.public_summary,
       description: row.public_summary,
-      highlights: ['Annonce anonymisée', 'Accès M&A requis', 'Dossier confidentiel'],
+      highlights: [],
       featured: !!row.featured_until && new Date(row.featured_until).getTime() > Date.now(),
       verified: row.verified ?? false,
       isNew: !!row.created_at && Date.now() - new Date(row.created_at).getTime() < EARLY_ACCESS_MS,
+      revenueValue: row.revenue ?? null,
+      marginValue: row.margin ?? null,
+      ageValue: row.age ?? null,
+      priceMinValue: row.price_min ?? null,
+      priceMaxValue: row.price_max ?? null,
+      publishedAt: row.created_at ?? undefined,
     };
   }
 
@@ -300,7 +306,8 @@ export class MaService {
       ...this.mapCardRow(row),
       reason: row.sale_reason ?? 'Raison communiquée après qualification.',
       description: row.confidential_description ?? row.public_summary,
-      highlights: ['Dossier complet', 'Mise en relation possible', 'Informations confidentielles'],
+      ownerId: row.owner_id,
+      contactInfo: row.contact_info ?? undefined,
     };
   }
 

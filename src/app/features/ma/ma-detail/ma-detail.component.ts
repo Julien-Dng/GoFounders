@@ -7,6 +7,7 @@ import { MaService } from '../../../core/services/ma.service';
 import { AiService, MaListingAnalysis } from '../../../core/services/ai.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { StatsService } from '../../../core/services/stats.service';
+import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../../../core/ma/listing-metrics';
 
 @Component({
   selector: 'app-ma-detail',
@@ -14,142 +15,183 @@ import { StatsService } from '../../../core/services/stats.service';
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-secondary pb-12 pt-20">
-      <div class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-        <a routerLink="/ma" class="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-          Retour aux annonces
+    <div class="min-h-screen bg-white pb-28 pt-20 lg:pb-16">
+      <div class="mx-auto max-w-[78rem] px-4 py-8 sm:px-6 lg:px-8">
+        <a routerLink="/ma" class="inline-flex items-center gap-2 text-base text-muted-foreground transition-colors hover:text-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+          Toutes les annonces
         </a>
 
-        @if (listing()) {
-          <div class="grid gap-8 xl:grid-cols-[1.4fr,0.8fr]">
-            <div class="rounded-2xl border border-border bg-white p-8">
-              <div class="mb-6 flex flex-wrap items-center gap-3">
-                <span class="rounded-full bg-amber-500/10 px-3 py-1 text-sm font-semibold text-amber-700">{{ listing()!.sector }}</span>
-                <span class="rounded-full bg-secondary px-3 py-1 text-sm font-semibold text-foreground">{{ listing()!.type }}</span>
-                <span class="rounded-full border border-border px-3 py-1 text-sm text-muted-foreground">{{ listing()!.region }}</span>
-              </div>
-
-              <h1 class="mb-4 text-3xl font-semibold text-primary">Annonce {{ listing()!.id }}</h1>
-              <p class="mb-6 text-lg leading-relaxed text-foreground/80">{{ listing()!.description }}</p>
-
-              <div class="mb-8 grid gap-4 sm:grid-cols-2">
-                @for (highlight of listing()!.highlights; track highlight) {
-                  <div class="rounded-xl border border-border bg-secondary/60 p-4">
-                    <div class="mb-2 flex items-center gap-2 text-accent">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="20 6 9 17 4 12"/>
-                      </svg>
-                      <span class="text-sm font-semibold">Point clé</span>
-                    </div>
-                    <p class="text-sm text-foreground/80">{{ highlight }}</p>
-                  </div>
-                }
-              </div>
-
-              <div class="rounded-2xl border border-border bg-secondary/40 p-6">
-                <h2 class="mb-4 text-xl font-semibold">Raison de la cession</h2>
-                <p class="leading-relaxed text-foreground/80">{{ listing()!.reason }}</p>
-              </div>
+        @if (listing(); as item) {
+          <header class="mt-6 max-w-[62ch]">
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-base text-muted-foreground">
+              <span>{{ item.type }}</span>
+              @if (published()) {
+                <span aria-hidden="true">·</span>
+                <span>{{ published() }}</span>
+              }
+              @if (item.verified) {
+                <span class="rounded-full border border-emerald-700/30 px-2.5 py-0.5 text-sm font-medium text-emerald-800">Dossier vérifié</span>
+              }
+              @if (item.featured) {
+                <span class="rounded-full border border-amber-500/40 px-2.5 py-0.5 text-sm font-medium text-amber-700">En vedette</span>
+              }
             </div>
+            <h1 class="mt-3 text-[2rem] leading-tight text-primary sm:text-[2.75rem]">{{ item.sector }}, {{ item.region }}</h1>
+            <p class="mt-4 text-lg leading-relaxed text-foreground/80">{{ item.summary }}</p>
+          </header>
 
-            <div class="space-y-6">
-              <div class="rounded-2xl border border-border bg-white p-6">
-                <h2 class="mb-4 text-xl font-semibold">Informations financières</h2>
-                <div class="space-y-4">
-                  <div class="border-b border-border pb-4">
-                    <div class="mb-1 text-sm font-semibold text-muted-foreground">Chiffre d'affaires</div>
-                    <div class="font-semibold text-foreground">{{ listing()!.revenue }}</div>
-                  </div>
-                  <div class="border-b border-border pb-4">
-                    <div class="mb-1 text-sm font-semibold text-muted-foreground">Marge nette</div>
-                    <div class="font-semibold text-foreground">{{ listing()!.margin }}</div>
-                  </div>
-                  <div class="border-b border-border pb-4">
-                    <div class="mb-1 text-sm font-semibold text-muted-foreground">Ancienneté</div>
-                    <div class="font-semibold text-foreground">{{ listing()!.age }}</div>
-                  </div>
-                  <div>
-                    <div class="mb-1 text-sm font-semibold text-muted-foreground">Fourchette de prix</div>
-                    <div class="text-2xl font-semibold text-amber-600">{{ listing()!.priceMin }} - {{ listing()!.priceMax }}</div>
-                  </div>
-                </div>
-                <p class="mt-4 text-sm text-muted-foreground">Estimation indicative, non contractuelle.</p>
+          <dl class="tabular mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-3 lg:grid-cols-6">
+            @for (figure of figures(); track figure.label) {
+              <div class="bg-white p-4 sm:p-5">
+                <dt class="text-sm text-muted-foreground">{{ figure.label }}</dt>
+                <dd class="mt-1 text-xl font-semibold text-primary sm:text-2xl">{{ figure.value }}</dd>
               </div>
+            }
+          </dl>
+          <p class="mt-2 text-sm text-muted-foreground">Chiffres déclarés par le cédant. Bénéfice et multiple calculés à partir du chiffre d'affaires, de la marge et du milieu de la fourchette de prix. Prix demandé indicatif, non contractuel.</p>
 
-              <div class="rounded-2xl border border-amber-200 bg-amber-50 p-6">
-                <h2 class="mb-3 text-xl font-semibold">Passer à l'étape suivante</h2>
-                <p class="mb-5 text-sm leading-relaxed text-foreground/80">
-                  Vous avez accès au détail. La prochaine étape consiste à ouvrir un échange confidentiel avec le vendeur pour approfondir l'analyse.
-                </p>
-                <a routerLink="/messages" class="flex items-center justify-center gap-2 rounded-lg bg-amber-500 px-4 py-3 font-semibold text-white transition-colors hover:bg-amber-600">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                  </svg>
-                  Demander une mise en relation
-                </a>
-              </div>
-            </div>
-          </div>
+          <div class="mt-10 grid gap-10 lg:grid-cols-[1fr,22rem]">
+            <div class="min-w-0">
+              <section aria-labelledby="presentation-title">
+                <h2 id="presentation-title" class="text-2xl text-primary">Présentation de l'activité</h2>
+                <p class="mt-3 whitespace-pre-line text-lg leading-relaxed text-foreground/85">{{ item.description }}</p>
+              </section>
 
-          @if (isBuyer()) {
-            <section class="mt-8 rounded-2xl border border-accent/20 bg-white p-6 sm:p-8" aria-labelledby="analyse-title" aria-live="polite">
-              <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <div class="flex items-center gap-2">
-                    <svg class="text-accent" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                      <path d="m12 3-1.9 5.1L5 10l5.1 1.9L12 17l1.9-5.1L19 10l-5.1-1.9z"/>
-                    </svg>
-                    <h2 id="analyse-title" class="text-xl font-semibold text-primary">Analyse du dossier par l'IA</h2>
-                  </div>
-                  <p class="mt-1 max-w-2xl text-sm text-muted-foreground">
-                    Points forts, points de vigilance et questions à poser au vendeur, à partir des informations de l'annonce.
-                  </p>
-                </div>
-                @if (!analysis()) {
-                  <button type="button" (click)="analyse()" [disabled]="analysing()" class="flex-shrink-0 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-wait disabled:opacity-60">
-                    {{ analysing() ? 'Analyse en cours…' : 'Analyser ce dossier' }}
-                  </button>
-                }
-              </div>
-
-              @if (analysisError()) {
-                <p class="mt-4 text-sm text-destructive" role="alert">{{ analysisError() }}</p>
-                @if (analysisError().includes('Plus')) {
-                  <a routerLink="/tarifs" fragment="repreneurs" class="mt-2 inline-block text-sm font-semibold text-accent hover:underline">Découvrir l'accès Plus</a>
-                }
+              @if (item.highlights.length > 0) {
+                <section class="mt-10 border-t border-border pt-8" aria-labelledby="highlights-title">
+                  <h2 id="highlights-title" class="text-2xl text-primary">Points clés</h2>
+                  <ul class="mt-4 grid gap-3 sm:grid-cols-2">
+                    @for (highlight of item.highlights; track highlight) {
+                      <li class="flex gap-3 text-lg text-foreground/85">
+                        <svg class="mt-1.5 flex-shrink-0 text-emerald-700" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                        {{ highlight }}
+                      </li>
+                    }
+                  </ul>
+                </section>
               }
 
-              @if (analysis(); as result) {
-                <p class="mt-6 leading-relaxed text-foreground/85">{{ result.summary }}</p>
-                <div class="mt-6 grid gap-6 md:grid-cols-2">
-                  @for (block of analysisBlocks(); track block.title) {
-                    @if (block.items.length > 0) {
-                      <div class="rounded-xl border border-border bg-secondary/40 p-5">
-                        <h3 class="mb-3 font-semibold">{{ block.title }}</h3>
-                        <ul class="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-foreground/85">
-                          @for (item of block.items; track item) {
-                            <li>{{ item }}</li>
-                          }
-                        </ul>
+              <section class="mt-10 border-t border-border pt-8" aria-labelledby="reason-title">
+                <h2 id="reason-title" class="text-2xl text-primary">Pourquoi c'est à vendre</h2>
+                <p class="mt-3 whitespace-pre-line text-lg leading-relaxed text-foreground/85">{{ item.reason }}</p>
+              </section>
+
+              <section class="mt-10 border-t border-border pt-8" aria-labelledby="next-title">
+                <h2 id="next-title" class="text-2xl text-primary">Les prochaines étapes</h2>
+                <ol class="mt-5 space-y-5">
+                  @for (step of steps; track step.title; let index = $index) {
+                    <li class="flex gap-4">
+                      <span class="tabular flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-border font-semibold text-primary">{{ index + 1 }}</span>
+                      <div>
+                        <p class="text-lg font-semibold text-primary">{{ step.title }}</p>
+                        <p class="mt-1 text-base leading-relaxed text-muted-foreground">{{ step.text }}</p>
                       </div>
+                    </li>
+                  }
+                </ol>
+                <a routerLink="/pros" class="mt-5 inline-block font-medium text-accent underline-offset-4 hover:underline">Trouver un expert-comptable ou un avocat dans l'annuaire</a>
+              </section>
+
+              @if (isBuyer()) {
+                <section class="mt-10 border-t border-border pt-8" aria-labelledby="analyse-title" aria-live="polite">
+                  <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <h2 id="analyse-title" class="text-2xl text-primary">Analyse du dossier</h2>
+                      <p class="mt-2 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
+                        Points forts, points de vigilance et questions à poser au cédant, préparés par l'IA à partir des informations de l'annonce.
+                      </p>
+                    </div>
+                    @if (!analysis()) {
+                      <button type="button" (click)="analyse()" [disabled]="analysing()" class="flex-shrink-0 rounded border border-primary px-5 py-2.5 font-medium text-primary transition-colors hover:bg-primary hover:text-white disabled:cursor-wait disabled:opacity-60">
+                        {{ analysing() ? 'Analyse en cours…' : 'Analyser ce dossier' }}
+                      </button>
+                    }
+                  </div>
+
+                  @if (analysisError()) {
+                    <p class="mt-4 text-base text-destructive" role="alert">{{ analysisError() }}</p>
+                    @if (analysisError().includes('Plus')) {
+                      <a routerLink="/tarifs" fragment="repreneurs" class="mt-2 inline-block font-medium text-accent hover:underline">Découvrir l'accès Plus</a>
                     }
                   }
-                </div>
-              }
 
-              <p class="mt-6 text-sm leading-relaxed text-muted-foreground">
-                Analyse générée automatiquement à partir des seules informations de l'annonce, sans vérification. Elle ne constitue ni une
-                valorisation, ni un conseil juridique, comptable ou financier : faites vérifier le dossier par un expert-comptable et un avocat
-                avant toute offre.
-              </p>
-            </section>
+                  @if (analysis(); as result) {
+                    <p class="mt-6 text-lg leading-relaxed text-foreground/85">{{ result.summary }}</p>
+                    <div class="mt-6 grid gap-x-8 gap-y-6 md:grid-cols-2">
+                      @for (block of analysisBlocks(); track block.title) {
+                        @if (block.items.length > 0) {
+                          <div>
+                            <h3 class="font-semibold text-primary">{{ block.title }}</h3>
+                            <ul class="mt-2 list-disc space-y-1.5 pl-5 text-base leading-relaxed text-foreground/85">
+                              @for (point of block.items; track point) {
+                                <li>{{ point }}</li>
+                              }
+                            </ul>
+                          </div>
+                        }
+                      }
+                    </div>
+                  }
+
+                  <p class="mt-6 text-sm leading-relaxed text-muted-foreground">
+                    Analyse générée automatiquement à partir des seules informations de l'annonce, sans vérification. Elle ne constitue ni une
+                    valorisation, ni un conseil juridique, comptable ou financier : faites vérifier le dossier par un expert-comptable et un avocat
+                    avant toute offre.
+                  </p>
+                </section>
+              }
+            </div>
+
+            <aside class="lg:order-none" aria-label="Contacter le cédant">
+              <div class="rounded-xl border border-border p-6 lg:sticky lg:top-24">
+                <p class="text-sm text-muted-foreground">Prix demandé</p>
+                <p class="tabular mt-1 text-[1.75rem] font-semibold leading-tight text-amber-600"><span class="whitespace-nowrap">{{ item.priceMin }}</span> à <span class="whitespace-nowrap">{{ item.priceMax }}</span></p>
+                @if (metrics()?.multiple !== null && metrics()?.multiple !== undefined) {
+                  <p class="tabular mt-1 text-base text-muted-foreground">Soit {{ multipleLabel(metrics()!.multiple) }} le bénéfice annuel</p>
+                }
+
+                @if (isOwner()) {
+                  <p class="mt-5 border-t border-border pt-5 text-base text-foreground/85">C'est votre annonce. Les repreneurs la voient telle qu'affichée ici.</p>
+                  <a routerLink="/ma/statistiques" class="mt-4 block rounded bg-primary px-5 py-3 text-center font-medium text-white transition-colors hover:bg-primary/90">Voir les statistiques</a>
+                  <a routerLink="/ma/mes-annonces" class="mt-3 block text-center font-medium text-accent underline-offset-4 hover:underline">Gérer mes annonces</a>
+                } @else if (canContact()) {
+                  <a [routerLink]="'/messages'" [queryParams]="{ conversation: item.ownerId }" class="mt-5 block rounded bg-accent px-5 py-3.5 text-center font-medium text-white transition-colors hover:bg-accent/90">Contacter le cédant</a>
+                  @if (item.contactInfo) {
+                    <div class="mt-5 border-t border-border pt-5">
+                      <p class="text-sm text-muted-foreground">Coordonnées transmises par le cédant</p>
+                      <p class="mt-1 whitespace-pre-line break-words text-base font-medium text-primary">{{ item.contactInfo }}</p>
+                    </div>
+                  }
+                }
+
+                <ul class="mt-5 space-y-2.5 border-t border-border pt-5 text-base text-foreground/85">
+                  <li class="flex gap-2.5">
+                    <svg class="mt-1 flex-shrink-0 text-muted-foreground" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Échanges confidentiels dans la messagerie
+                  </li>
+                  <li class="flex gap-2.5">
+                    <svg class="mt-1 flex-shrink-0 text-muted-foreground" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                    Aucune commission sur la vente
+                  </li>
+                </ul>
+              </div>
+            </aside>
+          </div>
+
+          @if (canContact()) {
+            <div class="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-4 border-t border-border bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
+              <div class="min-w-0">
+                <p class="text-sm text-muted-foreground">Prix demandé</p>
+                <p class="tabular truncate text-lg font-semibold text-amber-600">{{ item.priceMin }} à {{ item.priceMax }}</p>
+              </div>
+              <a [routerLink]="'/messages'" [queryParams]="{ conversation: item.ownerId }" class="flex-shrink-0 rounded bg-accent px-5 py-3 font-medium text-white">Contacter</a>
+            </div>
           }
-        } @else {
-          <div class="rounded-2xl border border-border bg-white p-10 text-center">
-            <p class="py-12 text-muted-foreground">Cette annonce n'existe pas ou n'est plus disponible.</p>
+        } @else if (loaded()) {
+          <div class="mt-10 rounded-xl border border-border p-10 text-center">
+            <p class="text-lg text-muted-foreground">Cette annonce n'existe pas ou n'est plus disponible.</p>
+            <a routerLink="/ma" class="mt-4 inline-block font-medium text-accent underline-offset-4 hover:underline">Voir les annonces en cours</a>
           </div>
         }
       </div>
@@ -170,6 +212,41 @@ export class MaDetailComponent implements OnInit {
   );
 
   readonly listing = computed(() => this.loadedListing());
+  readonly loaded = signal(false);
+  readonly metrics = computed(() => {
+    const listing = this.listing();
+    return listing ? listingMetrics(listing) : null;
+  });
+  readonly published = computed(() => publishedLabel(this.metrics()?.publishedAt ?? null));
+  readonly figures = computed(() => {
+    const listing = this.listing();
+    const metrics = this.metrics();
+
+    if (!listing || !metrics) {
+      return [];
+    }
+
+    return [
+      { label: "Chiffre d'affaires", value: formatEuros(metrics.revenue) },
+      { label: 'Bénéfice net', value: formatEuros(metrics.netProfit) },
+      { label: 'Marge nette', value: listing.margin },
+      { label: 'Multiple du bénéfice', value: formatMultiple(metrics.multiple) },
+      { label: 'Ancienneté', value: listing.age },
+      { label: 'Type de cession', value: listing.type },
+    ];
+  });
+  readonly multipleLabel = formatMultiple;
+  readonly isOwner = computed(() => {
+    const ownerId = this.listing()?.ownerId;
+    return !!ownerId && ownerId === this.auth.currentUser()?.uid;
+  });
+  // Contact : acheteur (accès vérifié par le guard et par Supabase) face au propriétaire de l'annonce.
+  readonly canContact = computed(() => this.isBuyer() && !!this.listing()?.ownerId && !this.isOwner());
+  readonly steps = [
+    { title: 'Contactez le cédant', text: "Présentez-vous et votre projet de reprise dans la messagerie. Le nom de l'entreprise vous est communiqué si le cédant donne suite." },
+    { title: 'Demandez les justificatifs', text: "Bilans des trois derniers exercices, relevés de chiffre d'affaires, accès en lecture aux outils (analytics, paiements, comptabilité)." },
+    { title: 'Faites-vous accompagner', text: "Un expert-comptable et un avocat vérifient le dossier avant toute lettre d'intention. GoFounders n'intervient pas dans la négociation." },
+  ];
 
   // Analyse de dossier par l'IA : réservée aux repreneurs (contrôle d'accès refait côté back).
   readonly isBuyer = computed(() => this.auth.currentUser()?.profileType === 'buyer');
@@ -214,6 +291,7 @@ export class MaDetailComponent implements OnInit {
   private async loadListing(): Promise<void> {
     const listing = await this.maService.getListingDetail(this.listingId());
     this.loadedListing.set(listing);
+    this.loaded.set(true);
 
     // Page protégée par l'accès repreneur : chaque ouverture est aussi une consultation du dossier.
     if (listing) {
