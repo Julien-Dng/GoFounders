@@ -3,7 +3,7 @@ import { Timestamp } from '@angular/fire/firestore';
 import { MA_LISTINGS, MaListingData, findMaListingById } from '../data/mock-platform.data';
 import { MaListing } from '../models/ma-listing.model';
 import { SupabaseMaListingInsert, SupabaseMaListingRow } from '../models/supabase-database.model';
-import { ProCategory } from '../models/user.model';
+import { ProCategory, canAccessMaDetails } from '../models/user.model';
 import { AuthService } from './auth.service';
 import { SupabaseService } from './supabase.service';
 
@@ -195,7 +195,9 @@ export class MaService {
 
   async getListingDetail(listingId: string): Promise<MaListingData | undefined> {
     if (!this.supabase.isConfigured) {
-      return findMaListingById(listingId);
+      // Mode démo : même règle que Supabase (acheteur avec accès ou admin).
+      const allowed = (canAccessMaDetails(this.auth.currentUser()?.profileType) && this.auth.hasMaAccess()) || this.auth.isAdmin();
+      return allowed ? findMaListingById(listingId) : undefined;
     }
 
     const row = await this.fetchListingDetailRow(listingId);
@@ -205,6 +207,23 @@ export class MaService {
     }
 
     return this.mapDetailRow(row);
+  }
+
+  // Partie anonymisée d'une annonce, lisible par tous (y compris les visiteurs).
+  async getPublicListing(listingId: string): Promise<MaListingData | undefined> {
+    if (!this.supabase.isConfigured) {
+      const listing = findMaListingById(listingId);
+      return listing ? { ...listing, description: listing.summary, reason: '', highlights: [], ownerId: undefined, contactInfo: undefined } : undefined;
+    }
+
+    const { data, error } = await this.supabase.client
+      .from('ma_listings')
+      .select(PUBLIC_LISTING_COLUMNS)
+      .eq('id', listingId)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    return error || !data ? undefined : this.mapCardRow(data as PublicListingRow);
   }
 
   // Le serveur ne renvoie le dossier qu'à un acheteur avec accès M&A, au propriétaire ou à un admin.

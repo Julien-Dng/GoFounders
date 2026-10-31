@@ -471,7 +471,10 @@ export class InscriptionComponent {
 
   readonly totalSteps = 3;
   readonly currentStep = signal(1);
-  readonly selectedType = signal<ProfileType | null>(null);
+  // ?profil=buyer (depuis une annonce) : rôle présélectionné, modifiable à l'étape 1.
+  readonly selectedType = signal<ProfileType | null>(
+    (['entrepreneur', 'talent', 'buyer', 'seller', 'pro'] as const).find(type => type === this.route.snapshot.queryParamMap.get('profil')) ?? null
+  );
   readonly returnUrl = signal<string | null>(this.route.snapshot.queryParamMap.get('returnUrl'));
   readonly isPasswordVisible = signal(false);
   readonly errorMessage = signal('');

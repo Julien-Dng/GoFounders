@@ -129,7 +129,7 @@ interface LandingFaqItem {
             </div>
             <div class="mt-8 grid gap-6 md:grid-cols-3">
               @for (listing of latestListings(); track listing.id) {
-                <a routerLink="/ma" class="flex flex-col rounded-xl border border-border bg-white p-6 transition-colors hover:border-accent/40">
+                <a [routerLink]="['/ma/annonce', listing.id]" class="flex flex-col rounded-xl border border-border bg-white p-6 transition-colors hover:border-accent/40">
                   <p class="text-sm text-muted-foreground">{{ listing.type }}</p>
                   <h3 class="mt-1 text-xl font-semibold leading-snug text-primary">{{ listing.sector }}, {{ listing.region }}</h3>
                   <p class="mt-3 line-clamp-2 flex-1 text-base text-foreground/80">{{ listing.summary }}</p>

@@ -95,7 +95,7 @@ PREMIUM = accompagnement humain. Les talents n'ont pas besoin de payer.
 /coaching-ia               Assistant IA contextuel — PRO uniquement (protégé)
 
 /ma                        Marketplace M&A — accueil (publique, détails verrouillés)
-/ma/annonce/:id            Détail d'une annonce M&A (accès repreneur requis)
+/ma/annonce/:id            Fiche d'une annonce M&A (publique ; dossier complet et contact pour l'acheteur avec accès)
 /ma/deposer                Déposer une annonce M&A (paiement 149€ requis)
 
 /ma/statistiques           Statistiques du vendeur : vues, dossiers consultés, contacts reçus (vendeur)
@@ -115,7 +115,7 @@ PREMIUM = accompagnement humain. Les talents n'ont pas besoin de payer.
 **Guards Angular à implémenter :**
 - `AuthGuard` → redirige vers `/connexion` si non connecté
 - `PlanGuard` → vérifie le niveau d'abonnement (FREE / PRO / PREMIUM)
-- `MaAccessGuard` → acheteur avec un accès repreneur en cours (`/ma/annonce/:id`)
+- `MaAccessGuard` → n'est plus utilisé sur `/ma/annonce/:id` (fiche publique, dossier complet servi seulement par `get_ma_listing_detail`)
 - `RoleGuard` → réserve une route à certains rôles (`/recherche` : entrepreneur et talent ; `/ma/deposer` : vendeur)
 
 ---

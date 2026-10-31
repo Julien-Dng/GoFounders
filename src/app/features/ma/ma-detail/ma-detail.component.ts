@@ -7,6 +7,7 @@ import { MaService } from '../../../core/services/ma.service';
 import { AiService, MaListingAnalysis } from '../../../core/services/ai.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { StatsService } from '../../../core/services/stats.service';
+import { OFFER_PRICES } from '../../../core/config/offers';
 import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../../../core/ma/listing-metrics';
 
 @Component({
@@ -45,7 +46,7 @@ import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../
             @for (figure of figures(); track figure.label) {
               <div class="bg-white p-4 sm:p-5">
                 <dt class="text-sm text-muted-foreground">{{ figure.label }}</dt>
-                <dd class="mt-1 text-xl font-semibold text-primary sm:text-2xl">{{ figure.value }}</dd>
+                <dd class="mt-1 text-xl font-semibold text-primary sm:text-2xl lg:text-xl xl:text-2xl">{{ figure.value }}</dd>
               </div>
             }
           </dl>
@@ -53,6 +54,7 @@ import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../
 
           <div class="mt-10 grid gap-10 lg:grid-cols-[1fr,22rem]">
             <div class="min-w-0">
+              @if (hasDossier()) {
               <section aria-labelledby="presentation-title">
                 <h2 id="presentation-title" class="text-2xl text-primary">Présentation de l'activité</h2>
                 <p class="mt-3 whitespace-pre-line text-lg leading-relaxed text-foreground/85">{{ item.description }}</p>
@@ -77,6 +79,34 @@ import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../
                 <p class="mt-3 whitespace-pre-line text-lg leading-relaxed text-foreground/85">{{ item.reason }}</p>
               </section>
 
+              } @else {
+                <section aria-labelledby="locked-title" class="relative min-h-[24rem] overflow-hidden rounded-xl border border-border">
+                  <div class="space-y-3 p-6 blur-[3px] sm:p-8" aria-hidden="true">
+                    @for (width of skeleton; track $index) {
+                      <div class="h-3.5 rounded bg-border" [style.width.%]="width"></div>
+                    }
+                  </div>
+                  <div class="absolute inset-0 flex items-center justify-center bg-white/70 p-4">
+                    <div class="w-full max-w-md rounded-xl border border-border bg-white p-6 shadow-sm">
+                      <h2 id="locked-title" class="text-xl text-primary">Dans le dossier complet</h2>
+                      <ul class="mt-3 space-y-2 text-base text-foreground/85">
+                        @for (entry of dossierContents; track entry) {
+                          <li class="flex gap-2.5">
+                            <svg class="mt-1 flex-shrink-0 text-muted-foreground" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            {{ entry }}
+                          </li>
+                        }
+                      </ul>
+                      @if (cta()) {
+                        <a [routerLink]="cta()!.link" [queryParams]="cta()!.params" [fragment]="cta()!.fragment" class="mt-5 block rounded border border-primary px-5 py-3 text-center font-medium text-primary transition-colors hover:bg-primary hover:text-white">{{ cta()!.label }}</a>
+                      } @else {
+                        <p class="mt-4 text-base text-muted-foreground">{{ lockedMessage() }}</p>
+                      }
+                    </div>
+                  </div>
+                </section>
+              }
+
               <section class="mt-10 border-t border-border pt-8" aria-labelledby="next-title">
                 <h2 id="next-title" class="text-2xl text-primary">Les prochaines étapes</h2>
                 <ol class="mt-5 space-y-5">
@@ -93,7 +123,7 @@ import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../
                 <a routerLink="/pros" class="mt-5 inline-block font-medium text-accent underline-offset-4 hover:underline">Trouver un expert-comptable ou un avocat dans l'annuaire</a>
               </section>
 
-              @if (isBuyer()) {
+              @if (isBuyer() && hasDossier()) {
                 <section class="mt-10 border-t border-border pt-8" aria-labelledby="analyse-title" aria-live="polite">
                   <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
@@ -163,6 +193,16 @@ import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../
                       <p class="mt-1 whitespace-pre-line break-words text-base font-medium text-primary">{{ item.contactInfo }}</p>
                     </div>
                   }
+                } @else if (!hasDossier()) {
+                  <div class="mt-5 border-t border-border pt-5">
+                    <p class="text-base text-foreground/85">{{ lockedMessage() }}</p>
+                    @if (cta(); as action) {
+                      <a [routerLink]="action.link" [queryParams]="action.params" [fragment]="action.fragment" class="mt-4 block rounded bg-accent px-5 py-3.5 text-center font-medium text-white transition-colors hover:bg-accent/90">{{ action.label }}</a>
+                      @if (!isAuthenticated()) {
+                        <a routerLink="/connexion" [queryParams]="{ returnUrl: currentUrl() }" class="mt-3 block text-center font-medium text-accent underline-offset-4 hover:underline">J'ai déjà un compte</a>
+                      }
+                    }
+                  </div>
                 }
 
                 <ul class="mt-5 space-y-2.5 border-t border-border pt-5 text-base text-foreground/85">
@@ -179,18 +219,23 @@ import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../
             </aside>
           </div>
 
-          @if (canContact()) {
+          @if (canContact() || cta()) {
             <div class="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-4 border-t border-border bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
               <div class="min-w-0">
                 <p class="text-sm text-muted-foreground">Prix demandé</p>
                 <p class="tabular truncate text-lg font-semibold text-amber-600">{{ item.priceMin }} à {{ item.priceMax }}</p>
               </div>
-              <a [routerLink]="'/messages'" [queryParams]="{ conversation: item.ownerId }" class="flex-shrink-0 rounded bg-accent px-5 py-3 font-medium text-white">Contacter</a>
+              @if (canContact()) {
+                <a [routerLink]="'/messages'" [queryParams]="{ conversation: item.ownerId }" class="flex-shrink-0 rounded bg-accent px-5 py-3 font-medium text-white">Contacter</a>
+              } @else if (cta()) {
+                <a [routerLink]="cta()!.link" [queryParams]="cta()!.params" [fragment]="cta()!.fragment" class="flex-shrink-0 rounded bg-accent px-5 py-3 font-medium text-white">{{ cta()!.short }}</a>
+              }
             </div>
           }
         } @else if (loaded()) {
           <div class="mt-10 rounded-xl border border-border p-10 text-center">
             <p class="text-lg text-muted-foreground">Cette annonce n'existe pas ou n'est plus disponible.</p>
+            <p class="mt-2 text-base text-muted-foreground">Les annonces publiées depuis moins de 48 h sont réservées aux repreneurs avec l'accès Plus.</p>
             <a routerLink="/ma" class="mt-4 inline-block font-medium text-accent underline-offset-4 hover:underline">Voir les annonces en cours</a>
           </div>
         }
@@ -241,7 +286,48 @@ export class MaDetailComponent implements OnInit {
     return !!ownerId && ownerId === this.auth.currentUser()?.uid;
   });
   // Contact : acheteur (accès vérifié par le guard et par Supabase) face au propriétaire de l'annonce.
-  readonly canContact = computed(() => this.isBuyer() && !!this.listing()?.ownerId && !this.isOwner());
+  readonly canContact = computed(() => this.hasDossier() && this.isBuyer() && !!this.listing()?.ownerId && !this.isOwner());
+
+  // Dossier complet renvoyé par Supabase (acheteur avec accès, propriétaire, admin) ; sinon partie anonymisée.
+  readonly hasDossier = signal(false);
+  readonly isAuthenticated = computed(() => this.auth.isAuthenticated());
+  readonly currentUrl = computed(() => `/ma/annonce/${this.listingId()}`);
+  readonly skeleton = [92, 100, 85, 96, 70, 0, 88, 100, 64, 0, 95, 82, 100, 58];
+  readonly dossierContents = [
+    "La présentation détaillée de l'activité",
+    'Le motif de la cession',
+    'Les coordonnées du cédant et la messagerie',
+    "L'analyse du dossier (points forts, vigilance, questions)",
+  ];
+  private readonly accessLabel = OFFER_PRICES.MA_ACCESS.label.replace(/ /g, '\u00a0');
+  readonly lockedMessage = computed(() => {
+    const role = this.auth.currentUser()?.profileType;
+
+    if (!this.isAuthenticated()) {
+      return `Réservé aux repreneurs avec l'accès (${this.accessLabel}). Créez votre compte repreneur pour commencer.`;
+    }
+
+    if (role === 'buyer') {
+      return `L'accès repreneur (${this.accessLabel}) ouvre tous les dossiers et le contact direct des cédants.`;
+    }
+
+    return 'Le dossier complet est réservé aux comptes repreneur.';
+  });
+  readonly cta = computed(() => {
+    if (this.hasDossier()) {
+      return null;
+    }
+
+    if (!this.isAuthenticated()) {
+      return { label: 'Créer un compte repreneur', short: 'Créer un compte', link: '/inscription', params: { profil: 'buyer', returnUrl: this.currentUrl() }, fragment: undefined };
+    }
+
+    if (this.isBuyer()) {
+      return { label: "Prendre l'accès repreneur", short: "Prendre l'accès", link: '/tarifs', params: null, fragment: 'ma-access' };
+    }
+
+    return null;
+  });
   readonly steps = [
     { title: 'Contactez le cédant', text: "Présentez-vous et votre projet de reprise dans la messagerie. Le nom de l'entreprise vous est communiqué si le cédant donne suite." },
     { title: 'Demandez les justificatifs', text: "Bilans des trois derniers exercices, relevés de chiffre d'affaires, accès en lecture aux outils (analytics, paiements, comptabilité)." },
@@ -289,14 +375,21 @@ export class MaDetailComponent implements OnInit {
   }
 
   private async loadListing(): Promise<void> {
-    const listing = await this.maService.getListingDetail(this.listingId());
+    await this.auth.ensureSessionReady();
+    const id = this.listingId();
+    const dossier = this.auth.isAuthenticated() ? await this.maService.getListingDetail(id) : undefined;
+    const listing = dossier ?? (await this.maService.getPublicListing(id));
+
+    this.hasDossier.set(!!dossier);
     this.loadedListing.set(listing);
     this.loaded.set(true);
 
-    // Page protégée par l'accès repreneur : chaque ouverture est aussi une consultation du dossier.
+    // Vue de la page pour tous ; consultation du dossier seulement quand il a réellement été ouvert.
     if (listing) {
-      void this.stats.recordListingView(this.listingId(), 'page');
-      void this.stats.recordListingView(this.listingId(), 'dossier');
+      void this.stats.recordListingView(id, 'page');
+      if (dossier) {
+        void this.stats.recordListingView(id, 'dossier');
+      }
     }
   }
 }

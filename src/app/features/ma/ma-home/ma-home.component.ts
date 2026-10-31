@@ -188,11 +188,7 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
                             }
                           </div>
                           <h2 [id]="'listing-' + item.listing.id" class="mt-2 text-xl font-semibold leading-snug text-primary sm:text-2xl">
-                            @if (canViewSensitiveDetails()) {
-                              <a [routerLink]="['/ma/annonce', item.listing.id]" class="after:absolute after:inset-0 after:rounded-xl focus:outline-none focus-visible:underline">{{ item.listing.sector }}, {{ item.listing.region }}</a>
-                            } @else {
-                              {{ item.listing.sector }}, {{ item.listing.region }}
-                            }
+                            <a [routerLink]="['/ma/annonce', item.listing.id]" class="after:absolute after:inset-0 after:rounded-xl focus:outline-none focus-visible:underline">{{ item.listing.sector }}, {{ item.listing.region }}</a>
                           </h2>
                           <p class="mt-2 line-clamp-2 text-base leading-relaxed text-foreground/80">{{ item.listing.summary }}</p>
 
@@ -224,9 +220,7 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
                               <p class="tabular mt-1 text-sm text-muted-foreground">Soit {{ multiple(item.metrics.multiple) }} le bénéfice annuel</p>
                             }
                           </div>
-                          @if (canViewSensitiveDetails()) {
-                            <span class="rounded border border-primary px-4 py-2.5 text-center text-sm font-medium text-primary transition-colors group-hover:bg-primary group-hover:text-white" aria-hidden="true">Voir l'annonce</span>
-                          }
+                          <span class="rounded border border-primary px-4 py-2.5 text-center text-sm font-medium text-primary transition-colors group-hover:bg-primary group-hover:text-white" aria-hidden="true">Voir l'annonce</span>
                         </div>
                       </article>
                     </li>
@@ -311,7 +305,7 @@ export class MaHomeComponent implements OnInit {
     { value: '30', label: '30 % et plus' },
   ];
   readonly sortOptions: Array<{ value: SortKey; label: string }> = [
-    { value: 'pertinence', label: 'Trier : en vedette' },
+    { value: 'pertinence', label: 'Recommandées' },
     { value: 'recent', label: 'Plus récentes' },
     { value: 'prix-asc', label: 'Prix croissant' },
     { value: 'prix-desc', label: 'Prix décroissant' },
@@ -341,7 +335,7 @@ export class MaHomeComponent implements OnInit {
     !this.auth.isAuthenticated() || (canAccessMaDetails(this.profileType()) && !this.auth.hasMaAccess())
   );
   readonly accessCtaLabel = computed(() =>
-    this.auth.isAuthenticated() ? "Prendre l'accès repreneur" : 'Se connecter pour accéder aux dossiers'
+    this.auth.isAuthenticated() ? "Prendre l'accès repreneur" : 'Créer un compte repreneur'
   );
   readonly filteredListings = computed(() => {
     const region = this.normalize(this.region());
@@ -404,7 +398,7 @@ export class MaHomeComponent implements OnInit {
 
   async continueToMaAccess(): Promise<void> {
     if (!this.auth.isAuthenticated()) {
-      await this.router.navigate(['/connexion'], { queryParams: { returnUrl: '/tarifs#ma-access' } });
+      await this.router.navigate(['/inscription'], { queryParams: { profil: 'buyer', returnUrl: '/tarifs#ma-access' } });
       return;
     }
 

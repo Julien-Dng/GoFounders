@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
-import { maAccessGuard } from './core/guards/ma-access.guard';
 import { planGuard } from './core/guards/plan.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { TALENT_MARKETPLACE_ROLES } from './core/models/user.model';
@@ -141,8 +140,8 @@ export const routes: Routes = [
         loadComponent: () => import('./features/admin/admin-profils.component').then(m => m.AdminProfilsComponent)
       },
       {
+        // Publique : partie anonymisée pour tous, dossier complet chargé seulement si Supabase l'autorise.
         path: 'ma/annonce/:id',
-        canActivate: [authGuard, maAccessGuard],
         loadComponent: () => import('./features/ma/ma-detail/ma-detail.component').then(m => m.MaDetailComponent)
       },
       {
