@@ -57,6 +57,17 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
 
       <section id="ma-listings" class="scroll-mt-20 px-4 pb-16 pt-8 sm:px-6 lg:px-8">
         <div class="mx-auto max-w-[78rem]">
+          <div class="mb-6">
+            <label for="ma-search" class="sr-only">Rechercher une entreprise</label>
+            <input
+              id="ma-search"
+              type="search"
+              [value]="query()"
+              (input)="query.set($any($event.target).value)"
+              placeholder="Rechercher : SaaS, e-commerce, agence, Lyon…"
+              class="w-full rounded-lg border border-input bg-white px-4 py-3.5 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+            >
+          </div>
           <div class="flex items-center justify-between gap-4 border-b border-border pb-4">
             <p class="text-base text-foreground/85" aria-live="polite">
               <span class="tabular font-semibold text-primary">{{ filteredListings().length }}</span>
@@ -212,6 +223,8 @@ export class MaHomeComponent implements OnInit {
   readonly selectedRevenue = signal('');
   readonly selectedPrice = signal('');
   readonly region = signal('');
+  // Recherche libre (secteur, région, résumé), préremplie depuis l'accueil (?q=).
+  readonly query = signal('');
   // Mobile : filtres repliés pour que les annonces soient visibles dès le premier écran.
   readonly filtersOpen = signal(false);
   readonly listings = signal<MaListingData[]>([]);
@@ -237,7 +250,7 @@ export class MaHomeComponent implements OnInit {
   readonly sectors = computed(() => [...new Set(this.listings().map(listing => listing.sector))].sort((a, b) => a.localeCompare(b, 'fr')));
   readonly types = computed(() => [...new Set(this.listings().map(listing => listing.type))].sort((a, b) => a.localeCompare(b, 'fr')));
   readonly activeFilterCount = computed(() =>
-    [this.selectedSector(), this.selectedType(), this.selectedRevenue(), this.selectedPrice(), this.region().trim()].filter(Boolean).length
+    [this.selectedSector(), this.selectedType(), this.selectedRevenue(), this.selectedPrice(), this.region().trim(), this.query().trim()].filter(Boolean).length
   );
 
   private readonly profileType = computed(() => this.auth.currentUser()?.profileType);
@@ -258,6 +271,7 @@ export class MaHomeComponent implements OnInit {
   );
   readonly filteredListings = computed(() => {
     const region = this.normalize(this.region());
+    const words = this.normalize(this.query()).split(/\s+/).filter(Boolean);
 
     return this.listings().filter(listing =>
       (!this.selectedSector() || listing.sector === this.selectedSector())
@@ -265,10 +279,15 @@ export class MaHomeComponent implements OnInit {
       && this.inRange(this.parseAmount(listing.revenue), this.selectedRevenue())
       && this.inRange(this.parseAmount(listing.priceMax) ?? this.parseAmount(listing.priceMin), this.selectedPrice())
       && (!region || this.normalize(listing.region).includes(region))
+      && words.every(word => this.normalize(`${listing.sector} ${listing.region} ${listing.type} ${listing.summary}`).includes(word))
     );
   });
 
   ngOnInit(): void {
+    const params = this.route.snapshot.queryParamMap;
+    this.query.set(params.get('q') ?? '');
+    this.selectedRevenue.set(this.revenueRanges.some(range => range.value === params.get('ca')) ? params.get('ca') ?? '' : '');
+
     void this.loadListings();
   }
 
@@ -287,6 +306,7 @@ export class MaHomeComponent implements OnInit {
     this.selectedRevenue.set('');
     this.selectedPrice.set('');
     this.region.set('');
+    this.query.set('');
   }
 
   // Montants affichés (« 280 k€/an », « 1,2 M€ ») ramenés en euros pour les filtres.

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MaListingData } from '../../core/data/mock-platform.data';
 import { OFFER_PRICES } from '../../core/config/offers';
 import { MaService } from '../../core/services/ma.service';
@@ -19,29 +19,45 @@ interface LandingFaqItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-white">
-      <section class="overflow-hidden bg-primary px-4 pb-20 pt-28 text-white sm:px-6 lg:px-8 lg:pb-28 lg:pt-36">
-        <div class="mx-auto grid max-w-[78rem] gap-16 lg:grid-cols-12 lg:items-center">
+      <section class="relative overflow-hidden bg-[#121735] px-4 pb-24 pt-28 text-white sm:px-6 lg:px-8 lg:pb-28 lg:pt-36">
+        <div class="pointer-events-none absolute -right-40 -top-40 h-[34rem] w-[34rem] rounded-full bg-accent/25 blur-3xl" aria-hidden="true"></div>
+        <div class="relative mx-auto grid max-w-[78rem] gap-16 lg:grid-cols-12 lg:items-center">
           <div class="lg:col-span-6">
             <h1 class="max-w-[15ch] text-[2.75rem] leading-[1.02] text-white sm:text-6xl lg:text-[4.5rem]">
               Reprenez une entreprise qui a déjà ses clients.
             </h1>
             <p class="mt-7 max-w-[52ch] text-lg leading-relaxed text-white/75">
-              GoFounders met en relation les fondateurs qui veulent céder leur entreprise numérique et les repreneurs
-              qui préfèrent racheter une activité rentable plutôt que repartir de zéro.
+              SaaS, e-commerce, agences, sites de contenu : des entreprises françaises rentables, dont les fondateurs veulent passer la main.
             </p>
-            <div class="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
-              <a routerLink="/ma" class="rounded bg-white px-6 py-3.5 text-center font-medium text-primary transition-colors hover:bg-white/90">
-                Voir les entreprises à reprendre
-              </a>
-              <a routerLink="/ma/deposer" class="px-2 py-3 text-center font-medium text-white underline decoration-white/40 decoration-2 underline-offset-4 transition-colors hover:decoration-white">
-                Je veux céder mon entreprise
-              </a>
+
+            <div class="mt-9 rounded-xl bg-white p-2 shadow-2xl" role="search">
+              <div class="flex flex-col gap-2 sm:flex-row">
+                <label for="hero-search" class="sr-only">Rechercher une entreprise</label>
+                <input
+                  id="hero-search"
+                  type="search"
+                  [value]="heroQuery()"
+                  (input)="heroQuery.set($any($event.target).value)"
+                  (keydown.enter)="search()"
+                  placeholder="Secteur, ville, mot-clé"
+                  class="min-w-0 flex-1 rounded-lg px-4 py-3 text-base text-foreground outline-none placeholder:text-muted-foreground"
+                >
+                <label for="hero-revenue" class="sr-only">Chiffre d'affaires</label>
+                <select id="hero-revenue" [value]="heroRevenue()" (change)="heroRevenue.set($any($event.target).value)" class="rounded-lg border border-border bg-secondary px-3 py-3 text-base text-foreground outline-none sm:w-40">
+                  <option value="">Tout CA</option>
+                  <option value="0-100000">Moins de 100 k€</option>
+                  <option value="100000-500000">100 à 500 k€</option>
+                  <option value="500000-1000000">500 k€ à 1 M€</option>
+                  <option value="1000000-">Plus de 1 M€</option>
+                </select>
+                <button type="button" (click)="search()" class="rounded-lg bg-accent px-6 py-3 font-medium text-white transition-colors hover:bg-accent/90">Rechercher</button>
+              </div>
             </div>
-            <ul class="mt-12 grid max-w-[58ch] gap-3 border-l-2 border-amber-400/70 pl-5 text-base text-white/80">
-              <li>Annonce gratuite et anonymisée pour les cédants.</li>
-              <li>Votre identité n'est révélée qu'aux repreneurs que vous choisissez.</li>
-              <li>Aucune commission sur le prix de vente.</li>
-            </ul>
+
+            <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-base">
+              <a routerLink="/ma" class="font-medium text-white underline decoration-white/40 decoration-2 underline-offset-4 hover:decoration-white">Voir toutes les annonces</a>
+              <a routerLink="/ma/deposer" class="font-medium text-white underline decoration-white/40 decoration-2 underline-offset-4 hover:decoration-white">Je veux céder mon entreprise</a>
+            </div>
           </div>
 
           @if (featuredListing(); as listing) {
@@ -49,7 +65,7 @@ interface LandingFaqItem {
               <div class="relative mx-auto max-w-[34rem]">
                 <div class="dossier-sheet dossier-sheet-back" aria-hidden="true"></div>
                 <div class="dossier-sheet dossier-sheet-middle" aria-hidden="true"></div>
-                <article class="relative rounded-md bg-white p-7 text-foreground shadow-2xl sm:p-9" aria-label="Annonce en ligne">
+                <article class="relative rounded-xl bg-white p-7 text-foreground shadow-2xl sm:p-9" aria-label="Annonce en ligne">
                   <span class="dossier-stamp" aria-hidden="true">Confidentiel</span>
                   <p class="pr-32 text-sm text-muted-foreground">{{ listing.type }}</p>
                   <h2 class="mt-1 pr-24 text-[1.75rem] leading-snug text-primary">{{ listing.sector }}, {{ listing.region }}</h2>
@@ -68,25 +84,66 @@ interface LandingFaqItem {
                       <dd class="mt-1 text-lg font-semibold text-primary sm:text-xl">{{ listing.age }}</dd>
                     </div>
                   </dl>
-                  <div class="mt-6 flex flex-wrap items-end justify-between gap-4">
-                    <div>
-                      <p class="text-sm text-muted-foreground">Prix demandé</p>
-                      <p class="font-display tabular mt-1 text-[2rem] font-semibold leading-tight text-amber-600">{{ listing.priceMin }} à {{ listing.priceMax }}</p>
-                      <p class="mt-1 text-sm text-muted-foreground">Estimation indicative, non contractuelle.</p>
-                    </div>
-                    @if (listing.verified) {
-                      <span class="rounded-full border border-emerald-700/30 px-2.5 py-1 text-sm font-medium text-emerald-800">Dossier vérifié</span>
-                    }
+                  <div class="mt-6">
+                    <p class="text-sm text-muted-foreground">Prix demandé</p>
+                    <p class="font-display tabular mt-1 text-[2rem] font-semibold leading-tight text-amber-600">{{ listing.priceMin }} à {{ listing.priceMax }}</p>
+                    <p class="mt-1 text-sm text-muted-foreground">Estimation indicative, non contractuelle.</p>
                   </div>
                 </article>
+
+                <aside class="relative z-10 -mt-6 ml-auto w-[19rem] max-w-[calc(100%-1rem)] rounded-xl bg-white p-4 text-foreground shadow-2xl sm:-mr-6" aria-label="Exemple de profil repreneur">
+                  <p class="text-sm text-muted-foreground">Exemple de profil repreneur</p>
+                  <div class="mt-2 flex items-center gap-3">
+                    <span class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-accent/10 font-semibold text-accent" aria-hidden="true">R</span>
+                    <div class="min-w-0">
+                      <p class="truncate font-semibold text-primary">Repreneur, ancien directeur commercial</p>
+                      <p class="text-sm text-muted-foreground">Budget 300 k€ à 600 k€, e-commerce</p>
+                    </div>
+                  </div>
+                  <p class="mt-3 inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-sm font-medium text-emerald-800">Accès repreneur actif</p>
+                </aside>
               </div>
-              <figcaption class="mx-auto mt-8 max-w-[34rem] text-sm text-white/60">
-                Une annonce en ligne aujourd'hui. Le nom de l'entreprise et du cédant restent confidentiels.
-              </figcaption>
             </figure>
           }
         </div>
       </section>
+
+      <section class="bg-[#171D42] px-4 py-10 text-white sm:px-6 lg:px-8" aria-label="Les engagements de GoFounders">
+        <dl class="mx-auto grid max-w-[78rem] grid-cols-2 gap-y-8 lg:grid-cols-4 lg:divide-x lg:divide-white/15">
+          @for (fact of facts; track fact.label) {
+            <div class="lg:px-8 lg:first:pl-0">
+              <dt class="sr-only">{{ fact.label }}</dt>
+              <dd class="tabular text-3xl font-semibold tracking-tight sm:text-4xl">{{ fact.value }}</dd>
+              <dd class="mt-1 text-base text-white/70">{{ fact.label }}</dd>
+            </div>
+          }
+        </dl>
+      </section>
+
+      @if (latestListings().length > 0) {
+        <section class="px-4 py-16 sm:px-6 lg:px-8 lg:py-20" aria-labelledby="latest-title">
+          <div class="mx-auto max-w-[78rem]">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <h2 id="latest-title" class="text-3xl text-primary sm:text-4xl">En ce moment sur GoFounders</h2>
+              <a routerLink="/ma" class="font-medium text-accent underline-offset-4 hover:underline">Voir toutes les annonces</a>
+            </div>
+            <div class="mt-8 grid gap-6 md:grid-cols-3">
+              @for (listing of latestListings(); track listing.id) {
+                <a routerLink="/ma" class="flex flex-col rounded-xl border border-border bg-white p-6 transition-colors hover:border-accent/40">
+                  <p class="text-sm text-muted-foreground">{{ listing.type }}</p>
+                  <h3 class="mt-1 text-xl font-semibold leading-snug text-primary">{{ listing.sector }}, {{ listing.region }}</h3>
+                  <p class="mt-3 line-clamp-2 flex-1 text-base text-foreground/80">{{ listing.summary }}</p>
+                  <dl class="tabular mt-5 grid grid-cols-2 gap-3 border-t border-border pt-4 text-sm">
+                    <div><dt class="text-muted-foreground">Chiffre d'affaires</dt><dd class="mt-0.5 text-base font-semibold text-primary">{{ listing.revenue }}</dd></div>
+                    <div><dt class="text-muted-foreground">Marge nette</dt><dd class="mt-0.5 text-base font-semibold text-primary">{{ listing.margin }}</dd></div>
+                  </dl>
+                  <p class="tabular mt-4 text-xl font-semibold text-amber-600">{{ listing.priceMin }} à {{ listing.priceMax }}</p>
+                </a>
+              }
+            </div>
+          </div>
+        </section>
+      }
 
       <section class="px-4 py-20 sm:px-6 lg:px-8 lg:py-28" aria-label="Notre conviction">
         <div class="mx-auto grid max-w-[78rem] gap-12 lg:grid-cols-12 lg:items-center">
@@ -225,7 +282,19 @@ interface LandingFaqItem {
 })
 export class LandingComponent implements OnInit {
   private readonly maService = inject(MaService);
+  private readonly router = inject(Router);
   private readonly listings = signal<MaListingData[]>([]);
+
+  readonly heroQuery = signal('');
+  readonly heroRevenue = signal('');
+
+  // Uniquement des faits vérifiables : pas de volume ni de nombre de ventes inventés.
+  readonly facts = [
+    { value: '0 %', label: 'de commission sur la vente' },
+    { value: 'Gratuit', label: 'pour publier une annonce' },
+    { value: '149 €', label: "l'accès repreneur, pour 12 mois" },
+    { value: '48 h', label: "d'avance sur les nouvelles annonces avec l'accès Plus" },
+  ];
 
   readonly buyerPrice = OFFER_PRICES.MA_ACCESS.label.replace(' / ', ' par ');
 
@@ -234,6 +303,26 @@ export class LandingComponent implements OnInit {
     const listings = this.listings();
     return listings.find(listing => listing.featured) ?? listings[0] ?? null;
   });
+
+  // Trois annonces sous l'en-tête, hors celle déjà montrée dans le dossier.
+  readonly latestListings = computed(() => {
+    const featured = this.featuredListing();
+    return this.listings().filter(listing => listing.id !== featured?.id).slice(0, 3);
+  });
+
+  search(): void {
+    const queryParams: Record<string, string> = {};
+
+    if (this.heroQuery().trim()) {
+      queryParams['q'] = this.heroQuery().trim();
+    }
+
+    if (this.heroRevenue()) {
+      queryParams['ca'] = this.heroRevenue();
+    }
+
+    void this.router.navigate(['/ma'], { queryParams, fragment: 'ma-listings' });
+  }
 
   readonly audiences = [
     {
