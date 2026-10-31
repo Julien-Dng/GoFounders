@@ -79,7 +79,7 @@ import { PaymentService } from '../../core/services/payment.service';
             }
           </section>
 
-          <section class="rounded-2xl border border-amber-300 bg-gradient-to-br from-amber-50 to-white p-8 shadow-lg">
+          <section class="rounded-2xl border border-amber-300 bg-amber-50 p-8 shadow-lg">
             <div class="mb-6 flex items-start justify-between gap-4">
               <div>
                 <div class="mb-1 text-sm text-amber-700">M&A</div>

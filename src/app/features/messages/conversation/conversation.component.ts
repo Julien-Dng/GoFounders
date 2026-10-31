@@ -18,7 +18,7 @@ import { ConversationMessage, findConversationById, findMarketplaceProfileById }
               <polyline points="15 18 9 12 15 6"/>
             </svg>
           </a>
-          <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary font-bold text-white">{{ participantInitials() }}</div>
+          <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary font-bold text-white">{{ participantInitials() }}</div>
           <div class="min-w-0">
             <div class="truncate font-bold">{{ participantName() }}</div>
             <div class="text-xs font-medium" [class.text-green-500]="isOnline()" [class.text-muted-foreground]="!isOnline()">

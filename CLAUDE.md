@@ -6,7 +6,7 @@
 ---
 
 > ⚠️ **Branche `refonte-reprise`** : le produit est en cours de recentrage sur la reprise d'entreprises numériques
-> (vitrine : landing, menus, `/ma` ; logique de base venant de `V6`, plus les outils IA M&A et les offres de la reprise : accès Plus, mise en avant, dossier vérifié, rôle `pro` et annuaire, PREMIUM). Voir `docs/REFONTE-REPRISE.md` : cette note prime sur
+> (vitrine : landing, menus, `/ma` ; logique de base venant de `V6`, plus les outils IA M&A et les offres de la reprise : accès Plus, mise en avant, dossier vérifié, rôle `pro` et annuaire, PREMIUM). Voir `docs/REFONTE-REPRISE.md` et le système de design `docs/DESIGN.md` (sobre, « fiche de cession ») : ces notes priment sur
 > les sections ci-dessous en cas de conflit. Le backend réel est **Supabase** (pas Firebase).
 
 ---

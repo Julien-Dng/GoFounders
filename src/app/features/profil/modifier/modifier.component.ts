@@ -45,39 +45,22 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
           </div>
 
           <div class="rounded-2xl border border-border bg-white px-5 py-4 shadow-sm">
-            <div class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Complétion actuelle</div>
+            <div class="text-xs font-semibold text-muted-foreground">Complétion actuelle</div>
             <div class="mt-1 text-2xl font-bold text-accent">{{ currentUser()?.profileComplete ?? 0 }}%</div>
           </div>
         </div>
 
-        <div class="mb-6 overflow-hidden rounded-3xl border border-accent/15 bg-white p-5 shadow-lg sm:p-6">
-          <div class="grid gap-5 lg:grid-cols-[22rem_minmax(0,1fr)] lg:items-center">
-            <div class="relative hidden h-44 lg:block">
-              <div class="absolute inset-x-8 bottom-0 h-16 rounded-full bg-accent/10 blur-2xl"></div>
-              <img
-                src="/assets/images/profile-coach.png"
-                alt=""
-                aria-hidden="true"
-                class="absolute -bottom-14 left-0 h-64 w-auto object-contain drop-shadow-2xl"
-              >
-            </div>
-
-            <div>
-              <div class="mb-3 inline-flex items-center rounded-full bg-accent/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-accent">
-                Coach profil
-              </div>
-              <h2 class="text-2xl font-bold text-primary">Un profil complet inspire plus vite confiance</h2>
-              <p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                Ajoutez une photo nette, une bio concrète et quelques liens utiles. L'objectif n'est pas de faire long, mais de donner assez de signaux pour déclencher une conversation qualifiée.
-              </p>
-            </div>
-          </div>
+        <div class="mb-6 rounded-lg border border-border bg-white p-5 sm:p-6">
+          <h2 class="text-2xl text-primary">Un profil complet inspire plus vite confiance</h2>
+          <p class="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
+            Ajoutez une photo nette, une bio concrète et quelques liens utiles. L'objectif n'est pas de faire long, mais de donner assez de signaux pour déclencher une conversation qualifiée.
+          </p>
         </div>
 
         <div class="grid gap-6 xl:grid-cols-[340px_minmax(0,1fr)]">
           <aside class="self-start rounded-3xl border border-border bg-white p-6 shadow-lg">
             <div class="text-center">
-              <div class="mx-auto mb-4 h-32 w-32 overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-accent to-primary shadow-lg">
+              <div class="mx-auto mb-4 h-32 w-32 overflow-hidden rounded-3xl border border-border bg-primary shadow-lg">
                 @if (previewPhoto()) {
                   <img [src]="previewPhoto()" alt="Aperçu de la photo de profil" class="h-full w-full object-cover">
                 } @else {
@@ -240,7 +223,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
 
               @if (isMaRole()) {
                 <div class="rounded-2xl border border-[#D97706]/30 bg-[#D97706]/[0.04] p-5 sm:p-6" [formGroup]="maForm">
-                  <div class="text-xs font-bold uppercase tracking-[0.16em] text-[#D97706]">Marketplace M&A</div>
+                  <div class="text-xs font-bold text-amber-700">Marketplace M&A</div>
                   <h2 class="mt-1 text-xl font-bold text-primary">{{ maLabels().title }}</h2>
                   <p class="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">{{ maLabels().description }}</p>
 
@@ -285,7 +268,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                 <div class="rounded-2xl border border-accent/20 bg-accent/[0.035] p-5 sm:p-6" [formGroup]="projectForm">
                   <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <div class="text-xs font-bold uppercase tracking-[0.16em] text-accent">Annonce visible par les associés</div>
+                      <div class="text-xs font-bold text-accent">Annonce visible par les associés</div>
                       <h2 class="mt-1 text-xl font-bold text-primary">Mon annonce de projet</h2>
                       <p class="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
                         Modifiez ici le projet créé lors de votre inscription. Les informations publiées alimentent directement les résultats de recherche des associés.

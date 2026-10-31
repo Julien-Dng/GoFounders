@@ -123,7 +123,7 @@ const EMPTY_STATS: SellerStats = { listings: [], daily: [], contacts: { contacts
               <summary class="cursor-pointer font-semibold text-accent">Voir les données</summary>
               <div class="mt-3 max-h-64 overflow-y-auto">
                 <table class="w-full text-left text-sm">
-                  <thead class="text-xs uppercase text-muted-foreground">
+                  <thead class="text-xs text-muted-foreground">
                     <tr><th class="py-1 pr-4">Jour</th><th class="py-1 pr-4">Vues</th><th class="py-1">Dossiers consultés</th></tr>
                   </thead>
                   <tbody>
@@ -140,7 +140,7 @@ const EMPTY_STATS: SellerStats = { listings: [], daily: [], contacts: { contacts
             <h2 class="text-lg font-bold">Détail par annonce</h2>
             <div class="mt-4 overflow-x-auto">
               <table class="w-full min-w-[620px] text-left text-sm">
-                <thead class="text-xs uppercase text-muted-foreground">
+                <thead class="text-xs text-muted-foreground">
                   <tr>
                     <th class="py-2 pr-4">Annonce</th>
                     <th class="py-2 pr-4">Statut</th>

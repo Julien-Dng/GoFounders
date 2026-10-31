@@ -48,7 +48,8 @@ La branche ne change que la **vitrine**. Toute la logique (rôles, sécurité, p
 |---|---|
 | Landing (`/`) | Discours « reprise » : « Reprenez une entreprise rentable, avec les bons associés ». Témoignages fictifs remplacés par une FAQ. Tarifs : Cédant gratuit / Repreneur 149 € pour 12 mois. La section « Votre idée reste protégée » (NDA) de `V6` est conservée. |
 | Navigation et footer | Annonces · Vendre · Trouver un associé · Tarifs. « Vendre » visible pour les visiteurs et les vendeurs, « Trouver un associé » pour les visiteurs, porteurs de projet et associés. Assistant IA retiré des menus (route conservée). |
-| `/ma` | Hero « Entreprises à reprendre », cible 50 k€ à 1 M€ de CA. |
+| `/ma` | Fiches d'annonces centrées sur les chiffres, filtres fonctionnels (secteur, type, CA, prix, région), filtres repliés sur mobile. |
+| Design | Refonte visuelle complète, sobre et professionnelle : voir `docs/DESIGN.md` (Source Serif 4 + IBM Plex Sans, encre et ocre, plus d'illustrations ni de dégradés). |
 
 ### IA au service de la reprise
 

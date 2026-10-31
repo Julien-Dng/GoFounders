@@ -33,29 +33,6 @@ interface ProfileOption {
           </div>
         </div>
 
-        @if (currentStep() > 1) {
-          <div class="mb-8 hidden overflow-hidden rounded-3xl border border-accent/15 bg-secondary p-5 shadow-sm lg:block">
-            <div class="grid grid-cols-[18rem_minmax(0,1fr)] items-center gap-6">
-              <div class="relative h-36">
-                <div class="absolute inset-x-8 bottom-0 h-12 rounded-full bg-accent/10 blur-2xl"></div>
-                <img
-                  src="/assets/images/profile-coach.png"
-                  alt=""
-                  aria-hidden="true"
-                  class="absolute -bottom-16 left-0 h-56 w-auto object-contain drop-shadow-xl"
-                >
-              </div>
-              <div>
-                <div class="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-accent">Coach profil</div>
-                <h2 class="text-2xl font-bold text-primary">Quelques infos bien choisies suffisent</h2>
-                <p class="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Le coach vous guide pour créer un profil clair : rôle, contexte, objectif et signaux de confiance.
-                </p>
-              </div>
-            </div>
-          </div>
-        }
-
         <div class="animate-fade-in-scale delay-100 rounded-2xl border-2 border-border bg-white p-6 shadow-lg sm:p-8 lg:p-12">
           @if (currentStep() === 1) {
             <div>

@@ -1,13 +1,12 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MaListingData } from '../../../core/data/mock-platform.data';
-import { EARLY_ACCESS_HOURS } from '../../../core/config/offers';
+import { EARLY_ACCESS_HOURS, OFFER_PRICES } from '../../../core/config/offers';
 import { canAccessMaDetails, canPublishMaListing, hasBuyerPlus } from '../../../core/models/user.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { MaService } from '../../../core/services/ma.service';
 import { SuccessStoriesComponent } from '../../../shared/components/success-stories/success-stories.component';
 
-type MaStatIcon = 'mask' | 'handshake' | 'certified';
 
 @Component({
   selector: 'app-ma-home',
@@ -15,336 +14,186 @@ type MaStatIcon = 'mask' | 'handshake' | 'certified';
   imports: [RouterLink, SuccessStoriesComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-secondary">
-      <section class="bg-primary px-4 pb-16 pt-32 text-primary-foreground sm:px-6 lg:px-8">
-        <div class="mx-auto max-w-[1400px]">
-          <div class="relative text-center lg:min-h-[28rem] lg:pr-[28rem] lg:text-left">
-            <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-amber-500 shadow-2xl lg:mx-0">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
-                <polyline points="16 7 22 7 22 13"/>
-              </svg>
-            </div>
-
-            <h1 class="mb-4 text-4xl font-bold sm:text-5xl">Entreprises à reprendre</h1>
-            <p class="mx-auto mb-8 max-w-3xl text-lg opacity-90 sm:text-xl lg:mx-0">
-              Des activités rentables, surtout numériques, dont les fondateurs veulent passer la main. Teasers publics, dossiers complets pour les repreneurs.
+    <div class="min-h-screen bg-white">
+      <section class="px-4 pb-8 pt-24 sm:px-6 lg:px-8 lg:pt-32">
+        <div class="mx-auto flex max-w-[1200px] flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h1 class="text-[2.25rem] leading-tight text-primary sm:text-5xl">Entreprises à reprendre</h1>
+            <p class="mt-4 max-w-[62ch] text-[15px] leading-relaxed text-muted-foreground sm:text-base">
+              Des entreprises rentables, surtout numériques, entre 50 k€ et 1 M€ de chiffre d'affaires. Les annonces sont anonymisées :
+              le nom de l'entreprise n'est communiqué qu'aux repreneurs que le cédant accepte.
             </p>
-
-            <div class="mb-12 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
-              <a routerLink="/ma" fragment="ma-listings" class="rounded-lg bg-amber-500 px-8 py-4 font-bold text-white shadow-2xl transition-all hover:scale-105 hover:bg-amber-600 active:scale-95">
-                Voir les annonces
-              </a>
-              @if (canDepositListing()) {
-                <a routerLink="/ma/deposer" class="rounded-lg border-2 border-white px-8 py-4 font-bold text-white transition-all hover:scale-105 hover:bg-white/10 active:scale-95">
-                  Déposer une annonce
-                </a>
-              }
-              @if (showAccessCta()) {
-                <button type="button" (click)="continueToMaAccess()" class="rounded-lg border-2 border-amber-300/80 bg-amber-300/10 px-8 py-4 font-bold text-amber-100 transition-all hover:scale-105 hover:bg-amber-300/20 active:scale-95">
-                  {{ accessCtaLabel() }}
-                </button>
-              }
-            </div>
-
-            <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-              @for (stat of stats; track stat.label) {
-                <div class="flex min-h-[5.6rem] items-center gap-4 rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-left text-lg font-semibold opacity-95 backdrop-blur-sm">
-                  <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-300 ring-1 ring-amber-300/20" aria-hidden="true">
-                    @switch (stat.icon) {
-                      @case ('mask') {
-                        <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M4 11.5c2.2-1.5 4.4-2.2 8-2.2s5.8.7 8 2.2v2.2c0 3.1-2.5 5.6-5.6 5.6H9.6A5.6 5.6 0 0 1 4 13.7z"/>
-                          <path d="M8 14h.01"/>
-                          <path d="M16 14h.01"/>
-                          <path d="M9 16.5c1.8.8 4.2.8 6 0"/>
-                        </svg>
-                      }
-                      @case ('handshake') {
-                        <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="m8 12 2.3 2.3a2.4 2.4 0 0 0 3.4 0L15 13"/>
-                          <path d="M7 13 3.5 9.5 7 6l3 3"/>
-                          <path d="m17 13 3.5-3.5L17 6l-3 3"/>
-                          <path d="m10 16-2-2"/>
-                          <path d="m14 16 2-2"/>
-                        </svg>
-                      }
-                      @case ('certified') {
-                        <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M12 3 15 5.2l3.7.2.9 3.6 2.4 2.8-2.4 2.8-.9 3.6-3.7.2L12 21l-3-2.2-3.7-.2-.9-3.6L2 12.2l2.4-2.8.9-3.6 3.7-.2z"/>
-                          <path d="m8.5 12.2 2.2 2.2 4.8-5"/>
-                        </svg>
-                      }
-                    }
-                  </span>
-                  <span class="leading-snug">{{ stat.label }}</span>
-                </div>
-              }
-            </div>
-
-            <div class="pointer-events-none absolute bottom-0 right-0 hidden h-[27rem] w-[26rem] lg:block xl:h-[30rem] xl:w-[29rem]">
-              <div class="absolute inset-x-8 bottom-6 h-28 rounded-full bg-amber-500/15 blur-3xl"></div>
-              <div class="absolute right-0 top-6 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl"></div>
-              <img
-                src="/assets/images/ma-expert.png"
-                alt=""
-                aria-hidden="true"
-                class="absolute bottom-0 right-0 z-10 h-[25rem] w-auto object-contain drop-shadow-2xl xl:h-[28rem]"
-              >
-              <div class="absolute -bottom-3 right-2 z-20 max-w-[13rem] rounded-2xl border border-white/15 bg-white/10 p-4 text-left text-sm leading-relaxed text-white/90 shadow-2xl backdrop-blur-md xl:right-4">
-                <div class="mb-1 text-xs font-bold uppercase tracking-[0.18em] text-amber-300">M&A confidentiel</div>
-                <p>Un accès séparé pour consulter, déposer et organiser les mises en relation.</p>
-              </div>
-            </div>
           </div>
+          @if (canDepositListing()) {
+            <a routerLink="/ma/deposer" class="flex-shrink-0 font-medium text-primary underline decoration-border decoration-2 underline-offset-4 hover:decoration-primary">
+              Déposer une annonce gratuitement
+            </a>
+          }
         </div>
       </section>
 
-      <section class="sticky top-0 z-30 border-b-2 border-border bg-white px-4 py-6 shadow-sm sm:px-6 lg:px-8">
-        <div class="mx-auto max-w-[1400px]">
-          <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+      @if (!canViewSensitiveDetails() || accessRequiredNotice()) {
+        <section class="px-4 sm:px-6 lg:px-8">
+          <div class="mx-auto max-w-[1200px] rounded-lg border border-border bg-secondary p-5 sm:flex sm:items-center sm:justify-between sm:gap-8">
+            <div class="text-[15px] leading-relaxed text-foreground/85">
+              @if (accessRequiredNotice()) {
+                <p class="font-semibold text-primary">Le dossier complet demande un accès repreneur.</p>
+              }
+              <p>
+                Le motif de cession, le détail de l'activité et le contact du vendeur sont réservés aux repreneurs avec l'accès à {{ accessPrice }}.
+              </p>
+              @if (showEarlyAccessHint()) {
+                <p class="mt-1 text-muted-foreground">Avec l'accès Plus, les nouvelles annonces vous sont ouvertes {{ earlyAccessHours }} h avant les autres.</p>
+              }
+            </div>
+            @if (showAccessCta()) {
+              <button type="button" (click)="continueToMaAccess()" class="mt-4 w-full flex-shrink-0 rounded bg-primary px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-primary/90 sm:mt-0 sm:w-auto">
+                {{ accessCtaLabel() }}
+              </button>
+            }
+          </div>
+        </section>
+      }
+
+      <section id="ma-listings" class="scroll-mt-20 px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-[1200px]">
+          <div class="flex items-center justify-between gap-4 border-b border-border pb-4">
+            <p class="text-[15px] text-foreground/85" aria-live="polite">
+              <span class="tabular font-semibold text-primary">{{ filteredListings().length }}</span>
+              {{ filteredListings().length > 1 ? 'annonces' : 'annonce' }}
+              @if (activeFilterCount() > 0) {
+                <button type="button" (click)="resetFilters()" class="ml-3 text-sm font-medium text-accent underline-offset-4 hover:underline">Effacer les filtres</button>
+              }
+            </p>
+            <button
+              type="button"
+              (click)="filtersOpen.set(!filtersOpen())"
+              [attr.aria-expanded]="filtersOpen()"
+              aria-controls="ma-filters"
+              class="rounded border border-input px-4 py-2 text-sm font-medium text-primary lg:hidden"
+            >Filtrer{{ activeFilterCount() > 0 ? ' (' + activeFilterCount() + ')' : '' }}</button>
+          </div>
+
+          <div id="ma-filters" class="grid gap-4 border-b border-border py-5 sm:grid-cols-2 lg:grid lg:grid-cols-5" [class.hidden]="!filtersOpen()">
             <div>
-              <label class="mb-2 block text-xs font-bold text-muted-foreground">SECTEUR</label>
-              <select
-                [value]="selectedSector()"
-                (change)="selectedSector.set($any($event.target).value)"
-                class="w-full cursor-pointer rounded-lg border border-border bg-secondary px-4 py-2.5 text-sm font-medium outline-none focus:border-amber-500"
-              >
-                @for (sector of sectors; track sector) {
+              <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-sector">Secteur</label>
+              <select id="filter-sector" [value]="selectedSector()" (change)="selectedSector.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-[15px] outline-none focus:border-primary">
+                <option value="">Tous les secteurs</option>
+                @for (sector of sectors(); track sector) {
                   <option [value]="sector">{{ sector }}</option>
                 }
               </select>
             </div>
-
             <div>
-              <label class="mb-2 block text-xs font-bold text-muted-foreground">TYPE</label>
-              <select
-                [value]="selectedType()"
-                (change)="selectedType.set($any($event.target).value)"
-                class="w-full cursor-pointer rounded-lg border border-border bg-secondary px-4 py-2.5 text-sm font-medium outline-none focus:border-amber-500"
-              >
-                @for (type of types; track type) {
+              <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-type">Type de cession</label>
+              <select id="filter-type" [value]="selectedType()" (change)="selectedType.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-[15px] outline-none focus:border-primary">
+                <option value="">Tous les types</option>
+                @for (type of types(); track type) {
                   <option [value]="type">{{ type }}</option>
                 }
               </select>
             </div>
-
             <div>
-              <label class="mb-2 block text-xs font-bold text-muted-foreground">CA ANNUEL</label>
-              <select class="w-full cursor-pointer rounded-lg border border-border bg-secondary px-4 py-2.5 text-sm font-medium outline-none focus:border-amber-500">
-                <option>Tous</option>
-                <option>0 - 100 k€</option>
-                <option>100 k€ - 500 k€</option>
-                <option>500 k€ - 1 M€</option>
-                <option>1 M€+</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="mb-2 block text-xs font-bold text-muted-foreground">PRIX DEMANDÉ</label>
-              <select class="w-full cursor-pointer rounded-lg border border-border bg-secondary px-4 py-2.5 text-sm font-medium outline-none focus:border-amber-500">
-                <option>Tous</option>
-                <option>0 - 250 k€</option>
-                <option>250 k€ - 500 k€</option>
-                <option>500 k€ - 1 M€</option>
-                <option>1 M€+</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="mb-2 block text-xs font-bold text-muted-foreground">RÉGION</label>
-              <input type="text" placeholder="Toute la France" class="w-full rounded-lg border border-border bg-secondary px-4 py-2.5 text-sm outline-none focus:border-amber-500">
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="ma-listings" class="scroll-mt-28 px-4 py-12 sm:px-6 lg:px-8">
-        <div class="mx-auto max-w-[1400px]">
-          <div class="mb-8 text-lg">
-            <span class="font-bold text-primary">{{ filteredListings().length }}</span>
-            <span class="text-muted-foreground"> annonces disponibles</span>
-          </div>
-
-          @if (showEarlyAccessHint()) {
-            <div class="mb-8 flex flex-col gap-3 rounded-2xl border border-accent/20 bg-accent/[0.05] p-5 sm:flex-row sm:items-center sm:justify-between">
-              <p class="text-sm text-foreground/85">
-                <strong>Accès anticipé :</strong> les repreneurs Plus voient les nouvelles annonces {{ earlyAccessHours }} h avant tout le monde
-                et reçoivent une alerte quand une annonce correspond à leur recherche.
-              </p>
-              <a routerLink="/tarifs" fragment="repreneurs" class="flex-shrink-0 rounded-lg bg-accent px-4 py-2 text-center text-sm font-semibold text-white hover:bg-accent/90">Découvrir l'accès Plus</a>
-            </div>
-          }
-
-          @if (accessRequiredNotice()) {
-            <div class="mb-8 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-950 shadow-sm">
-              <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h2 class="mb-1 text-lg font-bold">Accès M&A requis pour consulter le dossier complet</h2>
-                  <p class="text-sm text-amber-900/80">
-                    Les teasers restent lisibles ci-dessous. Les informations sensibles et la mise en relation sont réservées aux comptes avec accès M&A.
-                  </p>
-                </div>
-                @if (showAccessCta()) {
-                  <button type="button" (click)="continueToMaAccess()" class="rounded-lg bg-amber-500 px-5 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-amber-600">
-                    {{ accessCtaLabel() }}
-                  </button>
+              <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-revenue">Chiffre d'affaires</label>
+              <select id="filter-revenue" [value]="selectedRevenue()" (change)="selectedRevenue.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-[15px] outline-none focus:border-primary">
+                @for (range of revenueRanges; track range.value) {
+                  <option [value]="range.value">{{ range.label }}</option>
                 }
-              </div>
+              </select>
             </div>
-          }
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-price">Prix demandé</label>
+              <select id="filter-price" [value]="selectedPrice()" (change)="selectedPrice.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-[15px] outline-none focus:border-primary">
+                @for (range of priceRanges; track range.value) {
+                  <option [value]="range.value">{{ range.label }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-region">Région</label>
+              <input id="filter-region" type="search" [value]="region()" (input)="region.set($any($event.target).value)" placeholder="Toute la France" class="w-full rounded border border-input bg-white px-3 py-2.5 text-[15px] outline-none focus:border-primary">
+            </div>
+          </div>
 
-          <div class="grid gap-8 lg:grid-cols-2">
-            @for (listing of filteredListings(); track listing.id; let index = $index) {
-              <div class="relative overflow-hidden rounded-2xl border-2 border-border bg-white shadow-md transition-all hover:shadow-xl" [class]="'animate-fade-in-up delay-' + ((index % 4) * 100)">
-                <div class="p-6">
-                  <div class="mb-4 flex items-start justify-between gap-4">
-                    <div class="flex items-center gap-3">
-                      <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <rect x="1" y="3" width="15" height="18"/>
-                          <rect x="16" y="8" width="5" height="13"/>
-                          <rect x="5" y="7" width="3" height="3"/>
-                          <rect x="9" y="7" width="3" height="3"/>
-                        </svg>
-                      </div>
-                      <div>
-                        <div class="mb-1 text-xs font-mono text-muted-foreground">{{ listing.id }}</div>
-                        <div class="font-bold text-foreground">Entreprise confidentielle</div>
-                        @if (listing.featured || listing.verified || listing.isNew) {
-                          <div class="mt-1 flex flex-wrap gap-1.5">
-                            @if (listing.featured) {
-                              <span class="rounded-full bg-amber-500 px-2 py-0.5 text-[11px] font-semibold text-white">En vedette</span>
-                            }
-                            @if (listing.verified) {
-                              <span class="rounded-full bg-emerald-600 px-2 py-0.5 text-[11px] font-semibold text-white">Dossier vérifié</span>
-                            }
-                            @if (listing.isNew) {
-                              <span class="rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-white">Nouveau · accès anticipé</span>
-                            }
-                          </div>
-                        }
-                      </div>
-                    </div>
-                    <span class="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-700">{{ listing.type }}</span>
+          @if (filteredListings().length === 0) {
+            <div class="py-16 text-center">
+              <p class="text-[15px] text-muted-foreground">Aucune annonce ne correspond à ces critères.</p>
+              @if (activeFilterCount() > 0) {
+                <button type="button" (click)="resetFilters()" class="mt-3 font-medium text-accent underline-offset-4 hover:underline">Effacer les filtres</button>
+              }
+            </div>
+          } @else {
+            <div class="mt-6 grid gap-6 lg:grid-cols-2">
+              @for (listing of filteredListings(); track listing.id) {
+                <article class="flex flex-col rounded-lg border border-border bg-white p-6" [class.border-amber-500]="listing.featured" [attr.aria-labelledby]="'listing-' + listing.id">
+                  <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
+                    <span>{{ listing.type }}</span>
+                    @if (listing.featured) {
+                      <span class="rounded-full border border-amber-500/40 px-2 py-0.5 text-xs font-medium text-amber-700">En vedette</span>
+                    }
+                    @if (listing.verified) {
+                      <span class="rounded-full border border-emerald-700/30 px-2 py-0.5 text-xs font-medium text-emerald-800">Dossier vérifié</span>
+                    }
+                    @if (listing.isNew) {
+                      <span class="rounded-full border border-accent/30 px-2 py-0.5 text-xs font-medium text-accent">Nouvelle, accès anticipé</span>
+                    }
                   </div>
+                  <h2 [id]="'listing-' + listing.id" class="mt-2 text-xl leading-snug text-primary sm:text-2xl">{{ listing.sector }}, {{ listing.region }}</h2>
+                  <p class="mt-3 text-[15px] leading-relaxed text-foreground/80">{{ listing.summary }}</p>
 
-                  <div class="mb-4 flex flex-wrap gap-2">
-                    <span class="rounded-lg bg-amber-500/10 px-3 py-1 text-sm font-semibold text-amber-700">{{ listing.sector }}</span>
-                    <span class="flex items-center gap-1 rounded-lg bg-secondary px-3 py-1 text-sm font-semibold text-foreground">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-                      </svg>
-                      {{ listing.region }}
-                    </span>
-                  </div>
-
-                  <p class="mb-4 text-sm leading-relaxed text-foreground/70">{{ listing.summary }}</p>
-
-                  <div class="mb-4 grid grid-cols-3 gap-3 border-b border-border pb-4">
-                    <div>
-                      <div class="mb-1 text-xs text-muted-foreground">Chiffre d'affaires</div>
-                      <div class="text-sm font-bold">{{ listing.revenue }}</div>
+                  <dl class="tabular mt-5 grid grid-cols-3 border-y border-border">
+                    <div class="py-3.5 pr-3">
+                      <dt class="text-xs text-muted-foreground">Chiffre d'affaires</dt>
+                      <dd class="mt-1 font-semibold text-primary">{{ listing.revenue }}</dd>
                     </div>
-                    <div>
-                      <div class="mb-1 text-xs text-muted-foreground">Marge nette</div>
-                      <div class="text-sm font-bold">{{ listing.margin }}</div>
+                    <div class="border-l border-border px-3 py-3.5">
+                      <dt class="text-xs text-muted-foreground">Marge nette</dt>
+                      <dd class="mt-1 font-semibold text-primary">{{ listing.margin }}</dd>
                     </div>
-                    <div>
-                      <div class="mb-1 text-xs text-muted-foreground">Ancienneté</div>
-                      <div class="text-sm font-bold">{{ listing.age }}</div>
+                    <div class="border-l border-border py-3.5 pl-3">
+                      <dt class="text-xs text-muted-foreground">Ancienneté</dt>
+                      <dd class="mt-1 font-semibold text-primary">{{ listing.age }}</dd>
                     </div>
-                  </div>
+                  </dl>
 
                   @if (canViewSensitiveDetails()) {
-                    <div class="mb-4">
-                      <div class="mb-1 text-xs text-muted-foreground">Raison de la cession</div>
-                      <div class="text-sm font-medium">{{ listing.reason }}</div>
-                    </div>
-                  } @else {
-                    <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
-                      <div class="flex items-start gap-3">
-                        <div class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-500 text-white">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                          </svg>
-                        </div>
-                        <div>
-                          <div class="mb-1 text-sm font-bold text-amber-900">Dossier complet réservé</div>
-                          <p class="text-xs leading-relaxed text-amber-900/75">
-                            {{ lockedDetailsText() }}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                    <p class="mt-4 text-sm text-foreground/80"><span class="text-muted-foreground">Motif de cession :</span> {{ listing.reason }}</p>
                   }
 
-                  <div class="mb-4 flex flex-wrap gap-2">
-                    @for (highlight of listing.highlights; track highlight) {
-                      <span class="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">{{ highlight }}</span>
-                    }
-                  </div>
-
-                  <div class="flex flex-col gap-4 border-t border-border pt-4 sm:flex-row sm:items-end sm:justify-between">
+                  <div class="mt-auto flex flex-col gap-4 pt-5 sm:flex-row sm:items-end sm:justify-between">
                     <div>
-                      <div class="mb-1 text-xs text-muted-foreground">Prix demandé</div>
-                      <div class="text-2xl font-bold text-amber-600">{{ listing.priceMin }} - {{ listing.priceMax }}</div>
-                      <p class="mt-2 text-xs text-muted-foreground">Estimation indicative, non contractuelle.</p>
+                      <p class="text-xs text-muted-foreground">Prix demandé</p>
+                      <p class="font-display tabular mt-0.5 text-2xl font-semibold text-amber-600">{{ listing.priceMin }} à {{ listing.priceMax }}</p>
+                      <p class="mt-0.5 text-xs text-muted-foreground">Estimation indicative, non contractuelle.</p>
                     </div>
                     @if (canViewSensitiveDetails()) {
-                      <a [routerLink]="['/ma/annonce', listing.id]" class="inline-flex items-center justify-center gap-2 rounded-lg bg-amber-500 px-6 py-2.5 font-semibold text-white shadow-md transition-colors hover:bg-amber-600">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-                        </svg>
-                        Voir le dossier
+                      <a [routerLink]="['/ma/annonce', listing.id]" class="rounded border border-primary px-4 py-2.5 text-center text-sm font-medium text-primary transition-colors hover:bg-primary hover:text-white">
+                        Ouvrir le dossier
                       </a>
-                    } @else if (showAccessCta()) {
-                      <button type="button" (click)="continueToMaAccess()" class="inline-flex items-center justify-center gap-2 rounded-lg bg-amber-500 px-6 py-2.5 font-semibold text-white shadow-md transition-colors hover:bg-amber-600">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        </svg>
-                        {{ accessCtaLabel() }}
-                      </button>
-                    } @else {
-                      <span class="text-sm font-semibold text-amber-700">Dossier réservé aux repreneurs</span>
                     }
                   </div>
-                </div>
-              </div>
-            }
-          </div>
+                </article>
+              }
+            </div>
+          }
         </div>
       </section>
 
       <app-success-stories background="bg-secondary" />
 
-      <section class="bg-gradient-to-br from-amber-500 to-orange-600 px-4 py-20 text-white sm:px-6 lg:px-8">
-        <div class="mx-auto max-w-[1400px] text-center">
-          <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-white/20">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="1" y="3" width="15" height="18"/>
-              <rect x="16" y="8" width="5" height="13"/>
-            </svg>
+      <section class="bg-primary px-4 py-14 text-primary-foreground sm:px-6 lg:px-8" aria-labelledby="ma-sell-title">
+        <div class="mx-auto flex max-w-[1200px] flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h2 id="ma-sell-title" class="text-3xl sm:text-4xl">Vous souhaitez vendre votre entreprise ?</h2>
+            <p class="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-primary-foreground/75">
+              Publication gratuite pendant le lancement. Votre annonce reste anonyme et les détails sont réservés aux repreneurs vérifiés.
+            </p>
           </div>
-          <h2 class="mb-4 text-4xl font-bold">Vous souhaitez vendre votre entreprise ?</h2>
-          <p class="mx-auto mb-8 max-w-2xl text-xl opacity-90">Publiez gratuitement votre annonce anonymisée pendant le lancement.</p>
           @if (canDepositListing()) {
-            <a routerLink="/ma/deposer" class="inline-block rounded-lg bg-white px-10 py-5 text-lg font-bold text-amber-600 shadow-2xl transition-all hover:scale-105 hover:bg-white/95 active:scale-95">
-            Déposer mon annonce
-          </a>
+            <a routerLink="/ma/deposer" class="flex-shrink-0 rounded bg-white px-6 py-3.5 text-center font-medium text-primary transition-colors hover:bg-white/90">Déposer mon annonce</a>
           } @else {
-            <p class="text-lg font-semibold opacity-90">Le dépôt d'annonce est réservé aux comptes vendeur.</p>
+            <p class="text-[15px] text-primary-foreground/75">Le dépôt d'annonce est réservé aux comptes vendeur et professionnels.</p>
           }
-          <div class="mt-8 flex flex-col items-center justify-center gap-4 text-sm opacity-90 sm:flex-row sm:flex-wrap sm:gap-8">
-            @for (bullet of bullets; track bullet) {
-              <div class="flex items-center gap-2">
-                <div class="h-1.5 w-1.5 rounded-full bg-white"></div>
-                <span>{{ bullet }}</span>
-              </div>
-            }
-          </div>
         </div>
       </section>
     </div>
@@ -356,21 +205,38 @@ export class MaHomeComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly maService = inject(MaService);
 
-  readonly selectedSector = signal('Tous');
-  readonly selectedType = signal('Tous');
+  readonly selectedSector = signal('');
+  readonly selectedType = signal('');
+  readonly selectedRevenue = signal('');
+  readonly selectedPrice = signal('');
+  readonly region = signal('');
+  // Mobile : filtres repliés pour que les annonces soient visibles dès le premier écran.
+  readonly filtersOpen = signal(false);
   readonly listings = signal<MaListingData[]>([]);
   readonly accessRequiredNotice = computed(() =>
     this.route.snapshot.queryParamMap.get('access') === 'required' && !this.auth.hasMaAccess()
   );
 
-  readonly sectors = ['Tous', 'E-commerce', 'SaaS', 'Commerce de détail', 'Restauration', 'Services B2B'];
-  readonly types = ['Tous', 'Cession', 'Fonds de commerce', 'Parts sociales'];
-  readonly stats: Array<{ label: string; icon: MaStatIcon }> = [
-    { label: 'Annonces anonymisées', icon: 'mask' },
-    { label: 'Entreprises de 50 k€ à 1 M€ de CA', icon: 'handshake' },
-    { label: 'Mise en relation après accès validé', icon: 'certified' },
+  readonly accessPrice = OFFER_PRICES.MA_ACCESS.label.replace(' / ', ' par ');
+  readonly revenueRanges = [
+    { value: '', label: 'Tous les montants' },
+    { value: '0-100000', label: 'Moins de 100 k€' },
+    { value: '100000-500000', label: '100 à 500 k€' },
+    { value: '500000-1000000', label: '500 k€ à 1 M€' },
+    { value: '1000000-', label: 'Plus de 1 M€' },
   ];
-  readonly bullets = ['Publication gratuite au lancement', 'Annonce anonymisée', 'Détails réservés aux repreneurs vérifiés'];
+  readonly priceRanges = [
+    { value: '', label: 'Tous les prix' },
+    { value: '0-250000', label: 'Moins de 250 k€' },
+    { value: '250000-500000', label: '250 à 500 k€' },
+    { value: '500000-1000000', label: '500 k€ à 1 M€' },
+    { value: '1000000-', label: 'Plus de 1 M€' },
+  ];
+  readonly sectors = computed(() => [...new Set(this.listings().map(listing => listing.sector))].sort((a, b) => a.localeCompare(b, 'fr')));
+  readonly types = computed(() => [...new Set(this.listings().map(listing => listing.type))].sort((a, b) => a.localeCompare(b, 'fr')));
+  readonly activeFilterCount = computed(() =>
+    [this.selectedSector(), this.selectedType(), this.selectedRevenue(), this.selectedPrice(), this.region().trim()].filter(Boolean).length
+  );
 
   private readonly profileType = computed(() => this.auth.currentUser()?.profileType);
   // Dossier complet : acheteur avec accès payé. Dépôt : vendeur (ou visiteur, invité à s'inscrire).
@@ -386,20 +252,19 @@ export class MaHomeComponent implements OnInit {
     !this.auth.isAuthenticated() || (canAccessMaDetails(this.profileType()) && !this.auth.hasMaAccess())
   );
   readonly accessCtaLabel = computed(() =>
-    this.auth.isAuthenticated() ? "Accès repreneur - 149 € / 12 mois" : "Se connecter pour l'accès M&A"
+    this.auth.isAuthenticated() ? "Prendre l'accès repreneur" : 'Se connecter pour accéder aux dossiers'
   );
-  readonly lockedDetailsText = computed(() =>
-    this.auth.isAuthenticated() && !canAccessMaDetails(this.profileType())
-      ? 'Motif de cession, informations détaillées et mise en relation sont réservés aux comptes acheteur avec accès M&A.'
-      : 'Motif de cession, informations détaillées et mise en relation sont accessibles avec l’accès repreneur (149 €, 12 mois).'
-  );
-  readonly filteredListings = computed(() =>
-    this.listings().filter(listing => {
-      const matchesSector = this.selectedSector() === 'Tous' || listing.sector === this.selectedSector();
-      const matchesType = this.selectedType() === 'Tous' || listing.type === this.selectedType();
-      return matchesSector && matchesType;
-    })
-  );
+  readonly filteredListings = computed(() => {
+    const region = this.normalize(this.region());
+
+    return this.listings().filter(listing =>
+      (!this.selectedSector() || listing.sector === this.selectedSector())
+      && (!this.selectedType() || listing.type === this.selectedType())
+      && this.inRange(this.parseAmount(listing.revenue), this.selectedRevenue())
+      && this.inRange(this.parseAmount(listing.priceMax) ?? this.parseAmount(listing.priceMin), this.selectedPrice())
+      && (!region || this.normalize(listing.region).includes(region))
+    );
+  });
 
   ngOnInit(): void {
     void this.loadListings();
@@ -412,6 +277,43 @@ export class MaHomeComponent implements OnInit {
     }
 
     await this.router.navigate(['/tarifs'], { fragment: 'ma-access' });
+  }
+
+  resetFilters(): void {
+    this.selectedSector.set('');
+    this.selectedType.set('');
+    this.selectedRevenue.set('');
+    this.selectedPrice.set('');
+    this.region.set('');
+  }
+
+  // Montants affichés (« 280 k€/an », « 1,2 M€ ») ramenés en euros pour les filtres.
+  private parseAmount(text: string): number | null {
+    const match = text.replace(/\u202f|\u00a0/g, ' ').match(/([\d\s]+(?:[.,]\d+)?)\s*(k|M)€/);
+
+    if (!match) {
+      return null;
+    }
+
+    const value = Number(match[1].replace(/\s/g, '').replace(',', '.'));
+    return value * (match[2] === 'M' ? 1_000_000 : 1_000);
+  }
+
+  private inRange(value: number | null, range: string): boolean {
+    if (!range) {
+      return true;
+    }
+
+    if (value === null) {
+      return false;
+    }
+
+    const [min, max] = range.split('-');
+    return value >= Number(min || 0) && (!max || value < Number(max));
+  }
+
+  private normalize(value: string): string {
+    return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   }
 
   private async loadListings(): Promise<void> {

@@ -33,7 +33,7 @@ export interface MaCardData {
       }
 
       <div class="flex items-center justify-between mb-4">
-        <span class="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full uppercase">{{ card.sector }}</span>
+        <span class="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full ">{{ card.sector }}</span>
         <span class="text-xs text-muted-foreground">{{ card.region }}</span>
       </div>
 

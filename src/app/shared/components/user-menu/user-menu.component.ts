@@ -30,7 +30,7 @@ import { AuthService } from '../../../core/services/auth.service';
         } @else {
           <div
             [ngClass]="avatarClass"
-            class="flex items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary font-bold text-white shadow-md"
+            class="flex items-center justify-center rounded-full bg-primary font-bold text-white shadow-md"
           >
             {{ initials() }}
           </div>
@@ -52,7 +52,7 @@ import { AuthService } from '../../../core/services/auth.service';
                 class="h-11 w-11 rounded-full border border-border object-cover shadow-sm"
               >
             } @else {
-              <div class="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary font-bold text-white shadow-md">
+              <div class="flex h-11 w-11 items-center justify-center rounded-full bg-primary font-bold text-white shadow-md">
                 {{ initials() }}
               </div>
             }

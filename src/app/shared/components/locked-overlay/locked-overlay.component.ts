@@ -11,7 +11,7 @@ import { PaymentService } from '../../../core/services/payment.service';
   template: `
     <div class="absolute inset-0 flex items-center justify-center z-20 bg-background/60 backdrop-blur-sm rounded-2xl">
       <div class="locked-upgrade-panel bg-white/95 backdrop-blur-md rounded-2xl border-2 border-accent p-10 shadow-2xl max-w-md text-center animate-fade-in-scale">
-        <div class="locked-upgrade-icon w-16 h-16 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center mx-auto mb-5 shadow-lg">
+        <div class="locked-upgrade-icon w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-5 shadow-lg">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>

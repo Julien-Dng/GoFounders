@@ -8,31 +8,23 @@ import { SuccessStoriesService, SuccessStory } from '../../../core/services/succ
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (stories().length > 0) {
-      <section class="px-4 py-16 sm:px-6 lg:px-8" [class]="background()" aria-labelledby="success-stories-title">
+      <section class="px-4 py-16 sm:px-6 lg:px-8 lg:py-20" [class]="background()" aria-labelledby="success-stories-title">
         <div class="mx-auto max-w-[1200px]">
-          <div class="mb-10 text-center">
-            <h2 id="success-stories-title" class="text-3xl font-bold text-primary sm:text-4xl">Ils ont vendu sur GoFounders</h2>
-            <p class="mt-3 text-muted-foreground">
-              {{ salesCount() }} vente{{ salesCount() > 1 ? 's' : '' }} conclue{{ salesCount() > 1 ? 's' : '' }} sur la plateforme. Témoignages et prix publiés avec l'accord des vendeurs.
-            </p>
-          </div>
-          <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <h2 id="success-stories-title" class="text-3xl text-primary sm:text-4xl">Ils ont vendu leur entreprise</h2>
+          <p class="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-muted-foreground">
+            {{ salesCount() }} vente{{ salesCount() > 1 ? 's' : '' }} conclue{{ salesCount() > 1 ? 's' : '' }} sur GoFounders. Témoignages et prix publiés avec l'accord des vendeurs.
+          </p>
+          <div class="mt-10 grid gap-10 md:grid-cols-2 lg:grid-cols-3">
             @for (story of stories(); track story.id) {
-              <article class="flex flex-col rounded-2xl border border-border bg-white p-6 shadow-sm">
-                <div class="flex flex-wrap items-center gap-2">
-                  <span class="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">Vendue</span>
-                  <span class="text-sm font-semibold text-foreground">{{ story.sector }} · {{ story.region }}</span>
-                </div>
-                <div class="mt-4">
-                  <div class="text-xs font-semibold uppercase text-muted-foreground">Prix de vente</div>
-                  <div class="mt-1 text-2xl font-bold text-amber-600">{{ priceLabel(story) }}</div>
-                  @if (story.months_to_sell !== null) {
-                    <div class="mt-1 text-xs text-muted-foreground">{{ delayLabel(story.months_to_sell) }}</div>
-                  }
-                </div>
-                <blockquote class="mt-4 flex-1 text-sm italic leading-relaxed text-foreground/80">« {{ story.quote }} »</blockquote>
-                <p class="mt-4 text-sm font-semibold text-primary">{{ story.author_label }}</p>
-              </article>
+              <figure class="flex flex-col border-t-2 border-primary pt-5">
+                <p class="text-sm text-muted-foreground">{{ story.sector }}, {{ story.region }}</p>
+                <p class="font-display tabular mt-2 text-3xl font-semibold text-amber-600">{{ priceLabel(story) }}</p>
+                @if (story.months_to_sell !== null) {
+                  <p class="mt-1 text-sm text-muted-foreground">{{ delayLabel(story.months_to_sell) }}</p>
+                }
+                <blockquote class="mt-4 flex-1 text-[15px] leading-relaxed text-foreground/85">« {{ story.quote }} »</blockquote>
+                <figcaption class="mt-4 text-sm font-semibold text-primary">{{ story.author_label }}</figcaption>
+              </figure>
             }
           </div>
         </div>

@@ -40,9 +40,9 @@ import { PendingSuccessStory, PriceDisplay, SuccessStoriesService } from '../../
                     <a [routerLink]="['/ma/annonce', story.listing_id]" class="text-sm font-semibold text-accent hover:underline">Voir l'annonce</a>
                   </div>
                   <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-3">
-                    <div><dt class="text-xs font-semibold uppercase text-muted-foreground">Prix déclaré</dt><dd class="font-semibold">{{ money(story.sale_price) }}</dd></div>
-                    <div><dt class="text-xs font-semibold uppercase text-muted-foreground">Fourchette de l'annonce</dt><dd>{{ money(story.price_min) }} – {{ money(story.price_max) }}</dd></div>
-                    <div><dt class="text-xs font-semibold uppercase text-muted-foreground">Affichage choisi</dt><dd>{{ displayLabel(story.price_display) }}</dd></div>
+                    <div><dt class="text-xs font-semibold text-muted-foreground">Prix déclaré</dt><dd class="font-semibold">{{ money(story.sale_price) }}</dd></div>
+                    <div><dt class="text-xs font-semibold text-muted-foreground">Fourchette de l'annonce</dt><dd>{{ money(story.price_min) }} – {{ money(story.price_max) }}</dd></div>
+                    <div><dt class="text-xs font-semibold text-muted-foreground">Affichage choisi</dt><dd>{{ displayLabel(story.price_display) }}</dd></div>
                   </dl>
                   <blockquote class="mt-4 rounded-lg bg-secondary/60 p-3 text-sm italic">« {{ story.quote }} »</blockquote>
                   <p class="mt-2 text-sm font-semibold">{{ story.author_label }}</p>

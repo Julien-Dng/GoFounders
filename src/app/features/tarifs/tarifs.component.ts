@@ -3,7 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { AccountProduct, EARLY_ACCESS_HOURS, FREE_AI_ANALYSES_PER_MONTH, OFFER_PRICES } from '../../core/config/offers';
 import { hasBuyerPlus, isActiveUntil } from '../../core/models/user.model';
 import { PaymentService, PremiumTopic } from '../../core/services/payment.service';
-import { PricingCardComponent, PricingFeature } from '../../shared/components/pricing-card/pricing-card.component';
+import { PricingFeature } from '../../shared/components/pricing-card/pricing-card.component';
 import { AuthService } from '../../core/services/auth.service';
 
 // Offres « reprise » (refonte) : action = achat (paiement simulé tant que Stripe n'est pas branché) ou lien.
@@ -11,7 +11,7 @@ interface RepriseOffer {
   title: string;
   price: string;
   description: string;
-  badge?: string;
+  cta?: string;
   features: string[];
   product?: AccountProduct;
   link?: { href: string; label: string; fragment?: string };
@@ -34,204 +34,184 @@ interface Plan {
 @Component({
   selector: 'app-tarifs',
   standalone: true,
-  imports: [PricingCardComponent, RouterLink],
+  imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen px-4 pb-20 pt-32 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-[1400px]">
-        <div class="mb-16 text-center">
-          <h1 class="mb-6 text-4xl font-bold tracking-tight text-primary sm:text-5xl lg:text-6xl">Des offres simples, sans commission</h1>
-          <p class="mx-auto max-w-2xl text-lg text-muted-foreground sm:text-xl">
-            Publier une annonce est gratuit. Les repreneurs paient l'accès aux dossiers, les professionnels leur visibilité.
+    <div class="min-h-screen bg-white px-4 pb-20 pt-24 sm:px-6 lg:px-8 lg:pt-32">
+      <div class="mx-auto max-w-[1200px]">
+        <header class="max-w-[62ch]">
+          <h1 class="text-[2.25rem] leading-tight text-primary sm:text-5xl">Tarifs</h1>
+          <p class="mt-4 text-[15px] leading-relaxed text-muted-foreground sm:text-base">
+            Publier une annonce est gratuit et nous ne prenons aucune commission sur la vente. Les repreneurs paient l'accès aux dossiers,
+            les professionnels leur visibilité.
           </p>
-          <nav class="mt-8 flex flex-wrap justify-center gap-2" aria-label="Offres par profil">
+          <nav class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-[15px]" aria-label="Offres par profil">
             @for (anchor of anchors; track anchor.id) {
-              <a routerLink="/tarifs" [fragment]="anchor.id" class="rounded-full border border-border bg-white px-4 py-2 text-sm font-semibold text-foreground/80 transition-colors hover:border-accent hover:text-accent">{{ anchor.label }}</a>
+              <a routerLink="/tarifs" [fragment]="anchor.id" class="font-medium text-accent underline-offset-4 hover:underline">{{ anchor.label }}</a>
             }
           </nav>
-        </div>
+        </header>
 
         @if (statusMessage()) {
-          <div class="mx-auto mb-10 max-w-3xl rounded-xl border px-5 py-4 text-sm" [class]="statusIsError() ? 'border-red-200 bg-red-50 text-red-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'" role="status">
+          <div class="mt-8 rounded-lg border px-5 py-4 text-[15px]" [class]="statusIsError() ? 'border-red-200 bg-red-50 text-red-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'" role="status">
             {{ statusMessage() }}
           </div>
         }
 
         @for (group of offerGroups(); track group.id) {
-          <section [id]="group.id" class="mb-20 scroll-mt-28" [attr.aria-labelledby]="group.id + '-title'">
-            <div class="mb-8">
-              <h2 [id]="group.id + '-title'" class="text-3xl font-bold text-primary">{{ group.title }}</h2>
-              <p class="mt-2 max-w-3xl text-muted-foreground">{{ group.description }}</p>
+          <section [id]="group.id" class="mt-14 grid scroll-mt-24 gap-8 border-t border-primary pt-8 lg:grid-cols-12" [attr.aria-labelledby]="group.id + '-title'">
+            <div class="lg:col-span-4">
+              <h2 [id]="group.id + '-title'" class="text-2xl text-primary sm:text-3xl">{{ group.title }}</h2>
+              <p class="mt-3 max-w-[40ch] text-[15px] leading-relaxed text-muted-foreground">{{ group.description }}</p>
             </div>
-            <div class="grid gap-6" [class]="group.offers.length === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2'">
-              @for (offer of group.offers; track offer.title) {
-                <div class="flex flex-col rounded-2xl border-2 bg-white p-6 shadow-sm" [class]="offer.badge ? 'border-accent' : 'border-border'">
-                  @if (offer.badge) {
-                    <span class="mb-3 inline-flex w-fit rounded-full bg-accent px-3 py-1 text-xs font-semibold text-white">{{ offer.badge }}</span>
-                  }
-                  <h3 class="text-xl font-bold text-primary">{{ offer.title }}</h3>
-                  <div class="mt-2 text-2xl font-bold text-accent">{{ offer.price }}</div>
-                  <p class="mt-2 text-sm text-muted-foreground">{{ offer.description }}</p>
-                  <ul class="mt-4 flex-1 space-y-2 text-sm text-foreground/85">
-                    @for (feature of offer.features; track feature) {
-                      <li class="flex items-start gap-2">
-                        <svg class="mt-0.5 flex-shrink-0 text-accent" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-                        <span>{{ feature }}</span>
-                      </li>
+            <div class="divide-y divide-border lg:col-span-8">
+              @for (offer of group.offers; track offer.title; let first = $first) {
+                <div class="grid gap-5 py-6 sm:grid-cols-[1fr_15rem] sm:gap-8" [class.pt-0]="first">
+                  <div>
+                    <h3 class="text-lg font-semibold text-primary">{{ offer.title }}</h3>
+                    <p class="mt-1 text-[15px] text-muted-foreground">{{ offer.description }}</p>
+                    <ul class="mt-3 space-y-1.5 text-[15px] text-foreground/85">
+                      @for (feature of offer.features; track feature) {
+                        <li class="flex gap-2.5"><span class="mt-[0.6rem] h-1 w-1 flex-shrink-0 rounded-full bg-foreground/50" aria-hidden="true"></span><span>{{ feature }}</span></li>
+                      }
+                    </ul>
+                  </div>
+                  <div class="sm:text-right">
+                    <p class="font-display tabular text-2xl font-semibold text-primary">{{ offer.price }}</p>
+                    @if (offer.product) {
+                      @if (isOwned(offer.product)) {
+                        <p class="mt-3 text-sm font-medium text-emerald-700">Actif sur votre compte</p>
+                      } @else {
+                        <button type="button" (click)="buy(offer.product)" [disabled]="busyProduct() === offer.product" class="mt-3 w-full rounded bg-primary px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary/90 disabled:cursor-wait disabled:opacity-60">
+                          {{ busyProduct() === offer.product ? 'Activation…' : (offer.cta ?? 'Activer') }}
+                        </button>
+                      }
+                    } @else if (offer.link) {
+                      <a [routerLink]="offer.link.href" [fragment]="offer.link.fragment" class="mt-3 block w-full rounded border border-primary px-4 py-2.5 text-center text-sm font-medium text-primary transition-colors hover:bg-primary hover:text-white">{{ offer.link.label }}</a>
                     }
-                  </ul>
-                  @if (offer.product) {
-                    @if (isOwned(offer.product)) {
-                      <div class="mt-6 rounded-lg bg-emerald-50 px-4 py-3 text-center text-sm font-semibold text-emerald-700">Actif sur votre compte</div>
-                    } @else {
-                      <button type="button" (click)="buy(offer.product)" [disabled]="busyProduct() === offer.product" class="mt-6 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-wait disabled:opacity-60">
-                        {{ busyProduct() === offer.product ? 'Activation…' : 'Choisir cette offre' }}
-                      </button>
-                    }
-                  } @else if (offer.link) {
-                    <a [routerLink]="offer.link.href" [fragment]="offer.link.fragment" class="mt-6 rounded-lg border-2 border-border px-4 py-3 text-center text-sm font-semibold transition-colors hover:border-accent">{{ offer.link.label }}</a>
-                  }
+                  </div>
                 </div>
               }
             </div>
           </section>
         }
 
-        <section id="premium" class="mb-20 scroll-mt-28 rounded-3xl bg-primary px-6 py-10 text-primary-foreground sm:px-10" aria-labelledby="premium-title">
-          <div class="grid gap-10 lg:grid-cols-2">
-            <div>
-              <h2 id="premium-title" class="text-3xl font-bold">Accompagnement PREMIUM</h2>
-              <p class="mt-3 text-white/85">
-                Pour aller vite et sereinement : préparation du dossier de cession, présentation de repreneurs ou de cédants qualifiés,
-                mise en relation avec nos experts partenaires (comptables, avocats). Forfait sur devis, sans commission sur la vente.
-              </p>
-              <ul class="mt-5 space-y-2 text-sm text-white/85">
-                <li>• Premier échange gratuit, devis sous 48 h ouvrées</li>
-                <li>• Un interlocuteur dédié du premier contact à la signature</li>
-                <li>• GoFounders n'assure pas de conseil juridique : les actes sont réalisés par nos experts partenaires</li>
-              </ul>
+        <section id="premium" class="mt-14 grid scroll-mt-24 gap-8 border-t border-primary pt-8 lg:grid-cols-12" aria-labelledby="premium-title">
+          <div class="lg:col-span-4">
+            <h2 id="premium-title" class="text-2xl text-primary sm:text-3xl">Accompagnement</h2>
+            <p class="mt-3 max-w-[40ch] text-[15px] leading-relaxed text-muted-foreground">
+              Préparation du dossier de cession, présentation de repreneurs ou de cédants qualifiés, mise en relation avec nos experts partenaires.
+              Forfait sur devis, sans commission sur la vente.
+            </p>
+            <ul class="mt-4 space-y-1.5 text-[15px] text-foreground/85">
+              <li>Premier échange gratuit, devis sous 48 h ouvrées.</li>
+              <li>Un interlocuteur dédié jusqu'à la signature.</li>
+            </ul>
+            <p class="mt-4 text-xs leading-relaxed text-muted-foreground">GoFounders n'assure pas de conseil juridique : les actes sont réalisés par nos experts partenaires.</p>
+          </div>
+          <div class="rounded-lg border border-border p-6 lg:col-span-8">
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label for="premium-topic" class="mb-1.5 block text-sm font-medium text-foreground/85">Votre besoin</label>
+                <select id="premium-topic" [value]="premiumTopic()" (change)="premiumTopic.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-[15px] outline-none focus:border-primary">
+                  <option value="cession">Céder mon entreprise</option>
+                  <option value="reprise">Reprendre une entreprise</option>
+                  <option value="associes">Trouver un associé</option>
+                  <option value="autre">Autre</option>
+                </select>
+              </div>
+              <div>
+                <label for="premium-phone" class="mb-1.5 block text-sm font-medium text-foreground/85">Téléphone (facultatif)</label>
+                <input id="premium-phone" type="tel" maxlength="30" [value]="premiumPhone()" (input)="premiumPhone.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-[15px] outline-none focus:border-primary">
+              </div>
             </div>
-            <div class="rounded-2xl bg-white p-6 text-foreground">
-              <label for="premium-topic" class="mb-1 block text-sm font-semibold">Votre besoin</label>
-              <select id="premium-topic" [value]="premiumTopic()" (change)="premiumTopic.set($any($event.target).value)" class="mb-4 w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-accent">
-                <option value="cession">Céder mon entreprise</option>
-                <option value="reprise">Reprendre une entreprise</option>
-                <option value="associes">Trouver un associé</option>
-                <option value="autre">Autre</option>
-              </select>
-              <label for="premium-message" class="mb-1 block text-sm font-semibold">Votre situation en quelques phrases</label>
-              <textarea id="premium-message" rows="4" maxlength="3000" [value]="premiumMessage()" (input)="premiumMessage.set($any($event.target).value)" class="mb-4 w-full resize-y rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-accent" placeholder="Activité, taille, calendrier souhaité…"></textarea>
-              <label for="premium-phone" class="mb-1 block text-sm font-semibold">Téléphone <span class="font-normal text-muted-foreground">(facultatif)</span></label>
-              <input id="premium-phone" type="tel" maxlength="30" [value]="premiumPhone()" (input)="premiumPhone.set($any($event.target).value)" class="mb-4 w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-accent">
-              <button type="button" (click)="sendPremium()" [disabled]="premiumSending() || premiumMessage().trim().length < 20" class="w-full rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50">
+            <label for="premium-message" class="mb-1.5 mt-4 block text-sm font-medium text-foreground/85">Votre situation en quelques phrases</label>
+            <textarea id="premium-message" rows="4" maxlength="3000" [value]="premiumMessage()" (input)="premiumMessage.set($any($event.target).value)" class="w-full resize-y rounded border border-input bg-white px-3 py-2.5 text-[15px] outline-none focus:border-primary" placeholder="Activité, taille, calendrier souhaité"></textarea>
+            <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p class="text-sm text-muted-foreground">20 caractères minimum.</p>
+              <button type="button" (click)="sendPremium()" [disabled]="premiumSending() || premiumMessage().trim().length < 20" class="rounded bg-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50">
                 {{ premiumSending() ? 'Envoi…' : 'Demander un devis' }}
               </button>
-              @if (premiumResult()) {
-                <p class="mt-3 text-sm" [class]="premiumResultIsError() ? 'text-destructive' : 'text-emerald-700'" role="status">{{ premiumResult() }}</p>
-              }
             </div>
+            @if (premiumResult()) {
+              <p class="mt-3 text-sm" [class]="premiumResultIsError() ? 'text-destructive' : 'text-emerald-700'" role="status">{{ premiumResult() }}</p>
+            }
           </div>
         </section>
 
-        <div id="associes" class="mb-8 scroll-mt-28">
-          <h2 class="text-3xl font-bold text-primary">Trouver un associé</h2>
-          <p class="mt-2 max-w-3xl text-muted-foreground">Gratuit pour se faire connaître, PRO pour trouver son associé plus vite, PREMIUM pour être accompagné.</p>
-        </div>
+        <section id="associes" class="mt-14 scroll-mt-24 border-t border-primary pt-8" aria-labelledby="associes-title">
+          <div class="max-w-[62ch]">
+            <h2 id="associes-title" class="text-2xl text-primary sm:text-3xl">Trouver un associé</h2>
+            <p class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+              Gratuit pour se faire connaître, PRO pour trouver son associé plus vite, PREMIUM pour être accompagné. Les associés n'ont pas besoin de payer.
+            </p>
+          </div>
 
-        <div class="mb-20 grid gap-8 lg:grid-cols-3">
-          @for (plan of plans; track plan.name; let index = $index) {
-            <div [class]="'animate-fade-in-up delay-' + ((index + 1) * 100)">
-              <app-pricing-card
-                [name]="plan.name"
-                [price]="plan.price"
-                [period]="plan.period"
-                [description]="plan.description"
-                [badge]="plan.badge ?? ''"
-                [highlights]="plan.highlights"
-                [features]="plan.features"
-                [cta]="plan.cta"
-                [href]="planHref(plan)"
-                [reassurance]="plan.reassurance"
-                [variant]="plan.variant"
-              />
-            </div>
-          }
-        </div>
-
-        <div class="rounded-2xl border border-border bg-card p-4 sm:p-8 lg:p-12">
-          <h2 class="mb-8 text-center text-3xl font-bold text-primary sm:mb-10 sm:text-4xl">Comparaison détaillée</h2>
-
-          <div class="max-w-full overflow-hidden rounded-xl border border-border" style="contain: inline-size;">
-            <div class="max-w-full overflow-x-auto overscroll-x-contain">
-            <table class="w-full min-w-[1000px] table-fixed">
-              <caption class="sr-only">Comparaison détaillée des formules FREE, PRO et PREMIUM</caption>
-              <colgroup>
-                <col class="w-[28%]" />
-                <col class="w-[20%]" />
-                <col class="w-[22%]" />
-                <col class="w-[30%]" />
-              </colgroup>
+          <div class="relative mt-8 overflow-x-auto">
+            <table class="tabular w-full min-w-[680px] border-collapse text-left text-[15px]">
+              <caption class="sr-only">Comparaison des formules FREE, PRO et PREMIUM</caption>
               <thead>
-                <tr class="border-b-2 border-border bg-background/60">
-                  <th scope="col" class="px-5 py-5 text-left text-sm font-bold uppercase tracking-wide text-primary sm:px-6">Fonctionnalité</th>
-                  <th scope="col" class="px-5 py-5 text-center sm:px-6">
-                    <span class="block font-bold text-primary">FREE</span>
-                  </th>
-                  <th scope="col" class="bg-accent/5 px-5 py-5 text-center sm:px-6">
-                    <span class="block font-bold text-accent">PRO</span>
-                    <span class="mt-1 block text-sm font-medium text-muted-foreground">49€/mois</span>
-                  </th>
-                  <th scope="col" class="px-5 py-5 text-center sm:px-6">
-                    <span class="block font-bold text-primary">PREMIUM</span>
-                    <span class="mt-1 block text-sm font-medium text-muted-foreground">Sur devis</span>
-                  </th>
+                <tr class="border-b border-primary align-bottom">
+                  <th scope="col" class="w-[34%] py-4 pr-4 font-medium text-muted-foreground">Formule</th>
+                  @for (plan of plans; track plan.name) {
+                    <th scope="col" class="w-[22%] px-4 py-4">
+                      <span class="block font-semibold text-primary">{{ plan.name }}</span>
+                      <span class="font-display mt-1 block text-2xl font-semibold text-primary">{{ plan.price }}<span class="font-sans text-sm font-normal text-muted-foreground">{{ plan.period === '/mois' ? ' par mois' : '' }}</span></span>
+                      <span class="mt-1 block text-sm font-normal text-muted-foreground">{{ plan.description }}</span>
+                    </th>
+                  }
                 </tr>
               </thead>
               <tbody>
                 @for (row of comparisonRows; track $index) {
-                  <tr class="border-b border-border transition-colors hover:bg-background/50">
-                    <th scope="row" class="px-5 py-4 text-left font-semibold text-primary sm:px-6">{{ row[0] }}</th>
-                    <td class="px-5 py-4 text-center sm:px-6">
-                      @if (row[1] === '✓') {
-                        <svg aria-hidden="true" class="mx-auto text-accent" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        <span class="sr-only">Inclus</span>
-                      } @else if (row[1] === '✗') {
-                        <svg aria-hidden="true" class="mx-auto text-muted-foreground" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                        <span class="sr-only">Non inclus</span>
-                      } @else {
-                        {{ row[1] }}
-                      }
+                  <tr class="border-b border-border">
+                    <th scope="row" class="py-3.5 pr-4 font-normal text-foreground/85">{{ row[0] }}</th>
+                    <td class="px-4 py-3.5 text-foreground/85">
+                          @if (row[1] === '✓') {
+                            <span aria-hidden="true">Inclus</span><span class="sr-only">Inclus</span>
+                          } @else if (row[1] === '✗') {
+                            <span class="text-muted-foreground" aria-hidden="true">–</span><span class="sr-only">Non inclus</span>
+                          } @else {
+                            {{ row[1] }}
+                          }
                     </td>
-                    <td class="bg-accent/[0.03] px-5 py-4 text-center sm:px-6">
-                      @if (row[2] === '✓') {
-                        <svg aria-hidden="true" class="mx-auto text-accent" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        <span class="sr-only">Inclus</span>
-                      } @else if (row[2] === '✗') {
-                        <svg aria-hidden="true" class="mx-auto text-muted-foreground" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                        <span class="sr-only">Non inclus</span>
-                      } @else {
-                        {{ row[2] }}
-                      }
+                    <td class="px-4 py-3.5 text-foreground/85">
+                          @if (row[2] === '✓') {
+                            <span aria-hidden="true">Inclus</span><span class="sr-only">Inclus</span>
+                          } @else if (row[2] === '✗') {
+                            <span class="text-muted-foreground" aria-hidden="true">–</span><span class="sr-only">Non inclus</span>
+                          } @else {
+                            {{ row[2] }}
+                          }
                     </td>
-                    <td class="px-5 py-4 text-center sm:px-6">
-                      @if (row[3] === '✓') {
-                        <svg aria-hidden="true" class="mx-auto text-accent" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        <span class="sr-only">Inclus</span>
-                      } @else if (row[3] === '✗') {
-                        <svg aria-hidden="true" class="mx-auto text-muted-foreground" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                        <span class="sr-only">Non inclus</span>
-                      } @else {
-                        {{ row[3] }}
-                      }
+                    <td class="px-4 py-3.5 text-foreground/85">
+                          @if (row[3] === '✓') {
+                            <span aria-hidden="true">Inclus</span><span class="sr-only">Inclus</span>
+                          } @else if (row[3] === '✗') {
+                            <span class="text-muted-foreground" aria-hidden="true">–</span><span class="sr-only">Non inclus</span>
+                          } @else {
+                            {{ row[3] }}
+                          }
                     </td>
                   </tr>
                 }
+                <tr>
+                  <td class="py-5 pr-4"></td>
+                  @for (plan of plans; track plan.name) {
+                    <td class="px-4 py-5 align-top">
+                      <a [routerLink]="planHref(plan)" [class]="plan.variant === 'pro'
+                        ? 'block rounded bg-primary px-4 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-primary/90'
+                        : 'block rounded border border-primary px-4 py-2.5 text-center text-sm font-medium text-primary transition-colors hover:bg-primary hover:text-white'">{{ plan.cta }}</a>
+                      @if (plan.reassurance) {
+                        <p class="mt-2 text-center text-xs text-muted-foreground">{{ plan.reassurance }}</p>
+                      }
+                    </td>
+                  }
+                </tr>
               </tbody>
             </table>
-            </div>
           </div>
-        </div>
-
+        </section>
       </div>
     </div>
   `
@@ -273,15 +253,15 @@ export class TarifsComponent {
             'Dossiers complets de toutes les annonces',
             'Contact direct des vendeurs',
             `${FREE_AI_ANALYSES_PER_MONTH} analyses de dossier par l'IA chaque mois`,
-            'Paiement unique, sans abonnement',
+            'Valable 12 mois, sans renouvellement automatique',
           ],
           product: 'MA_ACCESS',
+          cta: "Prendre l'accès repreneur",
         },
         {
           title: 'Accès repreneur Plus',
           price: OFFER_PRICES.MA_PLUS.label,
-          badge: 'Repreneurs actifs',
-          description: 'Pour ne rater aucune opportunité.',
+          description: 'Pour les repreneurs actifs qui ne veulent rater aucune opportunité.',
           features: [
             "Tout l'accès repreneur, plus :",
             "Analyses de dossier par l'IA illimitées",
@@ -289,6 +269,7 @@ export class TarifsComponent {
             `Accès anticipé : les nouvelles annonces ${EARLY_ACCESS_HOURS} h avant les autres`,
           ],
           product: 'MA_PLUS',
+          cta: "Prendre l'accès Plus",
         },
       ] as RepriseOffer[],
     },
@@ -306,15 +287,14 @@ export class TarifsComponent {
         },
         {
           title: 'Mise en avant',
-          price: `${OFFER_PRICES.FEATURE_7D.label} ou ${OFFER_PRICES.FEATURE_30D.label}`,
-          description: 'Votre annonce en tête de liste avec le badge « En vedette ».',
+          price: `${OFFER_PRICES.FEATURE_7D.amount} € ou ${OFFER_PRICES.FEATURE_30D.amount} €`,
+          description: 'Votre annonce en tête de liste pendant 7 ou 30 jours, avec le badge « En vedette ».',
           features: ['Affichée avant les autres annonces', 'Badge « En vedette »', 'Sans engagement'],
           link: { href: '/ma/mes-annonces', label: 'Mettre une annonce en avant' },
         },
         {
           title: 'Dossier vérifié',
           price: OFFER_PRICES.VERIFICATION.label,
-          badge: 'Confiance',
           description: "Vos chiffres contrôlés par l'équipe GoFounders.",
           features: ["Vérification de vos justificatifs (Stripe, Shopify, bilans)", 'Badge « Dossier vérifié » sur l’annonce', 'Plus de demandes de repreneurs sérieux'],
           link: { href: '/ma/mes-annonces', label: 'Faire vérifier mon dossier' },
@@ -331,15 +311,14 @@ export class TarifsComponent {
           price: OFFER_PRICES.PRO_DIRECTORY.label,
           description: 'Votre fiche dans l’annuaire GoFounders.',
           features: ['Fiche avec votre métier, votre zone et votre site', 'Contactable par tous les membres', 'Sans engagement'],
-          ...(this.isPro() ? { product: 'PRO_DIRECTORY' as const } : { link: { href: '/inscription', label: 'Créer un compte professionnel' } }),
+          ...(this.isPro() ? { product: 'PRO_DIRECTORY' as const, cta: 'Activer ma fiche' } : { link: { href: '/inscription', label: 'Créer un compte professionnel' } }),
         },
         {
           title: 'Compte pro',
           price: OFFER_PRICES.PRO_ACCOUNT.label,
-          badge: 'Cabinets de cession',
-          description: 'Pour accompagner plusieurs cessions sur GoFounders.',
+          description: 'Pour les cabinets qui accompagnent plusieurs cessions sur GoFounders.',
           features: ["Fiche dans l'annuaire, mise en avant", 'Publication de plusieurs annonces pour vos clients', 'Contact direct des repreneurs', 'Sans engagement'],
-          ...(this.isPro() ? { product: 'PRO_ACCOUNT' as const } : { link: { href: '/inscription', label: 'Créer un compte professionnel' } }),
+          ...(this.isPro() ? { product: 'PRO_ACCOUNT' as const, cta: 'Activer le compte pro' } : { link: { href: '/inscription', label: 'Créer un compte professionnel' } }),
         },
       ] as RepriseOffer[],
     },
@@ -468,7 +447,7 @@ export class TarifsComponent {
 
   readonly comparisonRows: string[][] = [
     ['Profil et recherche', 'Illimités', 'Illimités', 'Illimités'],
-    ['Nouveaux contacts par mois', 'Associés : illimités · Porteurs de projet : 3', 'Illimités', 'Illimités'],
+    ['Nouveaux contacts par mois', 'Porteurs de projet : 3. Associés : illimités', 'Illimités', 'Illimités'],
     ['Réponses dans vos conversations', 'Illimitées', 'Illimitées', 'Illimitées'],
     ['Score de compatibilité', '✓', '✓', '✓'],
     ['Matching intelligent (raisons détaillées)', '✗', '✓', '✓'],

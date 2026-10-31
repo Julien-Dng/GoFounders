@@ -7,7 +7,7 @@ import { ChangeDetectionStrategy, Component, Input, signal } from '@angular/core
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    class: 'relative inline-flex flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-accent to-primary font-bold text-white',
+    class: 'relative inline-flex flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary font-bold text-white',
   },
   template: `
     @if (showPhoto()) {

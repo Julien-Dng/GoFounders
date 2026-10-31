@@ -38,7 +38,7 @@ import { StatsService } from '../../core/services/stats.service';
                   @if (entry.photo_url) {
                     <img [src]="entry.photo_url" [alt]="'Photo de ' + entry.display_name" class="h-12 w-12 flex-shrink-0 rounded-full object-cover">
                   } @else {
-                    <span class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary font-bold text-white" aria-hidden="true">{{ initials(entry.display_name) }}</span>
+                    <span class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary font-bold text-white" aria-hidden="true">{{ initials(entry.display_name) }}</span>
                   }
                   <div class="min-w-0">
                     <h2 class="font-bold">{{ entry.display_name }}</h2>

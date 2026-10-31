@@ -79,7 +79,7 @@ const ACTION_LINKS: Record<AiAction, ChatAction> = {
               <h2 class="mb-6 text-xl font-bold">Ce que je sais sur vous</h2>
 
               <div class="mb-6 border-b border-border pb-6">
-                <h3 class="mb-3 text-sm font-bold uppercase text-muted-foreground">Votre profil</h3>
+                <h3 class="mb-3 text-sm font-bold text-muted-foreground">Votre profil</h3>
                 <div class="space-y-2 text-sm">
                   @for (info of profileInfo(); track info.label) {
                     <div class="flex items-center gap-2">
@@ -91,7 +91,7 @@ const ACTION_LINKS: Record<AiAction, ChatAction> = {
               </div>
 
               <div class="mb-6 border-b border-border pb-6">
-                <h3 class="mb-3 text-sm font-bold uppercase text-muted-foreground">Votre activité</h3>
+                <h3 class="mb-3 text-sm font-bold text-muted-foreground">Votre activité</h3>
                 <div class="space-y-2 text-sm">
                   @for (item of activity(); track item.label) {
                     <div class="flex items-center justify-between gap-2">
@@ -105,7 +105,7 @@ const ACTION_LINKS: Record<AiAction, ChatAction> = {
               </div>
 
               <div>
-                <h3 class="mb-3 text-sm font-bold uppercase text-muted-foreground">Questions suggérées</h3>
+                <h3 class="mb-3 text-sm font-bold text-muted-foreground">Questions suggérées</h3>
                 <div class="space-y-2">
                   @for (question of suggestedQuestions(); track question) {
                     <button type="button" (click)="ask(question)" [disabled]="isSending()" class="group w-full rounded-lg border border-border bg-white px-4 py-2.5 text-left text-sm transition-all hover:border-accent hover:bg-accent/5">
@@ -129,7 +129,7 @@ const ACTION_LINKS: Record<AiAction, ChatAction> = {
                   @for (msg of chatHistory(); track $index) {
                     <div class="flex gap-4" [ngClass]="msg.type === 'user' ? 'justify-end' : 'justify-start'">
                       @if (msg.type === 'ai') {
-                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary">
+                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary">
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
                           </svg>
@@ -177,7 +177,7 @@ const ACTION_LINKS: Record<AiAction, ChatAction> = {
                       </div>
 
                       @if (msg.type === 'user') {
-                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary font-bold text-white">
+                        <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary font-bold text-white">
                           {{ userInitials() }}
                         </div>
                       }

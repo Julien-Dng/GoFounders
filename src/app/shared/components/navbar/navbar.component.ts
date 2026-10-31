@@ -17,15 +17,15 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (!isHidden()) {
-      <nav class="fixed top-0 left-0 right-0 z-[100] overflow-visible bg-white/95 backdrop-blur-md border-b border-border shadow-sm">
+      <nav class="fixed top-0 left-0 right-0 z-[100] overflow-visible border-b border-border bg-white">
 
           <!-- Hamburger aligné avec la flèche retour (left-6 = 24px du bord) -->
           <button
             type="button"
             (click)="toggleDrawer($event)"
             [class]="auth.isAuthenticated()
-              ? 'absolute left-4 top-0 z-10 flex h-20 items-center px-1 text-muted-foreground transition-colors hover:text-foreground sm:left-6'
-              : 'absolute left-4 top-0 z-10 flex h-20 items-center px-1 text-muted-foreground transition-colors hover:text-foreground lg:hidden'"
+              ? 'absolute left-4 top-0 z-10 flex h-16 items-center px-1 text-muted-foreground transition-colors hover:text-foreground sm:left-6'
+              : 'absolute left-4 top-0 z-10 flex h-16 items-center px-1 text-muted-foreground transition-colors hover:text-foreground lg:hidden'"
             aria-label="Menu de navigation"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -35,18 +35,18 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
             </svg>
           </button>
 
-        <div class="mx-auto flex h-20 max-w-[1400px] items-center overflow-visible pl-12 pr-4 sm:pl-16 md:pr-6">
+        <div class="mx-auto flex h-16 max-w-[1200px] items-center overflow-visible pl-12 pr-4 sm:pl-16 md:pr-6 xl:px-0">
 
           <!-- Logo -->
-          <a [routerLink]="logoLink()" class="group flex flex-shrink-0 items-center gap-2 px-2 sm:gap-3 sm:px-4">
-            <div class="brand-logo-mark h-9 w-9 flex-shrink-0 transition-transform group-hover:scale-105 sm:h-11 sm:w-11">
+          <a [routerLink]="logoLink()" class="group flex flex-shrink-0 items-center gap-2.5 px-2 sm:px-4 xl:px-0">
+            <div class="brand-logo-mark h-8 w-8 flex-shrink-0">
               <img
                 src="/assets/images/gofounders-logo.png"
                 alt="Logo GoFounders"
                 class="h-full w-full object-contain"
               >
             </div>
-            <span class="truncate text-xl font-bold text-primary sm:text-2xl">GoFounders</span>
+            <span class="font-display truncate text-xl font-semibold text-primary">GoFounders</span>
           </a>
 
           <!-- Nav links (center) -->
@@ -54,17 +54,17 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
             @for (link of navLinks(); track link.href) {
               <a
                 [routerLink]="link.href"
-                routerLinkActive="!text-accent"
-                class="whitespace-nowrap py-2 text-base font-medium text-foreground/70 transition-colors hover:text-accent"
+                routerLinkActive="!text-primary underline decoration-2 underline-offset-[22px]"
+                class="whitespace-nowrap py-2 text-[15px] font-medium text-foreground/75 transition-colors hover:text-primary"
               >{{ link.label }}</a>
             }
           </div>
 
           <!-- Right actions -->
-          <div class="ml-auto hidden items-center gap-3 px-2 md:flex lg:ml-0 lg:px-8">
+          <div class="ml-auto hidden items-center gap-3 px-2 md:flex lg:ml-0 lg:pl-8 lg:pr-0">
             @if (auth.isAuthenticated()) {
 
-              <a routerLink="/dashboard" class="px-5 py-2 text-foreground font-medium hover:text-accent transition-colors">
+              <a routerLink="/dashboard" class="px-4 py-2 text-[15px] font-medium text-foreground/80 transition-colors hover:text-primary">
                 Dashboard
               </a>
               <a
@@ -82,10 +82,10 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
               <app-user-menu avatarClass="h-11 w-11" />
 
             } @else {
-              <a routerLink="/connexion" class="px-5 py-2 text-foreground font-medium hover:text-accent transition-colors">
+              <a routerLink="/connexion" class="px-4 py-2 text-[15px] font-medium text-foreground/80 transition-colors hover:text-primary">
                 Connexion
               </a>
-              <a routerLink="/inscription" class="px-6 py-2.5 bg-accent text-white rounded-lg font-semibold shadow-md hover:bg-accent/90 transition-all hover:scale-105 active:scale-95">
+              <a routerLink="/inscription" class="rounded bg-primary px-4 py-2 text-[15px] font-medium text-white transition-colors hover:bg-primary/90">
                 S'inscrire
               </a>
             }
@@ -104,7 +104,7 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
 
       <!-- DRAWER -->
       <aside
-        class="fixed top-20 left-0 bottom-0 w-64 bg-white border-r border-border shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-in-out"
+        class="fixed top-16 left-0 bottom-0 w-64 bg-white border-r border-border shadow-xl z-50 flex flex-col transition-transform duration-300 ease-in-out"
         [style.transform]="drawerOpen() ? 'translateX(0)' : 'translateX(-100%)'"
       >
         <div class="flex items-center justify-between px-5 py-4 border-b border-border">
@@ -227,7 +227,7 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
                   class="h-9 w-9 flex-shrink-0 rounded-full border border-border object-cover shadow-sm"
                 >
               } @else {
-                <span class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary text-sm font-bold text-white" aria-hidden="true">
+                <span class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white" aria-hidden="true">
                   {{ auth.initials() }}
                 </span>
               }

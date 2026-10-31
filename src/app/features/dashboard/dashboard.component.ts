@@ -142,7 +142,7 @@ interface QuickActionItem {
                   class="h-10 w-10 flex-shrink-0 rounded-full border border-primary-foreground/10 object-cover shadow-sm"
                 >
               } @else {
-                <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent to-primary font-bold text-white">
+                <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary font-bold text-white">
                   {{ initials() }}
                 </div>
               }
@@ -198,7 +198,7 @@ interface QuickActionItem {
               </div>
 
               @if (showProUpsell()) {
-                <div class="animate-fade-in-up delay-100 rounded-2xl bg-gradient-to-br from-accent to-primary p-6 text-white shadow-lg">
+                <div class="animate-fade-in-up delay-100 rounded-2xl bg-primary p-6 text-white shadow-lg">
                   <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/20">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="m2 4 3 12h14l3-12-6 5-4-5-4 5-6-5z"/>
@@ -289,7 +289,7 @@ interface QuickActionItem {
             </div>
 
             <div class="col-span-3 space-y-6">
-              <div class="animate-fade-in-up delay-200 rounded-2xl border-2 border-accent/20 bg-gradient-to-br from-accent/10 to-primary/10 p-6">
+              <div class="animate-fade-in-up delay-200 rounded-2xl border-2 border-accent/20 bg-secondary p-6">
                 <div class="mb-4 flex items-center gap-2">
                   <div class="flex h-10 w-10 items-center justify-center rounded-full bg-accent">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

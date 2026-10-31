@@ -32,7 +32,7 @@ interface ConversationPreview {
   imports: [NgClass, RouterLink, AvatarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="mt-20 h-[calc(100vh-80px)] bg-secondary px-4 py-4 sm:px-6 lg:px-8">
+    <div class="mt-16 h-[calc(100vh-64px)] bg-secondary px-4 py-4 sm:px-6 lg:px-8">
       <div class="mx-auto flex h-full w-full max-w-[1500px]">
 
       <!-- ZONE DE CHAT -->
@@ -169,7 +169,7 @@ interface ConversationPreview {
         <!-- MINI PROFIL -->
         <aside class="order-2 hidden h-full w-72 flex-shrink-0 overflow-hidden rounded-2xl border border-border bg-white shadow-sm xl:block">
           @if (selectedConv()) {
-            <div class="h-20 bg-gradient-to-br from-accent to-primary" aria-hidden="true"></div>
+            <div class="h-20 bg-primary" aria-hidden="true"></div>
 
             <div class="-mt-8 px-5 pb-5 text-center">
               <app-avatar
@@ -184,12 +184,12 @@ interface ConversationPreview {
               <div class="mt-4 grid gap-2 text-left" [class.grid-cols-2]="selectedCompatibility() !== null">
                 @if (selectedCompatibility(); as compatibility) {
                   <div class="rounded-xl bg-secondary p-3" [title]="canSeeReasons() ? compatibility.reasons.join(' · ') : reasonsUpsell">
-                    <div class="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Compatibilité</div>
+                    <div class="text-[11px] font-semibold text-muted-foreground">Compatibilité</div>
                     <div class="mt-1 text-lg font-bold text-accent">{{ compatibility.score }}%</div>
                   </div>
                 }
                 <div class="rounded-xl bg-secondary p-3">
-                  <div class="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Ville</div>
+                  <div class="text-[11px] font-semibold text-muted-foreground">Ville</div>
                   <div class="mt-1 truncate text-sm font-bold">{{ selectedProfile()?.location ?? 'France' }}</div>
                 </div>
               </div>

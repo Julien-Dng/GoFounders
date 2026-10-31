@@ -22,7 +22,7 @@ interface WaitlistEntry {
         <!-- Header -->
         <div class="flex items-start justify-between mb-6">
           <div>
-            <div class="inline-flex items-center gap-2 px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-bold uppercase mb-3">
+            <div class="inline-flex items-center gap-2 px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-bold mb-3">
               <span class="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
               Bientôt disponible
             </div>

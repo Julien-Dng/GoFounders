@@ -67,28 +67,28 @@ import { ModeratedListing, ModerationAction, ModerationFilter, ModerationService
                   </div>
 
                   <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-4">
-                    <div><dt class="text-xs font-semibold uppercase text-muted-foreground">CA</dt><dd>{{ money(listing.revenue) }}</dd></div>
-                    <div><dt class="text-xs font-semibold uppercase text-muted-foreground">Marge</dt><dd>{{ listing.margin ?? '–' }} %</dd></div>
-                    <div><dt class="text-xs font-semibold uppercase text-muted-foreground">Ancienneté</dt><dd>{{ listing.age ?? '–' }} ans</dd></div>
-                    <div><dt class="text-xs font-semibold uppercase text-muted-foreground">Prix</dt><dd>{{ money(listing.price_min) }} – {{ money(listing.price_max) }}</dd></div>
+                    <div><dt class="text-xs font-semibold text-muted-foreground">CA</dt><dd>{{ money(listing.revenue) }}</dd></div>
+                    <div><dt class="text-xs font-semibold text-muted-foreground">Marge</dt><dd>{{ listing.margin ?? '–' }} %</dd></div>
+                    <div><dt class="text-xs font-semibold text-muted-foreground">Ancienneté</dt><dd>{{ listing.age ?? '–' }} ans</dd></div>
+                    <div><dt class="text-xs font-semibold text-muted-foreground">Prix</dt><dd>{{ money(listing.price_min) }} – {{ money(listing.price_max) }}</dd></div>
                   </dl>
 
                   <div class="mt-4 space-y-3 text-sm">
                     <div>
-                      <div class="text-xs font-semibold uppercase text-muted-foreground">Résumé public (visible par tous)</div>
+                      <div class="text-xs font-semibold text-muted-foreground">Résumé public (visible par tous)</div>
                       <p class="mt-1 whitespace-pre-line">{{ listing.public_summary }}</p>
                     </div>
                     <div>
-                      <div class="text-xs font-semibold uppercase text-muted-foreground">Dossier confidentiel</div>
+                      <div class="text-xs font-semibold text-muted-foreground">Dossier confidentiel</div>
                       <p class="mt-1 whitespace-pre-line text-foreground/80">{{ listing.confidential_description || '–' }}</p>
                     </div>
                     <div class="grid gap-3 sm:grid-cols-2">
                       <div>
-                        <div class="text-xs font-semibold uppercase text-muted-foreground">Raison de la vente</div>
+                        <div class="text-xs font-semibold text-muted-foreground">Raison de la vente</div>
                         <p class="mt-1 text-foreground/80">{{ listing.sale_reason || '–' }}</p>
                       </div>
                       <div>
-                        <div class="text-xs font-semibold uppercase text-muted-foreground">Contact</div>
+                        <div class="text-xs font-semibold text-muted-foreground">Contact</div>
                         <p class="mt-1 text-foreground/80">{{ listing.contact_info || '–' }}</p>
                       </div>
                     </div>

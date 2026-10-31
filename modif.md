@@ -967,3 +967,10 @@ npm install @stripe/stripe-js
 
 - Migration `2026-10-23-ventes-reussies.sql` (testée sur un Postgres local) : déclaration de vente par le vendeur (annonce passée en « vendue »), prix exact / fourchette / masqué, consentement, validation par un admin, retrait possible à tout moment, compteur public des ventes.
 - Pages : `/ma/vendue/:id` (lien « J'ai vendu » dans `/ma/statistiques`), `/admin/temoignages` ; section « Ils ont vendu » sur `/ma`, affichée seulement s'il existe des ventes publiées.
+
+## Session du 31 octobre 2026 - Refonte visuelle complète (`refonte-reprise`)
+
+- Nouveau système de design `docs/DESIGN.md` : Source Serif 4 (titres) et IBM Plex Sans, encre `#0F1B2D`, bleu action `#1D4ED8`, ocre réservé aux prix, rayons réduits, ombres quasi supprimées, plus d'animations d'apparition ni de grossissement au survol.
+- Pages refaites : accueil (vraie fiche d'annonce en en-tête, plus de vidéo ni d'illustration), `/ma` (fiches, filtres CA / prix / région enfin fonctionnels, première annonce visible sur mobile), `/tarifs` (liste de prix par profil, tableau des formules associés), barre de navigation, pied de page, ventes réussies.
+- Sur tout le site : dégradés décoratifs, libellés en majuscules et illustrations de personnages retirés.
+- Corrigé : débordement horizontal du tableau des tarifs sur mobile (textes pour lecteurs d'écran hors du conteneur).

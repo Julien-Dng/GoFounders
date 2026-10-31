@@ -184,8 +184,8 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
                     <p class="mb-6 text-muted-foreground">
                       Relisez votre annonce avant de la publier.
                     </p>
-                    <div class="rounded-2xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-6">
-                      <div class="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">Résumé</div>
+                    <div class="rounded-2xl border-2 border-amber-200 bg-amber-50 p-6">
+                      <div class="mb-3 text-sm font-semibold text-amber-700">Résumé</div>
                       <div class="space-y-2 text-sm text-foreground/80">
                         <div><strong>Accroche :</strong> {{ teaser() || 'À compléter' }}</div>
                         <div><strong>Secteur :</strong> {{ sector() || 'À préciser' }}</div>

@@ -31,15 +31,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
       </div>
     } @else {
       <div class="min-h-screen bg-secondary pt-20">
-        <div class="relative h-64 overflow-hidden bg-gradient-to-br from-accent via-primary to-accent">
-          <div class="absolute inset-0 opacity-20">
-            <svg class="h-full w-full" viewBox="0 0 1000 400">
-              <circle cx="200" cy="100" r="150" fill="white" opacity="0.1" />
-              <circle cx="800" cy="300" r="200" fill="white" opacity="0.15" />
-              <circle cx="500" cy="200" r="100" fill="white" opacity="0.1" />
-            </svg>
-          </div>
-        </div>
+        <div class="h-40 bg-primary" aria-hidden="true"></div>
 
         <div class="relative z-10 mx-auto -mt-12 max-w-[1400px] px-4 pb-12 sm:-mt-16 sm:px-6 lg:-mt-20 lg:px-8">
           <div class="grid grid-cols-1 gap-8 xl:grid-cols-12">
@@ -47,7 +39,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
               <div class="mb-6 rounded-2xl border-2 border-border bg-white p-6 shadow-xl sm:p-8">
                 <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
                   <div class="relative lg:-mt-1">
-                    <div class="h-28 w-28 overflow-hidden rounded-2xl bg-gradient-to-br from-accent to-primary text-3xl font-bold text-white shadow-lg sm:h-32 sm:w-32 sm:text-4xl">
+                    <div class="h-28 w-28 overflow-hidden rounded-2xl bg-primary text-3xl font-bold text-white shadow-lg sm:h-32 sm:w-32 sm:text-4xl">
                       @if (profilePhotoUrl()) {
                         <img [src]="profilePhotoUrl()" [alt]="'Photo de profil de ' + profileName()" class="h-full w-full object-cover">
                       } @else {
@@ -136,7 +128,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
 
                   @if (!isOwnProfile()) {
                     <div class="rounded-2xl border border-accent/15 bg-accent/5 p-4 lg:w-60">
-                      <div class="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-accent">Pourquoi ça matche</div>
+                      <div class="mb-3 text-xs font-bold text-accent">Pourquoi ça matche</div>
                       <div class="space-y-2">
                         @for (reason of matchReasons(); track reason) {
                           <div class="flex items-start gap-2 text-sm font-semibold text-primary">
@@ -180,7 +172,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                       </div>
 
                       <div class="rounded-2xl border border-border bg-secondary/40 p-5">
-                        <div class="mb-3 text-sm font-bold uppercase tracking-[0.14em] text-accent">Ce que {{ isOwnProfile() ? 'mon profil' : 'ce profil' }} apporte</div>
+                        <div class="mb-3 text-sm font-bold text-accent">Ce que {{ isOwnProfile() ? 'mon profil' : 'ce profil' }} apporte</div>
                         <div class="grid gap-3 sm:grid-cols-3">
                           @for (point of contributionPoints(); track point) {
                             <div class="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-primary shadow-sm">
@@ -235,7 +227,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                       <div class="grid gap-4 sm:grid-cols-2">
                         @for (info of quickInfo(); track info.label) {
                           <div class="rounded-xl border border-border bg-secondary/50 p-4">
-                            <div class="mb-1 text-xs font-semibold uppercase text-muted-foreground">{{ info.label }}</div>
+                            <div class="mb-1 text-xs font-semibold text-muted-foreground">{{ info.label }}</div>
                             <div class="font-semibold text-foreground">{{ info.value }}</div>
                           </div>
                         }
@@ -278,7 +270,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                 <div class="space-y-4">
                   @for (info of quickInfo(); track info.label) {
                     <div class="border-b border-border pb-4 last:border-0 last:pb-0">
-                      <div class="mb-1 text-xs font-semibold uppercase text-muted-foreground">{{ info.label }}</div>
+                      <div class="mb-1 text-xs font-semibold text-muted-foreground">{{ info.label }}</div>
                       <div class="font-semibold text-foreground">{{ info.value }}</div>
                     </div>
                   }
@@ -378,7 +370,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
               }
 
               @if (!isOwnProfile() && !isProjectProfile()) {
-                <div class="relative overflow-hidden rounded-2xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-6 shadow-lg dark:border-amber-300/25 dark:from-amber-500/15 dark:to-orange-500/10">
+                <div class="relative overflow-hidden rounded-2xl border-2 border-amber-200 bg-amber-50 p-6 shadow-lg dark:border-amber-300/25 dark:from-amber-500/15 dark:to-orange-500/10">
                   <div class="relative z-10">
                     <div class="mb-4 flex items-center gap-3">
                       <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500">

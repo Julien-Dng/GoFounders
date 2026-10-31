@@ -60,26 +60,26 @@ import { StatsService } from '../../../core/services/stats.service';
                 <h2 class="mb-4 text-xl font-bold">Informations financières</h2>
                 <div class="space-y-4">
                   <div class="border-b border-border pb-4">
-                    <div class="mb-1 text-xs font-semibold uppercase text-muted-foreground">Chiffre d'affaires</div>
+                    <div class="mb-1 text-xs font-semibold text-muted-foreground">Chiffre d'affaires</div>
                     <div class="font-semibold text-foreground">{{ listing()!.revenue }}</div>
                   </div>
                   <div class="border-b border-border pb-4">
-                    <div class="mb-1 text-xs font-semibold uppercase text-muted-foreground">Marge nette</div>
+                    <div class="mb-1 text-xs font-semibold text-muted-foreground">Marge nette</div>
                     <div class="font-semibold text-foreground">{{ listing()!.margin }}</div>
                   </div>
                   <div class="border-b border-border pb-4">
-                    <div class="mb-1 text-xs font-semibold uppercase text-muted-foreground">Ancienneté</div>
+                    <div class="mb-1 text-xs font-semibold text-muted-foreground">Ancienneté</div>
                     <div class="font-semibold text-foreground">{{ listing()!.age }}</div>
                   </div>
                   <div>
-                    <div class="mb-1 text-xs font-semibold uppercase text-muted-foreground">Fourchette de prix</div>
+                    <div class="mb-1 text-xs font-semibold text-muted-foreground">Fourchette de prix</div>
                     <div class="text-2xl font-bold text-amber-600">{{ listing()!.priceMin }} - {{ listing()!.priceMax }}</div>
                   </div>
                 </div>
                 <p class="mt-4 text-xs text-muted-foreground">Estimation indicative, non contractuelle.</p>
               </div>
 
-              <div class="rounded-2xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-6 shadow-lg">
+              <div class="rounded-2xl border-2 border-amber-200 bg-amber-50 p-6 shadow-lg">
                 <h2 class="mb-3 text-xl font-bold">Passer à l'étape suivante</h2>
                 <p class="mb-5 text-sm leading-relaxed text-foreground/80">
                   Vous avez accès au détail. La prochaine étape consiste à ouvrir un échange confidentiel avec le vendeur pour approfondir l'analyse.

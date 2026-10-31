@@ -33,7 +33,7 @@ type SearchProfileType = ProfileType;
           <aside class="w-full xl:w-[280px] xl:flex-shrink-0">
             <div class="sticky top-28 rounded-2xl bg-secondary p-6">
               <div class="mb-6 rounded-2xl border border-accent/15 bg-accent/5 p-4">
-                <div class="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-accent">Visibilité</div>
+                <div class="mb-2 text-xs font-bold text-accent">Visibilité</div>
                 <h2 class="mb-2 text-xl font-bold text-primary">{{ audiencePanelTitle() }}</h2>
                 <p class="text-sm leading-relaxed text-muted-foreground">{{ audiencePanelDescription() }}</p>
               </div>
@@ -120,7 +120,7 @@ type SearchProfileType = ProfileType;
                 <div class="border-t border-border pt-6">
                   <div class="mb-3 flex items-center justify-between gap-2">
                     <h3 class="text-sm font-bold">Recherche avancée</h3>
-                    <span class="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">PRO</span>
+                    <span class="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-white">PRO</span>
                   </div>
 
                   @if (canUseAdvanced()) {
@@ -191,25 +191,7 @@ type SearchProfileType = ProfileType;
               <span class="text-sm font-medium text-muted-foreground">{{ sortLabel() }}</span>
             </div>
 
-            <div
-              class="relative mb-8 overflow-hidden rounded-2xl bg-gradient-to-r from-accent to-primary p-6 text-white shadow-lg"
-              [ngClass]="highlightedProfiles().length > 0 ? 'lg:pr-64' : 'lg:pr-6'"
-            >
-              <div class="pointer-events-none absolute -right-16 -top-14 hidden h-72 w-72 rounded-full bg-white/10 blur-3xl lg:block"></div>
-              @if (highlightedProfiles().length > 0) {
-                <img
-                src="/assets/images/search-analyst.png"
-                alt=""
-                aria-hidden="true"
-                class="pointer-events-none absolute right-3 top-2 hidden h-44 w-56 object-contain object-right drop-shadow-2xl xl:h-52 xl:w-64 lg:block"
-                >
-                <div class="pointer-events-none absolute right-20 top-44 hidden rounded-full border border-white/20 bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] backdrop-blur-sm xl:top-52 lg:block">
-                Recherche
-                </div>
-                <div class="pointer-events-none absolute bottom-6 right-4 hidden w-64 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-center text-xs font-medium leading-relaxed text-white/90 shadow-xl backdrop-blur-md xl:block">
-                Je vous aide à repérer les profils les plus alignés avec vos filtres.
-                </div>
-              }
+            <div class="relative mb-8 overflow-hidden rounded-lg bg-primary p-6 text-white">
               <div class="mb-4 flex items-center gap-2">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
@@ -277,7 +259,7 @@ type SearchProfileType = ProfileType;
                 >
                   <div class="mb-4 flex items-start justify-between">
                     <div class="flex items-center gap-3">
-                      <div class="relative flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-accent to-primary text-lg font-bold text-white">
+                      <div class="relative flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-lg font-bold text-white">
                         <span>{{ profile.initials }}</span>
                         @if (profile.photoURL) {
                           <img [src]="profile.photoURL" [alt]="'Photo de ' + profile.displayName" (error)="hideBrokenImage($event)" class="absolute inset-0 h-full w-full object-cover">

@@ -9,7 +9,7 @@ import { Plan } from '../../../core/models/user.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <span
-      class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide"
+      class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
       [ngClass]="{
         'bg-muted text-muted-foreground': plan === 'FREE',
         'bg-accent/10 text-accent': plan === 'PRO',

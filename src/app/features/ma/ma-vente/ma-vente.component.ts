@@ -71,7 +71,7 @@ const RANGES: Array<[number, string]> = [
             <input id="story-author" type="text" maxlength="60" [value]="authorLabel()" (input)="authorLabel.set($any($event.target).value)" class="mt-1 w-full rounded-lg border border-border px-3 py-2.5 text-sm outline-none focus:border-accent" placeholder="Ex. Julie, fondatrice d'une boutique en ligne">
 
             <div class="mt-6 rounded-xl bg-secondary/60 p-4">
-              <div class="text-xs font-semibold uppercase text-muted-foreground">Aperçu</div>
+              <div class="text-xs font-semibold text-muted-foreground">Aperçu</div>
               <div class="mt-2 text-sm font-semibold">{{ listing()!.sector }} · {{ listing()!.region }}</div>
               <div class="mt-1 text-xl font-bold text-amber-600">{{ previewPrice() }}</div>
               <p class="mt-2 text-sm italic text-foreground/80">« {{ quote().trim() || 'Votre témoignage' }} »</p>
