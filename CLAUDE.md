@@ -101,6 +101,8 @@ PREMIUM = accompagnement humain. Les talents n'ont pas besoin de payer.
 /ma/statistiques           Statistiques du vendeur : vues, dossiers consultés, contacts reçus (vendeur)
 
 /ma/vendue/:id             « J'ai vendu » : déclaration de la vente et témoignage (vendeur)
+/estimation                Estimation gratuite de la valeur d'une entreprise (publique, calcul par règles)
+/paiement/merci            Retour de Stripe Checkout (attend la confirmation du webhook)
 
 /admin/annonces            Modération des annonces M&A (admin)
 /admin/temoignages         Ventes déclarées à valider avant publication (admin)
@@ -482,10 +484,11 @@ Tu proposes des actions concrètes sur la plateforme GoFounders.
 
 ## 💳 Stripe — Flux de paiement
 
-> **État actuel : paiements simulés** (pas encore de clé Stripe). Tous les achats passent par
-> `PaymentService.purchase()` ; `environment.paymentMode = 'simulation'` appelle la fonction Supabase
-> `simulate_purchase`. Pour brancher Stripe : passer `paymentMode` à `'stripe'`, implémenter la
-> Checkout Session + le webhook, puis **supprimer `simulate_purchase` avant la mise en production**.
+> **Branche `refonte-reprise` : Stripe est implémenté** (back Python `backend/app/payments.py`, webhook,
+> portail client, migration `2026-10-24-paiements-stripe.sql`). `environment.paymentMode = 'simulation'`
+> reste le défaut tant que les clés ne sont pas renseignées ; en `'stripe'`, `PaymentService` redirige vers
+> Stripe Checkout et seuls les webhooks signés accordent les droits (`apply_purchase`, idempotent).
+> **À la mise en ligne : exécuter `supabase/production/supprimer-paiements-simules.sql`.** Mise en route : `backend/README.md`.
 
 ### Abonnement PRO (49€/mois)
 1. Utilisateur clique "Passer en PRO"

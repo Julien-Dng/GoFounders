@@ -74,6 +74,13 @@ import { PaymentService } from '../../core/services/payment.service';
           </section>
         </div>
 
+        @if (!isSimulation) {
+          <div class="mt-6 flex flex-col gap-3 rounded-lg border border-border bg-white p-5 sm:flex-row sm:items-center sm:justify-between">
+            <p class="text-base text-muted-foreground">Moyens de paiement, factures, résiliation : tout se gère dans l'espace sécurisé de Stripe.</p>
+            <button type="button" (click)="openPortal()" class="flex-shrink-0 rounded border border-primary px-5 py-2.5 font-medium text-primary transition-colors hover:bg-primary hover:text-white">Gérer mes abonnements et factures</button>
+          </div>
+        }
+
         @if (isSimulation) {
         <div class="mt-6 rounded-lg border border-border bg-white p-5 text-sm text-muted-foreground">
           <strong class="text-primary">Note projet :</strong>
@@ -118,6 +125,14 @@ export class AbonnementComponent {
   async activatePlan(plan: Exclude<Plan, 'FREE'>): Promise<void> {
     const result = await this.payment.purchase(plan);
     this.statusMessage.set(result.message);
+  }
+
+  async openPortal(): Promise<void> {
+    const result = await this.payment.openBillingPortal();
+
+    if (!result.success) {
+      this.statusMessage.set(result.message);
+    }
   }
 
   async activateMaAccess(): Promise<void> {

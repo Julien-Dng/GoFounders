@@ -23,6 +23,12 @@ class Settings(BaseSettings):
     # Garde-fou de coût par utilisateur (fenêtre glissante d'une heure).
     max_requests_per_hour: int = 30
 
+    # Paiements Stripe (facultatif : sans clé, les routes de paiement répondent 503).
+    stripe_secret_key: str | None = None
+    stripe_webhook_secret: str | None = None
+    # Adresse publique du site Angular, pour les retours de Stripe Checkout et du portail.
+    site_url: str = "http://localhost:4200"
+
     @property
     def origins(self) -> list[str]:
         return [origin.strip() for origin in self.allowed_origins.split(",") if origin.strip()]

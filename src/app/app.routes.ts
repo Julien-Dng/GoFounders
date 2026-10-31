@@ -21,6 +21,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/tarifs/tarifs.component').then(m => m.TarifsComponent)
       },
       {
+        path: 'paiement/merci',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/paiement/paiement-merci.component').then(m => m.PaiementMerciComponent)
+      },
+      {
         path: 'estimation',
         loadComponent: () => import('./features/estimation/estimation.component').then(m => m.EstimationComponent)
       },

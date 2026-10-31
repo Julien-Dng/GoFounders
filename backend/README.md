@@ -51,14 +51,41 @@ Les tests n'appellent ni Supabase ni OpenAI / Anthropic (clients simulés).
 | `POST` | `/api/coaching-ia/messages` | `{ "messages": [{ "role": "user", "content": "..." }] }` → `{ "reply", "actions" }` |
 | `POST` | `/api/ma/brouillon-annonce` | Vendeur : `{ "description": "..." }` → teaser, description anonymisée, champs du formulaire, `identifying_details` |
 | `POST` | `/api/ma/annonces/{id}/analyse` | Acheteur avec accès repreneur en cours : synthèse, points forts, points de vigilance, questions, vérifications. 3 analyses par mois, illimitées avec l'accès Plus (402 au-delà) |
+| `POST` | `/api/paiements/session` | Membre connecté : `{ "product", "listing_id"?, "evidence"? }` → `{ "url" }` de la page de paiement Stripe Checkout (rôle et propriété de l'annonce vérifiés) |
+| `POST` | `/api/paiements/portail` | Membre connecté ayant déjà payé : `{ "url" }` du portail Stripe (factures, carte, résiliation) |
+| `POST` | `/api/stripe/webhook` | Appelé par Stripe uniquement (signature vérifiée) : accorde, prolonge ou retire les droits |
 
 Codes d'erreur : `401` non connecté, `403` plan FREE, `429` plus de `MAX_REQUESTS_PER_HOUR` questions
 par heure, `503` fournisseur d'IA indisponible.
 
+## Paiements Stripe
+
+Tant que `STRIPE_SECRET_KEY` est vide, les routes de paiement répondent `503` et le site reste en
+`paymentMode: 'simulation'`. Pour passer aux vrais paiements :
+
+1. **Supabase** : exécuter `supabase/2026-10-24-paiements-stripe.sql` (après les migrations précédentes).
+2. **Stripe, mode test d'abord** (dashboard.stripe.com, interrupteur « Mode test ») :
+   - Développeurs > Clés API : copier la clé secrète `sk_test_…` dans `STRIPE_SECRET_KEY` ;
+   - Développeurs > Webhooks > Ajouter un endpoint : `https://<votre-back>/api/stripe/webhook`, événements
+     `checkout.session.completed`, `invoice.paid`, `customer.subscription.deleted` ; copier le secret de
+     signature `whsec_…` dans `STRIPE_WEBHOOK_SECRET` ;
+   - Paramètres > Facturation > Portail client : activer le portail (résiliation, factures, moyens de paiement).
+3. **`.env`** : renseigner aussi `SITE_URL` (adresse publique du site Angular).
+4. **Site** : `paymentMode: 'stripe'` dans `src/environments/environment.ts`.
+5. **Tester** avec la carte `4242 4242 4242 4242` (date future, n'importe quel CVC). En local, la CLI Stripe
+   relaie les webhooks : `stripe listen --forward-to localhost:8000/api/stripe/webhook`.
+6. **Mise en ligne** : passer aux clés `sk_live_…` et au webhook du mode réel, puis exécuter
+   `supabase/production/supprimer-paiements-simules.sql` (supprime `simulate_purchase` et
+   `simulate_listing_purchase`).
+
+Les prix sont définis dans `app/payments.py` (`OFFERS`), à garder alignés sur `src/app/core/config/offers.ts`.
+Aucun produit n'est à créer dans Stripe. PREMIUM reste sur devis (non achetable en ligne).
+
 ## Organisation
 
 - `app/main.py` : routes FastAPI, authentification, contrôle du plan, limite de requêtes
-- `app/supabase.py` : vérification du jeton et lecture du contexte utilisateur
+- `app/supabase.py` : vérification du jeton, lecture du contexte utilisateur, droits après paiement (`apply_purchase`)
+- `app/payments.py` : catalogue des offres, appels à l'API Stripe (httpx, sans SDK) et vérification de la signature des webhooks
 - `app/prompt.py` : system prompt (instructions fixes + données de l'utilisateur)
 - `app/ma_ai.py` : outils IA M&A (brouillon d'annonce anonymisée, analyse de dossier), limités à 10 demandes par heure et par utilisateur ; `owner_id` et `contact_info` ne sont jamais transmis au modèle
 - `app/assistant.py` : prompt, lecture de la réponse JSON, filtrage des actions selon le rôle

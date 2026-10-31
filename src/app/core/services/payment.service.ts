@@ -1,7 +1,10 @@
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AccountProduct, ListingProduct } from '../config/offers';
 import { canAccessMaDetails, canPublishMaListing } from '../models/user.model';
+import { API_URL } from './ai.service';
 import { AuthService } from './auth.service';
 import { SupabaseService } from './supabase.service';
 
@@ -34,11 +37,13 @@ export interface PaymentResult {
 const PAYMENT_MODE: PaymentMode = (environment as { paymentMode?: PaymentMode }).paymentMode ?? 'simulation';
 
 // Point d'entrée unique des paiements. En simulation, les droits sont accordés par la fonction
-// Supabase simulate_purchase ; en mode stripe, ils le seront par le webhook Stripe.
+// Supabase simulate_purchase ; en mode stripe, le back Python crée la session Stripe Checkout et
+// les droits sont accordés par le webhook Stripe (backend/app/payments.py, apply_purchase).
 @Injectable({ providedIn: 'root' })
 export class PaymentService {
   private readonly auth = inject(AuthService);
   private readonly supabase = inject(SupabaseService);
+  private readonly http = inject(HttpClient);
 
   readonly isSimulation = PAYMENT_MODE === 'simulation';
 
@@ -63,8 +68,11 @@ export class PaymentService {
     }
 
     if (PAYMENT_MODE === 'stripe') {
-      // À brancher : Edge Function qui crée la session Stripe Checkout puis redirection.
-      return { success: false, message: "Le paiement en ligne n'est pas encore disponible." };
+      if (product === 'PREMIUM') {
+        return { success: false, message: "L'accompagnement PREMIUM est sur devis : envoyez-nous votre demande depuis la page Tarifs." };
+      }
+
+      return this.redirectToCheckout({ product });
     }
 
     return this.simulatePurchase(product);
@@ -109,7 +117,7 @@ export class PaymentService {
     }
 
     if (PAYMENT_MODE === 'stripe') {
-      return { success: false, message: "Le paiement en ligne n'est pas encore disponible." };
+      return this.redirectToCheckout({ product, listing_id: listingId, evidence: evidence ?? null });
     }
 
     if (!this.supabase.isConfigured) {
@@ -127,6 +135,44 @@ export class PaymentService {
     }
 
     return { success: true, message: `${LISTING_MESSAGES[product]} (paiement simulé).` };
+  }
+
+  // Portail Stripe : moyens de paiement, factures et résiliation des abonnements.
+  async openBillingPortal(): Promise<PaymentResult> {
+    try {
+      const { url } = await firstValueFrom(this.http.post<{ url: string }>(`${API_URL}/api/paiements/portail`, {}));
+      window.location.assign(url);
+      return { success: true, message: 'Ouverture du portail de facturation…' };
+    } catch (error) {
+      return { success: false, message: this.httpError(error) };
+    }
+  }
+
+  // Mode stripe : session Checkout créée par le back, puis redirection vers la page de paiement Stripe.
+  private async redirectToCheckout(body: { product: string; listing_id?: string; evidence?: string | null }): Promise<PaymentResult> {
+    try {
+      const { url } = await firstValueFrom(this.http.post<{ url: string }>(`${API_URL}/api/paiements/session`, body));
+      window.location.assign(url);
+      return { success: true, message: 'Redirection vers le paiement sécurisé…' };
+    } catch (error) {
+      return { success: false, message: this.httpError(error) };
+    }
+  }
+
+  private httpError(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      const detail = (error.error as { detail?: unknown } | null)?.detail;
+
+      if (typeof detail === 'string') {
+        return detail;
+      }
+
+      if (error.status === 0) {
+        return 'Le service de paiement est injoignable. Réessayez dans un instant.';
+      }
+    }
+
+    return 'Le paiement est momentanément indisponible.';
   }
 
   // Accompagnement PREMIUM : demande de devis transmise à l'équipe.

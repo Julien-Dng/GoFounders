@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AccountProduct, EARLY_ACCESS_HOURS, FREE_AI_ANALYSES_PER_MONTH, OFFER_PRICES } from '../../core/config/offers';
 import { hasBuyerPlus, isActiveUntil } from '../../core/models/user.model';
 import { PaymentService, PremiumTopic } from '../../core/services/payment.service';
@@ -221,6 +221,7 @@ export class TarifsComponent {
   private readonly auth = inject(AuthService);
   private readonly payment = inject(PaymentService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly anchors = [
     { id: 'repreneurs', label: 'Repreneurs' },
@@ -231,7 +232,9 @@ export class TarifsComponent {
   ];
 
   readonly busyProduct = signal<AccountProduct | null>(null);
-  readonly statusMessage = signal('');
+  readonly statusMessage = signal(
+    this.route.snapshot.queryParamMap.get('paiement') === 'annule' ? 'Paiement annulé : aucun montant n’a été prélevé.' : ''
+  );
   readonly statusIsError = signal(false);
   readonly premiumTopic = signal<PremiumTopic>('cession');
   readonly premiumMessage = signal('');

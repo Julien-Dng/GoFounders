@@ -81,6 +81,10 @@ Pas de commission sur les ventes (une commission sur une cession de fonds de com
 - Un pro peut écrire à un acheteur seulement avec un compte pro actif ; il n'y a pas de liste des acheteurs (confidentialité).
 - Le quota d'analyses IA est vérifié par le back Python (`consume_ai_analysis`, erreur 402 au-delà de 3 par mois sans Plus).
 
+### Estimation gratuite
+
+- `/estimation` : fourchette de valeur calculée par règles (`core/valuation/valuation.ts`), détail affiché, « Estimation indicative, non contractuelle ». Le bouton « Déposer mon annonce avec ces chiffres » préremplit `/ma/deposer`.
+
 ### Modération, vérification et statistiques (venues de `V6`, adaptées)
 
 - `/admin/annonces` : relire, retirer (motif envoyé au vendeur) ou remettre en ligne une annonce. `/admin/profils` : badge « Profil vérifié ». `/admin/verifications` : badge « Dossier vérifié » des annonces.
@@ -93,7 +97,8 @@ Pas de commission sur les ventes (une commission sur une cession de fonds de com
    2. `supabase/2026-10-20b-offres-reprise.sql` ;
    3. `supabase/2026-10-21-moderation-verification-stats.sql` (venue de `V6`) ;
    4. `supabase/2026-10-22-reprise-moderation-stats-pros.sql`, qui remet l'accès anticipé de 48 h dans le dossier complet et ajoute les statistiques des pros.
-2. **Paiement** : comme sur `V6`, les achats passent par `PaymentService` (mode simulation tant que Stripe n'est pas branché). ⚠️ Supprimer `simulate_purchase` et `simulate_listing_purchase` avant toute mise en ligne avec de vrais utilisateurs.
+   5. `supabase/2026-10-23-ventes-reussies.sql` puis `supabase/2026-10-24-paiements-stripe.sql`.
+2. **Paiement** : Stripe est branché (back Python, webhook, portail client). Mise en route pas à pas dans `backend/README.md`, section « Paiements Stripe ». Le site reste en simulation tant que `paymentMode` n'est pas `'stripe'`. ⚠️ À la mise en ligne, exécuter `supabase/production/supprimer-paiements-simules.sql`.
 3. **Vérifications** : un admin traite les demandes « Dossier vérifié » sur `/admin/verifications` (objectif : 3 jours ouvrés).
 4. **Modérer les annonces** : la publication est gratuite et immédiate. Il faut relire chaque nouvelle annonce et supprimer celles qui ne sont pas sérieuses.
 

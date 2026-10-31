@@ -979,3 +979,9 @@ npm install @stripe/stripe-js
 
 - Police unique Geist à la place de Source Serif 4 et IBM Plex Sans, titres à l'interlettrage serré ; rayons portés à 8 px (boutons) et 10 à 14 px (cartes). Le serif faisait vieillot.
 - Photos provisoires ajoutées sur l'accueil, `/ma` (bandeau cédants) et `/tarifs` (accompagnement) ; à remplacer, voir `src/assets/images/provisoire/LISEZMOI.md`.
+
+## Session du 2 novembre 2026 - Estimation gratuite et paiements Stripe (`refonte-reprise`)
+
+- `/estimation` : estimation gratuite de la valeur d'une entreprise (bénéfice net × multiple selon l'activité, ajusté par la croissance, les revenus récurrents, l'ancienneté et la dépendance au fondateur), détail du calcul affiché, préremplissage du dépôt d'annonce.
+- Stripe : migration `2026-10-24-paiements-stripe.sql` (table `payments`, `apply_purchase` idempotent, renouvellement et fin d'abonnement, réservés au serveur), back `app/payments.py` (Checkout, webhook signé, portail client, sans SDK), page `/paiement/merci`, bouton « Gérer mes abonnements et factures ». 21 tests back ajoutés (51 au total), scénarios SQL testés sur un Postgres local.
+- Mise en ligne : `supabase/production/supprimer-paiements-simules.sql`.

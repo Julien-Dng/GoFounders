@@ -131,3 +131,66 @@ class SupabaseClient:
             marketplace_pool=pool,
             own_listings=own_listings,
         )
+
+    async def _rpc(self, name: str, payload: dict[str, Any]) -> Any:
+        response = await self._http.post(
+            f"{self._url}/rest/v1/rpc/{name}",
+            json=payload,
+            headers=self._service_headers(),
+        )
+        if response.status_code not in (200, 204):
+            raise SupabaseError(f"{name} impossible ({response.status_code}) : {response.text[:300]}")
+        return response.json() if response.content else None
+
+    async def get_billing_profile(self, user_id: str) -> dict[str, Any] | None:
+        """Rôle, e-mail et client Stripe du membre (lecture serveur uniquement)."""
+        rows = await self._select("profiles", {"id": f"eq.{user_id}", "select": "role,email,stripe_customer_id"})
+        return rows[0] if rows else None
+
+    async def set_stripe_customer(self, user_id: str, customer_id: str) -> None:
+        response = await self._http.patch(
+            f"{self._url}/rest/v1/profiles",
+            params={"id": f"eq.{user_id}"},
+            json={"stripe_customer_id": customer_id},
+            headers=self._service_headers(),
+        )
+        if response.status_code not in (200, 204):
+            raise SupabaseError(f"Enregistrement du client Stripe impossible ({response.status_code}) : {response.text[:300]}")
+
+    async def owns_listing(self, user_id: str, listing_id: str) -> bool:
+        rows = await self._select("ma_listings", {"id": f"eq.{listing_id}", "owner_id": f"eq.{user_id}", "select": "id"})
+        return bool(rows)
+
+    async def apply_purchase(
+        self,
+        *,
+        user_id: str,
+        product: str,
+        listing_id: str | None,
+        evidence: str | None,
+        period_end: str | None,
+        reference: str,
+        amount_cents: int | None,
+        subscription_id: str | None,
+    ) -> bool:
+        """Accorde les droits d'un paiement confirmé (idempotent côté Supabase) ; False si déjà appliqué."""
+        result = await self._rpc(
+            "apply_purchase",
+            {
+                "p_user": user_id,
+                "p_product": product,
+                "p_listing": listing_id,
+                "p_evidence": evidence,
+                "p_period_end": period_end,
+                "p_reference": reference,
+                "p_amount_cents": amount_cents,
+                "p_subscription": subscription_id,
+            },
+        )
+        return result is True
+
+    async def extend_subscription(self, user_id: str, product: str, period_end: str) -> None:
+        await self._rpc("extend_subscription", {"p_user": user_id, "p_product": product, "p_period_end": period_end})
+
+    async def end_subscription(self, user_id: str, product: str) -> None:
+        await self._rpc("end_subscription", {"p_user": user_id, "p_product": product})
