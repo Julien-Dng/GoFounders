@@ -21,6 +21,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/tarifs/tarifs.component').then(m => m.TarifsComponent)
       },
       {
+        path: 'estimation',
+        loadComponent: () => import('./features/estimation/estimation.component').then(m => m.EstimationComponent)
+      },
+      {
         path: 'conditions-generales',
         loadComponent: () => import('./features/legal/cgu.component').then(m => m.CguComponent)
       },

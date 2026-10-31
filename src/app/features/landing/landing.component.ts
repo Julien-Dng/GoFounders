@@ -56,7 +56,7 @@ interface LandingFaqItem {
 
             <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-base">
               <a routerLink="/ma" class="font-medium text-white underline decoration-white/40 decoration-2 underline-offset-4 hover:decoration-white">Voir toutes les annonces</a>
-              <a routerLink="/ma/deposer" class="font-medium text-white underline decoration-white/40 decoration-2 underline-offset-4 hover:decoration-white">Je veux céder mon entreprise</a>
+              <a routerLink="/estimation" class="font-medium text-white underline decoration-white/40 decoration-2 underline-offset-4 hover:decoration-white">Estimer mon entreprise gratuitement</a>
             </div>
           </div>
 
@@ -270,9 +270,12 @@ interface LandingFaqItem {
               Déposez votre annonce gratuitement. Elle reste anonyme jusqu'à ce que vous acceptiez un repreneur.
             </p>
           </div>
-          <a routerLink="/ma/deposer" class="flex-shrink-0 rounded bg-white px-6 py-3.5 text-center font-medium text-primary transition-colors hover:bg-white/90">
-            Déposer mon annonce
-          </a>
+          <div class="flex flex-shrink-0 flex-col gap-3 sm:flex-row sm:items-center">
+            <a routerLink="/estimation" class="px-2 py-3 text-center font-medium text-white underline decoration-white/40 decoration-2 underline-offset-4 hover:decoration-white">Estimer sa valeur d'abord</a>
+            <a routerLink="/ma/deposer" class="rounded bg-white px-6 py-3.5 text-center font-medium text-primary transition-colors hover:bg-white/90">
+              Déposer mon annonce
+            </a>
+          </div>
         </div>
       </section>
 

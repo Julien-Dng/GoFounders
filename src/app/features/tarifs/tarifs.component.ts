@@ -283,7 +283,7 @@ export class TarifsComponent {
           title: 'Publication',
           price: 'Gratuit',
           description: 'Offre de lancement.',
-          features: ["Annonce anonymisée, préparée avec l'IA", 'Vos coordonnées réservées aux repreneurs avec un accès', 'Contact direct des repreneurs'],
+          features: ["Annonce anonymisée, préparée avec l'IA", 'Vos coordonnées réservées aux repreneurs avec un accès', 'Contact direct des repreneurs', 'Estimation gratuite de la valeur de votre entreprise'],
           link: { href: '/ma/deposer', label: 'Déposer mon annonce' },
         },
         {

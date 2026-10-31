@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { MaService } from '../../../core/services/ma.service';
 import { canPublishMa } from '../../../core/models/user.model';
@@ -266,6 +266,7 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
 })
 export class MaDeposerComponent {
   private readonly auth = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
   private readonly maService = inject(MaService);
   private readonly ai = inject(AiService);
 
@@ -293,6 +294,18 @@ export class MaDeposerComponent {
   readonly aiError = signal('');
   readonly aiApplied = signal(false);
   readonly aiDetails = signal<MaListingDraft['identifying_details']>([]);
+
+  constructor() {
+    // Chiffres venus de l'estimation gratuite (/estimation).
+    const params = this.route.snapshot.queryParamMap;
+    const amount = (key: string): number | null => (params.get(key) && Number.isFinite(Number(params.get(key))) ? Number(params.get(key)) : null);
+    this.sector.set(params.get('secteur') ?? '');
+    this.revenue.set(this.formatEuros(amount('ca')));
+    this.margin.set(params.get('marge') ?? '');
+    this.age.set(params.get('anciennete') ?? '');
+    this.priceMin.set(this.formatEuros(amount('prixMin')));
+    this.priceMax.set(this.formatEuros(amount('prixMax')));
+  }
 
   readonly progressPercent = computed(() => Math.round((this.currentStep() / this.totalSteps) * 100));
   readonly finalActionLabel = computed(() => (this.isSubmitting() ? 'Publication…' : 'Publier gratuitement'));

@@ -203,7 +203,10 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
             </p>
           </div>
           @if (canDepositListing()) {
-            <a routerLink="/ma/deposer" class="flex-shrink-0 rounded bg-white px-6 py-3.5 text-center font-medium text-primary transition-colors hover:bg-white/90">Déposer mon annonce</a>
+            <div class="flex flex-shrink-0 flex-col gap-3 sm:flex-row sm:items-center">
+              <a routerLink="/estimation" class="px-2 py-3 text-center font-medium text-white underline decoration-white/40 decoration-2 underline-offset-4 hover:decoration-white">Estimer sa valeur d'abord</a>
+              <a routerLink="/ma/deposer" class="rounded bg-white px-6 py-3.5 text-center font-medium text-primary transition-colors hover:bg-white/90">Déposer mon annonce</a>
+            </div>
           } @else {
             <p class="text-base text-primary-foreground/75">Le dépôt d'annonce est réservé aux comptes vendeur et professionnels.</p>
           }
