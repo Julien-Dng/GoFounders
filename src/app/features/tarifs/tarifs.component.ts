@@ -183,7 +183,7 @@ interface Plan {
                   </th>
                   <th scope="col" class="px-5 py-5 text-center sm:px-6">
                     <span class="block font-bold text-primary">PREMIUM</span>
-                    <span class="mt-1 block text-sm font-medium text-muted-foreground">à partir de ~199€/mois</span>
+                    <span class="mt-1 block text-sm font-medium text-muted-foreground">Sur devis</span>
                   </th>
                 </tr>
               </thead>
