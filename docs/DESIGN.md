@@ -27,14 +27,14 @@ Règle : l'ocre ne sert jamais à décorer. Si un élément orange n'est ni un p
 
 ## Typographie
 
-- **Source Serif 4** (600) : titres `h1` et `h2` uniquement, et les grands montants. Le serif donne la gravité d'un document financier.
-- **IBM Plex Sans** (400, 500, 600) : tout le reste. Classe `tabular` pour aligner les chiffres (CA, marges, prix).
+- **Geist** (400, 500, 600) pour tout le site : moderne, net, lisible. Les titres `h1` et `h2` sont en 600 avec un interlettrage serré (-0,03 à -0,04 em) : c'est ce serrage qui donne le caractère, pas une deuxième police. Classe `tabular` pour aligner les chiffres (CA, marges, prix).
+- Choix de novembre 2026 (direction « tech sobre ») : le serif d'origine faisait trop étude de notaire.
 - Taille de base 16 px, portée à 17, 18 puis 20 px sur les grands écrans (toutes les tailles sont en rem et suivent). Jamais de texte courant sous 16 px ni d'étiquette sous 14 px. Lignes de texte de 70 caractères maximum.
 - Jamais de libellés en majuscules espacées, jamais un mot isolé coloré dans un titre, pas de flèche « → » dans les boutons.
 
 ## Formes
 
-- Rayons : 4 px (boutons, champs), 6 à 10 px (cartes). Pas de pilules sauf pour les badges d'état.
+- Rayons : 8 px (boutons, champs), 10 à 14 px (cartes). Pas de pilules sauf pour les badges d'état.
 - Ombres quasi absentes : on sépare par des filets de 1 px, pas par des ombres. Les ombres restent pour ce qui flotte (menus, fenêtres).
 - Pas de dégradés décoratifs, pas d'illustrations de personnages, pas de grossissement au survol, pas d'apparitions animées au défilement.
 

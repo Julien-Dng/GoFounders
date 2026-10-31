@@ -52,8 +52,8 @@ module.exports = {
         ochre: 'var(--ochre)',
       },
       fontFamily: {
-        sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
-        display: ['"Source Serif 4"', 'Georgia', 'serif'],
+        sans: ['Geist', 'system-ui', 'sans-serif'],
+        display: ['Geist', 'system-ui', 'sans-serif'],
       },
       // Pas d'effet « grossissement » au survol : il fait jouet plus que professionnel.
       scale: {
@@ -64,13 +64,13 @@ module.exports = {
     // Rayons et ombres sobres sur tout le site (les classes existantes restent valides).
     borderRadius: {
       none: '0',
-      sm: '2px',
-      DEFAULT: '4px',
-      md: '4px',
-      lg: '6px',
-      xl: '8px',
-      '2xl': '10px',
-      '3xl': '12px',
+      sm: '4px',
+      DEFAULT: '8px',
+      md: '8px',
+      lg: '10px',
+      xl: '12px',
+      '2xl': '14px',
+      '3xl': '16px',
       full: '9999px',
     },
     boxShadow: {

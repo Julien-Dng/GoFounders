@@ -974,3 +974,8 @@ npm install @stripe/stripe-js
 - Pages refaites : accueil (vraie fiche d'annonce en en-tête, plus de vidéo ni d'illustration), `/ma` (fiches, filtres CA / prix / région enfin fonctionnels, première annonce visible sur mobile), `/tarifs` (liste de prix par profil, tableau des formules associés), barre de navigation, pied de page, ventes réussies.
 - Sur tout le site : dégradés décoratifs, libellés en majuscules et illustrations de personnages retirés.
 - Corrigé : débordement horizontal du tableau des tarifs sur mobile (textes pour lecteurs d'écran hors du conteneur).
+
+## Session du 1er novembre 2026 - Direction « tech sobre » (`refonte-reprise`)
+
+- Police unique Geist à la place de Source Serif 4 et IBM Plex Sans, titres à l'interlettrage serré ; rayons portés à 8 px (boutons) et 10 à 14 px (cartes). Le serif faisait vieillot.
+- Photos provisoires ajoutées sur l'accueil, `/ma` (bandeau cédants) et `/tarifs` (accompagnement) ; à remplacer, voir `src/assets/images/provisoire/LISEZMOI.md`.

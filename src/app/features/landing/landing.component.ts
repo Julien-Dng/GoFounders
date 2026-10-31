@@ -22,7 +22,7 @@ interface LandingFaqItem {
       <section class="overflow-hidden bg-primary px-4 pb-20 pt-28 text-white sm:px-6 lg:px-8 lg:pb-28 lg:pt-36">
         <div class="mx-auto grid max-w-[78rem] gap-16 lg:grid-cols-12 lg:items-center">
           <div class="lg:col-span-6">
-            <h1 class="max-w-[15ch] text-[2.75rem] leading-[1.04] text-white sm:text-6xl lg:text-[4.25rem]">
+            <h1 class="max-w-[15ch] text-[2.75rem] leading-[1.02] text-white sm:text-6xl lg:text-[4.5rem]">
               Reprenez une entreprise qui a déjà ses clients.
             </h1>
             <p class="mt-7 max-w-[52ch] text-lg leading-relaxed text-white/75">
@@ -91,7 +91,7 @@ interface LandingFaqItem {
       <section class="px-4 py-20 sm:px-6 lg:px-8 lg:py-28" aria-label="Notre conviction">
         <div class="mx-auto grid max-w-[78rem] gap-12 lg:grid-cols-12 lg:items-center">
           <div class="lg:col-span-7">
-            <p class="font-display text-[1.9rem] leading-snug text-primary sm:text-4xl sm:leading-snug lg:text-[2.6rem] lg:leading-[1.25]">
+            <p class="font-display text-[1.9rem] font-medium leading-snug text-primary sm:text-4xl sm:leading-snug lg:text-[2.6rem] lg:leading-[1.2]">
               Une entreprise, ce sont des années de travail, des clients qui vous font confiance, parfois une équipe.
               La transmettre mérite mieux qu'une petite annonce.
             </p>
