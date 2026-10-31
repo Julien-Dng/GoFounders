@@ -8,7 +8,7 @@ import { RouterLink } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <footer class="bg-primary text-primary-foreground">
-      <div class="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-[78rem] px-4 py-12 sm:px-6 lg:px-8">
         <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr]">
           <div>
             <div class="flex items-center gap-2.5">

@@ -35,7 +35,7 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
             </svg>
           </button>
 
-        <div class="mx-auto flex h-16 max-w-[1200px] items-center overflow-visible pl-12 pr-4 sm:pl-16 md:pr-6 xl:px-0">
+        <div class="mx-auto flex h-16 max-w-[78rem] items-center overflow-visible pl-12 pr-4 sm:pl-16 md:pr-6 xl:px-0">
 
           <!-- Logo -->
           <a [routerLink]="logoLink()" class="group flex flex-shrink-0 items-center gap-2.5 px-2 sm:px-4 xl:px-0">
@@ -55,7 +55,7 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
               <a
                 [routerLink]="link.href"
                 routerLinkActive="!text-primary underline decoration-2 underline-offset-[22px]"
-                class="whitespace-nowrap py-2 text-[15px] font-medium text-foreground/75 transition-colors hover:text-primary"
+                class="whitespace-nowrap py-2 text-base font-medium text-foreground/75 transition-colors hover:text-primary"
               >{{ link.label }}</a>
             }
           </div>
@@ -64,7 +64,7 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
           <div class="ml-auto hidden items-center gap-3 px-2 md:flex lg:ml-0 lg:pl-8 lg:pr-0">
             @if (auth.isAuthenticated()) {
 
-              <a routerLink="/dashboard" class="px-4 py-2 text-[15px] font-medium text-foreground/80 transition-colors hover:text-primary">
+              <a routerLink="/dashboard" class="px-4 py-2 text-base font-medium text-foreground/80 transition-colors hover:text-primary">
                 Dashboard
               </a>
               <a
@@ -82,10 +82,10 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
               <app-user-menu avatarClass="h-11 w-11" />
 
             } @else {
-              <a routerLink="/connexion" class="px-4 py-2 text-[15px] font-medium text-foreground/80 transition-colors hover:text-primary">
+              <a routerLink="/connexion" class="px-4 py-2 text-base font-medium text-foreground/80 transition-colors hover:text-primary">
                 Connexion
               </a>
-              <a routerLink="/inscription" class="rounded bg-primary px-4 py-2 text-[15px] font-medium text-white transition-colors hover:bg-primary/90">
+              <a routerLink="/inscription" class="rounded bg-primary px-4 py-2 text-base font-medium text-white transition-colors hover:bg-primary/90">
                 S'inscrire
               </a>
             }

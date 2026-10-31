@@ -29,7 +29,7 @@ Règle : l'ocre ne sert jamais à décorer. Si un élément orange n'est ni un p
 
 - **Source Serif 4** (600) : titres `h1` et `h2` uniquement, et les grands montants. Le serif donne la gravité d'un document financier.
 - **IBM Plex Sans** (400, 500, 600) : tout le reste. Classe `tabular` pour aligner les chiffres (CA, marges, prix).
-- Échelle : 13 / 15 / 16 / 18 / 22 / 28 / 36 / 48 px. Lignes de texte de 70 caractères maximum.
+- Taille de base 16 px, portée à 17, 18 puis 20 px sur les grands écrans (toutes les tailles sont en rem et suivent). Jamais de texte courant sous 16 px ni d'étiquette sous 14 px. Lignes de texte de 70 caractères maximum.
 - Jamais de libellés en majuscules espacées, jamais un mot isolé coloré dans un titre, pas de flèche « → » dans les boutons.
 
 ## Formes
@@ -40,7 +40,7 @@ Règle : l'ocre ne sert jamais à décorer. Si un élément orange n'est ni un p
 
 ## Mise en page
 
-- Contenu aligné à gauche, largeur maximale 1 200 px.
+- Contenu aligné à gauche, largeur maximale 78 rem (1 250 px environ, plus sur grand écran).
 - Accueil : le titre et une seule action principale à gauche, **une vraie fiche d'annonce** à droite (c'est l'élément marquant de la page).
 - Listes d'annonces : chaque annonce est une fiche. En titre le secteur et la région, puis trois chiffres en grand (CA, marge, ancienneté), puis le prix en ocre. L'information « dossier réservé » est donnée une seule fois en haut de liste, pas répétée sur chaque fiche.
 - Mobile d'abord : sur `/ma`, une annonce doit être visible dès le premier écran (filtres repliés).

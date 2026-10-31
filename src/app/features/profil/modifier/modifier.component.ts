@@ -52,7 +52,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
 
         <div class="mb-6 rounded-lg border border-border bg-white p-5 sm:p-6">
           <h2 class="text-2xl text-primary">Un profil complet inspire plus vite confiance</h2>
-          <p class="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
+          <p class="mt-2 max-w-2xl text-base leading-relaxed text-muted-foreground">
             Ajoutez une photo nette, une bio concrète et quelques liens utiles. L'objectif n'est pas de faire long, mais de donner assez de signaux pour déclencher une conversation qualifiée.
           </p>
         </div>

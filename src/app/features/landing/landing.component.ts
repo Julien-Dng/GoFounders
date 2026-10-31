@@ -20,7 +20,7 @@ interface LandingFaqItem {
   template: `
     <div class="min-h-screen bg-white">
       <section class="px-4 pb-16 pt-28 sm:px-6 lg:px-8 lg:pb-24 lg:pt-36">
-        <div class="mx-auto grid max-w-[1200px] gap-12 lg:grid-cols-12 lg:items-center">
+        <div class="mx-auto grid max-w-[78rem] gap-12 lg:grid-cols-12 lg:items-center">
           <div class="lg:col-span-7">
             <h1 class="max-w-[16ch] text-[2.5rem] leading-[1.08] text-primary sm:text-5xl lg:text-[3.5rem]">
               Reprenez une entreprise qui a déjà ses clients.
@@ -37,7 +37,7 @@ interface LandingFaqItem {
                 Je veux céder mon entreprise
               </a>
             </div>
-            <ul class="mt-10 grid max-w-[60ch] gap-3 border-l-2 border-border pl-5 text-[15px] text-foreground/85">
+            <ul class="mt-10 grid max-w-[60ch] gap-3 border-l-2 border-border pl-5 text-base text-foreground/85">
               <li>Annonce gratuite et anonymisée pour les cédants.</li>
               <li>Votre identité n'est révélée qu'aux repreneurs que vous choisissez.</li>
               <li>Aucune commission sur le prix de vente.</li>
@@ -53,28 +53,28 @@ interface LandingFaqItem {
                     <h2 class="mt-1 text-2xl leading-snug text-primary">{{ listing.sector }}, {{ listing.region }}</h2>
                   </div>
                   @if (listing.verified) {
-                    <span class="flex-shrink-0 rounded-full border border-emerald-700/30 px-2.5 py-1 text-xs font-medium text-emerald-800">Dossier vérifié</span>
+                    <span class="flex-shrink-0 rounded-full border border-emerald-700/30 px-2.5 py-1 text-sm font-medium text-emerald-800">Dossier vérifié</span>
                   }
                 </div>
-                <p class="mt-4 text-[15px] leading-relaxed text-foreground/80">{{ listing.summary }}</p>
+                <p class="mt-4 text-base leading-relaxed text-foreground/80">{{ listing.summary }}</p>
                 <dl class="tabular mt-6 grid grid-cols-3 border-y border-border">
                   <div class="py-4 pr-3">
-                    <dt class="text-xs text-muted-foreground">Chiffre d'affaires</dt>
-                    <dd class="mt-1 text-lg font-semibold text-primary">{{ listing.revenue }}</dd>
+                    <dt class="text-sm text-muted-foreground">Chiffre d'affaires</dt>
+                    <dd class="mt-1 text-xl font-semibold text-primary">{{ listing.revenue }}</dd>
                   </div>
                   <div class="border-l border-border px-3 py-4">
-                    <dt class="text-xs text-muted-foreground">Marge nette</dt>
-                    <dd class="mt-1 text-lg font-semibold text-primary">{{ listing.margin }}</dd>
+                    <dt class="text-sm text-muted-foreground">Marge nette</dt>
+                    <dd class="mt-1 text-xl font-semibold text-primary">{{ listing.margin }}</dd>
                   </div>
                   <div class="border-l border-border py-4 pl-3">
-                    <dt class="text-xs text-muted-foreground">Ancienneté</dt>
-                    <dd class="mt-1 text-lg font-semibold text-primary">{{ listing.age }}</dd>
+                    <dt class="text-sm text-muted-foreground">Ancienneté</dt>
+                    <dd class="mt-1 text-xl font-semibold text-primary">{{ listing.age }}</dd>
                   </div>
                 </dl>
                 <div class="mt-6">
-                  <p class="text-xs text-muted-foreground">Prix demandé</p>
+                  <p class="text-sm text-muted-foreground">Prix demandé</p>
                   <p class="font-display tabular mt-1 text-3xl font-semibold text-amber-600">{{ listing.priceMin }} à {{ listing.priceMax }}</p>
-                  <p class="mt-1 text-xs text-muted-foreground">Estimation indicative, non contractuelle.</p>
+                  <p class="mt-1 text-sm text-muted-foreground">Estimation indicative, non contractuelle.</p>
                 </div>
               </article>
               <figcaption class="mt-3 text-sm text-muted-foreground">
@@ -86,13 +86,13 @@ interface LandingFaqItem {
       </section>
 
       <section class="border-t border-border px-4 py-16 sm:px-6 lg:px-8 lg:py-20" aria-labelledby="audiences-title">
-        <div class="mx-auto max-w-[1200px]">
+        <div class="mx-auto max-w-[78rem]">
           <h2 id="audiences-title" class="max-w-[24ch] text-3xl text-primary sm:text-4xl">Une place de marché, trois façons de l'utiliser</h2>
           <div class="mt-10 grid gap-10 md:grid-cols-3 md:gap-0 md:divide-x md:divide-border">
             @for (audience of audiences; track audience.title; let first = $first) {
               <div [class]="first ? 'md:pr-8' : 'md:px-8'">
                 <h3 class="text-lg font-semibold text-primary">{{ audience.title }}</h3>
-                <p class="mt-2 text-[15px] leading-relaxed text-muted-foreground">{{ audience.description }}</p>
+                <p class="mt-2 text-base leading-relaxed text-muted-foreground">{{ audience.description }}</p>
                 <a [routerLink]="audience.href" class="mt-4 inline-block font-medium text-accent underline-offset-4 hover:underline">{{ audience.cta }}</a>
               </div>
             }
@@ -101,14 +101,14 @@ interface LandingFaqItem {
       </section>
 
       <section class="bg-secondary px-4 py-16 sm:px-6 lg:px-8 lg:py-20" aria-labelledby="steps-title">
-        <div class="mx-auto max-w-[1200px]">
+        <div class="mx-auto max-w-[78rem]">
           <h2 id="steps-title" class="text-3xl text-primary sm:text-4xl">Comment se passe une reprise</h2>
           <ol class="mt-10 grid gap-8 md:grid-cols-3">
             @for (step of steps; track step.title; let index = $index) {
               <li class="border-t-2 border-primary pt-5">
                 <span class="font-display tabular text-3xl font-semibold text-primary">{{ index + 1 }}</span>
                 <h3 class="mt-3 text-lg font-semibold text-primary">{{ step.title }}</h3>
-                <p class="mt-2 text-[15px] leading-relaxed text-muted-foreground">{{ step.description }}</p>
+                <p class="mt-2 text-base leading-relaxed text-muted-foreground">{{ step.description }}</p>
               </li>
             }
           </ol>
@@ -116,10 +116,10 @@ interface LandingFaqItem {
       </section>
 
       <section id="protection" class="px-4 py-16 sm:px-6 lg:px-8 lg:py-20" aria-labelledby="protection-title">
-        <div class="mx-auto grid max-w-[1200px] gap-10 lg:grid-cols-12">
+        <div class="mx-auto grid max-w-[78rem] gap-10 lg:grid-cols-12">
           <div class="lg:col-span-5">
             <h2 id="protection-title" class="text-3xl text-primary sm:text-4xl">La discrétion par défaut</h2>
-            <p class="mt-4 max-w-[52ch] text-[15px] leading-relaxed text-muted-foreground">
+            <p class="mt-4 max-w-[52ch] text-base leading-relaxed text-muted-foreground">
               Vendre une entreprise ou présenter un projet expose des informations sensibles. Vous décidez de ce qui est montré, à qui, et sous quel engagement.
             </p>
           </div>
@@ -127,12 +127,12 @@ interface LandingFaqItem {
             @for (item of protectionPoints; track item.title) {
               <div class="grid gap-1 py-5 sm:grid-cols-[14rem_1fr] sm:gap-6">
                 <dt class="font-semibold text-primary">{{ item.title }}</dt>
-                <dd class="text-[15px] leading-relaxed text-muted-foreground">{{ item.description }}</dd>
+                <dd class="text-base leading-relaxed text-muted-foreground">{{ item.description }}</dd>
               </div>
             }
           </dl>
         </div>
-        <p class="mx-auto mt-6 max-w-[1200px] text-xs leading-relaxed text-muted-foreground">
+        <p class="mx-auto mt-6 max-w-[78rem] text-sm leading-relaxed text-muted-foreground">
           L'engagement de confidentialité est un modèle mis à disposition par GoFounders, qui n'assure pas de conseil juridique.
           Pour un accord sur mesure, nos experts juridiques partenaires peuvent vous accompagner.
         </p>
@@ -141,9 +141,9 @@ interface LandingFaqItem {
       <app-success-stories background="bg-secondary" />
 
       <section class="px-4 py-16 sm:px-6 lg:px-8 lg:py-20" aria-labelledby="prices-title">
-        <div class="mx-auto max-w-[1200px]">
+        <div class="mx-auto max-w-[78rem]">
           <h2 id="prices-title" class="text-3xl text-primary sm:text-4xl">Vendre est gratuit. Reprendre coûte {{ buyerPrice }}.</h2>
-          <p class="mt-4 max-w-[60ch] text-[15px] leading-relaxed text-muted-foreground">
+          <p class="mt-4 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
             Pas de commission sur la vente. Les repreneurs paient l'accès aux dossiers complets, une fois par an.
           </p>
           <div class="mt-8 divide-y divide-border border-y border-border">
@@ -151,7 +151,7 @@ interface LandingFaqItem {
               <div class="grid items-center gap-3 py-5 sm:grid-cols-[1fr_auto_auto] sm:gap-10">
                 <div>
                   <h3 class="font-semibold text-primary">{{ row.who }}</h3>
-                  <p class="mt-1 text-[15px] text-muted-foreground">{{ row.detail }}</p>
+                  <p class="mt-1 text-base text-muted-foreground">{{ row.detail }}</p>
                 </div>
                 <p class="font-display tabular text-2xl font-semibold text-primary">{{ row.price }}</p>
                 <a [routerLink]="row.href" class="rounded border border-primary px-5 py-2.5 text-center text-sm font-medium text-primary transition-colors hover:bg-primary hover:text-white">{{ row.cta }}</a>
@@ -163,7 +163,7 @@ interface LandingFaqItem {
       </section>
 
       <section class="bg-secondary px-4 py-16 sm:px-6 lg:px-8 lg:py-20" aria-labelledby="faq-title">
-        <div class="mx-auto grid max-w-[1200px] gap-10 lg:grid-cols-12">
+        <div class="mx-auto grid max-w-[78rem] gap-10 lg:grid-cols-12">
           <h2 id="faq-title" class="text-3xl text-primary sm:text-4xl lg:col-span-4">Questions fréquentes</h2>
           <div class="divide-y divide-border border-y border-border lg:col-span-8">
             @for (item of faq; track item.question) {
@@ -172,7 +172,7 @@ interface LandingFaqItem {
                   {{ item.question }}
                   <span class="mt-0.5 text-xl leading-none text-muted-foreground transition-transform group-open:rotate-45" aria-hidden="true">+</span>
                 </summary>
-                <p class="mt-3 max-w-[65ch] text-[15px] leading-relaxed text-muted-foreground">{{ item.answer }}</p>
+                <p class="mt-3 max-w-[65ch] text-base leading-relaxed text-muted-foreground">{{ item.answer }}</p>
               </details>
             }
           </div>
@@ -180,10 +180,10 @@ interface LandingFaqItem {
       </section>
 
       <section class="bg-primary px-4 py-14 text-primary-foreground sm:px-6 lg:px-8" aria-labelledby="sell-title">
-        <div class="mx-auto flex max-w-[1200px] flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div class="mx-auto flex max-w-[78rem] flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 id="sell-title" class="text-3xl sm:text-4xl">Vous pensez à passer la main ?</h2>
-            <p class="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-primary-foreground/75">
+            <p class="mt-3 max-w-[60ch] text-base leading-relaxed text-primary-foreground/75">
               Déposez votre annonce gratuitement. Elle reste anonyme jusqu'à ce que vous acceptiez un repreneur.
             </p>
           </div>

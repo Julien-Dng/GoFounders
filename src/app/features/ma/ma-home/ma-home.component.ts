@@ -16,10 +16,10 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
   template: `
     <div class="min-h-screen bg-white">
       <section class="px-4 pb-8 pt-24 sm:px-6 lg:px-8 lg:pt-32">
-        <div class="mx-auto flex max-w-[1200px] flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <div class="mx-auto flex max-w-[78rem] flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h1 class="text-[2.25rem] leading-tight text-primary sm:text-5xl">Entreprises à reprendre</h1>
-            <p class="mt-4 max-w-[62ch] text-[15px] leading-relaxed text-muted-foreground sm:text-base">
+            <p class="mt-4 max-w-[62ch] text-base leading-relaxed text-muted-foreground sm:text-base">
               Des entreprises rentables, surtout numériques, entre 50 k€ et 1 M€ de chiffre d'affaires. Les annonces sont anonymisées :
               le nom de l'entreprise n'est communiqué qu'aux repreneurs que le cédant accepte.
             </p>
@@ -34,8 +34,8 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
 
       @if (!canViewSensitiveDetails() || accessRequiredNotice()) {
         <section class="px-4 sm:px-6 lg:px-8">
-          <div class="mx-auto max-w-[1200px] rounded-lg border border-border bg-secondary p-5 sm:flex sm:items-center sm:justify-between sm:gap-8">
-            <div class="text-[15px] leading-relaxed text-foreground/85">
+          <div class="mx-auto max-w-[78rem] rounded-lg border border-border bg-secondary p-5 sm:flex sm:items-center sm:justify-between sm:gap-8">
+            <div class="text-base leading-relaxed text-foreground/85">
               @if (accessRequiredNotice()) {
                 <p class="font-semibold text-primary">Le dossier complet demande un accès repreneur.</p>
               }
@@ -56,9 +56,9 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
       }
 
       <section id="ma-listings" class="scroll-mt-20 px-4 pb-16 pt-8 sm:px-6 lg:px-8">
-        <div class="mx-auto max-w-[1200px]">
+        <div class="mx-auto max-w-[78rem]">
           <div class="flex items-center justify-between gap-4 border-b border-border pb-4">
-            <p class="text-[15px] text-foreground/85" aria-live="polite">
+            <p class="text-base text-foreground/85" aria-live="polite">
               <span class="tabular font-semibold text-primary">{{ filteredListings().length }}</span>
               {{ filteredListings().length > 1 ? 'annonces' : 'annonce' }}
               @if (activeFilterCount() > 0) {
@@ -77,7 +77,7 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
           <div id="ma-filters" class="grid gap-4 border-b border-border py-5 sm:grid-cols-2 lg:grid lg:grid-cols-5" [class.hidden]="!filtersOpen()">
             <div>
               <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-sector">Secteur</label>
-              <select id="filter-sector" [value]="selectedSector()" (change)="selectedSector.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-[15px] outline-none focus:border-primary">
+              <select id="filter-sector" [value]="selectedSector()" (change)="selectedSector.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary">
                 <option value="">Tous les secteurs</option>
                 @for (sector of sectors(); track sector) {
                   <option [value]="sector">{{ sector }}</option>
@@ -86,7 +86,7 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
             </div>
             <div>
               <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-type">Type de cession</label>
-              <select id="filter-type" [value]="selectedType()" (change)="selectedType.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-[15px] outline-none focus:border-primary">
+              <select id="filter-type" [value]="selectedType()" (change)="selectedType.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary">
                 <option value="">Tous les types</option>
                 @for (type of types(); track type) {
                   <option [value]="type">{{ type }}</option>
@@ -95,7 +95,7 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
             </div>
             <div>
               <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-revenue">Chiffre d'affaires</label>
-              <select id="filter-revenue" [value]="selectedRevenue()" (change)="selectedRevenue.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-[15px] outline-none focus:border-primary">
+              <select id="filter-revenue" [value]="selectedRevenue()" (change)="selectedRevenue.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary">
                 @for (range of revenueRanges; track range.value) {
                   <option [value]="range.value">{{ range.label }}</option>
                 }
@@ -103,7 +103,7 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
             </div>
             <div>
               <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-price">Prix demandé</label>
-              <select id="filter-price" [value]="selectedPrice()" (change)="selectedPrice.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-[15px] outline-none focus:border-primary">
+              <select id="filter-price" [value]="selectedPrice()" (change)="selectedPrice.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary">
                 @for (range of priceRanges; track range.value) {
                   <option [value]="range.value">{{ range.label }}</option>
                 }
@@ -111,13 +111,13 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
             </div>
             <div>
               <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-region">Région</label>
-              <input id="filter-region" type="search" [value]="region()" (input)="region.set($any($event.target).value)" placeholder="Toute la France" class="w-full rounded border border-input bg-white px-3 py-2.5 text-[15px] outline-none focus:border-primary">
+              <input id="filter-region" type="search" [value]="region()" (input)="region.set($any($event.target).value)" placeholder="Toute la France" class="w-full rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary">
             </div>
           </div>
 
           @if (filteredListings().length === 0) {
             <div class="py-16 text-center">
-              <p class="text-[15px] text-muted-foreground">Aucune annonce ne correspond à ces critères.</p>
+              <p class="text-base text-muted-foreground">Aucune annonce ne correspond à ces critères.</p>
               @if (activeFilterCount() > 0) {
                 <button type="button" (click)="resetFilters()" class="mt-3 font-medium text-accent underline-offset-4 hover:underline">Effacer les filtres</button>
               }
@@ -129,30 +129,30 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
                   <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
                     <span>{{ listing.type }}</span>
                     @if (listing.featured) {
-                      <span class="rounded-full border border-amber-500/40 px-2 py-0.5 text-xs font-medium text-amber-700">En vedette</span>
+                      <span class="rounded-full border border-amber-500/40 px-2 py-0.5 text-sm font-medium text-amber-700">En vedette</span>
                     }
                     @if (listing.verified) {
-                      <span class="rounded-full border border-emerald-700/30 px-2 py-0.5 text-xs font-medium text-emerald-800">Dossier vérifié</span>
+                      <span class="rounded-full border border-emerald-700/30 px-2 py-0.5 text-sm font-medium text-emerald-800">Dossier vérifié</span>
                     }
                     @if (listing.isNew) {
-                      <span class="rounded-full border border-accent/30 px-2 py-0.5 text-xs font-medium text-accent">Nouvelle, accès anticipé</span>
+                      <span class="rounded-full border border-accent/30 px-2 py-0.5 text-sm font-medium text-accent">Nouvelle, accès anticipé</span>
                     }
                   </div>
-                  <h2 [id]="'listing-' + listing.id" class="mt-2 text-xl leading-snug text-primary sm:text-2xl">{{ listing.sector }}, {{ listing.region }}</h2>
-                  <p class="mt-3 text-[15px] leading-relaxed text-foreground/80">{{ listing.summary }}</p>
+                  <h2 [id]="'listing-' + listing.id" class="mt-2 text-2xl leading-snug text-primary sm:text-[1.75rem]">{{ listing.sector }}, {{ listing.region }}</h2>
+                  <p class="mt-3 text-lg leading-relaxed text-foreground/80">{{ listing.summary }}</p>
 
                   <dl class="tabular mt-5 grid grid-cols-3 border-y border-border">
                     <div class="py-3.5 pr-3">
-                      <dt class="text-xs text-muted-foreground">Chiffre d'affaires</dt>
-                      <dd class="mt-1 font-semibold text-primary">{{ listing.revenue }}</dd>
+                      <dt class="text-sm text-muted-foreground">Chiffre d'affaires</dt>
+                      <dd class="mt-1 text-xl font-semibold text-primary">{{ listing.revenue }}</dd>
                     </div>
                     <div class="border-l border-border px-3 py-3.5">
-                      <dt class="text-xs text-muted-foreground">Marge nette</dt>
-                      <dd class="mt-1 font-semibold text-primary">{{ listing.margin }}</dd>
+                      <dt class="text-sm text-muted-foreground">Marge nette</dt>
+                      <dd class="mt-1 text-xl font-semibold text-primary">{{ listing.margin }}</dd>
                     </div>
                     <div class="border-l border-border py-3.5 pl-3">
-                      <dt class="text-xs text-muted-foreground">Ancienneté</dt>
-                      <dd class="mt-1 font-semibold text-primary">{{ listing.age }}</dd>
+                      <dt class="text-sm text-muted-foreground">Ancienneté</dt>
+                      <dd class="mt-1 text-xl font-semibold text-primary">{{ listing.age }}</dd>
                     </div>
                   </dl>
 
@@ -162,9 +162,9 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
 
                   <div class="mt-auto flex flex-col gap-4 pt-5 sm:flex-row sm:items-end sm:justify-between">
                     <div>
-                      <p class="text-xs text-muted-foreground">Prix demandé</p>
-                      <p class="font-display tabular mt-0.5 text-2xl font-semibold text-amber-600">{{ listing.priceMin }} à {{ listing.priceMax }}</p>
-                      <p class="mt-0.5 text-xs text-muted-foreground">Estimation indicative, non contractuelle.</p>
+                      <p class="text-sm text-muted-foreground">Prix demandé</p>
+                      <p class="font-display tabular mt-0.5 text-3xl font-semibold text-amber-600">{{ listing.priceMin }} à {{ listing.priceMax }}</p>
+                      <p class="mt-0.5 text-sm text-muted-foreground">Estimation indicative, non contractuelle.</p>
                     </div>
                     @if (canViewSensitiveDetails()) {
                       <a [routerLink]="['/ma/annonce', listing.id]" class="rounded border border-primary px-4 py-2.5 text-center text-sm font-medium text-primary transition-colors hover:bg-primary hover:text-white">
@@ -182,17 +182,17 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
       <app-success-stories background="bg-secondary" />
 
       <section class="bg-primary px-4 py-14 text-primary-foreground sm:px-6 lg:px-8" aria-labelledby="ma-sell-title">
-        <div class="mx-auto flex max-w-[1200px] flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div class="mx-auto flex max-w-[78rem] flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 id="ma-sell-title" class="text-3xl sm:text-4xl">Vous souhaitez vendre votre entreprise ?</h2>
-            <p class="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-primary-foreground/75">
+            <p class="mt-3 max-w-[60ch] text-base leading-relaxed text-primary-foreground/75">
               Publication gratuite pendant le lancement. Votre annonce reste anonyme et les détails sont réservés aux repreneurs vérifiés.
             </p>
           </div>
           @if (canDepositListing()) {
             <a routerLink="/ma/deposer" class="flex-shrink-0 rounded bg-white px-6 py-3.5 text-center font-medium text-primary transition-colors hover:bg-white/90">Déposer mon annonce</a>
           } @else {
-            <p class="text-[15px] text-primary-foreground/75">Le dépôt d'annonce est réservé aux comptes vendeur et professionnels.</p>
+            <p class="text-base text-primary-foreground/75">Le dépôt d'annonce est réservé aux comptes vendeur et professionnels.</p>
           }
         </div>
       </section>

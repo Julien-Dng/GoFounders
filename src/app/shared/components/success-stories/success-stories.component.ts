@@ -9,9 +9,9 @@ import { SuccessStoriesService, SuccessStory } from '../../../core/services/succ
   template: `
     @if (stories().length > 0) {
       <section class="px-4 py-16 sm:px-6 lg:px-8 lg:py-20" [class]="background()" aria-labelledby="success-stories-title">
-        <div class="mx-auto max-w-[1200px]">
+        <div class="mx-auto max-w-[78rem]">
           <h2 id="success-stories-title" class="text-3xl text-primary sm:text-4xl">Ils ont vendu leur entreprise</h2>
-          <p class="mt-3 max-w-[60ch] text-[15px] leading-relaxed text-muted-foreground">
+          <p class="mt-3 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
             {{ salesCount() }} vente{{ salesCount() > 1 ? 's' : '' }} conclue{{ salesCount() > 1 ? 's' : '' }} sur GoFounders. Témoignages et prix publiés avec l'accord des vendeurs.
           </p>
           <div class="mt-10 grid gap-10 md:grid-cols-2 lg:grid-cols-3">
@@ -22,7 +22,7 @@ import { SuccessStoriesService, SuccessStory } from '../../../core/services/succ
                 @if (story.months_to_sell !== null) {
                   <p class="mt-1 text-sm text-muted-foreground">{{ delayLabel(story.months_to_sell) }}</p>
                 }
-                <blockquote class="mt-4 flex-1 text-[15px] leading-relaxed text-foreground/85">« {{ story.quote }} »</blockquote>
+                <blockquote class="mt-4 flex-1 text-base leading-relaxed text-foreground/85">« {{ story.quote }} »</blockquote>
                 <figcaption class="mt-4 text-sm font-semibold text-primary">{{ story.author_label }}</figcaption>
               </figure>
             }

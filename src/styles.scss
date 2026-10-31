@@ -13,7 +13,7 @@
   --secondary: #F5F6F8;
   --secondary-foreground: #0F1B2D;
   --muted: #8A93A1;
-  --muted-foreground: #5A6474;
+  --muted-foreground: #4A5463;
   --accent: #1D4ED8;
   --accent-foreground: #ffffff;
   --destructive: #B42318;
@@ -147,6 +147,29 @@ html.dark {
 
 * {
   box-sizing: border-box;
+}
+
+/* Le texte grandit avec l'écran : toutes les tailles en rem suivent (lisibilité sur grands écrans). */
+html {
+  font-size: 16px;
+}
+
+@media (min-width: 1280px) {
+  html {
+    font-size: 17px;
+  }
+}
+
+@media (min-width: 1680px) {
+  html {
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 2200px) {
+  html {
+    font-size: 20px;
+  }
 }
 
 html,

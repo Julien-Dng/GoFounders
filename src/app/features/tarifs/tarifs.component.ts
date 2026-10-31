@@ -38,14 +38,14 @@ interface Plan {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-white px-4 pb-20 pt-24 sm:px-6 lg:px-8 lg:pt-32">
-      <div class="mx-auto max-w-[1200px]">
+      <div class="mx-auto max-w-[78rem]">
         <header class="max-w-[62ch]">
           <h1 class="text-[2.25rem] leading-tight text-primary sm:text-5xl">Tarifs</h1>
-          <p class="mt-4 text-[15px] leading-relaxed text-muted-foreground sm:text-base">
+          <p class="mt-4 text-base leading-relaxed text-muted-foreground sm:text-base">
             Publier une annonce est gratuit et nous ne prenons aucune commission sur la vente. Les repreneurs paient l'accès aux dossiers,
             les professionnels leur visibilité.
           </p>
-          <nav class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-[15px]" aria-label="Offres par profil">
+          <nav class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-base" aria-label="Offres par profil">
             @for (anchor of anchors; track anchor.id) {
               <a routerLink="/tarifs" [fragment]="anchor.id" class="font-medium text-accent underline-offset-4 hover:underline">{{ anchor.label }}</a>
             }
@@ -53,7 +53,7 @@ interface Plan {
         </header>
 
         @if (statusMessage()) {
-          <div class="mt-8 rounded-lg border px-5 py-4 text-[15px]" [class]="statusIsError() ? 'border-red-200 bg-red-50 text-red-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'" role="status">
+          <div class="mt-8 rounded-lg border px-5 py-4 text-base" [class]="statusIsError() ? 'border-red-200 bg-red-50 text-red-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'" role="status">
             {{ statusMessage() }}
           </div>
         }
@@ -62,15 +62,15 @@ interface Plan {
           <section [id]="group.id" class="mt-14 grid scroll-mt-24 gap-8 border-t border-primary pt-8 lg:grid-cols-12" [attr.aria-labelledby]="group.id + '-title'">
             <div class="lg:col-span-4">
               <h2 [id]="group.id + '-title'" class="text-2xl text-primary sm:text-3xl">{{ group.title }}</h2>
-              <p class="mt-3 max-w-[40ch] text-[15px] leading-relaxed text-muted-foreground">{{ group.description }}</p>
+              <p class="mt-3 max-w-[40ch] text-base leading-relaxed text-muted-foreground">{{ group.description }}</p>
             </div>
             <div class="divide-y divide-border lg:col-span-8">
               @for (offer of group.offers; track offer.title; let first = $first) {
                 <div class="grid gap-5 py-6 sm:grid-cols-[1fr_15rem] sm:gap-8" [class.pt-0]="first">
                   <div>
                     <h3 class="text-lg font-semibold text-primary">{{ offer.title }}</h3>
-                    <p class="mt-1 text-[15px] text-muted-foreground">{{ offer.description }}</p>
-                    <ul class="mt-3 space-y-1.5 text-[15px] text-foreground/85">
+                    <p class="mt-1 text-base text-muted-foreground">{{ offer.description }}</p>
+                    <ul class="mt-3 space-y-1.5 text-base text-foreground/85">
                       @for (feature of offer.features; track feature) {
                         <li class="flex gap-2.5"><span class="mt-[0.6rem] h-1 w-1 flex-shrink-0 rounded-full bg-foreground/50" aria-hidden="true"></span><span>{{ feature }}</span></li>
                       }
@@ -99,21 +99,21 @@ interface Plan {
         <section id="premium" class="mt-14 grid scroll-mt-24 gap-8 border-t border-primary pt-8 lg:grid-cols-12" aria-labelledby="premium-title">
           <div class="lg:col-span-4">
             <h2 id="premium-title" class="text-2xl text-primary sm:text-3xl">Accompagnement</h2>
-            <p class="mt-3 max-w-[40ch] text-[15px] leading-relaxed text-muted-foreground">
+            <p class="mt-3 max-w-[40ch] text-base leading-relaxed text-muted-foreground">
               Préparation du dossier de cession, présentation de repreneurs ou de cédants qualifiés, mise en relation avec nos experts partenaires.
               Forfait sur devis, sans commission sur la vente.
             </p>
-            <ul class="mt-4 space-y-1.5 text-[15px] text-foreground/85">
+            <ul class="mt-4 space-y-1.5 text-base text-foreground/85">
               <li>Premier échange gratuit, devis sous 48 h ouvrées.</li>
               <li>Un interlocuteur dédié jusqu'à la signature.</li>
             </ul>
-            <p class="mt-4 text-xs leading-relaxed text-muted-foreground">GoFounders n'assure pas de conseil juridique : les actes sont réalisés par nos experts partenaires.</p>
+            <p class="mt-4 text-sm leading-relaxed text-muted-foreground">GoFounders n'assure pas de conseil juridique : les actes sont réalisés par nos experts partenaires.</p>
           </div>
           <div class="rounded-lg border border-border p-6 lg:col-span-8">
             <div class="grid gap-4 sm:grid-cols-2">
               <div>
                 <label for="premium-topic" class="mb-1.5 block text-sm font-medium text-foreground/85">Votre besoin</label>
-                <select id="premium-topic" [value]="premiumTopic()" (change)="premiumTopic.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-[15px] outline-none focus:border-primary">
+                <select id="premium-topic" [value]="premiumTopic()" (change)="premiumTopic.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary">
                   <option value="cession">Céder mon entreprise</option>
                   <option value="reprise">Reprendre une entreprise</option>
                   <option value="associes">Trouver un associé</option>
@@ -122,11 +122,11 @@ interface Plan {
               </div>
               <div>
                 <label for="premium-phone" class="mb-1.5 block text-sm font-medium text-foreground/85">Téléphone (facultatif)</label>
-                <input id="premium-phone" type="tel" maxlength="30" [value]="premiumPhone()" (input)="premiumPhone.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-[15px] outline-none focus:border-primary">
+                <input id="premium-phone" type="tel" maxlength="30" [value]="premiumPhone()" (input)="premiumPhone.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary">
               </div>
             </div>
             <label for="premium-message" class="mb-1.5 mt-4 block text-sm font-medium text-foreground/85">Votre situation en quelques phrases</label>
-            <textarea id="premium-message" rows="4" maxlength="3000" [value]="premiumMessage()" (input)="premiumMessage.set($any($event.target).value)" class="w-full resize-y rounded border border-input bg-white px-3 py-2.5 text-[15px] outline-none focus:border-primary" placeholder="Activité, taille, calendrier souhaité"></textarea>
+            <textarea id="premium-message" rows="4" maxlength="3000" [value]="premiumMessage()" (input)="premiumMessage.set($any($event.target).value)" class="w-full resize-y rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary" placeholder="Activité, taille, calendrier souhaité"></textarea>
             <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p class="text-sm text-muted-foreground">20 caractères minimum.</p>
               <button type="button" (click)="sendPremium()" [disabled]="premiumSending() || premiumMessage().trim().length < 20" class="rounded bg-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50">
@@ -142,13 +142,13 @@ interface Plan {
         <section id="associes" class="mt-14 scroll-mt-24 border-t border-primary pt-8" aria-labelledby="associes-title">
           <div class="max-w-[62ch]">
             <h2 id="associes-title" class="text-2xl text-primary sm:text-3xl">Trouver un associé</h2>
-            <p class="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+            <p class="mt-3 text-base leading-relaxed text-muted-foreground">
               Gratuit pour se faire connaître, PRO pour trouver son associé plus vite, PREMIUM pour être accompagné. Les associés n'ont pas besoin de payer.
             </p>
           </div>
 
           <div class="relative mt-8 overflow-x-auto">
-            <table class="tabular w-full min-w-[680px] border-collapse text-left text-[15px]">
+            <table class="tabular w-full min-w-[680px] border-collapse text-left text-base">
               <caption class="sr-only">Comparaison des formules FREE, PRO et PREMIUM</caption>
               <thead>
                 <tr class="border-b border-primary align-bottom">
@@ -203,7 +203,7 @@ interface Plan {
                         ? 'block rounded bg-primary px-4 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-primary/90'
                         : 'block rounded border border-primary px-4 py-2.5 text-center text-sm font-medium text-primary transition-colors hover:bg-primary hover:text-white'">{{ plan.cta }}</a>
                       @if (plan.reassurance) {
-                        <p class="mt-2 text-center text-xs text-muted-foreground">{{ plan.reassurance }}</p>
+                        <p class="mt-2 text-center text-sm text-muted-foreground">{{ plan.reassurance }}</p>
                       }
                     </td>
                   }
