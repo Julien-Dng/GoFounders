@@ -19,25 +19,25 @@ interface LandingFaqItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-white">
-      <section class="px-4 pb-16 pt-28 sm:px-6 lg:px-8 lg:pb-24 lg:pt-36">
-        <div class="mx-auto grid max-w-[78rem] gap-12 lg:grid-cols-12 lg:items-center">
-          <div class="lg:col-span-7">
-            <h1 class="max-w-[16ch] text-[2.5rem] leading-[1.08] text-primary sm:text-5xl lg:text-[3.5rem]">
+      <section class="overflow-hidden bg-primary px-4 pb-20 pt-28 text-white sm:px-6 lg:px-8 lg:pb-28 lg:pt-36">
+        <div class="mx-auto grid max-w-[78rem] gap-16 lg:grid-cols-12 lg:items-center">
+          <div class="lg:col-span-6">
+            <h1 class="max-w-[15ch] text-[2.75rem] leading-[1.04] text-white sm:text-6xl lg:text-[4.25rem]">
               Reprenez une entreprise qui a déjà ses clients.
             </h1>
-            <p class="mt-6 max-w-[58ch] text-lg leading-relaxed text-muted-foreground">
+            <p class="mt-7 max-w-[52ch] text-lg leading-relaxed text-white/75">
               GoFounders met en relation les fondateurs qui veulent céder leur entreprise numérique et les repreneurs
               qui préfèrent racheter une activité rentable plutôt que repartir de zéro.
             </p>
-            <div class="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
-              <a routerLink="/ma" class="rounded bg-primary px-6 py-3.5 text-center font-medium text-white transition-colors hover:bg-primary/90">
+            <div class="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
+              <a routerLink="/ma" class="rounded bg-white px-6 py-3.5 text-center font-medium text-primary transition-colors hover:bg-white/90">
                 Voir les entreprises à reprendre
               </a>
-              <a routerLink="/ma/deposer" class="px-2 py-3 text-center font-medium text-primary underline decoration-border decoration-2 underline-offset-4 transition-colors hover:decoration-primary">
+              <a routerLink="/ma/deposer" class="px-2 py-3 text-center font-medium text-white underline decoration-white/40 decoration-2 underline-offset-4 transition-colors hover:decoration-white">
                 Je veux céder mon entreprise
               </a>
             </div>
-            <ul class="mt-10 grid max-w-[60ch] gap-3 border-l-2 border-border pl-5 text-base text-foreground/85">
+            <ul class="mt-12 grid max-w-[58ch] gap-3 border-l-2 border-amber-400/70 pl-5 text-base text-white/80">
               <li>Annonce gratuite et anonymisée pour les cédants.</li>
               <li>Votre identité n'est révélée qu'aux repreneurs que vous choisissez.</li>
               <li>Aucune commission sur le prix de vente.</li>
@@ -45,43 +45,62 @@ interface LandingFaqItem {
           </div>
 
           @if (featuredListing(); as listing) {
-            <figure class="lg:col-span-5">
-              <article class="rounded-lg border border-border bg-white p-6 sm:p-8" aria-label="Exemple d'annonce publiée">
-                <div class="flex items-start justify-between gap-4">
-                  <div>
-                    <p class="text-sm text-muted-foreground">{{ listing.type }}</p>
-                    <h2 class="mt-1 text-2xl leading-snug text-primary">{{ listing.sector }}, {{ listing.region }}</h2>
+            <figure class="lg:col-span-6 lg:pl-6">
+              <div class="relative mx-auto max-w-[34rem]">
+                <div class="dossier-sheet dossier-sheet-back" aria-hidden="true"></div>
+                <div class="dossier-sheet dossier-sheet-middle" aria-hidden="true"></div>
+                <article class="relative rounded-md bg-white p-7 text-foreground shadow-2xl sm:p-9" aria-label="Annonce en ligne">
+                  <span class="dossier-stamp" aria-hidden="true">Confidentiel</span>
+                  <p class="pr-32 text-sm text-muted-foreground">{{ listing.type }}</p>
+                  <h2 class="mt-1 pr-24 text-[1.75rem] leading-snug text-primary">{{ listing.sector }}, {{ listing.region }}</h2>
+                  <p class="mt-4 text-base leading-relaxed text-foreground/80">{{ listing.summary }}</p>
+                  <dl class="tabular mt-6 grid grid-cols-3 border-y border-border">
+                    <div class="py-4 pr-3">
+                      <dt class="text-sm text-muted-foreground"><span class="sm:hidden">CA</span><span class="hidden sm:inline">Chiffre d'affaires</span></dt>
+                      <dd class="mt-1 text-lg font-semibold text-primary sm:text-xl">{{ listing.revenue }}</dd>
+                    </div>
+                    <div class="border-l border-border px-3 py-4">
+                      <dt class="text-sm text-muted-foreground">Marge nette</dt>
+                      <dd class="mt-1 text-lg font-semibold text-primary sm:text-xl">{{ listing.margin }}</dd>
+                    </div>
+                    <div class="border-l border-border py-4 pl-3">
+                      <dt class="text-sm text-muted-foreground">Ancienneté</dt>
+                      <dd class="mt-1 text-lg font-semibold text-primary sm:text-xl">{{ listing.age }}</dd>
+                    </div>
+                  </dl>
+                  <div class="mt-6 flex flex-wrap items-end justify-between gap-4">
+                    <div>
+                      <p class="text-sm text-muted-foreground">Prix demandé</p>
+                      <p class="font-display tabular mt-1 text-[2rem] font-semibold leading-tight text-amber-600">{{ listing.priceMin }} à {{ listing.priceMax }}</p>
+                      <p class="mt-1 text-sm text-muted-foreground">Estimation indicative, non contractuelle.</p>
+                    </div>
+                    @if (listing.verified) {
+                      <span class="rounded-full border border-emerald-700/30 px-2.5 py-1 text-sm font-medium text-emerald-800">Dossier vérifié</span>
+                    }
                   </div>
-                  @if (listing.verified) {
-                    <span class="flex-shrink-0 rounded-full border border-emerald-700/30 px-2.5 py-1 text-sm font-medium text-emerald-800">Dossier vérifié</span>
-                  }
-                </div>
-                <p class="mt-4 text-base leading-relaxed text-foreground/80">{{ listing.summary }}</p>
-                <dl class="tabular mt-6 grid grid-cols-3 border-y border-border">
-                  <div class="py-4 pr-3">
-                    <dt class="text-sm text-muted-foreground">Chiffre d'affaires</dt>
-                    <dd class="mt-1 text-xl font-semibold text-primary">{{ listing.revenue }}</dd>
-                  </div>
-                  <div class="border-l border-border px-3 py-4">
-                    <dt class="text-sm text-muted-foreground">Marge nette</dt>
-                    <dd class="mt-1 text-xl font-semibold text-primary">{{ listing.margin }}</dd>
-                  </div>
-                  <div class="border-l border-border py-4 pl-3">
-                    <dt class="text-sm text-muted-foreground">Ancienneté</dt>
-                    <dd class="mt-1 text-xl font-semibold text-primary">{{ listing.age }}</dd>
-                  </div>
-                </dl>
-                <div class="mt-6">
-                  <p class="text-sm text-muted-foreground">Prix demandé</p>
-                  <p class="font-display tabular mt-1 text-3xl font-semibold text-amber-600">{{ listing.priceMin }} à {{ listing.priceMax }}</p>
-                  <p class="mt-1 text-sm text-muted-foreground">Estimation indicative, non contractuelle.</p>
-                </div>
-              </article>
-              <figcaption class="mt-3 text-sm text-muted-foreground">
-                Une annonce en ligne. Le nom de l'entreprise et du cédant restent confidentiels.
+                </article>
+              </div>
+              <figcaption class="mx-auto mt-8 max-w-[34rem] text-sm text-white/60">
+                Une annonce en ligne aujourd'hui. Le nom de l'entreprise et du cédant restent confidentiels.
               </figcaption>
             </figure>
           }
+        </div>
+      </section>
+
+      <section class="px-4 py-20 sm:px-6 lg:px-8 lg:py-28" aria-label="Notre conviction">
+        <div class="mx-auto grid max-w-[78rem] gap-10 lg:grid-cols-12">
+          <p class="font-display text-[1.9rem] leading-snug text-primary sm:text-4xl sm:leading-snug lg:col-span-8 lg:text-[2.6rem] lg:leading-[1.25]">
+            Une entreprise, ce sont des années de travail, des clients qui vous font confiance, parfois une équipe.
+            La transmettre mérite mieux qu'une petite annonce.
+          </p>
+          <div class="text-base leading-relaxed text-muted-foreground lg:col-span-4 lg:pt-4">
+            <p>
+              Chaque année, des entreprises rentables ferment faute de repreneur, pendant que d'autres cherchent
+              à racheter une activité qui tourne déjà. GoFounders les rapproche, discrètement et sans commission.
+            </p>
+            <p class="mt-5 font-medium text-primary">L'équipe GoFounders</p>
+          </div>
         </div>
       </section>
 

@@ -262,12 +262,62 @@ select optgroup {
   transform: none;
 }
 
+/* Accueil : la fiche présentée comme un dossier de cession (feuilles empilées, tampon « Confidentiel »).
+   Seul moment animé de la page : le tampon se pose une fois au chargement. */
+.dossier-sheet {
+  position: absolute;
+  inset: 0;
+  border-radius: 0.375rem;
+  background: #F1EFEA;
+}
+
+.dossier-sheet-back {
+  transform: translate(14px, 14px) rotate(2.6deg);
+  background: #DCD8CF;
+}
+
+.dossier-sheet-middle {
+  transform: translate(-8px, 6px) rotate(-1.6deg);
+}
+
+.dossier-stamp {
+  position: absolute;
+  top: 1.6rem;
+  right: 1.4rem;
+  padding: 0.3rem 0.7rem;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  outline: 1px solid currentColor;
+  outline-offset: 2px;
+  color: #A3341C;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  transform: rotate(-8deg);
+  animation: stamp-in 420ms cubic-bezier(0.2, 0.9, 0.3, 1.25) 500ms both;
+}
+
+@keyframes stamp-in {
+  from {
+    opacity: 0;
+    transform: rotate(-8deg) scale(1.7);
+  }
+
+  to {
+    opacity: 0.85;
+    transform: rotate(-8deg) scale(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in-up,
   .animate-fade-in-scale,
   .animate-fade-in,
   .animate-scale-in,
-  .bell-ring {
+  .bell-ring,
+  .dossier-stamp {
     animation: none !important;
   }
 

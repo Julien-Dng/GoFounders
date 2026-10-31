@@ -143,16 +143,16 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
 
                   <dl class="tabular mt-5 grid grid-cols-3 border-y border-border">
                     <div class="py-3.5 pr-3">
-                      <dt class="text-sm text-muted-foreground">Chiffre d'affaires</dt>
-                      <dd class="mt-1 text-xl font-semibold text-primary">{{ listing.revenue }}</dd>
+                      <dt class="text-sm text-muted-foreground"><span class="sm:hidden">CA</span><span class="hidden sm:inline">Chiffre d'affaires</span></dt>
+                      <dd class="mt-1 text-lg font-semibold text-primary sm:text-xl">{{ listing.revenue }}</dd>
                     </div>
                     <div class="border-l border-border px-3 py-3.5">
                       <dt class="text-sm text-muted-foreground">Marge nette</dt>
-                      <dd class="mt-1 text-xl font-semibold text-primary">{{ listing.margin }}</dd>
+                      <dd class="mt-1 text-lg font-semibold text-primary sm:text-xl">{{ listing.margin }}</dd>
                     </div>
                     <div class="border-l border-border py-3.5 pl-3">
                       <dt class="text-sm text-muted-foreground">Ancienneté</dt>
-                      <dd class="mt-1 text-xl font-semibold text-primary">{{ listing.age }}</dd>
+                      <dd class="mt-1 text-lg font-semibold text-primary sm:text-xl">{{ listing.age }}</dd>
                     </div>
                   </dl>
 

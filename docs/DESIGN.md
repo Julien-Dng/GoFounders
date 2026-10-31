@@ -41,7 +41,8 @@ Règle : l'ocre ne sert jamais à décorer. Si un élément orange n'est ni un p
 ## Mise en page
 
 - Contenu aligné à gauche, largeur maximale 78 rem (1 250 px environ, plus sur grand écran).
-- Accueil : le titre et une seule action principale à gauche, **une vraie fiche d'annonce** à droite (c'est l'élément marquant de la page).
+- Accueil : en-tête sombre (encre), le titre et une seule action principale à gauche, **une vraie fiche d'annonce présentée comme un dossier papier** à droite : feuilles empilées et tampon « Confidentiel » rouge (`.dossier-stamp`, `#A3341C`), qui se pose une fois au chargement. C'est l'élément marquant du site, à ne pas recopier ailleurs.
+- Juste après, une phrase éditoriale en serif qui parle des fondateurs : la voix humaine du site, sans faux témoignage.
 - Listes d'annonces : chaque annonce est une fiche. En titre le secteur et la région, puis trois chiffres en grand (CA, marge, ancienneté), puis le prix en ocre. L'information « dossier réservé » est donnée une seule fois en haut de liste, pas répétée sur chaque fiche.
 - Mobile d'abord : sur `/ma`, une annonce doit être visible dès le premier écran (filtres repliés).
 
