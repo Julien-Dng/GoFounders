@@ -97,10 +97,16 @@ Pas de commission sur les ventes (une commission sur une cession de fonds de com
    2. `supabase/2026-10-20b-offres-reprise.sql` ;
    3. `supabase/2026-10-21-moderation-verification-stats.sql` (venue de `V6`) ;
    4. `supabase/2026-10-22-reprise-moderation-stats-pros.sql`, qui remet l'accès anticipé de 48 h dans le dossier complet et ajoute les statistiques des pros.
-   5. `supabase/2026-10-23-ventes-reussies.sql`, `supabase/2026-10-24-paiements-stripe.sql`, `supabase/2026-10-25-contact.sql` (formulaire de contact et boîte de réception admin), puis `supabase/2026-10-26-annonces-enrichies.sql` (historique du chiffre d'affaires, ce qui est inclus, équipe, trafic ; à exécuter avant de déployer le back Python, dont l'analyse IA lit ces colonnes), puis `supabase/2026-10-27-vitrine-associes.sql` (vitrine publique /associes, accord explicite des membres).
+   5. `supabase/2026-10-23-ventes-reussies.sql`, `supabase/2026-10-24-paiements-stripe.sql`, `supabase/2026-10-25-contact.sql` (formulaire de contact et boîte de réception admin), puis `supabase/2026-10-26-annonces-enrichies.sql` (historique du chiffre d'affaires, ce qui est inclus, équipe, trafic ; à exécuter avant de déployer le back Python, dont l'analyse IA lit ces colonnes), `supabase/2026-10-27-vitrine-associes.sql` (vitrine publique /associes, accord explicite des membres), puis `supabase/2026-10-28-lancement.sql` (règles du lancement : 48 h retirées, relecture avant publication, demandes d'accès + NDA, file d'e-mails).
 2. **Paiement** : Stripe est branché (back Python, webhook, portail client). Mise en route pas à pas dans `backend/README.md`, section « Paiements Stripe ». Le site reste en simulation tant que `paymentMode` n'est pas `'stripe'`. ⚠️ À la mise en ligne, exécuter `supabase/production/supprimer-paiements-simules.sql`.
 3. **Vérifications** : un admin traite les demandes « Dossier vérifié » sur `/admin/verifications` (objectif : 3 jours ouvrés).
-4. **Modérer les annonces** : la publication est gratuite et immédiate. Il faut relire chaque nouvelle annonce et supprimer celles qui ne sont pas sérieuses.
+4. **Modérer les annonces** : une nouvelle annonce (ou une annonce modifiée) reste invisible jusqu'à sa relecture sur `/admin/annonces` (Publier, ou Refuser avec un motif). Délai annoncé aux vendeurs : 24 h ouvrées.
+
+### Premier lancement (novembre 2026)
+- **Modules masqués** dans `src/app/core/config/features.ts` : associés, professionnels, assistant IA, accès Plus, offres cédant payantes. Passer une valeur à `true` réactive le module (navigation, pages, tarifs, FAQ).
+- **Parcours repreneur** : l'accès à 149 € permet de *demander* le dossier d'une annonce ; le repreneur se présente et accepte un NDA (texte provisoire `MA_NDA_VERSION` dans `core/legal/nda.ts`, à faire valider) ; le cédant accepte ou refuse dans « Mes annonces ». Dossier, coordonnées et analyse IA seulement après acceptation.
+- **E-mails** : file `email_outbox` envoyée par le back avec Resend (voir `backend/README.md`).
+- **Modifier une annonce** : « Modifier » dans « Mes annonces » (`/ma/deposer?modifier=<id>`) ; l'annonce repasse en relecture.
 
 ### Garder la branche à jour
 `V6` avance en parallèle. Récupérer régulièrement ses nouveautés :

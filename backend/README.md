@@ -58,6 +58,21 @@ Les tests n'appellent ni Supabase ni OpenAI / Anthropic (clients simulés).
 Codes d'erreur : `401` non connecté, `403` plan FREE, `429` plus de `MAX_REQUESTS_PER_HOUR` questions
 par heure, `503` fournisseur d'IA indisponible.
 
+## E-mails métier (Resend)
+
+Supabase met en file (`email_outbox`, migration `2026-10-28-lancement.sql`) les événements importants : nouveau
+message (au plus un e-mail par conversation toutes les 3 heures, réglable dans Paramètres), demande d'accès à un
+dossier, accès accepté ou refusé, annonce publiée, refusée, retirée ou remise en ligne. Le back les envoie toutes les
+minutes avec Resend (`app/emails.py`). Aucun e-mail ne contient d'information confidentielle.
+
+1. Créer un compte Resend et y vérifier le domaine du site (enregistrements DNS fournis par Resend).
+2. Dans `backend/.env` : `RESEND_API_KEY=…` et `RESEND_FROM=GoFounders <notifications@votre-domaine.fr>`.
+3. Redémarrer le back. Sans clé, rien n'est envoyé : les e-mails attendent dans la file et partiront dès que la clé
+   sera renseignée (les plus anciens peuvent être purgés avant : `delete from email_outbox where sent_at is null;`).
+
+Les e-mails de compte (confirmation, mot de passe) restent envoyés par Supabase : configurer Resend comme serveur
+SMTP dans Supabase (Authentication > Emails > SMTP Settings) pour qu'ils partent de votre domaine.
+
 ## Paiements Stripe
 
 Tant que `STRIPE_SECRET_KEY` est vide, les routes de paiement répondent `503` et le site reste en

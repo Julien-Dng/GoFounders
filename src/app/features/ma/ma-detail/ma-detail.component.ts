@@ -156,7 +156,7 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
               }
 
               } @else {
-                <section aria-labelledby="locked-title" class="relative min-h-[24rem] overflow-hidden rounded-xl bg-secondary">
+                <section aria-labelledby="locked-title" class="relative min-h-[30rem] overflow-hidden rounded-xl bg-secondary">
                   <div class="space-y-3 p-6 blur-[3px] sm:p-8" aria-hidden="true">
                     @for (width of skeleton; track $index) {
                       <div class="h-3.5 rounded bg-border" [style.width.%]="width"></div>

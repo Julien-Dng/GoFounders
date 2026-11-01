@@ -119,7 +119,9 @@ interface Plan {
                 <select id="premium-topic" [value]="premiumTopic()" (change)="premiumTopic.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary">
                   <option value="cession">Céder mon entreprise</option>
                   <option value="reprise">Reprendre une entreprise</option>
-                  <option value="associes">Trouver un associé</option>
+                  @if (features.associates) {
+                    <option value="associes">Trouver un associé</option>
+                  }
                   <option value="autre">Autre</option>
                 </select>
               </div>
