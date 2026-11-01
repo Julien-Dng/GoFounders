@@ -13,7 +13,8 @@
   --primary-foreground: #ffffff;
   --primary-rgb: 15 27 45;
   --primary-foreground-rgb: 255 255 255;
-  --secondary: #F5F6F8;
+  /* Fond des sections alternées : bleu très pâle, tiré du bleu d'action. */
+  --secondary: #F1F4FB;
   --secondary-foreground: #0F1B2D;
   --muted: #8A93A1;
   --muted-foreground: #4A5463;
@@ -22,13 +23,13 @@
   --accent-foreground: #ffffff;
   --destructive: #B42318;
   --destructive-foreground: #ffffff;
-  --border: #D9DEE5;
+  --border: #DDE3EE;
   --input: #C9D0DA;
   --ring: #1D4ED8;
   --ochre: #9A5B0B;
   --radius: 0.375rem;
-  --font-display: 'Geist', system-ui, sans-serif;
-  --font-body: 'Geist', system-ui, sans-serif;
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
 }
 
 html.dark {
@@ -189,12 +190,13 @@ body {
 h1,
 h2 {
   font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 h1 {
-  letter-spacing: -0.04em;
+  font-weight: 800;
+  letter-spacing: -0.025em;
 }
 
 h3,
@@ -204,7 +206,7 @@ h4 {
 
 .font-display {
   font-family: var(--font-display);
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
 }
 
 /* Chiffres alignés pour les montants, marges et statistiques. */

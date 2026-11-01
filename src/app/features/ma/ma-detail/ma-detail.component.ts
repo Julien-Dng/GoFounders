@@ -16,7 +16,7 @@ import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-white pb-28 pt-20 lg:pb-16">
+    <div class="min-h-screen bg-secondary pb-28 pt-20 lg:pb-16">
       <div class="mx-auto max-w-[78rem] px-4 py-8 sm:px-6 lg:px-8">
         <a routerLink="/ma" class="inline-flex items-center gap-2 text-base text-muted-foreground transition-colors hover:text-primary">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
@@ -42,18 +42,18 @@ import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../
             <p class="mt-4 text-lg leading-relaxed text-foreground/80">{{ item.summary }}</p>
           </header>
 
-          <dl class="tabular mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-3 lg:grid-cols-6">
+          <dl class="tabular mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-border shadow-lg ring-1 ring-border sm:grid-cols-3 lg:grid-cols-6">
             @for (figure of figures(); track figure.label) {
               <div class="bg-white p-4 sm:p-5">
                 <dt class="text-sm text-muted-foreground">{{ figure.label }}</dt>
-                <dd class="mt-1 text-xl font-semibold text-primary sm:text-2xl lg:text-xl xl:text-2xl">{{ figure.value }}</dd>
+                <dd class="mt-1 text-xl font-bold text-primary sm:text-2xl lg:text-xl xl:text-2xl">{{ figure.value }}</dd>
               </div>
             }
           </dl>
           <p class="mt-2 text-sm text-muted-foreground">Chiffres déclarés par le cédant. Bénéfice et multiple calculés à partir du chiffre d'affaires, de la marge et du milieu de la fourchette de prix. Prix demandé indicatif, non contractuel.</p>
 
           <div class="mt-10 grid gap-10 lg:grid-cols-[1fr,22rem]">
-            <div class="min-w-0">
+            <div class="min-w-0 rounded-2xl bg-white p-6 shadow-lg ring-1 ring-border sm:p-8">
               @if (hasDossier()) {
               <section aria-labelledby="presentation-title">
                 <h2 id="presentation-title" class="text-2xl text-primary">Présentation de l'activité</h2>
@@ -80,13 +80,13 @@ import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../
               </section>
 
               } @else {
-                <section aria-labelledby="locked-title" class="relative min-h-[24rem] overflow-hidden rounded-xl border border-border">
+                <section aria-labelledby="locked-title" class="relative min-h-[24rem] overflow-hidden rounded-xl bg-secondary">
                   <div class="space-y-3 p-6 blur-[3px] sm:p-8" aria-hidden="true">
                     @for (width of skeleton; track $index) {
                       <div class="h-3.5 rounded bg-border" [style.width.%]="width"></div>
                     }
                   </div>
-                  <div class="absolute inset-0 flex items-center justify-center bg-white/70 p-4">
+                  <div class="absolute inset-0 flex items-center justify-center bg-secondary/60 p-4">
                     <div class="w-full max-w-md rounded-xl border border-border bg-white p-6 shadow-sm">
                       <h2 id="locked-title" class="text-xl text-primary">Dans le dossier complet</h2>
                       <ul class="mt-3 space-y-2 text-base text-foreground/85">
@@ -174,7 +174,7 @@ import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../
             </div>
 
             <aside class="lg:order-none" aria-label="Contacter le cédant">
-              <div class="rounded-xl border border-border p-6 lg:sticky lg:top-24">
+              <div class="rounded-2xl bg-white p-6 shadow-lg ring-1 ring-border lg:sticky lg:top-24">
                 <p class="text-sm text-muted-foreground">Prix demandé</p>
                 <p class="tabular mt-1 text-[1.75rem] font-semibold leading-tight text-amber-600"><span class="whitespace-nowrap">{{ item.priceMin }}</span> à <span class="whitespace-nowrap">{{ item.priceMax }}</span></p>
                 @if (metrics()?.multiple !== null && metrics()?.multiple !== undefined) {
@@ -186,7 +186,7 @@ import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../
                   <a routerLink="/ma/statistiques" class="mt-4 block rounded bg-primary px-5 py-3 text-center font-medium text-white transition-colors hover:bg-primary/90">Voir les statistiques</a>
                   <a routerLink="/ma/mes-annonces" class="mt-3 block text-center font-medium text-accent underline-offset-4 hover:underline">Gérer mes annonces</a>
                 } @else if (canContact()) {
-                  <a [routerLink]="'/messages'" [queryParams]="{ conversation: item.ownerId }" class="mt-5 block rounded bg-accent px-5 py-3.5 text-center font-medium text-white transition-colors hover:bg-accent/90">Contacter le cédant</a>
+                  <a [routerLink]="'/messages'" [queryParams]="{ conversation: item.ownerId }" class="mt-5 block rounded-lg bg-accent px-5 py-3.5 font-semibold text-center font-medium text-white transition-colors hover:bg-accent/90">Contacter le cédant</a>
                   @if (item.contactInfo) {
                     <div class="mt-5 border-t border-border pt-5">
                       <p class="text-sm text-muted-foreground">Coordonnées transmises par le cédant</p>
@@ -197,7 +197,7 @@ import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../
                   <div class="mt-5 border-t border-border pt-5">
                     <p class="text-base text-foreground/85">{{ lockedMessage() }}</p>
                     @if (cta(); as action) {
-                      <a [routerLink]="action.link" [queryParams]="action.params" [fragment]="action.fragment" class="mt-4 block rounded bg-accent px-5 py-3.5 text-center font-medium text-white transition-colors hover:bg-accent/90">{{ action.label }}</a>
+                      <a [routerLink]="action.link" [queryParams]="action.params" [fragment]="action.fragment" class="mt-4 block rounded-lg bg-accent px-5 py-3.5 font-semibold text-center font-medium text-white transition-colors hover:bg-accent/90">{{ action.label }}</a>
                       @if (!isAuthenticated()) {
                         <a routerLink="/connexion" [queryParams]="{ returnUrl: currentUrl() }" class="mt-3 block text-center font-medium text-accent underline-offset-4 hover:underline">J'ai déjà un compte</a>
                       }
@@ -233,7 +233,7 @@ import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../
             </div>
           }
         } @else if (loaded()) {
-          <div class="mt-10 rounded-xl border border-border p-10 text-center">
+          <div class="mt-10 rounded-2xl bg-white p-10 text-center shadow-lg">
             <p class="text-lg text-muted-foreground">Cette annonce n'existe pas ou n'est plus disponible.</p>
             <p class="mt-2 text-base text-muted-foreground">Les annonces publiées depuis moins de 48 h sont réservées aux repreneurs avec l'accès Plus.</p>
             <a routerLink="/ma" class="mt-4 inline-block font-medium text-accent underline-offset-4 hover:underline">Voir les annonces en cours</a>

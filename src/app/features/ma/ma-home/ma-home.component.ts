@@ -17,18 +17,18 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
   imports: [RouterLink, SuccessStoriesComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-white">
-      <section class="px-4 pb-6 pt-20 sm:px-6 sm:pb-8 sm:pt-24 lg:px-8 lg:pt-32">
+    <div class="min-h-screen bg-secondary">
+      <section class="bg-primary px-4 pb-8 pt-24 text-white sm:px-6 sm:pb-12 sm:pt-28 lg:px-8 lg:pt-36">
         <div class="mx-auto flex max-w-[78rem] flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 class="text-[2.25rem] leading-tight text-primary sm:text-5xl">Entreprises à reprendre</h1>
-            <p class="mt-3 max-w-[62ch] text-base leading-relaxed text-muted-foreground sm:mt-4">
+            <h1 class="text-[2.25rem] leading-tight text-white sm:text-5xl">Entreprises à reprendre</h1>
+            <p class="mt-3 max-w-[62ch] text-lg leading-relaxed text-white/70 sm:mt-4">
               Des entreprises rentables, surtout numériques, entre 50 k€ et 1 M€ de chiffre d'affaires.<span class="hidden sm:inline"> Les annonces sont anonymisées :
               le nom de l'entreprise n'est communiqué qu'aux repreneurs que le cédant accepte.</span>
             </p>
           </div>
           @if (canDepositListing()) {
-            <a routerLink="/ma/deposer" class="hidden flex-shrink-0 font-medium text-primary underline sm:inline decoration-border decoration-2 underline-offset-4 hover:decoration-primary">
+            <a routerLink="/ma/deposer" class="hidden flex-shrink-0 rounded-lg bg-accent px-6 py-3.5 font-semibold text-white transition-colors hover:bg-accent/90 sm:inline-block">
               Déposer une annonce gratuitement
             </a>
           }
@@ -36,8 +36,8 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
       </section>
 
       @if (!canViewSensitiveDetails() || accessRequiredNotice()) {
-        <section class="px-4 sm:px-6 lg:px-8">
-          <div class="mx-auto max-w-[78rem] rounded-lg border border-border bg-secondary p-4 sm:flex sm:p-5 sm:items-center sm:justify-between sm:gap-8">
+        <section class="px-4 pt-6 sm:px-6 sm:pt-8 lg:px-8">
+          <div class="mx-auto max-w-[78rem] rounded-2xl bg-white p-4 shadow-lg ring-1 ring-border sm:flex sm:p-5 sm:items-center sm:justify-between sm:gap-8">
             <div class="text-base leading-relaxed text-foreground/85">
               @if (accessRequiredNotice()) {
                 <p class="font-semibold text-primary">Le dossier complet demande un accès repreneur.</p>
@@ -50,7 +50,7 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
               }
             </div>
             @if (showAccessCta()) {
-              <button type="button" (click)="continueToMaAccess()" class="mt-3 w-full flex-shrink-0 rounded bg-primary px-5 py-2.5 text-sm sm:mt-0 sm:py-3 font-medium text-white transition-colors hover:bg-primary/90 sm:w-auto">
+              <button type="button" (click)="continueToMaAccess()" class="mt-3 w-full flex-shrink-0 rounded-lg bg-accent px-5 py-2.5 text-sm sm:mt-0 sm:py-3 font-semibold text-white transition-colors hover:bg-accent/90 sm:w-auto">
                 {{ accessCtaLabel() }}
               </button>
             }
@@ -69,22 +69,22 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
               [value]="query()"
               (input)="query.set($any($event.target).value)"
               placeholder="SaaS, e-commerce, agence, Lyon…"
-              class="w-full rounded-lg border border-input bg-white py-3.5 pl-12 pr-4 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+              class="w-full rounded-xl border border-input bg-white py-3.5 pl-12 pr-4 shadow-sm text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
             >
           </div>
 
           @if (sectors().length > 1) {
             <div class="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0" role="group" aria-label="Secteurs">
-              <button type="button" (click)="selectedSector.set('')" [attr.aria-pressed]="!selectedSector()" class="flex-shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition-colors" [class]="!selectedSector() ? 'border-primary bg-primary text-white' : 'border-border text-foreground/85 hover:border-primary/40'">Tous</button>
+              <button type="button" (click)="selectedSector.set('')" [attr.aria-pressed]="!selectedSector()" class="flex-shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition-colors" [class]="!selectedSector() ? 'border-primary bg-primary text-white' : 'border-border bg-white text-foreground/85 hover:border-primary/40'">Tous</button>
               @for (sector of sectors(); track sector) {
-                <button type="button" (click)="selectedSector.set(selectedSector() === sector ? '' : sector)" [attr.aria-pressed]="selectedSector() === sector" class="flex-shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition-colors" [class]="selectedSector() === sector ? 'border-primary bg-primary text-white' : 'border-border text-foreground/85 hover:border-primary/40'">{{ sector }}</button>
+                <button type="button" (click)="selectedSector.set(selectedSector() === sector ? '' : sector)" [attr.aria-pressed]="selectedSector() === sector" class="flex-shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium transition-colors" [class]="selectedSector() === sector ? 'border-primary bg-primary text-white' : 'border-border bg-white text-foreground/85 hover:border-primary/40'">{{ sector }}</button>
               }
             </div>
           }
 
           <div class="mt-5 grid gap-6 sm:mt-8 lg:grid-cols-[16.5rem,1fr] lg:gap-8">
             <aside id="ma-filters" aria-label="Filtres" class="lg:block" [class.hidden]="!filtersOpen()">
-              <div class="space-y-5 rounded-xl border border-border p-5 lg:sticky lg:top-24">
+              <div class="space-y-5 rounded-2xl bg-white p-5 shadow-lg ring-1 ring-border lg:sticky lg:top-24">
                 <div class="flex items-center justify-between">
                   <p class="font-semibold text-primary">Filtres</p>
                   @if (activeFilterCount() > 0) {
@@ -169,7 +169,7 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
                 <ul class="mt-5 space-y-4">
                   @for (item of filteredListings(); track item.listing.id) {
                     <li>
-                      <article class="group relative grid rounded-xl border bg-white transition-colors md:grid-cols-[1fr,15rem]" [class]="item.listing.featured ? 'border-amber-500/60' : 'border-border hover:border-primary/30'" [attr.aria-labelledby]="'listing-' + item.listing.id">
+                      <article class="group relative grid rounded-2xl bg-white shadow-lg ring-1 transition-shadow hover:shadow-xl md:grid-cols-[1fr,15rem]" [class]="item.listing.featured ? 'ring-amber-500/60' : 'ring-border'" [attr.aria-labelledby]="'listing-' + item.listing.id">
                         <div class="p-5 sm:p-6">
                           <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
                             <span>{{ item.listing.type }}</span>
@@ -187,8 +187,8 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
                               <span class="rounded-full border border-accent/30 px-2 py-0.5 font-medium text-accent">Nouvelle</span>
                             }
                           </div>
-                          <h2 [id]="'listing-' + item.listing.id" class="mt-2 text-xl font-semibold leading-snug text-primary sm:text-2xl">
-                            <a [routerLink]="['/ma/annonce', item.listing.id]" class="after:absolute after:inset-0 after:rounded-xl focus:outline-none focus-visible:underline">{{ item.listing.sector }}, {{ item.listing.region }}</a>
+                          <h2 [id]="'listing-' + item.listing.id" class="mt-2 text-xl font-bold leading-snug text-primary group-hover:text-accent sm:text-2xl">
+                            <a [routerLink]="['/ma/annonce', item.listing.id]" class="after:absolute after:inset-0 after:rounded-2xl focus:outline-none focus-visible:underline">{{ item.listing.sector }}, {{ item.listing.region }}</a>
                           </h2>
                           <p class="mt-2 line-clamp-2 text-base leading-relaxed text-foreground/80">{{ item.listing.summary }}</p>
 
@@ -212,7 +212,8 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
                           </dl>
                         </div>
 
-                        <div class="flex flex-col justify-between gap-4 border-t border-border bg-secondary/50 p-5 sm:p-6 md:rounded-r-xl md:border-l md:border-t-0">
+                        <div class="flex flex-col justify-between gap-4 p-5 pt-0 sm:p-6 md:pl-0">
+                          <div class="flex flex-1 flex-col justify-between gap-4 rounded-xl bg-secondary p-4">
                           <div>
                             <p class="text-sm text-muted-foreground">Prix demandé</p>
                             <p class="tabular mt-0.5 text-2xl font-semibold leading-tight text-amber-600"><span class="whitespace-nowrap">{{ item.listing.priceMin }}</span> à <span class="whitespace-nowrap">{{ item.listing.priceMax }}</span></p>
@@ -220,7 +221,8 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
                               <p class="tabular mt-1 text-sm text-muted-foreground">Soit {{ multiple(item.metrics.multiple) }} le bénéfice annuel</p>
                             }
                           </div>
-                          <span class="rounded border border-primary px-4 py-2.5 text-center text-sm font-medium text-primary transition-colors group-hover:bg-primary group-hover:text-white" aria-hidden="true">Voir l'annonce</span>
+                          <span class="rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-semibold text-white transition-colors group-hover:bg-accent" aria-hidden="true">Voir l'annonce</span>
+                          </div>
                         </div>
                       </article>
                     </li>

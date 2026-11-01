@@ -17,15 +17,15 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (!isHidden()) {
-      <nav class="fixed top-0 left-0 right-0 z-[100] overflow-visible border-b border-border bg-white">
+      <nav class="fixed top-0 left-0 right-0 z-[100] overflow-visible border-b" [class]="onDark() ? 'border-white/10 bg-primary' : 'border-border bg-white'">
 
           <!-- Hamburger aligné avec la flèche retour (left-6 = 24px du bord) -->
           <button
             type="button"
             (click)="toggleDrawer($event)"
             [class]="auth.isAuthenticated()
-              ? 'absolute left-4 top-0 z-10 flex h-16 items-center px-1 text-muted-foreground transition-colors hover:text-foreground sm:left-6'
-              : 'absolute left-4 top-0 z-10 flex h-16 items-center px-1 text-muted-foreground transition-colors hover:text-foreground lg:hidden'"
+              ? 'absolute left-4 top-0 z-10 flex h-16 items-center px-1 transition-colors sm:left-6 ' + (onDark() ? 'text-white/70 hover:text-white' : 'text-muted-foreground hover:text-foreground')
+              : 'absolute left-4 top-0 z-10 flex h-16 items-center px-1 transition-colors lg:hidden ' + (onDark() ? 'text-white/70 hover:text-white' : 'text-muted-foreground hover:text-foreground')"
             aria-label="Menu de navigation"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -46,7 +46,7 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
                 class="h-full w-full object-contain"
               >
             </div>
-            <span class="font-display truncate text-xl font-semibold text-primary">GoFounders</span>
+            <span class="font-display truncate text-xl font-bold" [class]="onDark() ? 'text-white' : 'text-primary'">GoFounders</span>
           </a>
 
           <!-- Nav links (center) -->
@@ -54,8 +54,10 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
             @for (link of navLinks(); track link.href) {
               <a
                 [routerLink]="link.href"
-                routerLinkActive="!text-primary underline decoration-2 underline-offset-[22px]"
-                class="whitespace-nowrap py-2 text-base font-medium text-foreground/75 transition-colors hover:text-primary"
+                routerLinkActive="underline decoration-2 underline-offset-[22px]"
+                #rla="routerLinkActive"
+                class="whitespace-nowrap py-2 text-base font-semibold transition-colors"
+                [class]="onDark() ? (rla.isActive ? 'text-white' : 'text-white/75 hover:text-white') : (rla.isActive ? 'text-primary' : 'text-foreground/75 hover:text-primary')"
               >{{ link.label }}</a>
             }
           </div>
@@ -64,13 +66,14 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
           <div class="ml-auto hidden items-center gap-3 px-2 md:flex lg:ml-0 lg:pl-8 lg:pr-0">
             @if (auth.isAuthenticated()) {
 
-              <a routerLink="/dashboard" class="px-4 py-2 text-base font-medium text-foreground/80 transition-colors hover:text-primary">
+              <a routerLink="/dashboard" class="px-4 py-2 text-base font-semibold transition-colors" [class]="onDark() ? 'text-white/80 hover:text-white' : 'text-foreground/80 hover:text-primary'">
                 Dashboard
               </a>
               <a
                 routerLink="/messages"
                 routerLinkActive="!text-accent"
-                class="hidden items-center gap-2 rounded-lg px-3 py-2 text-foreground transition-colors hover:bg-secondary hover:text-accent lg:inline-flex"
+                class="hidden items-center gap-2 rounded-lg px-3 py-2 transition-colors lg:inline-flex"
+                [class]="onDark() ? 'text-white/80 hover:bg-white/10 hover:text-white' : 'text-foreground hover:bg-secondary hover:text-accent'"
                 aria-label="Ouvrir les messages"
               >
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -82,10 +85,10 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
               <app-user-menu avatarClass="h-11 w-11" />
 
             } @else {
-              <a routerLink="/connexion" class="px-4 py-2 text-base font-medium text-foreground/80 transition-colors hover:text-primary">
+              <a routerLink="/connexion" class="px-4 py-2 text-base font-semibold transition-colors" [class]="onDark() ? 'text-white/85 hover:text-white' : 'text-foreground/80 hover:text-primary'">
                 Connexion
               </a>
-              <a routerLink="/inscription" class="rounded bg-primary px-4 py-2 text-base font-medium text-white transition-colors hover:bg-primary/90">
+              <a routerLink="/inscription" class="rounded-lg px-4 py-2 text-base font-semibold text-white transition-colors" [class]="onDark() ? 'bg-accent hover:bg-accent/90' : 'bg-primary hover:bg-primary/90'">
                 S'inscrire
               </a>
             }
@@ -335,6 +338,12 @@ export class NavbarComponent {
     ),
     { initialValue: this.router.url }
   );
+
+  // En-têtes sombres (accueil, /ma) : la barre prend la couleur encre, comme le haut de page.
+  readonly onDark = computed(() => {
+    const path = (this.currentUrl() ?? '').split(/[?#]/)[0];
+    return path === '/' || path === '' || path === '/ma';
+  });
 
   readonly isHidden = computed(() => {
     const url = this.currentUrl() ?? '';

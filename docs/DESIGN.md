@@ -25,6 +25,17 @@ Le site doit ressembler à un **dossier de cession bien tenu**, pas à une appli
 
 Règle : l'ocre ne sert jamais à décorer. Si un élément orange n'est ni un prix ni une action de cession, il passe en gris ou en encre.
 
+## Direction de novembre 2026 : inspiration Acquire, nos couleurs
+
+- Police **Plus Jakarta Sans** (titres en 700/800), plus ronde et plus affirmée que Geist.
+- Accueil et `/ma` : en-tête encre plein écran avec la barre de navigation sombre, panneaux arrondis translucides en fond, maquettes d'interface bleu pâle (`#DCE5F7`) construites avec de vraies données d'annonce ; bande de faits séparés par des tirets.
+- Sections alternées blanc / bleu très pâle (`--secondary: #F1F4FB`), titres de section centrés, cartes blanches arrondies (16 à 24 px) avec ombre douce et filet `ring-border`.
+- Cartes d'annonce : bandeau encre « secteur · région », résumé en titre, encadré gris bleuté pour le prix (ocre) et le multiple.
+- Tarifs : offres en cartes, la première de chaque groupe cerclée de bleu.
+- On s'inspire de la mise en page ; on ne copie ni logo, ni textes, ni illustrations d'Acquire.
+
+Les règles ci-dessous restent valables, sauf la police et les rayons, remplacés par ce qui précède.
+
 ## Typographie
 
 - **Geist** (400, 500, 600) pour tout le site : moderne, net, lisible. Les titres `h1` et `h2` sont en 600 avec un interlettrage serré (-0,03 à -0,04 em) : c'est ce serrage qui donne le caractère, pas une deuxième police. Classe `tabular` pour aligner les chiffres (CA, marges, prix).

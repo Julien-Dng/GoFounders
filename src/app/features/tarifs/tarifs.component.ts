@@ -37,57 +37,58 @@ interface Plan {
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-white px-4 pb-20 pt-24 sm:px-6 lg:px-8 lg:pt-32">
+    <div class="min-h-screen bg-secondary px-4 pb-20 pt-24 sm:px-6 lg:px-8 lg:pt-32">
       <div class="mx-auto max-w-[78rem]">
-        <header class="max-w-[62ch]">
+        <header class="mx-auto max-w-[62ch] text-center">
           <h1 class="text-[2.25rem] leading-tight text-primary sm:text-5xl">Tarifs</h1>
-          <p class="mt-4 text-base leading-relaxed text-muted-foreground sm:text-base">
+          <p class="mt-4 text-lg leading-relaxed text-muted-foreground">
             Publier une annonce est gratuit et nous ne prenons aucune commission sur la vente. Les repreneurs paient l'accès aux dossiers,
             les professionnels leur visibilité.
           </p>
-          <nav class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-base" aria-label="Offres par profil">
+          <nav class="mt-7 flex flex-wrap justify-center gap-2" aria-label="Offres par profil">
             @for (anchor of anchors; track anchor.id) {
-              <a routerLink="/tarifs" [fragment]="anchor.id" class="font-medium text-accent underline-offset-4 hover:underline">{{ anchor.label }}</a>
+              <a routerLink="/tarifs" [fragment]="anchor.id" class="rounded-full bg-white px-4 py-2 text-base font-semibold text-primary shadow-sm ring-1 ring-border transition-colors hover:text-accent">{{ anchor.label }}</a>
             }
           </nav>
         </header>
 
         @if (statusMessage()) {
-          <div class="mt-8 rounded-lg border px-5 py-4 text-base" [class]="statusIsError() ? 'border-red-200 bg-red-50 text-red-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'" role="status">
+          <div class="mx-auto mt-8 max-w-3xl rounded-xl border px-5 py-4 text-base" [class]="statusIsError() ? 'border-red-200 bg-red-50 text-red-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'" role="status">
             {{ statusMessage() }}
           </div>
         }
 
         @for (group of offerGroups(); track group.id) {
-          <section [id]="group.id" class="mt-14 grid scroll-mt-24 gap-8 border-t border-primary pt-8 lg:grid-cols-12" [attr.aria-labelledby]="group.id + '-title'">
-            <div class="lg:col-span-4">
-              <h2 [id]="group.id + '-title'" class="text-2xl text-primary sm:text-3xl">{{ group.title }}</h2>
-              <p class="mt-3 max-w-[40ch] text-base leading-relaxed text-muted-foreground">{{ group.description }}</p>
+          <section [id]="group.id" class="mt-20 scroll-mt-24" [attr.aria-labelledby]="group.id + '-title'">
+            <div class="mx-auto max-w-[60ch] text-center">
+              <h2 [id]="group.id + '-title'" class="text-3xl text-primary sm:text-4xl">{{ group.title }}</h2>
+              <p class="mt-3 text-lg leading-relaxed text-muted-foreground">{{ group.description }}</p>
             </div>
-            <div class="divide-y divide-border lg:col-span-8">
+            <div class="mx-auto mt-10 grid gap-6" [class]="group.offers.length >= 3 ? 'md:grid-cols-3' : 'max-w-4xl md:grid-cols-2'">
               @for (offer of group.offers; track offer.title; let first = $first) {
-                <div class="grid gap-5 py-6 sm:grid-cols-[1fr_15rem] sm:gap-8" [class.pt-0]="first">
-                  <div>
-                    <h3 class="text-lg font-semibold text-primary">{{ offer.title }}</h3>
-                    <p class="mt-1 text-base text-muted-foreground">{{ offer.description }}</p>
-                    <ul class="mt-3 space-y-1.5 text-base text-foreground/85">
-                      @for (feature of offer.features; track feature) {
-                        <li class="flex gap-2.5"><span class="mt-[0.6rem] h-1 w-1 flex-shrink-0 rounded-full bg-foreground/50" aria-hidden="true"></span><span>{{ feature }}</span></li>
-                      }
-                    </ul>
-                  </div>
-                  <div class="sm:text-right">
-                    <p class="font-display tabular text-2xl font-semibold text-primary">{{ offer.price }}</p>
+                <div class="flex flex-col rounded-2xl bg-white p-7 shadow-lg" [class]="first && group.offers.length > 1 ? 'ring-2 ring-accent' : 'ring-1 ring-border'">
+                  <h3 class="text-lg font-bold text-primary">{{ offer.title }}</h3>
+                  <p class="tabular mt-3 text-[2rem] font-extrabold leading-tight tracking-tight text-primary">{{ offer.price }}</p>
+                  <p class="mt-2 text-base text-muted-foreground">{{ offer.description }}</p>
+                  <ul class="mt-5 flex-1 space-y-2.5 border-t border-border pt-5 text-base text-foreground/85">
+                    @for (feature of offer.features; track feature) {
+                      <li class="flex gap-2.5">
+                        <svg class="mt-1 flex-shrink-0 text-accent" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>{{ feature }}</span>
+                      </li>
+                    }
+                  </ul>
+                  <div class="mt-7">
                     @if (offer.product) {
                       @if (isOwned(offer.product)) {
-                        <p class="mt-3 text-sm font-medium text-emerald-700">Actif sur votre compte</p>
+                        <p class="rounded-lg bg-emerald-50 py-3 text-center font-semibold text-emerald-800">Actif sur votre compte</p>
                       } @else {
-                        <button type="button" (click)="buy(offer.product)" [disabled]="busyProduct() === offer.product" class="mt-3 w-full rounded bg-primary px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary/90 disabled:cursor-wait disabled:opacity-60">
+                        <button type="button" (click)="buy(offer.product)" [disabled]="busyProduct() === offer.product" class="w-full rounded-lg px-4 py-3 font-semibold text-white transition-colors disabled:cursor-wait disabled:opacity-60" [class]="first && group.offers.length > 1 ? 'bg-accent hover:bg-accent/90' : 'bg-primary hover:bg-primary/90'">
                           {{ busyProduct() === offer.product ? 'Activation…' : (offer.cta ?? 'Activer') }}
                         </button>
                       }
                     } @else if (offer.link) {
-                      <a [routerLink]="offer.link.href" [fragment]="offer.link.fragment" class="mt-3 block w-full rounded border border-primary px-4 py-2.5 text-center text-sm font-medium text-primary transition-colors hover:bg-primary hover:text-white">{{ offer.link.label }}</a>
+                      <a [routerLink]="offer.link.href" [fragment]="offer.link.fragment" class="block w-full rounded-lg bg-primary px-4 py-3 text-center font-semibold text-white transition-colors hover:bg-primary/90">{{ offer.link.label }}</a>
                     }
                   </div>
                 </div>
@@ -96,9 +97,9 @@ interface Plan {
           </section>
         }
 
-        <section id="premium" class="mt-14 grid scroll-mt-24 gap-8 border-t border-primary pt-8 lg:grid-cols-12" aria-labelledby="premium-title">
+        <section id="premium" class="mt-20 grid scroll-mt-24 gap-8 overflow-hidden rounded-3xl bg-white p-6 shadow-lg ring-1 ring-border sm:p-10 lg:grid-cols-12" aria-labelledby="premium-title">
           <div class="lg:col-span-4">
-            <h2 id="premium-title" class="text-2xl text-primary sm:text-3xl">Accompagnement</h2>
+            <h2 id="premium-title" class="text-3xl text-primary sm:text-4xl">Accompagnement</h2>
             <p class="mt-3 max-w-[40ch] text-base leading-relaxed text-muted-foreground">
               Préparation du dossier de cession, présentation de repreneurs ou de cédants qualifiés, mise en relation avec nos experts partenaires.
               Forfait sur devis, sans commission sur la vente.
@@ -108,9 +109,9 @@ interface Plan {
               <li>Un interlocuteur dédié jusqu'à la signature.</li>
             </ul>
             <p class="mt-4 text-sm leading-relaxed text-muted-foreground">GoFounders n'assure pas de conseil juridique : les actes sont réalisés par nos experts partenaires.</p>
-            <img src="/assets/images/provisoire/rendez-vous-repreneur.jpg" alt="Deux personnes en rendez-vous de travail" width="1400" height="933" loading="lazy" class="mt-6 hidden aspect-[3/2] w-full rounded-md object-cover lg:block">
+            <img src="/assets/images/provisoire/rendez-vous-repreneur.jpg" alt="Deux personnes en rendez-vous de travail" width="1400" height="933" loading="lazy" class="mt-6 hidden aspect-[3/2] w-full rounded-2xl object-cover lg:block">
           </div>
-          <div class="rounded-lg border border-border p-6 lg:col-span-8">
+          <div class="rounded-2xl bg-secondary p-6 lg:col-span-8">
             <div class="grid gap-4 sm:grid-cols-2">
               <div>
                 <label for="premium-topic" class="mb-1.5 block text-sm font-medium text-foreground/85">Votre besoin</label>
@@ -130,7 +131,7 @@ interface Plan {
             <textarea id="premium-message" rows="4" maxlength="3000" [value]="premiumMessage()" (input)="premiumMessage.set($any($event.target).value)" class="w-full resize-y rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary" placeholder="Activité, taille, calendrier souhaité"></textarea>
             <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p class="text-sm text-muted-foreground">20 caractères minimum.</p>
-              <button type="button" (click)="sendPremium()" [disabled]="premiumSending() || premiumMessage().trim().length < 20" class="rounded bg-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50">
+              <button type="button" (click)="sendPremium()" [disabled]="premiumSending() || premiumMessage().trim().length < 20" class="rounded-lg bg-accent px-5 py-3 font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50">
                 {{ premiumSending() ? 'Envoi…' : 'Demander un devis' }}
               </button>
             </div>
@@ -140,15 +141,15 @@ interface Plan {
           </div>
         </section>
 
-        <section id="associes" class="mt-14 scroll-mt-24 border-t border-primary pt-8" aria-labelledby="associes-title">
-          <div class="max-w-[62ch]">
-            <h2 id="associes-title" class="text-2xl text-primary sm:text-3xl">Trouver un associé</h2>
+        <section id="associes" class="mt-20 scroll-mt-24" aria-labelledby="associes-title">
+          <div class="mx-auto max-w-[62ch] text-center">
+            <h2 id="associes-title" class="text-3xl text-primary sm:text-4xl">Trouver un associé</h2>
             <p class="mt-3 text-base leading-relaxed text-muted-foreground">
               Gratuit pour se faire connaître, PRO pour trouver son associé plus vite, PREMIUM pour être accompagné. Les associés n'ont pas besoin de payer.
             </p>
           </div>
 
-          <div class="relative mt-8 overflow-x-auto">
+          <div class="relative mt-10 overflow-x-auto rounded-2xl bg-white p-4 shadow-lg ring-1 ring-border sm:p-6">
             <table class="tabular w-full min-w-[680px] border-collapse text-left text-base">
               <caption class="sr-only">Comparaison des formules FREE, PRO et PREMIUM</caption>
               <thead>
