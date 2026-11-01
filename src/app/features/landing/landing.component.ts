@@ -291,6 +291,11 @@ interface LandingFaqItem {
               </details>
             }
           </div>
+          <p class="mt-8 text-center">
+            <a routerLink="/faq" class="font-semibold text-accent underline-offset-4 hover:underline">Toutes les questions</a>
+            <span class="mx-2 text-muted-foreground" aria-hidden="true">·</span>
+            <a routerLink="/contact" class="font-semibold text-accent underline-offset-4 hover:underline">Nous contacter</a>
+          </p>
         </div>
       </section>
 

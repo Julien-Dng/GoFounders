@@ -1,3 +1,4 @@
+import { SUPPORT_EMAIL } from '../config/offers';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Timestamp } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
@@ -346,7 +347,7 @@ export class AuthService {
     const { error } = await this.supabase.client.rpc('delete_my_account');
 
     if (error) {
-      return { success: false, message: 'La suppression a échoué. Réessayez ou contactez support@gofounders.fr.' };
+      return { success: false, message: `La suppression a échoué. Réessayez ou contactez ${SUPPORT_EMAIL}.` };
     }
 
     await this.signOut({ compteSupprime: '1' });

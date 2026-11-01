@@ -27,3 +27,7 @@ export const FREE_AI_ANALYSES_PER_MONTH = 3;
 
 // Accès anticipé des repreneurs Plus aux nouvelles annonces.
 export const EARLY_ACCESS_HOURS = 48;
+
+// Adresse de contact affichée sur le site (page contact, messages d'erreur). À changer en un seul endroit
+// si le nom de domaine change.
+export const SUPPORT_EMAIL = 'support@gofounders.fr';

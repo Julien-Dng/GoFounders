@@ -320,6 +320,7 @@ export class NavbarComponent {
     { id: 'admin-profils', label: 'Profils à vérifier', icon: 'shield', path: '/admin/profils', badge: null, exact: true },
     { id: 'verifications', label: 'Dossiers à vérifier', icon: 'shield', path: '/admin/verifications', badge: null, exact: true },
     { id: 'admin-temoignages', label: 'Ventes à valider', icon: 'shield', path: '/admin/temoignages', badge: null, exact: true },
+    { id: 'admin-messages', label: 'Messages reçus', icon: 'shield', path: '/admin/messages', badge: null, exact: true },
   ];
 
   readonly navItems = computed(() =>

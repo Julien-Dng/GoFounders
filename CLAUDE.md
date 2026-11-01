@@ -102,11 +102,15 @@ PREMIUM = accompagnement humain. Les talents n'ont pas besoin de payer.
 
 /ma/vendue/:id             « J'ai vendu » : déclaration de la vente et témoignage (vendeur)
 /estimation                Estimation gratuite de la valeur d'une entreprise (publique, calcul par règles)
+/faq                       Questions fréquentes (publique, recherche dans les réponses)
+/contact                   Formulaire de contact, visiteurs compris (send_contact_message, limites anti-abus)
+**                         Page 404 (dans le layout public)
 /paiement/merci            Retour de Stripe Checkout (attend la confirmation du webhook)
 
 /admin/annonces            Modération des annonces M&A (admin)
 /admin/temoignages         Ventes déclarées à valider avant publication (admin)
 /admin/profils             Vérification des profils (admin)
+/admin/messages            Messages de contact et demandes de devis PREMIUM (admin, 2026-10-25-contact.sql)
 
 /abonnement                Gérer son abonnement Stripe (protégé)
 /parametres                Paramètres : email, mot de passe, visibilité dans la recherche, suppression du compte (protégé)
@@ -514,6 +518,7 @@ Tu proposes des actions concrètes sur la plateforme GoFounders.
 - **Partie confidentielle des projets** (`2026-10-19-projets-confidentiels-nda.sql`) : `projects.confidential_details` n'est jamais lisible directement (jamais de `select('*')` sur `projects`, utiliser `PROJECT_COLUMNS`). Elle passe par `get_project_confidential()` : propriétaire, admins et associés dont la demande est acceptée. Demandes via `request_project_access()` / `decide_project_access()` uniquement (table `project_access_requests`, aucune écriture directe)
 - **NDA** : optionnel, activé par le porteur (`projects.nda_required`). Texte et version dans `core/legal/nda.ts` (**provisoire, à faire valider par un avocat** ; toute modification = nouvelle `NDA_VERSION`). Preuve enregistrée à l'acceptation (version, date, IP, navigateur, noms figés) et conservée même si un compte est supprimé. Toujours rappeler que GoFounders n'est pas partie à l'engagement et n'assure pas de conseil juridique
 - **Modération des annonces** (`2026-10-21-moderation-verification-stats.sql`) : une annonce est en ligne dès sa publication, un admin la relit sur `/admin/annonces` (`admin_list_ma_listings`, `moderate_ma_listing`). Une annonce retirée n'est lisible que par son propriétaire et les admins (politique restrictive `ma_listings_moderation`) et le vendeur ne peut pas la republier seul. Une annonce modifiée repasse « à relire »
+- **Contact** (`2026-10-25-contact.sql`) : `contact_messages` sans accès direct ; envoi par `send_contact_message` (visiteurs compris, 3 messages par email et par heure, 300 par jour au total), lecture par `admin_list_inbox` et suivi par `admin_set_inbox_status` (admins). Adresse affichée : `SUPPORT_EMAIL` dans `core/config/offers.ts`
 - **Profil vérifié** : `profiles.verified_at`, posé uniquement par `decide_profile_verification` (admin, `/admin/profils`) après une demande `request_profile_verification` (liens LinkedIn, site, SIREN ; jamais de pièce d'identité). Le badge ne s'affiche que pour un profil réellement vérifié
 - **Statistiques vendeur** : `record_ma_listing_view` (une vue par membre et par jour, propriétaire et admins non comptés), lues via `get_my_listing_stats`, `get_my_listing_daily_views`, `get_my_contact_stats` ; tables sans accès direct
 - **Ventes réussies** (`2026-10-23-ventes-reussies.sql`) : témoignages réels uniquement (jamais de témoignage inventé), publiés après validation d'un admin et avec le consentement du vendeur. Prix exact, fourchette ou masqué selon son choix ; le prix exact n'est jamais renvoyé au public s'il ne l'a pas choisi (`list_success_stories`). Section `SuccessStoriesComponent`, masquée tant qu'il n'y a aucune vente publiée

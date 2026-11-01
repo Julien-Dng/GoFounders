@@ -5,6 +5,12 @@ import { roleGuard } from './core/guards/role.guard';
 import { TALENT_MARKETPLACE_ROLES } from './core/models/user.model';
 
 export const routes: Routes = [
+  // Dashboard (layout propre, sans navbar publique). Déclaré avant le layout public, dont la page 404 capte tout le reste.
+  {
+    path: 'dashboard',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
+  },
   // Routes publiques (avec navbar)
   {
     path: '',
@@ -39,6 +45,14 @@ export const routes: Routes = [
       {
         path: 'mentions-legales',
         loadComponent: () => import('./features/legal/mentions-legales.component').then(m => m.MentionsLegalesComponent)
+      },
+      {
+        path: 'contact',
+        loadComponent: () => import('./features/contact/contact.component').then(m => m.ContactComponent)
+      },
+      {
+        path: 'faq',
+        loadComponent: () => import('./features/faq/faq.component').then(m => m.FaqComponent)
       },
       {
         path: 'inscription',
@@ -130,6 +144,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/admin/admin-temoignages.component').then(m => m.AdminTemoignagesComponent)
       },
       {
+        path: 'admin/messages',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/admin/admin-messages.component').then(m => m.AdminMessagesComponent)
+      },
+      {
         path: 'admin/annonces',
         canActivate: [authGuard],
         loadComponent: () => import('./features/admin/admin-annonces.component').then(m => m.AdminAnnoncesComponent)
@@ -154,16 +173,11 @@ export const routes: Routes = [
         canActivate: [authGuard],
         loadComponent: () => import('./features/parametres/parametres.component').then(m => m.ParametresComponent)
       },
+      {
+        // Adresse inconnue : page 404, avec la barre de navigation.
+        path: '**',
+        loadComponent: () => import('./features/not-found/not-found.component').then(m => m.NotFoundComponent)
+      },
     ]
-  },
-  // Dashboard (layout propre, sans navbar publique)
-  {
-    path: 'dashboard',
-    canActivate: [authGuard],
-    loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
-  },
-  {
-    path: '**',
-    redirectTo: ''
   }
 ];

@@ -9,7 +9,7 @@ import { RouterLink } from '@angular/router';
   template: `
     <footer class="bg-primary text-primary-foreground">
       <div class="mx-auto max-w-[78rem] px-4 py-12 sm:px-6 lg:px-8">
-        <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr]">
+        <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
             <div class="flex items-center gap-2.5">
               <div class="brand-logo-mark h-8 w-8">
@@ -54,6 +54,13 @@ export class FooterComponent {
         { label: 'Trouver un associé', href: '/recherche' },
         { label: 'Annuaire des professionnels', href: '/pros' },
         { label: 'Tarifs', href: '/tarifs' },
+      ],
+    },
+    {
+      category: 'Aide',
+      links: [
+        { label: 'Questions fréquentes', href: '/faq' },
+        { label: 'Nous contacter', href: '/contact' },
       ],
     },
     {

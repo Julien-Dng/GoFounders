@@ -97,7 +97,7 @@ Pas de commission sur les ventes (une commission sur une cession de fonds de com
    2. `supabase/2026-10-20b-offres-reprise.sql` ;
    3. `supabase/2026-10-21-moderation-verification-stats.sql` (venue de `V6`) ;
    4. `supabase/2026-10-22-reprise-moderation-stats-pros.sql`, qui remet l'accès anticipé de 48 h dans le dossier complet et ajoute les statistiques des pros.
-   5. `supabase/2026-10-23-ventes-reussies.sql` puis `supabase/2026-10-24-paiements-stripe.sql`.
+   5. `supabase/2026-10-23-ventes-reussies.sql`, `supabase/2026-10-24-paiements-stripe.sql`, puis `supabase/2026-10-25-contact.sql` (formulaire de contact et boîte de réception admin).
 2. **Paiement** : Stripe est branché (back Python, webhook, portail client). Mise en route pas à pas dans `backend/README.md`, section « Paiements Stripe ». Le site reste en simulation tant que `paymentMode` n'est pas `'stripe'`. ⚠️ À la mise en ligne, exécuter `supabase/production/supprimer-paiements-simules.sql`.
 3. **Vérifications** : un admin traite les demandes « Dossier vérifié » sur `/admin/verifications` (objectif : 3 jours ouvrés).
 4. **Modérer les annonces** : la publication est gratuite et immédiate. Il faut relire chaque nouvelle annonce et supprimer celles qui ne sont pas sérieuses.

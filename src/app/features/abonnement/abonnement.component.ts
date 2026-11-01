@@ -50,7 +50,7 @@ import { PaymentService } from '../../core/services/payment.service';
                 Activer PREMIUM (paiement simulé)
               </button>
             } @else {
-              <a href="mailto:support@gofounders.fr?subject=Accompagnement%20PREMIUM" class="block w-full rounded-lg border border-primary px-5 py-3 text-center font-medium text-primary transition-colors hover:bg-primary hover:text-white">
+              <a routerLink="/tarifs" fragment="premium" class="block w-full rounded-lg border border-primary px-5 py-3 text-center font-medium text-primary transition-colors hover:bg-primary hover:text-white">
                 Demander un premier échange gratuit
               </a>
             }
