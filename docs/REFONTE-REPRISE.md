@@ -92,7 +92,7 @@ Pas de commission sur les ventes (une commission sur une cession de fonds de com
 - `/ma/statistiques` (vendeurs et pros) : vues des annonces, dossiers consultés, contacts reçus ; pour un pro, vues de sa fiche et clics vers son site depuis `/pros`.
 
 ### Mise en route (à faire une fois)
-1. **Migrations**, dans cet ordre, après celles de `V6` jusqu'au 19 octobre :
+1. **Migrations**, dans cet ordre, après celles de `V6` jusqu'au 19 octobre (dont `2026-10-18-projets-entree-capital.sql` et `2026-10-19-projets-confidentiels-nda.sql`, nécessaires à la vitrine /associes). Pour savoir où en est une base : `supabase/verifier-migrations.sql` (lecture seule) :
    1. `supabase/2026-10-20a-role-pro.sql` **seule** (ajout d'une valeur d'enum, à valider avant usage) ;
    2. `supabase/2026-10-20b-offres-reprise.sql` ;
    3. `supabase/2026-10-21-moderation-verification-stats.sql` (venue de `V6`) ;
