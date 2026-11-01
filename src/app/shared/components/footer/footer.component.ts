@@ -13,7 +13,7 @@ import { RouterLink } from '@angular/router';
           <div>
             <div class="flex items-center gap-2.5">
               <div class="brand-logo-mark h-8 w-8">
-                <img src="/assets/images/gofounders-logo.png" alt="" class="h-full w-full object-contain">
+                <img src="/assets/images/gofounders-logo-256.png" alt="" class="h-full w-full object-contain">
               </div>
               <span class="font-display text-xl font-semibold">GoFounders</span>
             </div>

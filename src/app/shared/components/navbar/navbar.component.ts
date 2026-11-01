@@ -41,7 +41,7 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
           <a [routerLink]="logoLink()" class="group flex flex-shrink-0 items-center gap-2.5 px-2 sm:px-4 xl:px-0">
             <div class="brand-logo-mark h-8 w-8 flex-shrink-0">
               <img
-                src="/assets/images/gofounders-logo.png"
+                src="/assets/images/gofounders-logo-256.png"
                 alt="Logo GoFounders"
                 class="h-full w-full object-contain"
               >

@@ -46,7 +46,7 @@ interface QuickActionItem {
           <a routerLink="/dashboard" class="flex items-center gap-3">
             <div class="brand-logo-mark h-11 w-11">
               <img
-                src="/assets/images/gofounders-logo.png"
+                src="/assets/images/gofounders-logo-256.png"
                 alt="Logo GoFounders"
                 class="h-full w-full object-contain"
               >
