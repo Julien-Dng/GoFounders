@@ -4,7 +4,7 @@ import { Timestamp } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { User as SupabaseAuthUser } from '@supabase/supabase-js';
 import { SupabaseProfileInsert, SupabaseProfileRow, SupabaseProjectInsert, PROFILE_COLUMNS } from '../models/supabase-database.model';
-import { Plan, ProCategory, ProfileType, User } from '../models/user.model';
+import { Plan, ProCategory, ProfileType, User, isTalentMarketplaceRole } from '../models/user.model';
 import { validateRegistrationEmail } from '../validators/email-policy.validator';
 import { SupabaseService } from './supabase.service';
 
@@ -68,6 +68,8 @@ export interface SignUpPayload {
   proCategory?: ProCategory;
   // Pro : nom du cabinet ou de l'activité, affiché comme intitulé du profil.
   proCompany?: string;
+  // Porteur de projet ou associé : accord pour apparaître de façon anonyme sur /associes.
+  publicListing?: boolean;
 }
 
 export interface AuthResult {
@@ -329,6 +331,29 @@ export class AuthService {
       : { success: true, message: isVisible ? 'Votre profil apparaît de nouveau dans la recherche.' : 'Votre profil est masqué de la recherche.' };
   }
 
+  // Vitrine publique /associes (colonne public_listing, 2026-10-27-vitrine-associes.sql).
+  async getPublicListing(): Promise<boolean | null> {
+    const user = this._currentUser();
+    if (!user || !this.supabase.isConfigured) {
+      return null;
+    }
+
+    const { data, error } = await this.supabase.client.from('profiles').select('public_listing').eq('id', user.uid).maybeSingle();
+    return error || !data ? null : (data as { public_listing: boolean }).public_listing;
+  }
+
+  async setPublicListing(enabled: boolean): Promise<AuthResult> {
+    const user = this._currentUser();
+    if (!user || !this.supabase.isConfigured) {
+      return { success: false, message: 'Ce réglage nécessite Supabase (indisponible en mode local).' };
+    }
+
+    const { error } = await this.supabase.client.from('profiles').update({ public_listing: enabled }).eq('id', user.uid);
+    return error
+      ? { success: false, message: 'Impossible de modifier ce réglage pour le moment.' }
+      : { success: true, message: enabled ? 'Votre profil apparaît de façon anonyme sur la page publique.' : 'Votre profil est retiré de la page publique.' };
+  }
+
   // Suppression définitive du compte et de ses données (fonction Supabase delete_my_account).
   async deleteAccount(): Promise<AuthResult> {
     if (!this.supabase.isConfigured) {
@@ -420,6 +445,7 @@ export class AuthService {
           ma_budget: this.initialMaField(payload, payload.maBudget) ?? '',
           ma_region: this.initialMaField(payload, payload.maRegion) ?? '',
           pro_category: payload.profileType === 'pro' ? payload.proCategory ?? '' : '',
+          public_listing: !!payload.publicListing && isTalentMarketplaceRole(payload.profileType),
         },
       },
     });
@@ -492,6 +518,7 @@ export class AuthService {
           skills: this.buildInitialSkills(payload) ?? [],
           looking_for: this.buildInitialLookingFor(payload) ?? [],
           availability_label: payload.profileType === 'talent' && payload.talentAvailability ? 'Disponible rapidement' : null,
+          public_listing: !!payload.publicListing && isTalentMarketplaceRole(payload.profileType),
           ma_sector: this.initialMaField(payload, payload.maSector) ?? null,
           ma_budget: this.initialMaField(payload, payload.maBudget) ?? null,
           ma_region: this.initialMaField(payload, payload.maRegion) ?? null,

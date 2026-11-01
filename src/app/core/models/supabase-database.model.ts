@@ -123,6 +123,8 @@ export interface SupabaseProfileInsert {
 
 export interface SupabaseProfileUpdate {
   is_visible?: boolean;
+  // Accord pour la vitrine publique /associes (2026-10-27-vitrine-associes.sql).
+  public_listing?: boolean;
   display_name?: string;
   location?: string | null;
   title?: string | null;

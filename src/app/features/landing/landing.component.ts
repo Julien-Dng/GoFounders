@@ -390,7 +390,7 @@ export class LandingComponent implements OnInit {
     {
       title: 'Associés',
       description: 'Trouvez un associé pour votre projet, ou rejoignez un projet qui a besoin de vos compétences.',
-      href: '/recherche',
+      href: '/associes',
       cta: 'Trouver un associé',
       image: '/assets/images/provisoire/bureau-equipe.jpg',
       imageAlt: 'Une équipe au travail dans un bureau lumineux',

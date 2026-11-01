@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { isTalentMarketplaceRole } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { passwordPolicyValidator } from '../../core/validators/password-policy.validator';
 import { PasswordCriteriaComponent } from '../../shared/components/password-criteria/password-criteria.component';
@@ -16,7 +18,7 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
 @Component({
   selector: 'app-parametres',
   standalone: true,
-  imports: [ReactiveFormsModule, PasswordCriteriaComponent],
+  imports: [ReactiveFormsModule, PasswordCriteriaComponent, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-secondary pb-12 pt-20">
@@ -117,6 +119,42 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
             @if (visibilityFeedback(); as feedback) {
               <p class="mt-3 text-sm" [class.text-success]="feedback.ok" [class.text-destructive]="!feedback.ok" role="status">{{ feedback.text }}</p>
             }
+
+            @if (showsPublicListing()) {
+              <div class="mt-5 flex items-start justify-between gap-4 border-t border-border pt-5">
+                <div>
+                  <div class="text-sm font-medium" id="vitrine-label">Apparaître de façon anonyme sur la page « Trouver un associé »</div>
+                  <p class="mt-1 text-sm text-muted-foreground">
+                    @if (isTalent()) {
+                      Les visiteurs voient votre titre, vos compétences et votre disponibilité, jamais votre nom, votre photo ni votre ville.
+                    } @else {
+                      Les visiteurs voient le secteur, le stade et les profils recherchés de votre projet, jamais votre nom, celui du projet ni sa description.
+                    }
+                    <a routerLink="/associes" class="font-semibold text-accent hover:underline">Voir la page</a>
+                  </p>
+                </div>
+                @if (publicListing() !== null) {
+                  <button
+                    type="button"
+                    role="switch"
+                    [attr.aria-checked]="publicListing()"
+                    aria-labelledby="vitrine-label"
+                    (click)="togglePublicListing()"
+                    [disabled]="busy()"
+                    class="relative h-6 w-11 flex-shrink-0 rounded-full transition-colors disabled:opacity-50"
+                    [class.bg-accent]="publicListing()"
+                    [class.bg-border]="!publicListing()"
+                  >
+                    <span class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform" [class.translate-x-5]="publicListing()"></span>
+                  </button>
+                } @else {
+                  <span class="text-sm text-muted-foreground">Indisponible</span>
+                }
+              </div>
+              @if (publicListingFeedback(); as feedback) {
+                <p class="mt-3 text-sm" [class.text-success]="feedback.ok" [class.text-destructive]="!feedback.ok" role="status">{{ feedback.text }}</p>
+              }
+            }
           </section>
 
           <!-- ZONE DE DANGER -->
@@ -169,6 +207,12 @@ export class ParametresComponent implements OnInit {
   readonly isVisible = signal<boolean | null>(null);
   readonly visibilityFeedback = signal<Feedback | null>(null);
 
+  // Vitrine publique /associes : porteurs de projet et associés uniquement, accord explicite.
+  readonly showsPublicListing = computed(() => isTalentMarketplaceRole(this.auth.currentUser()?.profileType));
+  readonly isTalent = computed(() => this.auth.currentUser()?.profileType === 'talent');
+  readonly publicListing = signal<boolean | null>(null);
+  readonly publicListingFeedback = signal<Feedback | null>(null);
+
   readonly confirmingDelete = signal(false);
   readonly deleteInput = signal('');
   readonly deleteError = signal('');
@@ -177,6 +221,20 @@ export class ParametresComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     await this.auth.ensureSessionReady();
     this.isVisible.set(await this.auth.getProfileVisibility());
+    if (this.showsPublicListing()) {
+      this.publicListing.set(await this.auth.getPublicListing());
+    }
+  }
+
+  async togglePublicListing(): Promise<void> {
+    const next = !this.publicListing();
+    await this.run(async () => {
+      const result = await this.auth.setPublicListing(next);
+      this.publicListingFeedback.set({ ok: result.success, text: result.message ?? '' });
+      if (result.success) {
+        this.publicListing.set(next);
+      }
+    });
   }
 
   toggle(panel: Exclude<OpenPanel, null>): void {

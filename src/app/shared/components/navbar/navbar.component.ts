@@ -299,10 +299,13 @@ export class NavbarComponent {
     { href: '/tarifs', label: 'Tarifs' },
   ];
 
+  // Visiteurs : vitrine publique /associes ; porteurs de projet et associés connectés : recherche complète.
+  private readonly associateHref = computed(() => (this.auth.isAuthenticated() ? '/recherche' : '/associes'));
+
   readonly navLinks = computed(() =>
-    this.allNavLinks.filter(link =>
-      !(link.href === '/recherche' && this.hidesRecherche()) && !(link.href === '/ma/deposer' && this.hidesVendre())
-    )
+    this.allNavLinks
+      .filter(link => !(link.href === '/recherche' && this.hidesRecherche()) && !(link.href === '/ma/deposer' && this.hidesVendre()))
+      .map(link => (link.href === '/recherche' ? { ...link, href: this.associateHref() } : link))
   );
 
   private readonly allNavItems: Array<{ id: string; label: string; icon: DrawerIcon; path: string; badge: number | null; exact: boolean }> = [
@@ -329,7 +332,7 @@ export class NavbarComponent {
       && !(item.id === 'vendre' && this.hidesVendre())
       && !((item.id === 'mes-annonces' || item.id === 'statistiques') && !this.ownsListings())
       && !((item.id === 'verifications' || item.id.startsWith('admin-')) && !this.auth.isAdmin())
-    )
+    ).map(item => (item.id === 'recherche' ? { ...item, path: this.associateHref() } : item))
   );
 
   private readonly currentUrl = toSignal(
@@ -343,7 +346,7 @@ export class NavbarComponent {
   // En-têtes sombres (accueil, /ma) : la barre prend la couleur encre, comme le haut de page.
   readonly onDark = computed(() => {
     const path = (this.currentUrl() ?? '').split(/[?#]/)[0];
-    return path === '/' || path === '' || path === '/ma';
+    return path === '/' || path === '' || path === '/ma' || path === '/associes';
   });
 
   readonly isHidden = computed(() => {

@@ -42,6 +42,18 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
             </section>
 
             <section>
+              <h2 class="mb-3 text-xl font-semibold text-primary">Page publique « Trouver un associé »</h2>
+              <p class="leading-relaxed">
+                Les porteurs de projet et les associés peuvent choisir d'apparaître de façon anonyme sur la page publique /associes, visible sans
+                compte. Cet affichage n'a lieu qu'avec votre accord, donné à l'inscription ou dans les paramètres, et peut être retiré à tout moment.
+                Pour un associé, seuls le titre du profil, les compétences et la disponibilité sont affichés ; pour un projet, le secteur, le stade,
+                les profils et compétences recherchés, la demande d'engagement de confidentialité et l'ouverture au capital. Le nom, la photo, la
+                localisation, le nom et la description du projet ne sont jamais affichés. Un profil masqué de la recherche n'apparaît pas non plus
+                sur cette page.
+              </p>
+            </section>
+
+            <section>
               <h2 class="mb-3 text-xl font-semibold text-primary">Partage et sous-traitants</h2>
               <p class="leading-relaxed">
                 Certaines données peuvent être transmises à des prestataires techniques strictement nécessaires, notamment pour l'authentification,
