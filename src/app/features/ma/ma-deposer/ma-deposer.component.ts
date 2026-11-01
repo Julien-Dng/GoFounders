@@ -1,9 +1,20 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, WritableSignal, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { MaService } from '../../../core/services/ma.service';
 import { canPublishMa } from '../../../core/models/user.model';
 import { AiService, MaListingDraft } from '../../../core/services/ai.service';
+import {
+  ACQUISITION_CHANNELS,
+  INCLUDED_ASSETS,
+  LISTING_TYPES,
+  ListingType,
+  RevenuePoint,
+  labelOf,
+  lastGrowth,
+  revenueSeries,
+} from '../../../core/ma/listing-options';
+import { formatMultiple } from '../../../core/ma/listing-metrics';
 
 @Component({
   selector: 'app-ma-deposer',
@@ -14,14 +25,14 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
     <div class="min-h-screen bg-secondary pb-12 pt-20">
       <div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         <div class="mb-10 text-center">
-          <h1 class="mb-2 text-4xl font-semibold">Déposer une annonce M&A</h1>
+          <h1 class="mb-2 text-4xl">Déposer une annonce</h1>
           <p class="text-muted-foreground">Publication gratuite pendant le lancement. Votre annonce reste anonymisée.</p>
         </div>
 
         <div class="mb-8">
           <div class="mb-3 flex items-center justify-between">
             <span class="text-sm font-semibold text-muted-foreground">Étape {{ currentStep() }} sur {{ totalSteps }}</span>
-            <span class="text-sm font-semibold text-amber-600">{{ progressPercent() }}%</span>
+            <span class="text-sm font-semibold text-accent">{{ progressPercent() }}%</span>
           </div>
           <div class="h-2 overflow-hidden rounded-full bg-muted">
             <div class="h-full rounded-full bg-accent transition-all duration-300" [style.width]="progressPercent() + '%'"></div>
@@ -93,110 +104,210 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
               @switch (currentStep()) {
                 @case (1) {
                   <div>
-                    <h2 class="mb-3 text-2xl font-semibold">1. Informations générales</h2>
+                    <h2 class="mb-2 text-2xl">1. Informations générales</h2>
                     <p class="mb-6 text-muted-foreground">Décrivez rapidement l'activité que vous souhaitez mettre en vente.</p>
-                    <div class="grid gap-4 sm:grid-cols-2">
+                    <div class="grid gap-5 sm:grid-cols-2">
                       <label class="space-y-2">
-                        <span class="text-sm font-semibold">Secteur</span>
-                        <input type="text" [value]="sector()" (input)="sector.set($any($event.target).value)" placeholder="E-commerce, SaaS, Agence…" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
+                        <span class="font-semibold">Secteur</span>
+                        <input type="text" [value]="sector()" (input)="sector.set($any($event.target).value)" placeholder="E-commerce, SaaS, Agence…" class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20">
                       </label>
                       <label class="space-y-2">
-                        <span class="text-sm font-semibold">Région</span>
-                        <input type="text" [value]="region()" (input)="region.set($any($event.target).value)" placeholder="Île-de-France, France entière…" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
+                        <span class="font-semibold">Région</span>
+                        <input type="text" [value]="region()" (input)="region.set($any($event.target).value)" placeholder="Île-de-France, France entière…" class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20">
+                      </label>
+                      <fieldset class="sm:col-span-2">
+                        <legend class="mb-2 font-semibold">Type de cession</legend>
+                        <div class="grid gap-3 sm:grid-cols-3">
+                          @for (option of listingTypes; track option.value) {
+                            <label class="flex cursor-pointer flex-col rounded-xl p-4 ring-1 transition-colors" [class]="listingType() === option.value ? 'bg-accent/[0.06] ring-2 ring-accent' : 'bg-white ring-border hover:ring-accent/40'">
+                              <span class="flex items-center gap-2 font-semibold text-primary">
+                                <input type="radio" name="listing-type" [value]="option.value" [checked]="listingType() === option.value" (change)="listingType.set(option.value)" class="accent-[#1D4ED8]">
+                                {{ option.label }}
+                              </span>
+                              <span class="mt-1 text-sm text-muted-foreground">{{ option.hint }}</span>
+                            </label>
+                          }
+                        </div>
+                      </fieldset>
+                      <label class="space-y-2 sm:col-span-2">
+                        <span class="font-semibold">Accroche publique <span class="font-normal text-muted-foreground">(visible par tous, sans détail identifiant)</span></span>
+                        <textarea rows="2" maxlength="220" [value]="teaser()" (input)="teaser.set($any($event.target).value)" placeholder="Boutique en ligne de décoration rentable, clientèle fidèle." class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 resize-none"></textarea>
                       </label>
                       <label class="space-y-2 sm:col-span-2">
-                        <span class="text-sm font-semibold">Accroche publique <span class="font-normal text-muted-foreground">(visible par tous, sans détail identifiant)</span></span>
-                        <textarea rows="2" maxlength="220" [value]="teaser()" (input)="teaser.set($any($event.target).value)" placeholder="Boutique en ligne de décoration rentable, clientèle fidèle." class="w-full resize-none rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500"></textarea>
+                        <span class="font-semibold">Description détaillée <span class="font-normal text-muted-foreground">(réservée aux repreneurs avec un accès)</span></span>
+                        <textarea rows="5" maxlength="1500" [value]="details()" (input)="details.set($any($event.target).value)" placeholder="Activité, clients, modèle économique, organisation." class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 resize-y"></textarea>
                       </label>
                       <label class="space-y-2 sm:col-span-2">
-                        <span class="text-sm font-semibold">Description détaillée <span class="font-normal text-muted-foreground">(réservée aux repreneurs avec un accès)</span></span>
-                        <textarea rows="5" maxlength="1500" [value]="details()" (input)="details.set($any($event.target).value)" placeholder="Activité, clients, modèle économique, équipe, raison de la cession." class="w-full resize-y rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500"></textarea>
-                      </label>
-                      <label class="space-y-2 sm:col-span-2">
-                        <span class="text-sm font-semibold">Raison de la cession</span>
-                        <input type="text" maxlength="400" [value]="saleReason()" (input)="saleReason.set($any($event.target).value)" placeholder="Nouveau projet, départ à la retraite…" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
+                        <span class="font-semibold">Raison de la cession <span class="font-normal text-muted-foreground">(réservée aux repreneurs avec un accès)</span></span>
+                        <input type="text" maxlength="400" [value]="saleReason()" (input)="saleReason.set($any($event.target).value)" placeholder="Nouveau projet, départ à la retraite…" class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20">
                       </label>
                     </div>
                   </div>
                 }
                 @case (2) {
                   <div>
-                    <h2 class="mb-3 text-2xl font-semibold">2. Indicateurs clés</h2>
-                    <p class="mb-6 text-muted-foreground">Renseignez quelques repères financiers simples pour cadrer l'opportunité.</p>
-                    <div class="grid gap-4 sm:grid-cols-3">
+                    <h2 class="mb-2 text-2xl">2. Chiffres clés</h2>
+                    <p class="mb-6 text-muted-foreground">Les repreneurs regardent d'abord le chiffre d'affaires, la marge et leur évolution. Les chiffres des années précédentes sont facultatifs mais rassurent beaucoup.</p>
+                    <div class="grid gap-5 sm:grid-cols-2">
                       <label class="space-y-2">
-                        <span class="text-sm font-semibold">CA annuel</span>
-                        <input type="text" [value]="revenue()" (input)="revenue.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
+                        <span class="font-semibold">Dernier exercice</span>
+                        <select [value]="revenueYear()" (change)="revenueYear.set(+$any($event.target).value)" class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20">
+                          @for (year of yearOptions; track year) {
+                            <option [value]="year" [selected]="year === revenueYear()">{{ year }}</option>
+                          }
+                        </select>
                       </label>
                       <label class="space-y-2">
-                        <span class="text-sm font-semibold">Marge</span>
-                        <input type="text" [value]="margin()" (input)="margin.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
+                        <span class="font-semibold">Chiffre d'affaires {{ revenueYear() }}</span>
+                        <input type="text" inputmode="decimal" [value]="revenue()" (input)="revenue.set($any($event.target).value)" placeholder="Ex. 280 k€" class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 tabular">
                       </label>
                       <label class="space-y-2">
-                        <span class="text-sm font-semibold">Ancienneté</span>
-                        <input type="text" [value]="age()" (input)="age.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
+                        <span class="font-semibold">Marge nette</span>
+                        <input type="text" inputmode="decimal" [value]="margin()" (input)="margin.set($any($event.target).value)" placeholder="Ex. 22 %" class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 tabular">
+                      </label>
+                      <label class="space-y-2">
+                        <span class="font-semibold">Ancienneté</span>
+                        <input type="text" inputmode="numeric" [value]="age()" (input)="age.set($any($event.target).value)" placeholder="Ex. 5 ans" class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 tabular">
+                      </label>
+                    </div>
+
+                    <fieldset class="mt-8">
+                      <legend class="font-semibold">Chiffre d'affaires des années précédentes <span class="font-normal text-muted-foreground">(facultatif)</span></legend>
+                      <div class="mt-3 grid gap-4 sm:grid-cols-3">
+                        @for (year of historyYears(); track year; let index = $index) {
+                          <label class="space-y-2">
+                            <span class="text-sm font-semibold text-muted-foreground">{{ year }}</span>
+                            <input type="text" inputmode="decimal" [value]="history()[index]" (input)="setHistory(index, $any($event.target).value)" placeholder="Ex. 230 k€" class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 tabular">
+                          </label>
+                        }
+                      </div>
+                      @if (growthPreview() !== null) {
+                        <p class="mt-3 text-base" [class]="growthPreview()! >= 0 ? 'text-emerald-700' : 'text-destructive'">
+                          {{ growthPreview()! >= 0 ? '+' : '' }}{{ growthPreview() }} % de chiffre d'affaires sur le dernier exercice
+                        </p>
+                      }
+                    </fieldset>
+
+                    <div class="mt-8 grid gap-5 sm:grid-cols-2">
+                      <label class="space-y-2">
+                        <span class="font-semibold">Personnes dans l'équipe <span class="font-normal text-muted-foreground">(hors vous)</span></span>
+                        <input type="number" min="0" max="10000" inputmode="numeric" [value]="teamSize()" (input)="teamSize.set($any($event.target).value)" placeholder="Ex. 2" class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 tabular">
+                      </label>
+                      <label class="space-y-2">
+                        <span class="font-semibold">Votre temps par semaine <span class="font-normal text-muted-foreground">(heures)</span></span>
+                        <input type="number" min="0" max="100" inputmode="numeric" [value]="ownerHours()" (input)="ownerHours.set($any($event.target).value)" placeholder="Ex. 20" class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 tabular">
                       </label>
                     </div>
                   </div>
                 }
                 @case (3) {
                   <div>
-                    <h2 class="mb-3 text-2xl font-semibold">3. Fourchette de prix</h2>
-                    <p class="mb-6 text-muted-foreground">Donnez une fourchette indicative. Vous pourrez l'ajuster ensuite.</p>
-                    <div class="grid gap-4 sm:grid-cols-2">
+                    <h2 class="mb-2 text-2xl">3. Activité et ce qui est vendu</h2>
+                    <p class="mb-6 text-muted-foreground">Ce qui est inclus dans la vente et d'où viennent vos clients. Tout est facultatif et reste anonyme.</p>
+
+                    <fieldset>
+                      <legend class="font-semibold">Ce qui est inclus dans la vente</legend>
+                      <div class="mt-3 grid gap-2 sm:grid-cols-2">
+                        @for (asset of assetOptions; track asset.value) {
+                          <label class="flex cursor-pointer items-center gap-3 rounded-lg px-4 py-3 ring-1 transition-colors" [class]="includedAssets().includes(asset.value) ? 'bg-accent/[0.06] ring-accent' : 'bg-white ring-border hover:ring-accent/40'">
+                            <input type="checkbox" [checked]="includedAssets().includes(asset.value)" (change)="toggle(includedAssets, asset.value)" class="h-4 w-4 accent-[#1D4ED8]">
+                            <span>{{ asset.label }}</span>
+                          </label>
+                        }
+                      </div>
+                    </fieldset>
+
+                    <fieldset class="mt-8">
+                      <legend class="font-semibold">Canaux d'acquisition</legend>
+                      <div class="mt-3 flex flex-wrap gap-2">
+                        @for (channel of channelOptions; track channel.value) {
+                          <button type="button" (click)="toggle(channels, channel.value)" [attr.aria-pressed]="channels().includes(channel.value)" class="rounded-full px-4 py-2 text-sm font-semibold transition-colors" [class]="channels().includes(channel.value) ? 'bg-primary text-white' : 'bg-white text-primary ring-1 ring-border hover:ring-accent/40'">{{ channel.label }}</button>
+                        }
+                      </div>
+                    </fieldset>
+
+                    <div class="mt-8 grid gap-5 sm:grid-cols-2">
                       <label class="space-y-2">
-                        <span class="text-sm font-semibold">Prix minimum</span>
-                        <input type="text" [value]="priceMin()" (input)="priceMin.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
-                      </label>
-                      <label class="space-y-2">
-                        <span class="text-sm font-semibold">Prix maximum</span>
-                        <input type="text" [value]="priceMax()" (input)="priceMax.set($any($event.target).value)" class="w-full rounded-lg border border-border bg-secondary px-4 py-3 outline-none focus:border-amber-500">
+                        <span class="font-semibold">Visiteurs par mois <span class="font-normal text-muted-foreground">(site ou application)</span></span>
+                        <input type="number" min="0" inputmode="numeric" [value]="monthlyVisitors()" (input)="monthlyVisitors.set($any($event.target).value)" placeholder="Ex. 12000" class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 tabular">
                       </label>
                     </div>
-                    <p class="mt-4 text-sm text-muted-foreground">Estimation indicative, non contractuelle.</p>
+
+                    <label class="mt-8 block space-y-2">
+                      <span class="font-semibold">Pistes de croissance <span class="font-normal text-muted-foreground">(réservées aux repreneurs avec un accès)</span></span>
+                      <textarea rows="4" maxlength="1500" [value]="growthNotes()" (input)="growthNotes.set($any($event.target).value)" placeholder="Ce que vous n'avez pas eu le temps de faire : nouveaux marchés, publicité, nouvelles offres…" class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 resize-y"></textarea>
+                    </label>
                   </div>
                 }
                 @case (4) {
                   <div>
-                    <h2 class="mb-3 text-2xl font-semibold">4. Confidentialité</h2>
-                    <p class="mb-6 text-muted-foreground">Le détail complet restera réservé aux comptes avec accès M&A.</p>
-                    <div class="rounded-2xl border border-border bg-secondary/50 p-5">
-                      <ul class="space-y-3 text-sm text-foreground/80">
-                        <li class="flex items-start gap-2">
-                          <span class="mt-1 h-2 w-2 rounded-full bg-amber-500"></span>
-                          <span>Les visiteurs sans accès repreneur voient une version anonymisée.</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                          <span class="mt-1 h-2 w-2 rounded-full bg-amber-500"></span>
-                          <span>Seuls les repreneurs disposant d'un accès M&A voient le dossier complet et vos coordonnées.</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                          <span class="mt-1 h-2 w-2 rounded-full bg-amber-500"></span>
-                          <span>Vous gardez la main sur les informations sensibles communiquées ensuite.</span>
-                        </li>
-                      </ul>
+                    <h2 class="mb-2 text-2xl">4. Fourchette de prix</h2>
+                    <p class="mb-6 text-muted-foreground">Donnez une fourchette indicative. <a routerLink="/estimation" class="font-semibold text-accent underline-offset-4 hover:underline">Estimer la valeur de mon entreprise</a></p>
+                    <div class="grid gap-5 sm:grid-cols-2">
+                      <label class="space-y-2">
+                        <span class="font-semibold">Prix minimum</span>
+                        <input type="text" inputmode="decimal" [value]="priceMin()" (input)="priceMin.set($any($event.target).value)" placeholder="Ex. 350 k€" class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 tabular">
+                      </label>
+                      <label class="space-y-2">
+                        <span class="font-semibold">Prix maximum</span>
+                        <input type="text" inputmode="decimal" [value]="priceMax()" (input)="priceMax.set($any($event.target).value)" placeholder="Ex. 420 k€" class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 tabular">
+                      </label>
                     </div>
+                    @if (multiplePreview()) {
+                      <p class="mt-4 text-base text-foreground/85">Soit environ <strong class="tabular">{{ multiplePreview() }}</strong> votre bénéfice annuel, l'indicateur que les repreneurs comparent en premier.</p>
+                    }
+                    <p class="mt-2 text-sm text-muted-foreground">Estimation indicative, non contractuelle.</p>
                   </div>
                 }
                 @case (5) {
                   <div>
-                    <h2 class="mb-3 text-2xl font-semibold">5. Aperçu et publication</h2>
-                    <p class="mb-6 text-muted-foreground">
-                      Relisez votre annonce avant de la publier.
-                    </p>
-                    <div class="rounded-2xl border border-amber-200 bg-amber-50 p-6">
-                      <div class="mb-3 text-sm font-semibold text-amber-700">Résumé</div>
-                      <div class="space-y-2 text-sm text-foreground/80">
-                        <div><strong>Accroche :</strong> {{ teaser() || 'À compléter' }}</div>
-                        <div><strong>Secteur :</strong> {{ sector() || 'À préciser' }}</div>
-                        <div><strong>Fourchette :</strong> {{ priceMin() || '...' }} - {{ priceMax() || '...' }}</div>
+                    <h2 class="mb-2 text-2xl">5. Confidentialité</h2>
+                    <p class="mb-6 text-muted-foreground">Ce que voient les visiteurs, et ce qui reste réservé.</p>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                      <div class="rounded-xl bg-secondary p-5">
+                        <p class="font-semibold text-primary">Visible par tous</p>
+                        <ul class="mt-2 space-y-1.5 text-base text-foreground/85">
+                          <li>Secteur, région, type de cession</li>
+                          <li>Accroche publique</li>
+                          <li>Chiffres, évolution, équipe, ce qui est inclus, canaux</li>
+                          <li>Fourchette de prix</li>
+                        </ul>
+                      </div>
+                      <div class="rounded-xl bg-primary p-5 text-white">
+                        <p class="font-semibold">Réservé aux repreneurs avec un accès</p>
+                        <ul class="mt-2 space-y-1.5 text-base text-white/80">
+                          <li>Description détaillée</li>
+                          <li>Raison de la cession et pistes de croissance</li>
+                          <li>Vos coordonnées et la messagerie</li>
+                        </ul>
                       </div>
                     </div>
-                    <div class="mt-5 rounded-2xl border border-border bg-secondary/50 p-5">
-                      <div class="mb-2 text-sm font-semibold text-foreground">Publication gratuite</div>
-                      <p class="text-sm leading-relaxed text-muted-foreground">
+                    <p class="mt-4 text-base text-muted-foreground">Le nom de l'entreprise n'apparaît nulle part : vous le communiquez vous-même, au repreneur de votre choix.</p>
+                  </div>
+                }
+                @case (6) {
+                  <div>
+                    <h2 class="mb-2 text-2xl">6. Aperçu et publication</h2>
+                    <p class="mb-6 text-muted-foreground">Relisez votre annonce avant de la publier.</p>
+                    <div class="rounded-2xl bg-secondary p-6">
+                      <p class="text-sm font-semibold text-muted-foreground">{{ listingTypeLabel() }} · {{ region() || 'Région à préciser' }}</p>
+                      <p class="mt-1 text-xl font-bold text-primary">{{ sector() || 'Secteur à préciser' }}</p>
+                      <p class="mt-2 text-base text-foreground/80">{{ teaser() || 'Accroche à compléter' }}</p>
+                      <dl class="tabular mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                        <div><dt class="text-sm text-muted-foreground">CA {{ revenueYear() }}</dt><dd class="font-bold text-primary">{{ revenue() || '–' }}</dd></div>
+                        <div><dt class="text-sm text-muted-foreground">Marge</dt><dd class="font-bold text-primary">{{ margin() || '–' }}</dd></div>
+                        <div><dt class="text-sm text-muted-foreground">Équipe</dt><dd class="font-bold text-primary">{{ teamSize() !== '' ? teamSize() + ' pers.' : '–' }}</dd></div>
+                        <div><dt class="text-sm text-muted-foreground">Prix</dt><dd class="font-bold text-amber-600">{{ priceMin() || '…' }} à {{ priceMax() || '…' }}</dd></div>
+                      </dl>
+                      @if (includedAssets().length > 0) {
+                        <p class="mt-4 text-sm text-muted-foreground">Inclus : {{ includedLabels() }}</p>
+                      }
+                    </div>
+                    <div class="mt-5 rounded-2xl bg-white p-5 ring-1 ring-border">
+                      <p class="font-semibold text-primary">Publication gratuite</p>
+                      <p class="mt-1 text-base leading-relaxed text-muted-foreground">
                         Offre de lancement : la publication ne coûte rien. Votre annonce apparaît anonymisée sur la marketplace ;
-                        seuls les repreneurs avec un accès M&A voient le dossier complet et peuvent vous contacter.
+                        seuls les repreneurs avec un accès voient le dossier complet et peuvent vous contacter.
                       </p>
                     </div>
                   </div>
@@ -204,7 +315,7 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
               }
 
               <div class="flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
-                <button type="button" (click)="previousStep()" [disabled]="currentStep() === 1" class="rounded-lg border border-border px-5 py-3 font-semibold transition-colors hover:border-amber-500 disabled:cursor-not-allowed disabled:opacity-40">
+                <button type="button" (click)="previousStep()" [disabled]="currentStep() === 1" class="rounded-lg border border-border px-5 py-3 font-semibold transition-colors hover:border-primary disabled:cursor-not-allowed disabled:opacity-40">
                   Retour
                 </button>
 
@@ -230,13 +341,13 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
                 </div>
                 <h2 class="mb-3 text-3xl font-semibold">Annonce publiée</h2>
                 <p class="mx-auto mb-8 max-w-xl leading-relaxed text-muted-foreground">
-                  Votre annonce a bien été enregistrée dans Supabase. Elle apparaît maintenant dans la marketplace M&A.
+                  Votre annonce est en ligne, anonymisée, dans la liste des entreprises à reprendre. Notre équipe la relit dans les prochains jours.
                 </p>
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
                   <a routerLink="/dashboard" class="rounded-lg bg-accent px-6 py-3 font-semibold text-white transition-colors hover:bg-accent/90">
                     Mon tableau de bord
                   </a>
-                  <a routerLink="/ma/mes-annonces" class="rounded-lg border border-border px-6 py-3 font-semibold transition-colors hover:border-amber-500">
+                  <a routerLink="/ma/mes-annonces" class="rounded-lg border border-border px-6 py-3 font-semibold transition-colors hover:border-primary">
                     Mettre en avant ou faire vérifier
                   </a>
                 </div>
@@ -270,7 +381,7 @@ export class MaDeposerComponent {
   private readonly maService = inject(MaService);
   private readonly ai = inject(AiService);
 
-  readonly totalSteps = 5;
+  readonly totalSteps = 6;
   readonly currentStep = signal(1);
   readonly checkoutRequested = signal(false);
   readonly canPublish = computed(() => canPublishMa(this.auth.currentUser()));
@@ -287,6 +398,41 @@ export class MaDeposerComponent {
   readonly age = signal('');
   readonly priceMin = signal('');
   readonly priceMax = signal('');
+
+  // Annonce enrichie (supabase/2026-10-26-annonces-enrichies.sql), tout est facultatif.
+  readonly listingTypes = LISTING_TYPES;
+  readonly assetOptions = INCLUDED_ASSETS;
+  readonly channelOptions = ACQUISITION_CHANNELS;
+  private readonly thisYear = new Date().getFullYear();
+  readonly yearOptions = [this.thisYear, this.thisYear - 1, this.thisYear - 2];
+  readonly listingType = signal<ListingType>('cession');
+  readonly revenueYear = signal(this.thisYear - 1);
+  // Chiffre d'affaires des trois années précédant le dernier exercice, de la plus récente à la plus ancienne.
+  readonly history = signal<string[]>(['', '', '']);
+  readonly historyYears = computed(() => [1, 2, 3].map(offset => this.revenueYear() - offset));
+  readonly teamSize = signal('');
+  readonly ownerHours = signal('');
+  readonly includedAssets = signal<string[]>([]);
+  readonly channels = signal<string[]>([]);
+  readonly monthlyVisitors = signal('');
+  readonly growthNotes = signal('');
+
+  readonly listingTypeLabel = computed(() => labelOf(LISTING_TYPES, this.listingType()));
+  readonly includedLabels = computed(() => this.includedAssets().map(value => INCLUDED_ASSETS.find(asset => asset.value === value)?.label ?? value).join(', '));
+  private readonly historyPoints = computed<RevenuePoint[]>(() =>
+    this.history()
+      .map((value, index) => ({ year: this.historyYears()[index], revenue: this.parseNumber(value) }))
+      .filter((point, index) => this.history()[index].trim() !== '' && point.revenue > 0)
+  );
+  readonly growthPreview = computed(() =>
+    lastGrowth(revenueSeries(this.historyPoints(), this.revenueYear(), this.revenue().trim() ? this.parseNumber(this.revenue()) : null))
+  );
+  readonly multiplePreview = computed(() => {
+    const profit = (this.parseNumber(this.revenue()) * this.parseNumber(this.margin())) / 100;
+    const prices = [this.priceMin(), this.priceMax()].filter(value => value.trim()).map(value => this.parseNumber(value));
+    const price = prices.length ? prices.reduce((sum, value) => sum + value, 0) / prices.length : 0;
+    return profit > 0 && price > 0 ? formatMultiple(price / profit) : '';
+  });
 
   // Préparation de l'annonce par l'IA (backend/app/ma_ai.py).
   readonly aiInput = signal('');
@@ -318,6 +464,23 @@ export class MaDeposerComponent {
     this.currentStep.update(step => Math.max(step - 1, 1));
   }
 
+  setHistory(index: number, value: string): void {
+    this.history.update(current => current.map((entry, position) => (position === index ? value : entry)));
+  }
+
+  toggle(list: WritableSignal<string[]>, value: string): void {
+    list.update(current => (current.includes(value) ? current.filter(entry => entry !== value) : [...current, value]));
+  }
+
+  private optionalInteger(value: string, max: number): number | null {
+    if (String(value).trim() === '') {
+      return null;
+    }
+
+    const number = Math.round(Number(value));
+    return Number.isFinite(number) && number >= 0 ? Math.min(number, max) : null;
+  }
+
   async submitListing(): Promise<void> {
     const user = this.auth.currentUser();
 
@@ -332,7 +495,7 @@ export class MaDeposerComponent {
         ownerId: user.uid,
         sector: this.sector().trim() || 'Secteur à préciser',
         region: this.region().trim() || 'France',
-        type: 'cession',
+        type: this.listingType(),
         revenue: this.parseNumber(this.revenue()),
         margin: this.parseNumber(this.margin()),
         age: this.parseNumber(this.age()),
@@ -343,6 +506,16 @@ export class MaDeposerComponent {
         publicSummary: this.teaser().trim() || undefined,
         contactInfo: user.email,
         status: 'active',
+        enrichment: {
+          revenueYear: this.revenue().trim() ? this.revenueYear() : null,
+          revenueHistory: this.historyPoints(),
+          includedAssets: this.includedAssets(),
+          monthlyVisitors: this.optionalInteger(this.monthlyVisitors(), 100_000_000),
+          acquisitionChannels: this.channels(),
+          teamSize: this.optionalInteger(this.teamSize(), 10_000),
+          ownerHoursPerWeek: this.optionalInteger(this.ownerHours(), 100),
+          growthNotes: this.growthNotes().trim(),
+        },
       });
 
       if (listingId) {

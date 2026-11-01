@@ -188,14 +188,31 @@ ANALYSIS_FIELDS = (
     ("public_summary", "Résumé public"),
     ("sale_reason", "Raison de la cession"),
     ("confidential_description", "Dossier détaillé"),
+    ("revenue_year", "Année du dernier exercice"),
+    ("revenue_history", "Chiffre d'affaires des années précédentes (€)"),
+    ("team_size", "Personnes dans l'équipe, hors dirigeant"),
+    ("owner_hours_per_week", "Temps consacré par le dirigeant (heures par semaine)"),
+    ("monthly_visitors", "Visiteurs par mois"),
+    ("acquisition_channels", "Canaux d'acquisition"),
+    ("included_assets", "Inclus dans la vente"),
+    ("growth_notes", "Pistes de croissance selon le cédant"),
 )
+
+
+def _format_value(value: Any) -> str:
+    """Listes et historique lisibles par le modèle ; vide si non renseigné."""
+    if isinstance(value, list):
+        if value and all(isinstance(item, dict) for item in value):
+            return ", ".join(f"{item.get('year')} : {item.get('revenue')}" for item in value)
+        return ", ".join(str(item) for item in value)
+    return "" if value is None else str(value)
 
 
 def listing_as_text(listing: dict[str, Any]) -> str:
     lines = []
     for key, label in ANALYSIS_FIELDS:
-        value = listing.get(key)
-        lines.append(f"{label} : {value if value not in (None, '') else 'non renseigné'}")
+        value = _format_value(listing.get(key))
+        lines.append(f"{label} : {value if value else 'non renseigné'}")
     return "Dossier de l'annonce :\n" + "\n".join(lines)
 
 

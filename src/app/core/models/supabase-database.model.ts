@@ -228,6 +228,15 @@ export interface SupabaseMaListingRow {
   verified?: boolean | null;
   created_at: string;
   updated_at: string;
+  // Annonces enrichies (2026-10-26-annonces-enrichies.sql) ; growth_notes uniquement dans le dossier.
+  revenue_year?: number | null;
+  revenue_history?: Array<{ year: number; revenue: number }> | null;
+  included_assets?: string[] | null;
+  monthly_visitors?: number | null;
+  acquisition_channels?: string[] | null;
+  team_size?: number | null;
+  owner_hours_per_week?: number | null;
+  growth_notes?: string | null;
 }
 
 export interface SupabaseMaListingInsert {
@@ -246,6 +255,14 @@ export interface SupabaseMaListingInsert {
   confidential_description?: string | null;
   contact_info?: string | null;
   status?: 'active' | 'sold' | 'withdrawn';
+  revenue_year?: number | null;
+  revenue_history?: Array<{ year: number; revenue: number }>;
+  included_assets?: string[];
+  monthly_visitors?: number | null;
+  acquisition_channels?: string[];
+  team_size?: number | null;
+  owner_hours_per_week?: number | null;
+  growth_notes?: string | null;
   created_at?: string;
   updated_at?: string;
 }

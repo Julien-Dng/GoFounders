@@ -84,6 +84,15 @@ export interface MaListingData {
   // Dossier complet uniquement (acheteur avec accès, propriétaire, admin).
   ownerId?: string;
   contactInfo?: string;
+  // Annonces enrichies (facultatif) ; growthNotes uniquement dans le dossier.
+  revenueYear?: number | null;
+  revenueHistory?: Array<{ year: number; revenue: number }>;
+  includedAssets?: string[];
+  monthlyVisitors?: number | null;
+  acquisitionChannels?: string[];
+  teamSize?: number | null;
+  ownerHoursPerWeek?: number | null;
+  growthNotes?: string;
 }
 
 export const MARKETPLACE_PROFILES: MarketplaceProfile[] = [
@@ -541,6 +550,12 @@ export const MA_LISTINGS: MaListingData[] = [
     description:
       "L'activité repose sur une marque reconnue sur sa niche, une acquisition maîtrisée et une logistique déjà structurée. Le repreneur récupère une base clients récurrente, des process documentés et une activité rentable immédiatement exploitable.",
     highlights: ['Marque établie', 'Base clients fidèle', 'Opérations déjà structurées'],
+    revenueYear: 2025,
+    revenueHistory: [{ year: 2023, revenue: 300000 }, { year: 2024, revenue: 295000 }],
+    includedAssets: ['site', 'domaine', 'marque', 'stock', 'clients', 'reseaux'],
+    acquisitionChannels: ['seo', 'reseaux', 'email'],
+    teamSize: 1,
+    ownerHoursPerWeek: 30,
   },
   {
     id: 'MA-002',
@@ -557,6 +572,14 @@ export const MA_LISTINGS: MaListingData[] = [
     description:
       "L'entreprise commercialise un produit B2B SaaS sur abonnement avec une base clients récurrente, un churn contenu et une équipe compacte. Le repreneur bénéficie d'un produit mûr, de revenus récurrents et de leviers de croissance déjà identifiés.",
     highlights: ['120 clients récurrents', 'Produit mûr', 'Croissance stable'],
+    revenueYear: 2025,
+    revenueHistory: [{ year: 2022, revenue: 210000 }, { year: 2023, revenue: 290000 }, { year: 2024, revenue: 370000 }],
+    includedAssets: ['site', 'domaine', 'marque', 'code', 'clients', 'contrats'],
+    monthlyVisitors: 18000,
+    acquisitionChannels: ['seo', 'email', 'partenariats'],
+    teamSize: 3,
+    ownerHoursPerWeek: 25,
+    growthNotes: "Le produit n'est vendu qu'en France : une version anglaise ouvrirait le marché européen. Aucune publicité payante n'a encore été testée.",
   },
   {
     id: 'MA-003',

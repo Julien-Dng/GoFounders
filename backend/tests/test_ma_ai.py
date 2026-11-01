@@ -269,3 +269,16 @@ async def test_providers_send_the_requested_schema():
     )
     assert claude_recorder.kwargs["output_config"]["format"]["schema"] is ANALYSIS_SCHEMA
     assert claude_recorder.kwargs["messages"] == [{"role": "user", "content": "DOSSIER"}]
+
+
+def test_listing_as_text_formats_enriched_fields():
+    text = listing_as_text({
+        **LISTING,
+        "revenue_year": 2025,
+        "revenue_history": [{"year": 2023, "revenue": 180000}, {"year": 2024, "revenue": 230000}],
+        "included_assets": ["site", "clients"],
+        "acquisition_channels": [],
+    })
+    assert "2023 : 180000, 2024 : 230000" in text
+    assert "Inclus dans la vente : site, clients" in text
+    assert "Canaux d'acquisition : non renseigné" in text

@@ -9,6 +9,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { StatsService } from '../../../core/services/stats.service';
 import { OFFER_PRICES } from '../../../core/config/offers';
 import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../../../core/ma/listing-metrics';
+import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsset, labelOf, lastGrowth, revenueSeries } from '../../../core/ma/listing-options';
 
 @Component({
   selector: 'app-ma-detail',
@@ -54,6 +55,71 @@ import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../
 
           <div class="mt-10 grid gap-10 lg:grid-cols-[1fr,22rem]">
             <div class="min-w-0 rounded-2xl bg-white p-6 shadow-lg ring-1 ring-border sm:p-8">
+              @if (series().length >= 2) {
+                <section class="mb-10 border-b border-border pb-8" aria-labelledby="revenue-title">
+                  <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+                    <h2 id="revenue-title" class="text-2xl text-primary">Évolution du chiffre d'affaires</h2>
+                    @if (growth() !== null) {
+                      <p class="tabular font-bold" [class]="growth()! >= 0 ? 'text-emerald-700' : 'text-destructive'">{{ growth()! >= 0 ? '+' : '' }}{{ growth() }} % sur un an</p>
+                    }
+                  </div>
+                  <p class="mt-1 min-h-6 text-base text-muted-foreground" aria-live="polite">{{ hoveredRevenue() || "Chiffre d'affaires annuel déclaré par le cédant" }}</p>
+                  <div class="mt-3 flex h-48 items-end justify-around gap-2 border-b border-border px-2" role="img" [attr.aria-label]="seriesSummary()" (mouseleave)="hoveredYear.set(null)">
+                    @for (point of series(); track point.year; let last = $last) {
+                      <div class="flex h-full flex-1 cursor-default flex-col items-center justify-end" (mouseenter)="hoveredYear.set(point.year)">
+                        @if (last) {
+                          <span class="tabular mb-1.5 text-sm font-bold text-primary" aria-hidden="true">{{ euros(point.revenue) }}</span>
+                        }
+                        <div class="w-7 rounded-t-[4px] transition-colors" [class]="hoveredYear() === point.year ? 'bg-primary' : 'bg-accent'" [style.height.%]="barHeight(point.revenue)" [style.min-height.px]="point.revenue > 0 ? 2 : 0"></div>
+                      </div>
+                    }
+                  </div>
+                  <div class="mt-2 flex justify-around gap-2 px-2 text-sm text-muted-foreground" aria-hidden="true">
+                    @for (point of series(); track point.year) {
+                      <span class="tabular flex-1 text-center">{{ point.year }}</span>
+                    }
+                  </div>
+                  <details class="mt-4 text-base">
+                    <summary class="cursor-pointer font-semibold text-accent">Voir les données</summary>
+                    <table class="tabular mt-3 w-full max-w-sm text-left">
+                      <thead class="text-sm text-muted-foreground"><tr><th class="py-1 pr-4 font-semibold">Année</th><th class="py-1 font-semibold">Chiffre d'affaires</th></tr></thead>
+                      <tbody>
+                        @for (point of series(); track point.year) {
+                          <tr class="border-t border-border"><td class="py-1.5 pr-4">{{ point.year }}</td><td class="py-1.5 font-semibold text-primary">{{ euros(point.revenue) }}</td></tr>
+                        }
+                      </tbody>
+                    </table>
+                  </details>
+                </section>
+              }
+
+              @if (activityFacts().length > 0 || includedLabels().length > 0) {
+                <section class="mb-10 border-b border-border pb-8" aria-labelledby="activity-title">
+                  <h2 id="activity-title" class="text-2xl text-primary">L'activité en bref</h2>
+                  @if (activityFacts().length > 0) {
+                    <dl class="tabular mt-5 grid gap-4 sm:grid-cols-2">
+                      @for (fact of activityFacts(); track fact.label) {
+                        <div class="rounded-xl bg-secondary px-4 py-3">
+                          <dt class="text-sm text-muted-foreground">{{ fact.label }}</dt>
+                          <dd class="mt-0.5 font-bold text-primary">{{ fact.value }}</dd>
+                        </div>
+                      }
+                    </dl>
+                  }
+                  @if (includedLabels().length > 0) {
+                    <h3 class="mt-7 text-lg font-bold text-primary">Inclus dans la vente</h3>
+                    <ul class="mt-3 grid gap-2.5 sm:grid-cols-2">
+                      @for (label of includedLabels(); track label) {
+                        <li class="flex gap-3 text-base text-foreground/85">
+                          <svg class="mt-1 flex-shrink-0 text-emerald-700" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                          {{ label }}
+                        </li>
+                      }
+                    </ul>
+                  }
+                </section>
+              }
+
               @if (hasDossier()) {
               <section aria-labelledby="presentation-title">
                 <h2 id="presentation-title" class="text-2xl text-primary">Présentation de l'activité</h2>
@@ -78,6 +144,13 @@ import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../
                 <h2 id="reason-title" class="text-2xl text-primary">Pourquoi c'est à vendre</h2>
                 <p class="mt-3 whitespace-pre-line text-lg leading-relaxed text-foreground/85">{{ item.reason }}</p>
               </section>
+
+              @if (item.growthNotes) {
+                <section class="mt-10 border-t border-border pt-8" aria-labelledby="growth-title">
+                  <h2 id="growth-title" class="text-2xl text-primary">Pistes de croissance</h2>
+                  <p class="mt-3 whitespace-pre-line text-lg leading-relaxed text-foreground/85">{{ item.growthNotes }}</p>
+                </section>
+              }
 
               } @else {
                 <section aria-labelledby="locked-title" class="relative min-h-[24rem] overflow-hidden rounded-xl bg-secondary">
@@ -281,6 +354,57 @@ export class MaDetailComponent implements OnInit {
     ];
   });
   readonly multipleLabel = formatMultiple;
+  readonly euros = formatEuros;
+
+  // Annonce enrichie : évolution du chiffre d'affaires et activité (colonnes publiques).
+  readonly series = computed(() => {
+    const listing = this.listing();
+    return listing ? revenueSeries(listing.revenueHistory, listing.revenueYear, this.metrics()?.revenue ?? null) : [];
+  });
+  readonly growth = computed(() => lastGrowth(this.series()));
+  readonly hoveredYear = signal<number | null>(null);
+  readonly hoveredRevenue = computed(() => {
+    const point = this.series().find(entry => entry.year === this.hoveredYear());
+    return point ? `${point.year} : ${formatEuros(point.revenue)}` : '';
+  });
+  readonly seriesSummary = computed(() =>
+    "Chiffre d'affaires annuel : " + this.series().map(point => `${point.year}, ${formatEuros(point.revenue)}`).join(' ; ')
+  );
+  readonly activityFacts = computed(() => {
+    const listing = this.listing();
+
+    if (!listing) {
+      return [];
+    }
+
+    const facts: Array<{ label: string; value: string }> = [];
+
+    if (listing.teamSize !== null && listing.teamSize !== undefined) {
+      facts.push({ label: 'Équipe (hors dirigeant)', value: listing.teamSize === 0 ? 'Aucune, le dirigeant seul' : `${listing.teamSize} ${listing.teamSize > 1 ? 'personnes' : 'personne'}` });
+    }
+
+    if (listing.ownerHoursPerWeek !== null && listing.ownerHoursPerWeek !== undefined) {
+      facts.push({ label: 'Temps du dirigeant', value: `${listing.ownerHoursPerWeek} h par semaine` });
+    }
+
+    if (listing.monthlyVisitors !== null && listing.monthlyVisitors !== undefined) {
+      facts.push({ label: 'Visiteurs par mois', value: listing.monthlyVisitors.toLocaleString('fr-FR') });
+    }
+
+    if (listing.acquisitionChannels?.length) {
+      facts.push({ label: "Canaux d'acquisition", value: listing.acquisitionChannels.map(value => labelOf(ACQUISITION_CHANNELS, value as AcquisitionChannel)).join(', ') });
+    }
+
+    return facts;
+  });
+  readonly includedLabels = computed(() =>
+    (this.listing()?.includedAssets ?? []).map(value => labelOf(INCLUDED_ASSETS, value as IncludedAsset))
+  );
+
+  barHeight(revenue: number): number {
+    const max = Math.max(...this.series().map(point => point.revenue), 1);
+    return (revenue / max) * 100;
+  }
   readonly isOwner = computed(() => {
     const ownerId = this.listing()?.ownerId;
     return !!ownerId && ownerId === this.auth.currentUser()?.uid;
@@ -295,7 +419,7 @@ export class MaDetailComponent implements OnInit {
   readonly skeleton = [92, 100, 85, 96, 70, 0, 88, 100, 64, 0, 95, 82, 100, 58];
   readonly dossierContents = [
     "La présentation détaillée de l'activité",
-    'Le motif de la cession',
+    'Le motif de la cession et les pistes de croissance',
     'Les coordonnées du cédant et la messagerie',
     "L'analyse du dossier (points forts, vigilance, questions)",
   ];

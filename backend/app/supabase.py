@@ -87,7 +87,8 @@ class SupabaseClient:
             {
                 "id": f"eq.{listing_id}",
                 "status": "eq.active",
-                "select": "id,sector,region,type,revenue,margin,age,price_min,price_max,public_summary,sale_reason,confidential_description",
+                "select": "id,sector,region,type,revenue,margin,age,price_min,price_max,public_summary,sale_reason,confidential_description,"
+                "revenue_year,revenue_history,team_size,owner_hours_per_week,monthly_visitors,acquisition_channels,included_assets,growth_notes",
             },
         )
         return rows[0] if rows else None

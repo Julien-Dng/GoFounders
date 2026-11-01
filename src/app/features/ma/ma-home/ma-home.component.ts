@@ -6,6 +6,7 @@ import { canAccessMaDetails, canPublishMaListing, hasBuyerPlus } from '../../../
 import { AuthService } from '../../../core/services/auth.service';
 import { MaService } from '../../../core/services/ma.service';
 import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../../../core/ma/listing-metrics';
+import { lastGrowth, revenueSeries } from '../../../core/ma/listing-options';
 
 type SortKey = 'pertinence' | 'recent' | 'prix-asc' | 'prix-desc' | 'ca-desc' | 'benefice-desc' | 'multiple-asc';
 import { SuccessStoriesComponent } from '../../../shared/components/success-stories/success-stories.component';
@@ -104,7 +105,7 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
                   <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-revenue">Chiffre d'affaires</label>
                   <select id="filter-revenue" [value]="selectedRevenue()" (change)="selectedRevenue.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary">
                     @for (range of revenueRanges; track range.value) {
-                      <option [value]="range.value">{{ range.label }}</option>
+                      <option [value]="range.value" [selected]="range.value === selectedRevenue()">{{ range.label }}</option>
                     }
                   </select>
                 </div>
@@ -112,7 +113,7 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
                   <label class="mb-1.5 block text-sm font-medium text-foreground/85" for="filter-price">Prix demandé</label>
                   <select id="filter-price" [value]="selectedPrice()" (change)="selectedPrice.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary">
                     @for (range of priceRanges; track range.value) {
-                      <option [value]="range.value">{{ range.label }}</option>
+                      <option [value]="range.value" [selected]="range.value === selectedPrice()">{{ range.label }}</option>
                     }
                   </select>
                 </div>
@@ -195,7 +196,12 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
                           <dl class="tabular mt-4 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
                             <div>
                               <dt class="text-sm text-muted-foreground">Chiffre d'affaires</dt>
-                              <dd class="mt-0.5 text-lg font-semibold text-primary">{{ euros(item.metrics.revenue) }}</dd>
+                              <dd class="mt-0.5 text-lg font-semibold text-primary">
+                                {{ euros(item.metrics.revenue) }}
+                                @if (item.growth !== null) {
+                                  <span class="ml-1 text-sm font-bold" [class]="item.growth >= 0 ? 'text-emerald-700' : 'text-destructive'">{{ item.growth >= 0 ? '+' : '' }}{{ item.growth }} %</span>
+                                }
+                              </dd>
                             </div>
                             <div>
                               <dt class="text-sm text-muted-foreground">Bénéfice net</dt>
@@ -347,7 +353,8 @@ export class MaHomeComponent implements OnInit {
     const items = this.listings()
       .map(listing => {
         const metrics = listingMetrics(listing);
-        return { listing, metrics, published: publishedLabel(metrics.publishedAt) };
+        const growth = lastGrowth(revenueSeries(listing.revenueHistory, listing.revenueYear, metrics.revenue));
+        return { listing, metrics, growth, published: publishedLabel(metrics.publishedAt) };
       })
       .filter(({ listing, metrics }) =>
         (!this.selectedSector() || listing.sector === this.selectedSector())

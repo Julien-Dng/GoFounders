@@ -8,10 +8,24 @@ import { AuthService } from './auth.service';
 import { SupabaseService } from './supabase.service';
 
 // Colonnes anonymisées lisibles par tous ; le dossier complet passe par get_ma_listing_detail (Supabase).
-const PUBLIC_LISTING_COLUMNS =
+const BASE_LISTING_COLUMNS =
   'id, sector, region, type, revenue, margin, age, price_min, price_max, public_summary, status, featured_until, verified, created_at, updated_at';
+const PUBLIC_LISTING_COLUMNS =
+  'id, sector, region, type, revenue, margin, age, price_min, price_max, public_summary, status, featured_until, verified, created_at, updated_at, revenue_year, revenue_history, included_assets, monthly_visitors, acquisition_channels, team_size, owner_hours_per_week';
 
 const EARLY_ACCESS_MS = 48 * 3600 * 1000;
+
+// Informations facultatives des annonces enrichies (supabase/2026-10-26-annonces-enrichies.sql).
+export interface ListingEnrichment {
+  revenueYear: number | null;
+  revenueHistory: Array<{ year: number; revenue: number }>;
+  includedAssets: string[];
+  monthlyVisitors: number | null;
+  acquisitionChannels: string[];
+  teamSize: number | null;
+  ownerHoursPerWeek: number | null;
+  growthNotes: string;
+}
 
 type PublicListingRow = Omit<SupabaseMaListingRow, 'owner_id' | 'sale_reason' | 'confidential_description' | 'contact_info'>;
 
@@ -176,18 +190,15 @@ export class MaService {
       return MA_LISTINGS;
     }
 
-    const { data, error } = await this.supabase.client
-      .from('ma_listings')
-      .select(PUBLIC_LISTING_COLUMNS)
-      .eq('status', 'active')
-      .order('created_at', { ascending: false });
+    // Repli sur les colonnes d'avant si la migration 2026-10-26 n'est pas encore passée.
+    const rows = (await this.fetchActiveRows(PUBLIC_LISTING_COLUMNS)) ?? (await this.fetchActiveRows(BASE_LISTING_COLUMNS));
 
-    if (error) {
+    if (!rows) {
       return [];
     }
 
     // Annonces en vedette d'abord, puis les plus récentes.
-    const listings = ((data ?? []) as PublicListingRow[])
+    const listings = rows
       .map(row => this.mapCardRow(row))
       .sort((a, b) => Number(b.featured ?? false) - Number(a.featured ?? false));
     return listings.length === 0 && this.auth.isAdmin() ? MA_LISTINGS : listings;
@@ -216,14 +227,20 @@ export class MaService {
       return listing ? { ...listing, description: listing.summary, reason: '', highlights: [], ownerId: undefined, contactInfo: undefined } : undefined;
     }
 
-    const { data, error } = await this.supabase.client
-      .from('ma_listings')
-      .select(PUBLIC_LISTING_COLUMNS)
-      .eq('id', listingId)
-      .eq('status', 'active')
-      .maybeSingle();
+    const rows = (await this.fetchActiveRows(PUBLIC_LISTING_COLUMNS, listingId)) ?? (await this.fetchActiveRows(BASE_LISTING_COLUMNS, listingId));
+    return rows?.[0] ? this.mapCardRow(rows[0]) : undefined;
+  }
 
-    return error || !data ? undefined : this.mapCardRow(data as PublicListingRow);
+  // Annonces actives (colonnes anonymisées), toutes ou une seule ; null si la requête échoue.
+  private async fetchActiveRows(columns: string, listingId?: string): Promise<PublicListingRow[] | null> {
+    let query = this.supabase.client.from('ma_listings').select(columns).eq('status', 'active');
+
+    if (listingId) {
+      query = query.eq('id', listingId);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
+    return error ? null : ((data ?? []) as unknown as PublicListingRow[]);
   }
 
   // Le serveur ne renvoie le dossier qu'à un acheteur avec accès M&A, au propriétaire ou à un admin.
@@ -239,7 +256,7 @@ export class MaService {
     return error || !data ? null : (data as SupabaseMaListingRow);
   }
 
-  async createListing(data: Omit<MaListing, 'id' | 'createdAt'> & { publicSummary?: string }): Promise<string> {
+  async createListing(data: Omit<MaListing, 'id' | 'createdAt'> & { publicSummary?: string; enrichment?: ListingEnrichment }): Promise<string> {
     if (!this.supabase.isConfigured) {
       return '';
     }
@@ -262,6 +279,14 @@ export class MaService {
       confidential_description: data.description,
       contact_info: data.contactInfo,
       status: data.status,
+      revenue_year: data.enrichment?.revenueYear ?? null,
+      revenue_history: data.enrichment?.revenueHistory ?? [],
+      included_assets: data.enrichment?.includedAssets ?? [],
+      monthly_visitors: data.enrichment?.monthlyVisitors ?? null,
+      acquisition_channels: data.enrichment?.acquisitionChannels ?? [],
+      team_size: data.enrichment?.teamSize ?? null,
+      owner_hours_per_week: data.enrichment?.ownerHoursPerWeek ?? null,
+      growth_notes: data.enrichment?.growthNotes || null,
     };
 
     const { error } = await this.supabase.client
@@ -317,6 +342,13 @@ export class MaService {
       priceMinValue: row.price_min ?? null,
       priceMaxValue: row.price_max ?? null,
       publishedAt: row.created_at ?? undefined,
+      revenueYear: row.revenue_year ?? null,
+      revenueHistory: row.revenue_history ?? [],
+      includedAssets: row.included_assets ?? [],
+      monthlyVisitors: row.monthly_visitors ?? null,
+      acquisitionChannels: row.acquisition_channels ?? [],
+      teamSize: row.team_size ?? null,
+      ownerHoursPerWeek: row.owner_hours_per_week ?? null,
     };
   }
 
@@ -327,6 +359,7 @@ export class MaService {
       description: row.confidential_description ?? row.public_summary,
       ownerId: row.owner_id,
       contactInfo: row.contact_info ?? undefined,
+      growthNotes: row.growth_notes ?? undefined,
     };
   }
 
