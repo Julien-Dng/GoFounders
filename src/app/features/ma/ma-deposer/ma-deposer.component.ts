@@ -603,6 +603,27 @@ export class MaDeposerComponent {
       this.age.set(draft.age === null ? '' : `${draft.age} ans`);
       this.priceMin.set(this.formatEuros(draft.price_min));
       this.priceMax.set(this.formatEuros(draft.price_max));
+      if (draft.revenue_year && this.yearOptions.includes(draft.revenue_year)) {
+        this.revenueYear.set(draft.revenue_year);
+      }
+      if (draft.revenue_history?.length) {
+        this.history.set(this.historyYears().map(year => this.formatEuros(draft.revenue_history!.find(point => point.year === year)?.revenue ?? null)));
+      }
+      if (draft.included_assets?.length) {
+        this.includedAssets.set(draft.included_assets);
+      }
+      if (draft.acquisition_channels?.length) {
+        this.channels.set(draft.acquisition_channels);
+      }
+      if (draft.monthly_visitors !== null && draft.monthly_visitors !== undefined) {
+        this.monthlyVisitors.set(String(draft.monthly_visitors));
+      }
+      if (draft.team_size !== null && draft.team_size !== undefined) {
+        this.teamSize.set(String(draft.team_size));
+      }
+      if (draft.owner_hours_per_week !== null && draft.owner_hours_per_week !== undefined) {
+        this.ownerHours.set(String(draft.owner_hours_per_week));
+      }
       this.aiDetails.set(draft.identifying_details);
       this.aiApplied.set(true);
     } catch (error) {

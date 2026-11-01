@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     # Paiements Stripe (facultatif : sans clé, les routes de paiement répondent 503).
     stripe_secret_key: str | None = None
     stripe_webhook_secret: str | None = None
+    # E-mails métier (facultatif : sans clé, la file email_outbox reste en attente, rien n'est envoyé).
+    resend_api_key: str | None = None
+    resend_from: str = "GoFounders <notifications@example.com>"
+    email_poll_seconds: int = 60
+
     # Adresse publique du site Angular, pour les retours de Stripe Checkout et du portail.
     site_url: str = "http://localhost:4200"
 

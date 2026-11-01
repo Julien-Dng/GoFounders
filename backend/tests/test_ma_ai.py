@@ -40,9 +40,10 @@ ANALYSIS = {
 
 
 class FakeSupabase:
-    def __init__(self, role: str | None, has_access: bool = False, listing: dict | None = None, analyses_left: int = 99) -> None:
+    def __init__(self, role: str | None, has_access: bool = False, listing: dict | None = None, analyses_left: int = 99, approved: bool = True) -> None:
         self.role = role
         self.has_access = has_access
+        self.approved = approved
         self.listing = listing
         self.analyses_left = analyses_left
 
@@ -51,6 +52,9 @@ class FakeSupabase:
 
     async def get_role(self, user_id: str) -> str | None:
         return self.role
+
+    async def has_approved_listing_access(self, listing_id: str, user_id: str) -> bool:
+        return self.approved
 
     async def has_active_ma_access(self, user_id: str) -> bool:
         return self.has_access
@@ -282,3 +286,25 @@ def test_listing_as_text_formats_enriched_fields():
     assert "2023 : 180000, 2024 : 230000" in text
     assert "Inclus dans la vente : site, clients" in text
     assert "Canaux d'acquisition : non renseigné" in text
+
+
+def test_analysis_requires_accepted_access_request(client_for):
+    backend = FakeJsonBackend(ANALYSIS)
+    client = client_for(FakeSupabase("buyer", has_access=True, listing=LISTING, approved=False), backend)
+    response = client.post(f"/api/ma/annonces/{LISTING_ID}/analyse", headers=AUTH)
+    assert response.status_code == 403
+    assert "accepter" in response.json()["detail"]
+    assert backend.calls == []
+
+
+def test_draft_keeps_only_known_enriched_values():
+    from app.ma_ai import ListingDraft
+
+    draft = ListingDraft.model_validate({
+        "teaser": "t", "description": "d", "sector": "SaaS", "region": "France entière",
+        "revenue_history": [{"year": 2023, "revenue": 1000}, {"year": 2023, "revenue": 2000}, {"year": 2022, "revenue": 500}],
+        "included_assets": ["site", "licorne", "site"], "acquisition_channels": ["seo", "tv"],
+    })
+    assert [point.year for point in draft.revenue_history] == [2022, 2023]
+    assert draft.included_assets == ["site"]
+    assert draft.acquisition_channels == ["seo"]

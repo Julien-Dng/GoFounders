@@ -36,6 +36,10 @@ def _nullable(kind: str) -> dict[str, Any]:
     return {"type": [kind, "null"]}
 
 
+# Listes fermées, identiques à la contrainte ma_listings_enrichment_check (2026-10-26-annonces-enrichies.sql).
+INCLUDED_ASSETS = ("site", "domaine", "marque", "code", "clients", "stock", "contrats", "reseaux", "publicite", "equipe", "locaux", "materiel")
+ACQUISITION_CHANNELS = ("seo", "publicite", "reseaux", "email", "marketplaces", "bouche_a_oreille", "partenariats", "commercial")
+
 DRAFT_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
@@ -49,6 +53,21 @@ DRAFT_SCHEMA: dict[str, Any] = {
         "price_min": _nullable("number"),
         "price_max": _nullable("number"),
         "sale_reason": _nullable("string"),
+        "revenue_year": _nullable("integer"),
+        "revenue_history": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {"year": {"type": "integer"}, "revenue": {"type": "number"}},
+                "required": ["year", "revenue"],
+                "additionalProperties": False,
+            },
+        },
+        "included_assets": {"type": "array", "items": {"type": "string", "enum": list(INCLUDED_ASSETS)}},
+        "acquisition_channels": {"type": "array", "items": {"type": "string", "enum": list(ACQUISITION_CHANNELS)}},
+        "monthly_visitors": _nullable("integer"),
+        "team_size": _nullable("integer"),
+        "owner_hours_per_week": _nullable("integer"),
         "identifying_details": {
             "type": "array",
             "items": {
@@ -61,7 +80,8 @@ DRAFT_SCHEMA: dict[str, Any] = {
     },
     "required": [
         "teaser", "description", "sector", "region", "revenue", "margin", "age",
-        "price_min", "price_max", "sale_reason", "identifying_details",
+        "price_min", "price_max", "sale_reason", "revenue_year", "revenue_history", "included_assets",
+        "acquisition_channels", "monthly_visitors", "team_size", "owner_hours_per_week", "identifying_details",
     ],
     "additionalProperties": False,
 }
@@ -104,6 +124,15 @@ repreneur ET ne jamais permettre d'identifier l'entreprise.
   price_min et price_max (prix souhaité en euros) : uniquement s'ils sont indiqués dans le texte, sinon null.
   Les montants « 180 k€ » ou « 1,2 M€ » se convertissent en nombres (180000, 1200000).
 - sale_reason : la raison de la cession si elle est donnée, sinon null.
+- revenue_year : l'année du chiffre d'affaires indiqué (dernier exercice) si elle est connue, sinon null.
+- revenue_history : le chiffre d'affaires des années PRÉCÉDENTES s'il est indiqué ({{year, revenue}}, au plus 4), sinon liste vide.
+- included_assets : ce qui est inclus dans la vente, parmi : site (site ou application), domaine, marque, code (code source),
+  clients (base clients), stock, contrats, reseaux (réseaux sociaux), publicite (comptes publicitaires), equipe, locaux, materiel.
+  Seulement ce que le texte mentionne ; liste vide sinon.
+- acquisition_channels : d'où viennent les clients, parmi : seo, publicite, reseaux, email, marketplaces, bouche_a_oreille,
+  partenariats, commercial. Seulement ce que le texte mentionne.
+- monthly_visitors (visiteurs par mois), team_size (personnes dans l'équipe, sans compter le dirigeant),
+  owner_hours_per_week (temps du dirigeant par semaine) : uniquement s'ils sont indiqués, sinon null.
 - identifying_details : les passages du TEXTE D'ORIGINE qui pourraient permettre de reconnaître l'entreprise
   (nom, marque, ville, client cité, chiffre trop précis, histoire très spécifique), avec pour chacun l'extrait
   exact (court) et la raison. Liste vide si rien n'est identifiant.
@@ -139,6 +168,11 @@ class IdentifyingDetail(BaseModel):
     reason: str = Field(max_length=300)
 
 
+class RevenuePoint(BaseModel):
+    year: int = Field(ge=2000, le=2100)
+    revenue: float = Field(ge=0)
+
+
 class ListingDraft(BaseModel):
     teaser: str = Field(max_length=400)
     description: str = Field(max_length=1500)
@@ -150,7 +184,30 @@ class ListingDraft(BaseModel):
     price_min: float | None = Field(default=None, ge=0)
     price_max: float | None = Field(default=None, ge=0)
     sale_reason: str | None = Field(default=None, max_length=400)
+    revenue_year: int | None = Field(default=None, ge=2000, le=2100)
+    revenue_history: list[RevenuePoint] = []
+    included_assets: list[str] = []
+    acquisition_channels: list[str] = []
+    monthly_visitors: int | None = Field(default=None, ge=0)
+    team_size: int | None = Field(default=None, ge=0, le=10000)
+    owner_hours_per_week: int | None = Field(default=None, ge=0, le=100)
     identifying_details: list[IdentifyingDetail] = []
+
+    @field_validator("revenue_history")
+    @classmethod
+    def limit_history(cls, values: list["RevenuePoint"]) -> list["RevenuePoint"]:
+        unique = {point.year: point for point in values}
+        return sorted(unique.values(), key=lambda point: point.year)[-4:]
+
+    @field_validator("included_assets")
+    @classmethod
+    def known_assets(cls, values: list[str]) -> list[str]:
+        return [value for value in dict.fromkeys(values) if value in INCLUDED_ASSETS]
+
+    @field_validator("acquisition_channels")
+    @classmethod
+    def known_channels(cls, values: list[str]) -> list[str]:
+        return [value for value in dict.fromkeys(values) if value in ACQUISITION_CHANNELS]
 
     @field_validator("identifying_details")
     @classmethod

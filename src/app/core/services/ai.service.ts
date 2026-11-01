@@ -41,6 +41,14 @@ export interface MaListingDraft {
   price_min: number | null;
   price_max: number | null;
   sale_reason: string | null;
+  // Informations enrichies (facultatives ; absentes avec un ancien back).
+  revenue_year?: number | null;
+  revenue_history?: Array<{ year: number; revenue: number }>;
+  included_assets?: string[];
+  acquisition_channels?: string[];
+  monthly_visitors?: number | null;
+  team_size?: number | null;
+  owner_hours_per_week?: number | null;
   identifying_details: Array<{ excerpt: string; reason: string }>;
 }
 

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { isTalentMarketplaceRole } from '../../core/models/user.model';
+import { FEATURES } from '../../core/config/features';
 import { AuthService } from '../../core/services/auth.service';
 import { passwordPolicyValidator } from '../../core/validators/password-policy.validator';
 import { PasswordCriteriaComponent } from '../../shared/components/password-criteria/password-criteria.component';
@@ -120,6 +121,25 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
               <p class="mt-3 text-sm" [class.text-success]="feedback.ok" [class.text-destructive]="!feedback.ok" role="status">{{ feedback.text }}</p>
             }
 
+            <div class="mt-5 flex items-start justify-between gap-4 border-t border-border pt-5">
+              <div>
+                <div class="text-sm font-medium" id="emails-label">E-mail à chaque nouveau message</div>
+                <p class="mt-1 text-sm text-muted-foreground">
+                  Au plus un e-mail par conversation toutes les 3 heures, sans le contenu du message. Les e-mails sur vos annonces et vos demandes d'accès restent envoyés.
+                </p>
+              </div>
+              @if (emailNotifications() !== null) {
+                <button type="button" role="switch" [attr.aria-checked]="emailNotifications()" aria-labelledby="emails-label" (click)="toggleEmailNotifications()" [disabled]="busy()" class="relative h-6 w-11 flex-shrink-0 rounded-full transition-colors disabled:opacity-50" [class.bg-accent]="emailNotifications()" [class.bg-border]="!emailNotifications()">
+                  <span class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform" [class.translate-x-5]="emailNotifications()"></span>
+                </button>
+              } @else {
+                <span class="text-sm text-muted-foreground">Indisponible</span>
+              }
+            </div>
+            @if (emailFeedbackSwitch(); as feedback) {
+              <p class="mt-3 text-sm" [class.text-success]="feedback.ok" [class.text-destructive]="!feedback.ok" role="status">{{ feedback.text }}</p>
+            }
+
             @if (showsPublicListing()) {
               <div class="mt-5 flex items-start justify-between gap-4 border-t border-border pt-5">
                 <div>
@@ -208,10 +228,12 @@ export class ParametresComponent implements OnInit {
   readonly visibilityFeedback = signal<Feedback | null>(null);
 
   // Vitrine publique /associes : porteurs de projet et associés uniquement, accord explicite.
-  readonly showsPublicListing = computed(() => isTalentMarketplaceRole(this.auth.currentUser()?.profileType));
+  readonly showsPublicListing = computed(() => FEATURES.associates && isTalentMarketplaceRole(this.auth.currentUser()?.profileType));
   readonly isTalent = computed(() => this.auth.currentUser()?.profileType === 'talent');
   readonly publicListing = signal<boolean | null>(null);
   readonly publicListingFeedback = signal<Feedback | null>(null);
+  readonly emailNotifications = signal<boolean | null>(null);
+  readonly emailFeedbackSwitch = signal<Feedback | null>(null);
 
   readonly confirmingDelete = signal(false);
   readonly deleteInput = signal('');
@@ -224,6 +246,18 @@ export class ParametresComponent implements OnInit {
     if (this.showsPublicListing()) {
       this.publicListing.set(await this.auth.getPublicListing());
     }
+    this.emailNotifications.set(await this.auth.getEmailNotifications());
+  }
+
+  async toggleEmailNotifications(): Promise<void> {
+    const next = !this.emailNotifications();
+    await this.run(async () => {
+      const result = await this.auth.setEmailNotifications(next);
+      this.emailFeedbackSwitch.set({ ok: result.success, text: result.message ?? '' });
+      if (result.success) {
+        this.emailNotifications.set(next);
+      }
+    });
   }
 
   async togglePublicListing(): Promise<void> {

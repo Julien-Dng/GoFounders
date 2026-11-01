@@ -331,6 +331,29 @@ export class AuthService {
       : { success: true, message: isVisible ? 'Votre profil apparaît de nouveau dans la recherche.' : 'Votre profil est masqué de la recherche.' };
   }
 
+  // E-mails de nouveaux messages (colonne email_notifications, 2026-10-28-lancement.sql).
+  async getEmailNotifications(): Promise<boolean | null> {
+    const user = this._currentUser();
+    if (!user || !this.supabase.isConfigured) {
+      return null;
+    }
+
+    const { data, error } = await this.supabase.client.from('profiles').select('email_notifications').eq('id', user.uid).maybeSingle();
+    return error || !data ? null : (data as { email_notifications: boolean }).email_notifications;
+  }
+
+  async setEmailNotifications(enabled: boolean): Promise<AuthResult> {
+    const user = this._currentUser();
+    if (!user || !this.supabase.isConfigured) {
+      return { success: false, message: 'Ce réglage nécessite Supabase (indisponible en mode local).' };
+    }
+
+    const { error } = await this.supabase.client.from('profiles').update({ email_notifications: enabled }).eq('id', user.uid);
+    return error
+      ? { success: false, message: 'Impossible de modifier ce réglage pour le moment.' }
+      : { success: true, message: enabled ? 'Vous serez prévenu par e-mail de vos nouveaux messages.' : 'Vous ne recevrez plus d’e-mail pour les nouveaux messages.' };
+  }
+
   // Vitrine publique /associes (colonne public_listing, 2026-10-27-vitrine-associes.sql).
   async getPublicListing(): Promise<boolean | null> {
     const user = this._currentUser();

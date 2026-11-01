@@ -3,6 +3,7 @@
 Lancement local : uvicorn app.main:app --reload --port 8000
 """
 
+import asyncio
 import json
 import logging
 import time
@@ -22,6 +23,7 @@ from pydantic import BaseModel, Field
 
 from .assistant import Assistant, AssistantUnavailable, LlmBackend
 from .config import Settings, get_settings
+from .emails import ResendClient, send_pending
 from .llm_anthropic import AnthropicBackend
 from .llm_openai import OpenAIBackend
 from .ma_ai import DraftRequest, ListingAnalysis, ListingDraft, MaAi, MaAiUnusable
@@ -43,6 +45,18 @@ def build_backend(settings: Settings) -> LlmBackend:
     )
 
 
+async def email_loop(store: SupabaseClient, sender: ResendClient, settings: Settings) -> None:
+    """Vide la file d'e-mails toutes les minutes (RESEND_API_KEY configurée)."""
+    while True:
+        try:
+            sent = await send_pending(store, sender, settings.site_url)
+            if sent:
+                logger.info("%s e-mail(s) envoyé(s)", sent)
+        except Exception as error:  # noqa: BLE001 - la boucle ne doit jamais s'arrêter sur une erreur passagère
+            logger.warning("File d'e-mails indisponible : %s", error)
+        await asyncio.sleep(max(settings.email_poll_seconds, 15))
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
@@ -53,7 +67,13 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.ma_ai = MaAi(backend)
         app.state.request_log = defaultdict(deque)
         app.state.stripe = StripeClient(settings.stripe_secret_key, http) if settings.stripe_secret_key else None
+        email_task = None
+        if settings.resend_api_key:
+            sender = ResendClient(settings.resend_api_key, settings.resend_from, http)
+            email_task = asyncio.create_task(email_loop(app.state.supabase, sender, settings))
         yield
+        if email_task:
+            email_task.cancel()
 
 
 app = FastAPI(title="GoFounders API", lifespan=lifespan)
@@ -235,15 +255,18 @@ async def ma_listing_analysis(
     supabase: Annotated[SupabaseClient, Depends(get_supabase)],
     ma_ai: Annotated[MaAi, Depends(get_ma_ai)],
 ) -> ListingAnalysis:
-    """Acheteur avec un accès repreneur en cours : analyse du dossier d'une annonce active."""
+    """Acheteur avec un accès repreneur en cours et une demande acceptée : analyse du dossier d'une annonce active."""
     try:
         role = await supabase.get_role(user_id)
         has_access = role == "buyer" and await supabase.has_active_ma_access(user_id)
+        approved = has_access and await supabase.has_approved_listing_access(str(listing_id), user_id)
     except SupabaseError as error:
         logger.error("Accès M&A illisible : %s", error)
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, "Données du profil indisponibles") from error
     if not has_access:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "L'analyse de dossier est réservée aux repreneurs avec un accès en cours")
+    if not approved:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Le cédant doit d'abord accepter votre demande d'accès à ce dossier")
 
     try:
         listing = await supabase.load_listing_for_analysis(str(listing_id))

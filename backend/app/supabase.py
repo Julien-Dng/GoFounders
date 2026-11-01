@@ -158,6 +158,38 @@ class SupabaseClient:
         if response.status_code not in (200, 204):
             raise SupabaseError(f"Enregistrement du client Stripe impossible ({response.status_code}) : {response.text[:300]}")
 
+    async def has_approved_listing_access(self, listing_id: str, user_id: str) -> bool:
+        """Demande d'accès au dossier acceptée par le cédant (2026-10-28-lancement.sql)."""
+        return bool(await self._rpc("has_approved_listing_access", {"p_listing": listing_id, "p_user": user_id}))
+
+    # File d'e-mails (email_outbox) -------------------------------------------------------------------
+    async def list_pending_emails(self, limit: int) -> list[dict[str, Any]]:
+        return await self._select(
+            "email_outbox",
+            {"sent_at": "is.null", "attempts": "lt.5", "order": "created_at.asc", "limit": str(limit),
+             "select": "id,user_id,template,payload,attempts"},
+        )
+
+    async def get_email_recipient(self, user_id: str) -> dict[str, Any] | None:
+        rows = await self._select("profiles", {"id": f"eq.{user_id}", "select": "email,display_name"})
+        return rows[0] if rows else None
+
+    async def _patch_outbox(self, email_id: str, values: dict[str, Any]) -> None:
+        response = await self._http.patch(
+            f"{self._url}/rest/v1/email_outbox",
+            params={"id": f"eq.{email_id}"},
+            json=values,
+            headers=self._service_headers(),
+        )
+        if response.status_code not in (200, 204):
+            raise SupabaseError(f"Mise à jour de la file d'e-mails impossible ({response.status_code}) : {response.text[:300]}")
+
+    async def mark_email_sent(self, email_id: str) -> None:
+        await self._patch_outbox(email_id, {"sent_at": datetime.now(UTC).isoformat(), "last_error": None})
+
+    async def mark_email_failed(self, email_id: str, attempts: int, error: str) -> None:
+        await self._patch_outbox(email_id, {"attempts": attempts, "last_error": error})
+
     async def owns_listing(self, user_id: str, listing_id: str) -> bool:
         rows = await self._select("ma_listings", {"id": f"eq.{listing_id}", "owner_id": f"eq.{user_id}", "select": "id"})
         return bool(rows)

@@ -125,6 +125,8 @@ export interface SupabaseProfileUpdate {
   is_visible?: boolean;
   // Accord pour la vitrine publique /associes (2026-10-27-vitrine-associes.sql).
   public_listing?: boolean;
+  // E-mails de nouveaux messages (2026-10-28-lancement.sql).
+  email_notifications?: boolean;
   display_name?: string;
   location?: string | null;
   title?: string | null;
