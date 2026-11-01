@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { FEATURES } from '../../core/config/features';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { PRO_CATEGORY_LABELS, ProCategory, ProfileType } from '../../core/models/user.model';
@@ -490,7 +491,9 @@ export class InscriptionComponent {
   readonly currentStep = signal(1);
   // ?profil=buyer (depuis une annonce) : rôle présélectionné, modifiable à l'étape 1.
   readonly selectedType = signal<ProfileType | null>(
-    (['entrepreneur', 'talent', 'buyer', 'seller', 'pro'] as const).find(type => type === this.route.snapshot.queryParamMap.get('profil')) ?? null
+    (['entrepreneur', 'talent', 'buyer', 'seller', 'pro'] as const)
+      .filter(type => (FEATURES.associates || (type !== 'entrepreneur' && type !== 'talent')) && (FEATURES.pros || type !== 'pro'))
+      .find(type => type === this.route.snapshot.queryParamMap.get('profil')) ?? null
   );
   readonly returnUrl = signal<string | null>(this.route.snapshot.queryParamMap.get('returnUrl'));
   readonly isPasswordVisible = signal(false);
@@ -570,7 +573,12 @@ export class InscriptionComponent {
     }
   });
 
-  readonly profileTypes: ProfileOption[] = [
+  readonly profileTypes: ProfileOption[] = this.allProfileTypes().filter(type =>
+    (FEATURES.associates || (type.id !== 'entrepreneur' && type.id !== 'talent')) && (FEATURES.pros || type.id !== 'pro')
+  );
+
+  private allProfileTypes(): ProfileOption[] {
+    return [
     {
       id: 'entrepreneur',
       icon: 'project',
@@ -601,7 +609,8 @@ export class InscriptionComponent {
       title: 'Je suis un professionnel',
       description: 'Expert-comptable, avocat, notaire ou cabinet de cession : je veux être visible et accompagner des cessions.',
     },
-  ];
+    ];
+  }
 
   readonly projectStages = [
     { value: 'idea', label: 'Idée' },

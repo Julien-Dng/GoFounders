@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AccountProduct, EARLY_ACCESS_HOURS, FREE_AI_ANALYSES_PER_MONTH, OFFER_PRICES } from '../../core/config/offers';
+import { FEATURES } from '../../core/config/features';
 import { hasBuyerPlus, isActiveUntil } from '../../core/models/user.model';
 import { PaymentService, PremiumTopic } from '../../core/services/payment.service';
 import { PricingFeature } from '../../shared/components/pricing-card/pricing-card.component';
@@ -141,6 +142,7 @@ interface Plan {
           </div>
         </section>
 
+        @if (features.associates) {
         <section id="associes" class="mt-20 scroll-mt-24" aria-labelledby="associes-title">
           <div class="mx-auto max-w-[62ch] text-center">
             <h2 id="associes-title" class="text-3xl text-primary sm:text-4xl">Trouver un associé</h2>
@@ -214,6 +216,7 @@ interface Plan {
             </table>
           </div>
         </section>
+        }
       </div>
     </div>
   `
@@ -224,12 +227,13 @@ export class TarifsComponent {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
+  readonly features = FEATURES;
   readonly anchors = [
     { id: 'repreneurs', label: 'Repreneurs' },
     { id: 'cedants', label: 'Cédants' },
-    { id: 'pros', label: 'Professionnels' },
+    ...(FEATURES.pros ? [{ id: 'pros', label: 'Professionnels' }] : []),
     { id: 'premium', label: 'Accompagnement' },
-    { id: 'associes', label: 'Trouver un associé' },
+    ...(FEATURES.associates ? [{ id: 'associes', label: 'Trouver un associé' }] : []),
   ];
 
   readonly busyProduct = signal<AccountProduct | null>(null);
@@ -244,19 +248,30 @@ export class TarifsComponent {
   readonly premiumResult = signal('');
   readonly premiumResultIsError = signal(false);
 
-  readonly offerGroups = computed(() => [
+  readonly offerGroups = computed(() => this.allOfferGroups()
+    .filter(group => group.id !== 'pros' || FEATURES.pros)
+    .map(group => ({
+      ...group,
+      offers: group.offers.filter(offer =>
+        !(offer.product === 'MA_PLUS' && !FEATURES.buyerPlus)
+        && !((offer.title === 'Mise en avant' || offer.title === 'Dossier vérifié') && !FEATURES.sellerPaidOffers)
+      ),
+    })));
+
+  private readonly allOfferGroups = computed(() => [
     {
       id: 'repreneurs',
       title: 'Repreneurs',
-      description: 'Accédez aux dossiers complets des entreprises à reprendre et contactez directement les vendeurs.',
+      description: 'Demandez l’accès aux dossiers complets des entreprises à reprendre et échangez directement avec les vendeurs.',
       offers: [
         {
           title: 'Accès repreneur',
           price: OFFER_PRICES.MA_ACCESS.label,
-          description: 'Pour étudier les annonces et contacter les vendeurs.',
+          description: 'Pour étudier les entreprises à reprendre et entrer en contact avec leurs vendeurs.',
           features: [
-            'Dossiers complets de toutes les annonces',
-            'Contact direct des vendeurs',
+            'Demandes d’accès aux dossiers complets de toutes les annonces',
+            'Dossier et contact du vendeur ouverts dès qu’il accepte votre demande',
+            'Engagement de confidentialité accepté en ligne, une fois par dossier',
             `${FREE_AI_ANALYSES_PER_MONTH} analyses de dossier par l'IA chaque mois`,
             'Valable 12 mois, sans renouvellement automatique',
           ],
@@ -281,13 +296,15 @@ export class TarifsComponent {
     {
       id: 'cedants',
       title: 'Cédants',
-      description: 'Publiez gratuitement, puis donnez plus de visibilité et de crédibilité à votre annonce si vous le souhaitez.',
+      description: FEATURES.sellerPaidOffers
+        ? 'Publiez gratuitement, puis donnez plus de visibilité et de crédibilité à votre annonce si vous le souhaitez.'
+        : 'Publiez gratuitement, sans commission sur la vente, et gardez la main sur qui voit votre dossier.',
       offers: [
         {
           title: 'Publication',
           price: 'Gratuit',
           description: 'Offre de lancement.',
-          features: ["Annonce anonymisée, préparée avec l'IA", 'Vos coordonnées réservées aux repreneurs avec un accès', 'Contact direct des repreneurs', 'Estimation gratuite de la valeur de votre entreprise'],
+          features: ["Annonce anonymisée, préparée avec l'IA et relue par notre équipe avant publication", 'Vous choisissez les repreneurs qui voient votre dossier et vos coordonnées', 'Chaque repreneur accepte un engagement de confidentialité', 'Estimation gratuite de la valeur de votre entreprise'],
           link: { href: '/ma/deposer', label: 'Déposer mon annonce' },
         },
         {

@@ -1,6 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { ChangeDetectionStrategy, Component, HostListener, computed, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { FEATURES } from '../../../core/config/features';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs/operators';
 import { isTalentMarketplaceRole } from '../../../core/models/user.model';
@@ -277,7 +278,7 @@ export class NavbarComponent {
   // Acheteurs et vendeurs n'ont pas accès à la recherche Talents & Associés.
   private readonly hidesRecherche = computed(() => {
     const profileType = this.auth.currentUser()?.profileType;
-    return !!profileType && !isTalentMarketplaceRole(profileType);
+    return !FEATURES.associates || (!!profileType && !isTalentMarketplaceRole(profileType));
   });
 
   // Refonte « Reprise » : les annonces passent au premier plan. « Vendre » ne concerne que les visiteurs
@@ -332,6 +333,8 @@ export class NavbarComponent {
       && !(item.id === 'vendre' && this.hidesVendre())
       && !((item.id === 'mes-annonces' || item.id === 'statistiques') && !this.ownsListings())
       && !((item.id === 'verifications' || item.id.startsWith('admin-')) && !this.auth.isAdmin())
+      && !(item.id === 'annuaire' && !FEATURES.pros)
+      && !(item.id === 'verifications' && !FEATURES.sellerPaidOffers)
     ).map(item => (item.id === 'recherche' ? { ...item, path: this.associateHref() } : item))
   );
 

@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { FEATURES } from '../../../core/config/features';
 
 @Component({
   selector: 'app-footer',
@@ -51,8 +52,8 @@ export class FooterComponent {
         { label: 'Entreprises à reprendre', href: '/ma' },
         { label: 'Céder mon entreprise', href: '/ma/deposer' },
         { label: 'Estimer mon entreprise', href: '/estimation' },
-        { label: 'Trouver un associé', href: '/associes' },
-        { label: 'Annuaire des professionnels', href: '/pros' },
+        ...(FEATURES.associates ? [{ label: 'Trouver un associé', href: '/associes' }] : []),
+        ...(FEATURES.pros ? [{ label: 'Annuaire des professionnels', href: '/pros' }] : []),
         { label: 'Tarifs', href: '/tarifs' },
       ],
     },

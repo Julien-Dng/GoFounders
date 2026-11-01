@@ -5,6 +5,7 @@ import { EARLY_ACCESS_HOURS, OFFER_PRICES } from '../../../core/config/offers';
 import { canAccessMaDetails, canPublishMaListing, hasBuyerPlus } from '../../../core/models/user.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { MaService } from '../../../core/services/ma.service';
+import { FEATURES } from '../../../core/config/features';
 import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../../../core/ma/listing-metrics';
 import { lastGrowth, revenueSeries } from '../../../core/ma/listing-options';
 
@@ -44,10 +45,10 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
                 <p class="font-semibold text-primary">Le dossier complet demande un accès repreneur.</p>
               }
               <p>
-                Le motif de cession, le détail de l'activité et le contact du vendeur sont réservés aux repreneurs avec l'accès à {{ accessPrice }}.
+                Avec l'accès repreneur ({{ accessPrice }}), demandez le dossier complet d'une annonce : le vendeur vous ouvre le détail de l'activité, le motif de cession et ses coordonnées.
               </p>
               @if (showEarlyAccessHint()) {
-                <p class="mt-1 hidden text-muted-foreground sm:block">Avec l'accès Plus, les nouvelles annonces vous sont ouvertes {{ earlyAccessHours }} h avant les autres.</p>
+                <p class="mt-1 hidden text-muted-foreground sm:block">Avec l'accès Plus, analyses de dossier illimitées et alertes sur les nouvelles annonces.</p>
               }
             </div>
             @if (showAccessCta()) {
@@ -335,7 +336,7 @@ export class MaHomeComponent implements OnInit {
   // Visiteurs et acheteurs sans accès Plus : les annonces de moins de 48 h leur sont masquées par Supabase.
   readonly showEarlyAccessHint = computed(() => {
     const user = this.auth.currentUser();
-    return !user || (user.profileType === 'buyer' && !hasBuyerPlus(user));
+    return FEATURES.buyerPlus && (!user || (user.profileType === 'buyer' && !hasBuyerPlus(user)));
   });
   readonly canViewSensitiveDetails = computed(() => canAccessMaDetails(this.profileType()) && this.auth.hasMaAccess());
   readonly canDepositListing = computed(() => !this.auth.isAuthenticated() || canPublishMaListing(this.profileType()));

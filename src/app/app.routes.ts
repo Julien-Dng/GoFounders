@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { featureGuard } from './core/guards/feature.guard';
 import { planGuard } from './core/guards/plan.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { TALENT_MARKETPLACE_ROLES } from './core/models/user.model';
@@ -52,6 +53,7 @@ export const routes: Routes = [
       },
       {
         path: 'associes',
+        canActivate: [featureGuard('associates')],
         loadComponent: () => import('./features/associes/associes.component').then(m => m.AssociesComponent)
       },
       {
@@ -77,12 +79,13 @@ export const routes: Routes = [
       {
         // Annuaire public des professionnels (refonte « reprise »).
         path: 'pros',
+        canActivate: [featureGuard('pros')],
         loadComponent: () => import('./features/pros/pros.component').then(m => m.ProsComponent)
       },
       // Routes protégées (auth requise)
       {
         path: 'recherche',
-        canActivate: [authGuard, roleGuard],
+        canActivate: [featureGuard('associates'), authGuard, roleGuard],
         data: { allowedRoles: TALENT_MARKETPLACE_ROLES },
         loadComponent: () => import('./features/recherche/recherche.component').then(m => m.RechercheComponent)
       },
@@ -108,7 +111,7 @@ export const routes: Routes = [
       },
       {
         path: 'coaching-ia',
-        canActivate: [authGuard, planGuard],
+        canActivate: [featureGuard('assistant'), authGuard, planGuard],
         data: { requiredPlan: 'PRO' },
         loadComponent: () => import('./features/coaching-ia/coaching-ia.component').then(m => m.CoachingIaComponent)
       },

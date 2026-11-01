@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { Router, RouterLink } from '@angular/router';
 import { MaListingData } from '../../core/data/mock-platform.data';
 import { OFFER_PRICES } from '../../core/config/offers';
+import { FEATURES } from '../../core/config/features';
 import { MaService } from '../../core/services/ma.service';
 import { formatEuros, formatMultiple, listingMetrics } from '../../core/ma/listing-metrics';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
@@ -213,9 +214,9 @@ interface LandingFaqItem {
 
       <section class="px-4 py-16 sm:px-6 lg:px-8 lg:py-24" aria-labelledby="audiences-title">
         <div class="mx-auto max-w-[78rem]">
-          <h2 id="audiences-title" class="text-center text-3xl text-primary sm:text-4xl">Une place de marché, trois façons de l'utiliser</h2>
-          <div class="mt-12 grid gap-6 md:grid-cols-3">
-            @for (audience of audiences; track audience.title) {
+          <h2 id="audiences-title" class="text-center text-3xl text-primary sm:text-4xl">{{ visibleAudiences.length === 3 ? 'Une place de marché, trois façons de l’utiliser' : 'Une place de marché pour vendre ou reprendre' }}</h2>
+          <div class="mt-12 grid gap-6" [class]="visibleAudiences.length === 3 ? 'md:grid-cols-3' : 'mx-auto max-w-4xl md:grid-cols-2'">
+            @for (audience of visibleAudiences; track audience.title) {
               <div class="flex flex-col overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border">
                 <img [src]="audience.image" [alt]="audience.imageAlt" width="1400" height="933" loading="lazy" class="aspect-[3/2] w-full object-cover">
                 <div class="flex flex-1 flex-col p-6">
@@ -272,7 +273,7 @@ interface LandingFaqItem {
             }
           </div>
           <p class="mt-8 text-center">
-            <a routerLink="/tarifs" class="font-semibold text-accent underline-offset-4 hover:underline">Toutes les offres, dont l'accès Plus et les comptes professionnels</a>
+            <a routerLink="/tarifs" class="font-semibold text-accent underline-offset-4 hover:underline">{{ allOffersLabel }}</a>
           </p>
         </div>
       </section>
@@ -335,7 +336,7 @@ export class LandingComponent implements OnInit {
     { value: '0 %', label: 'de commission sur la vente' },
     { value: 'Gratuit', label: 'pour publier une annonce' },
     { value: '149 €', label: "l'accès repreneur, pour 12 mois" },
-    { value: '48 h', label: "d'avance sur les nouvelles annonces avec l'accès Plus" },
+    { value: 'NDA', label: 'accepté par chaque repreneur avant votre dossier' },
   ];
 
   readonly buyerPrice = OFFER_PRICES.MA_ACCESS.label.replace(' / ', ' par ');
@@ -370,6 +371,8 @@ export class LandingComponent implements OnInit {
     void this.router.navigate(['/ma'], { queryParams, fragment: 'ma-listings' });
   }
 
+  readonly allOffersLabel = FEATURES.buyerPlus || FEATURES.pros ? "Toutes les offres, dont l'accès Plus et les comptes professionnels" : 'Toutes les offres et l’accompagnement sur devis';
+
   readonly audiences = [
     {
       title: 'Repreneurs',
@@ -389,6 +392,7 @@ export class LandingComponent implements OnInit {
     },
     {
       title: 'Associés',
+      feature: 'associates' as const,
       description: 'Trouvez un associé pour votre projet, ou rejoignez un projet qui a besoin de vos compétences.',
       href: '/associes',
       cta: 'Trouver un associé',
@@ -397,27 +401,29 @@ export class LandingComponent implements OnInit {
     },
   ];
 
+  readonly visibleAudiences = this.audiences.filter(audience => !('feature' in audience) || FEATURES.associates);
+
   readonly steps = [
     { title: 'Parcourez les annonces', description: 'Secteur, chiffre d’affaires, marge, ancienneté et fourchette de prix : les annonces anonymisées sont visibles par tous.' },
-    { title: 'Ouvrez les dossiers', description: 'L’accès repreneur donne pendant 12 mois les dossiers complets et le contact direct des vendeurs.' },
-    { title: 'Échangez avec le cédant', description: 'Vous discutez directement avec le vendeur. Des experts partenaires, comptables et avocats, peuvent sécuriser la suite.' },
+    { title: 'Demandez l’accès au dossier', description: 'Avec l’accès repreneur, vous vous présentez et acceptez un engagement de confidentialité. Le cédant vous ouvre son dossier complet.' },
+    { title: 'Échangez avec le cédant', description: 'Vous discutez directement avec le vendeur, sans intermédiaire. Faites-vous accompagner par un expert-comptable et un avocat pour sécuriser la suite.' },
   ];
 
   readonly protectionPoints = [
     { title: 'Annonces anonymisées', description: 'Le public ne voit que le secteur, la région et les chiffres clés. Le nom de l’entreprise reste réservé aux repreneurs que vous acceptez.' },
-    { title: 'Engagement de confidentialité', description: 'Pour un projet, vous pouvez exiger un NDA avant toute lecture des détails. La preuve d’acceptation (nom, date, version du texte) est conservée.' },
+    { title: 'Engagement de confidentialité', description: 'Chaque repreneur accepte un engagement de confidentialité avant d’ouvrir votre dossier. La preuve d’acceptation (nom, date, version du texte) est conservée.' },
     { title: 'Accès sous votre contrôle', description: 'Vous acceptez ou refusez chaque demande et retirez un accès quand vous le souhaitez.' },
   ];
 
   readonly priceRows = [
     { who: 'Cédant', detail: 'Annonce anonymisée, contacts directs des repreneurs.', price: 'Gratuit', href: '/ma/deposer', cta: 'Déposer une annonce' },
-    { who: 'Repreneur', detail: 'Dossiers complets et contact des vendeurs pendant 12 mois.', price: OFFER_PRICES.MA_ACCESS.label, href: '/tarifs', cta: 'Voir l’accès repreneur' },
+    { who: 'Repreneur', detail: 'Pendant 12 mois, demandez l’accès aux dossiers complets et échangez avec les vendeurs.', price: OFFER_PRICES.MA_ACCESS.label, href: '/tarifs', cta: 'Voir l’accès repreneur' },
   ];
 
   readonly faq: LandingFaqItem[] = [
     { question: 'Quel type d’entreprises trouve-t-on sur GoFounders ?', answer: 'Principalement des entreprises numériques françaises : SaaS, e-commerce, sites de contenu, petites agences, avec un chiffre d’affaires entre 50 k€ et 1 M€. Des TPE plus classiques peuvent aussi être proposées.' },
-    { question: 'Mon annonce de cession est-elle confidentielle ?', answer: 'Oui. Seule une annonce anonymisée est publique. Le dossier complet et vos coordonnées ne sont accessibles qu’aux repreneurs ayant un accès en cours.' },
-    { question: 'Que comprend l’accès repreneur ?', answer: 'Pendant 12 mois, la lecture des dossiers complets de toutes les annonces actives et le contact direct des vendeurs, avec 3 analyses de dossier par l’IA chaque mois.' },
+    { question: 'Mon annonce de cession est-elle confidentielle ?', answer: 'Oui. Seule une annonce anonymisée est publique, après relecture par notre équipe. Le dossier complet et vos coordonnées ne s’ouvrent qu’aux repreneurs que vous acceptez, après qu’ils ont accepté un engagement de confidentialité.' },
+    { question: 'Que comprend l’accès repreneur ?', answer: 'Pendant 12 mois, vous pouvez demander l’accès au dossier complet de chaque annonce. Dès que le vendeur accepte, vous lisez son dossier et échangez directement avec lui. 3 analyses de dossier par l’IA sont incluses chaque mois.' },
     { question: 'GoFounders prend-il une commission sur la vente ?', answer: 'Non. La publication est gratuite pour les cédants et nous ne prenons aucun pourcentage sur le prix de vente.' },
     { question: 'GoFounders m’accompagne-t-il juridiquement ?', answer: 'Non, nous ne fournissons pas de conseil juridique. Nous vous mettons en relation avec des experts juridiques et comptables partenaires pour sécuriser la transaction.' },
   ];

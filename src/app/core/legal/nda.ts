@@ -126,3 +126,80 @@ export function downloadTextFile(fileName: string, content: string): void {
   link.click();
   URL.revokeObjectURL(url);
 }
+
+// ---------------------------------------------------------------------------------------------------------
+// Engagement de confidentialité accepté par un repreneur avant de demander le dossier complet d'une annonce
+// (supabase/2026-10-28-lancement.sql, request_listing_access).
+// TEXTE PROVISOIRE : à faire valider par un avocat avant la mise en ligne. Toute modification = nouvelle version.
+
+export const MA_NDA_VERSION = 'ma-v0-provisoire-2026-10-28';
+
+export interface MaNdaParties {
+  buyerName: string;
+  listingLabel: string;
+}
+
+export function maNdaArticles(parties: MaNdaParties): NdaArticle[] {
+  const { buyerName, listingLabel } = parties;
+
+  return [
+    {
+      title: 'Parties et préambule',
+      paragraphs: [
+        `Entre le cédant de l'entreprise présentée dans l'annonce « ${listingLabel} » (le Cédant) et ${buyerName} (le Repreneur), tous deux utilisateurs de la plateforme GoFounders éditée par ${NDA_PUBLISHER} (GoFounders).`,
+        "Le Repreneur souhaite étudier le rachat éventuel de l'entreprise ou de son activité (la Finalité). Le Cédant accepte de lui communiquer des informations confidentielles à la condition que le Repreneur s'engage à les garder secrètes et à ne les utiliser que pour la Finalité.",
+      ],
+    },
+    {
+      title: 'Article 1 – Informations confidentielles',
+      paragraphs: [
+        "Toutes les informations relatives à l'entreprise communiquées par le Cédant au Repreneur à compter de l'acceptation du présent engagement, quels qu'en soient la forme et le support : notamment le dossier complet de l'annonce, l'identité de l'entreprise et de ses dirigeants, les chiffres et documents financiers, les clients, fournisseurs, salariés et partenaires, les outils, le code et le savoir-faire, ainsi que les échanges dans la messagerie GoFounders et lors des rendez-vous liés à la Finalité.",
+      ],
+    },
+    {
+      title: 'Article 2 – Obligations du Repreneur',
+      paragraphs: [
+        "Le Repreneur s'engage à : garder les Informations confidentielles strictement secrètes et ne pas les communiquer à un tiers ; ne les utiliser que pour la Finalité ; ne pas révéler à quiconque que l'entreprise est à vendre ; ne pas contacter les salariés, clients, fournisseurs ou partenaires de l'entreprise sans l'accord écrit du Cédant ; ne pas utiliser les Informations confidentielles pour concurrencer l'entreprise ; les protéger avec au moins le même soin que ses propres informations confidentielles ; ne les communiquer à ses conseils (avocat, expert-comptable, banque) que s'ils sont tenus au secret et pour la seule Finalité ; prévenir sans délai le Cédant de toute divulgation ou utilisation non autorisée.",
+      ],
+    },
+    {
+      title: 'Article 3 – Exceptions',
+      paragraphs: [
+        "Ces obligations ne s'appliquent pas aux informations dont le Repreneur prouve qu'elles étaient déjà publiques ou le sont devenues sans faute de sa part, qu'il détenait déjà licitement sans obligation de confidentialité, ou qu'un tiers libre de les divulguer lui a transmises.",
+        "Si la loi ou une autorité impose une divulgation, le Repreneur prévient le Cédant dès que possible et ne divulgue que ce qui est strictement exigé.",
+      ],
+    },
+    {
+      title: 'Article 4 – Restitution, absence de droits et de contrat',
+      paragraphs: [
+        "À la demande du Cédant, ou dès que le Repreneur renonce au projet de reprise, le Repreneur cesse d'utiliser les Informations confidentielles et restitue ou détruit sous 15 jours les documents et copies qui les contiennent.",
+        "La communication des Informations confidentielles ne confère aucun droit au Repreneur. Le présent engagement n'oblige aucune Partie à conclure la cession ; une éventuelle offre ou lettre d'intention fera l'objet d'un document distinct.",
+      ],
+    },
+    {
+      title: 'Article 5 – Durée',
+      paragraphs: [
+        "Le présent engagement prend effet à son acceptation en ligne. Les obligations de confidentialité durent pendant les échanges entre les Parties puis pendant 3 ans après la dernière communication d'Informations confidentielles, et aussi longtemps qu'une information relève du secret des affaires (articles L. 151-1 et suivants du Code de commerce).",
+      ],
+    },
+    {
+      title: 'Article 6 – Manquement',
+      paragraphs: [
+        "Tout manquement engage la responsabilité du Repreneur et l'oblige à réparer l'intégralité du préjudice subi par le Cédant, qui peut aussi demander en justice toute mesure pour faire cesser la divulgation ou l'utilisation non autorisée.",
+      ],
+    },
+    {
+      title: 'Article 7 – Rôle de GoFounders, preuve et données personnelles',
+      paragraphs: [
+        "GoFounders n'est pas partie au présent engagement : elle met ce modèle type à disposition et conserve la preuve de son acceptation. Elle ne fournit aucun conseil juridique et ne garantit ni l'exécution de l'engagement, ni l'issue d'un litige.",
+        "L'acceptation en ligne a la même valeur qu'une signature manuscrite (articles 1366 et 1367 du Code civil). GoFounders enregistre l'identité des comptes, l'annonce, la version du texte, la date et l'heure, l'adresse IP et le navigateur du Repreneur, et les conserve au moins 5 ans après la fin des obligations, pour la preuve, sur la base de l'intérêt légitime des Parties. Chaque Partie peut en obtenir une copie.",
+      ],
+    },
+    {
+      title: 'Article 8 – Droit applicable',
+      paragraphs: [
+        "Le présent engagement est soumis au droit français. Les Parties recherchent d'abord une solution amiable ; à défaut, le litige est porté devant la juridiction compétente selon les règles de droit commun.",
+      ],
+    },
+  ];
+}

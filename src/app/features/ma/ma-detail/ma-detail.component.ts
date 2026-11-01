@@ -8,6 +8,7 @@ import { AiService, MaListingAnalysis } from '../../../core/services/ai.service'
 import { AuthService } from '../../../core/services/auth.service';
 import { StatsService } from '../../../core/services/stats.service';
 import { OFFER_PRICES } from '../../../core/config/offers';
+import { FEATURES } from '../../../core/config/features';
 import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../../../core/ma/listing-metrics';
 import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsset, labelOf, lastGrowth, revenueSeries } from '../../../core/ma/listing-options';
 
@@ -193,7 +194,9 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
                     </li>
                   }
                 </ol>
+                @if (features.pros) {
                 <a routerLink="/pros" class="mt-5 inline-block font-medium text-accent underline-offset-4 hover:underline">Trouver un expert-comptable ou un avocat dans l'annuaire</a>
+                }
               </section>
 
               @if (isBuyer() && hasDossier()) {
@@ -214,7 +217,7 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
 
                   @if (analysisError()) {
                     <p class="mt-4 text-base text-destructive" role="alert">{{ analysisError() }}</p>
-                    @if (analysisError().includes('Plus')) {
+                    @if (features.buyerPlus && analysisError().includes('Plus')) {
                       <a routerLink="/tarifs" fragment="repreneurs" class="mt-2 inline-block font-medium text-accent hover:underline">Découvrir l'accès Plus</a>
                     }
                   }
@@ -308,7 +311,6 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
         } @else if (loaded()) {
           <div class="mt-10 rounded-2xl bg-white p-10 text-center shadow-lg">
             <p class="text-lg text-muted-foreground">Cette annonce n'existe pas ou n'est plus disponible.</p>
-            <p class="mt-2 text-base text-muted-foreground">Les annonces publiées depuis moins de 48 h sont réservées aux repreneurs avec l'accès Plus.</p>
             <a routerLink="/ma" class="mt-4 inline-block font-medium text-accent underline-offset-4 hover:underline">Voir les annonces en cours</a>
           </div>
         }
@@ -353,6 +355,7 @@ export class MaDetailComponent implements OnInit {
       { label: 'Type de cession', value: listing.type },
     ];
   });
+  readonly features = FEATURES;
   readonly multipleLabel = formatMultiple;
   readonly euros = formatEuros;
 
