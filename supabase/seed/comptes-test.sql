@@ -132,6 +132,15 @@ from auth.users
 where email = 'vendeur.ma@gofounders.test'
 on conflict (id) do nothing;
 
+-- Annonce considérée comme relue par la modération (relecture avant publication, 2026-10-28-lancement.sql).
+do $$
+begin
+  if exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'ma_listings' and column_name = 'reviewed_at') then
+    update public.ma_listings set reviewed_at = coalesce(reviewed_at, now()) where id = 'b0000000-0000-4000-8000-000000000001';
+  end if;
+end;
+$$;
+
 select profile.email, profile.role, profile.plan, profile.ma_access
 from public.profiles profile
 where profile.email like '%@gofounders.test'

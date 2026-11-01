@@ -14,6 +14,7 @@ from (values
   (6, '2026-10-24-paiements-stripe.sql',              to_regclass('public.payments') is not null),
   (7, '2026-10-25-contact.sql',                       to_regclass('public.contact_messages') is not null),
   (8, '2026-10-26-annonces-enrichies.sql',            exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'ma_listings' and column_name = 'revenue_history')),
-  (9, '2026-10-27-vitrine-associes.sql',              exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'public_listing'))
+  (9, '2026-10-27-vitrine-associes.sql',              exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'public_listing')),
+  (10, '2026-10-28-lancement.sql',                    to_regclass('public.ma_access_requests') is not null)
 ) as check_list(ordre, migration, passee)
 order by ordre;

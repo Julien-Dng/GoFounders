@@ -5,14 +5,15 @@
 --
 -- Contenu :
 --   10 annonces fictives du compte vendeur.ma@gofounders.test (secteurs, prix et tailles variés), dont
---   2 en vedette, 2 « dossier vérifié », 1 publiée il y a moins de 48 h (accès anticipé des repreneurs Plus),
+--   2 en vedette, 2 « dossier vérifié », 1 publiée il y a moins de 48 h, toutes déjà relues par la modération,
 --   avec historique de chiffre d'affaires, ce qui est inclus, équipe, trafic et pistes de croissance ;
 --   les comptes de test porteurs de projet et associés rendus visibles sur /associes.
 --
 -- Parcours conseillés (mot de passe des comptes : Test-GoFounders-2026) :
 --   visiteur (navigation privée)    /ma puis une fiche : chiffres visibles, dossier flouté
 --   acheteur@gofounders.test        fiche : « Prendre l'accès repreneur »
---   acheteur.ma@gofounders.test     fiche : dossier complet, coordonnées, « Contacter le cédant », analyse IA
+--   acheteur.ma@gofounders.test     fiche : « Demander l'accès au dossier » (présentation + NDA)
+--   vendeur.ma@gofounders.test      /ma/mes-annonces : accepter la demande ; le repreneur voit alors le dossier complet
 --   vendeur.ma@gofounders.test      /ma/mes-annonces et /ma/statistiques, puis sa propre fiche
 
 do $$
@@ -150,6 +151,9 @@ begin
     '{site,domaine,marque,code,clients}', 6000, '{seo,partenariats}',
     0, 10, null
   );
+
+  -- Annonces relues par la modération (sinon invisibles depuis 2026-10-28-lancement.sql).
+  update public.ma_listings set reviewed_at = now() where id::text like 'c0000000-0000-4000-8000-%';
 
   -- Mise en avant et badge « dossier vérifié » (posés comme le ferait un paiement confirmé).
   update public.ma_listings set featured_until = now() + interval '20 days'
