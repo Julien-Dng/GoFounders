@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { FEATURES } from '../../core/config/features';
 import { AuthService } from '../../core/services/auth.service';
 import { Plan, canAccessMaDetails, canPublishMaListing } from '../../core/models/user.model';
 import { PaymentService } from '../../core/services/payment.service';
@@ -24,6 +25,7 @@ import { PaymentService } from '../../core/services/payment.service';
         }
 
         <div class="divide-y divide-border rounded-lg border border-border bg-white px-6">
+@if (features.associates) {
           <section class="grid gap-4 py-6 sm:grid-cols-[1fr_16rem] sm:items-center sm:gap-8" aria-labelledby="abo-plan">
             <div>
               <p class="text-sm text-muted-foreground">Votre plan actuel</p>
@@ -36,13 +38,14 @@ import { PaymentService } from '../../core/services/payment.service';
               {{ isSimulation ? 'Activer PRO (paiement simulé)' : 'Passer en PRO' }}
             </button>
           </section>
+          }
 
           <section class="grid gap-4 py-6 sm:grid-cols-[1fr_16rem] sm:items-center sm:gap-8" aria-labelledby="abo-premium">
             <div>
               <p class="text-sm text-muted-foreground">Accompagnement</p>
               <h2 id="abo-premium" class="mt-1 text-2xl text-primary">PREMIUM, sur devis</h2>
               <p class="mt-2 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
-                On vous présente les bonnes personnes : associés qualifiés, investisseurs, experts juridiques partenaires, avec un interlocuteur dédié.
+                {{ features.associates ? 'On vous présente les bonnes personnes : associés qualifiés, investisseurs, experts juridiques partenaires, avec un interlocuteur dédié.' : 'Préparation de votre cession ou de votre reprise avec nos experts partenaires, et un interlocuteur dédié jusqu’à la signature.' }}
               </p>
             </div>
             @if (isSimulation) {
@@ -96,6 +99,7 @@ import { PaymentService } from '../../core/services/payment.service';
   `,
 })
 export class AbonnementComponent {
+  readonly features = FEATURES;
   private readonly auth = inject(AuthService);
   private readonly payment = inject(PaymentService);
 
@@ -109,11 +113,11 @@ export class AbonnementComponent {
   });
   readonly maDescription = computed(() => {
     if (this.isBuyer()) {
-      return "Accès repreneur pendant 12 mois : dossiers complets, motif de cession et contact direct avec les vendeurs. Indépendant de l'abonnement.";
+      return "Accès repreneur pendant 12 mois : demandez le dossier complet des annonces ; dès qu'un vendeur accepte, vous lisez son dossier et échangez directement avec lui.";
     }
 
     if (this.isSeller()) {
-      return 'Offre de lancement : la publication de votre annonce anonymisée est gratuite.';
+      return 'Offre de lancement : la publication de votre annonce anonymisée est gratuite. Vous choisissez les repreneurs qui voient votre dossier.';
     }
 
     return 'Le M&A est réservé aux comptes acheteur et vendeur. Votre compte voit les annonces anonymisées.';

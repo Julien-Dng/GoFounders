@@ -6,8 +6,11 @@ import { canPublishMa, isActiveUntil } from '../../../core/models/user.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { MaService, VerificationRequest } from '../../../core/services/ma.service';
 import { PaymentService } from '../../../core/services/payment.service';
+import { ListingAccessService, ListingReview, ReceivedAccessRequest } from '../../../core/services/listing-access.service';
+import { FEATURES } from '../../../core/config/features';
 
-// Annonces du vendeur (ou du cabinet avec un compte pro) : mise en avant et dossier vérifié.
+// Annonces du vendeur (ou du cabinet avec un compte pro) : relecture, demandes d'accès, modification ;
+// mise en avant et dossier vérifié quand ces offres sont actives (core/config/features.ts).
 @Component({
   selector: 'app-ma-mes-annonces',
   standalone: true,
@@ -19,10 +22,10 @@ import { PaymentService } from '../../../core/services/payment.service';
         <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 class="text-3xl font-semibold text-primary sm:text-4xl">Mes annonces</h1>
-            <p class="mt-2 text-muted-foreground">Donnez plus de visibilité et de crédibilité à vos annonces.</p>
+            <p class="mt-2 text-muted-foreground">Suivez la relecture de vos annonces et choisissez les repreneurs qui voient votre dossier.</p>
           </div>
           <div class="flex flex-wrap gap-2">
-            <a routerLink="/ma/statistiques" class="rounded-lg border border-border bg-white px-5 py-3 text-center text-sm font-semibold transition-colors hover:border-amber-500">Mes statistiques</a>
+            <a routerLink="/ma/statistiques" class="rounded-lg border border-border bg-white px-5 py-3 text-center text-sm font-semibold transition-colors hover:border-primary">Mes statistiques</a>
             @if (canPublish()) {
               <a routerLink="/ma/deposer" class="rounded-lg bg-accent px-5 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-accent/90">Déposer une annonce</a>
             }
@@ -48,34 +51,88 @@ import { PaymentService } from '../../../core/services/payment.service';
         } @else {
           <ul class="space-y-6">
             @for (listing of listings(); track listing.id) {
-              <li class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-6">
+              <li class="rounded-2xl bg-white p-6 shadow-lg ring-1 ring-border">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
+                  <div class="min-w-0">
                     <div class="flex flex-wrap items-center gap-2">
-                      <h2 class="text-lg font-semibold">{{ listing.sector }} · {{ listing.region }}</h2>
-                      @if (isFeatured(listing)) {
-                        <span class="rounded-full bg-amber-500 px-2.5 py-0.5 text-sm font-semibold text-white">En vedette jusqu'au {{ formatDate(listing.featuredUntil!) }}</span>
+                      <h2 class="text-lg font-bold text-primary">{{ listing.sector }} · {{ listing.region }}</h2>
+                      <span class="rounded-full px-2.5 py-0.5 text-sm font-semibold" [class]="reviewState(listing).css">{{ reviewState(listing).label }}</span>
+                      @if (features.sellerPaidOffers && isFeatured(listing)) {
+                        <span class="rounded-full bg-amber-50 px-2.5 py-0.5 text-sm font-semibold text-amber-800">En vedette jusqu'au {{ formatDate(listing.featuredUntil!) }}</span>
                       }
                       @if (listing.verified) {
-                        <span class="rounded-full bg-emerald-600 px-2.5 py-0.5 text-sm font-semibold text-white">Dossier vérifié</span>
+                        <span class="rounded-full bg-emerald-50 px-2.5 py-0.5 text-sm font-semibold text-emerald-800">Dossier vérifié</span>
                       }
                     </div>
-                    <p class="mt-1 text-sm text-muted-foreground">{{ listing.description }}</p>
+                    @if (reviewState(listing).note) {
+                      <p class="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">Motif : {{ reviewState(listing).note }}</p>
+                    } @else if (reviewState(listing).key === 'pending') {
+                      <p class="mt-2 text-sm text-muted-foreground">Notre équipe relit votre annonce avant sa publication, en général sous 24 h ouvrées. Vous serez prévenu dès qu'elle sera en ligne.</p>
+                    }
+                    <p class="mt-2 line-clamp-2 text-sm text-muted-foreground">{{ listing.description }}</p>
                   </div>
-                  <div class="flex flex-shrink-0 gap-4">
-                    <a [routerLink]="['/ma/annonce', listing.id]" class="text-sm font-semibold text-accent hover:underline">Voir l'annonce</a>
+                  <div class="flex flex-shrink-0 flex-wrap gap-x-4 gap-y-2">
+                    <a [routerLink]="['/ma/annonce', listing.id]" class="text-sm font-semibold text-accent hover:underline">Voir</a>
+                    @if (listing.status === 'active' || !reviewState(listing).note) {
+                      <a routerLink="/ma/deposer" [queryParams]="{ modifier: listing.id }" class="text-sm font-semibold text-accent hover:underline">Modifier</a>
+                    }
                     @if (listing.status !== 'withdrawn') {
-                      <a [routerLink]="['/ma/vendue', listing.id]" class="text-sm font-semibold text-amber-600 hover:underline">{{ listing.status === 'sold' ? 'Mon témoignage' : "J'ai vendu" }}</a>
+                      <a [routerLink]="['/ma/vendue', listing.id]" class="text-sm font-semibold text-accent hover:underline">{{ listing.status === 'sold' ? 'Mon témoignage' : "J'ai vendu" }}</a>
                     }
                   </div>
                 </div>
 
-                <div class="mt-5 grid gap-4 md:grid-cols-2">
+                <section class="mt-5 border-t border-border pt-5" [attr.aria-label]="'Demandes d’accès pour ' + listing.sector">
+                  <h3 class="font-bold text-primary">Demandes d'accès au dossier
+                    @if (pendingCount(listing.id) > 0) {
+                      <span class="ml-1 rounded-full bg-accent px-2 py-0.5 text-sm font-semibold text-white">{{ pendingCount(listing.id) }} à traiter</span>
+                    }
+                  </h3>
+                  @if (requestsFor(listing.id).length === 0) {
+                    <p class="mt-1 text-sm text-muted-foreground">Aucune demande pour le moment. Chaque repreneur se présente et accepte un engagement de confidentialité avant de vous écrire.</p>
+                  } @else {
+                    <ul class="mt-3 space-y-3">
+                      @for (request of requestsFor(listing.id); track request.id) {
+                        <li class="rounded-xl bg-secondary p-4">
+                          <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                            <div class="min-w-0">
+                              <p class="font-semibold text-primary">
+                                {{ request.buyer_name || 'Repreneur' }}
+                                @if (request.buyer_verified) {
+                                  <span class="ml-1 text-sm font-semibold text-emerald-700">Profil vérifié</span>
+                                }
+                              </p>
+                              <p class="text-sm text-muted-foreground">
+                                {{ buyerDetails(request) }}
+                              </p>
+                            </div>
+                            <span class="flex-shrink-0 text-sm font-semibold" [class]="request.status === 'approved' ? 'text-emerald-700' : request.status === 'refused' ? 'text-muted-foreground' : 'text-accent'">
+                              {{ request.status === 'approved' ? 'Accès accordé' : request.status === 'refused' ? 'Refusée' : 'En attente de votre réponse' }}
+                            </span>
+                          </div>
+                          @if (request.message) {
+                            <p class="mt-2 whitespace-pre-line text-sm text-foreground/85">« {{ request.message }} »</p>
+                          }
+                          <p class="mt-2 text-sm text-muted-foreground">Engagement de confidentialité accepté le {{ formatDate(request.nda_accepted_at) }}.</p>
+                          @if (request.status === 'pending') {
+                            <div class="mt-3 flex flex-wrap gap-2">
+                              <button type="button" (click)="decide(request.id, true)" [disabled]="busy()" class="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent/90 disabled:opacity-50">Ouvrir mon dossier</button>
+                              <button type="button" (click)="decide(request.id, false)" [disabled]="busy()" class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-primary ring-1 ring-border hover:text-destructive disabled:opacity-50">Refuser</button>
+                            </div>
+                          }
+                        </li>
+                      }
+                    </ul>
+                  }
+                </section>
+
+                @if (features.sellerPaidOffers) {
+                <div class="mt-5 grid gap-4 border-t border-border pt-5 md:grid-cols-2">
                   <div class="rounded-xl bg-secondary/60 p-4">
                     <h3 class="font-semibold">Mise en avant</h3>
                     <p class="mt-1 text-sm text-muted-foreground">Votre annonce en tête de liste avec le badge « En vedette ».</p>
                     <div class="mt-3 flex flex-wrap gap-2">
-                      <button type="button" (click)="buy('FEATURE_7D', listing)" [disabled]="busy()" class="rounded-lg border border-border bg-white px-3 py-2 text-sm font-semibold transition-colors hover:border-amber-500 disabled:opacity-50">7 jours · {{ prices.FEATURE_7D.amount }} €</button>
+                      <button type="button" (click)="buy('FEATURE_7D', listing)" [disabled]="busy()" class="rounded-lg border border-border bg-white px-3 py-2 text-sm font-semibold transition-colors hover:border-primary disabled:opacity-50">7 jours · {{ prices.FEATURE_7D.amount }} €</button>
                       <button type="button" (click)="buy('FEATURE_30D', listing)" [disabled]="busy()" class="rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent/90 disabled:opacity-50">30 jours · {{ prices.FEATURE_30D.amount }} €</button>
                     </div>
                   </div>
@@ -95,21 +152,12 @@ import { PaymentService } from '../../../core/services/payment.service';
                         (par exemple un lien de partage Drive). Un membre de l'équipe les contrôle sous 3 jours ouvrés.
                       </p>
                       <label class="sr-only" [attr.for]="'evidence-' + listing.id">Justificatifs</label>
-                      <textarea
-                        [id]="'evidence-' + listing.id"
-                        rows="3"
-                        maxlength="3000"
-                        [value]="evidence()[listing.id] ?? ''"
-                        (input)="setEvidence(listing.id, $any($event.target).value)"
-                        class="mt-2 w-full resize-y rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-emerald-600"
-                        placeholder="Lien vers vos justificatifs et précisions utiles"
-                      ></textarea>
-                      <button type="button" (click)="requestVerification(listing)" [disabled]="busy() || (evidence()[listing.id] ?? '').trim().length < 20" class="mt-2 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50">
-                        Demander la vérification
-                      </button>
+                      <textarea [id]="'evidence-' + listing.id" rows="3" maxlength="3000" [value]="evidence()[listing.id] ?? ''" (input)="setEvidence(listing.id, $any($event.target).value)" class="mt-2 w-full resize-y rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-accent" placeholder="Lien vers vos justificatifs et précisions utiles"></textarea>
+                      <button type="button" (click)="requestVerification(listing)" [disabled]="busy() || (evidence()[listing.id] ?? '').trim().length < 20" class="mt-2 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50">Demander la vérification</button>
                     }
                   </div>
                 </div>
+                }
               </li>
             }
           </ul>
@@ -122,8 +170,12 @@ export class MaMesAnnoncesComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly maService = inject(MaService);
   private readonly payment = inject(PaymentService);
+  private readonly access = inject(ListingAccessService);
 
   readonly prices = OFFER_PRICES;
+  readonly features = FEATURES;
+  readonly accessRequests = signal<ReceivedAccessRequest[]>([]);
+  readonly reviews = signal<Map<string, ListingReview>>(new Map());
   readonly listings = signal<MaListing[]>([]);
   readonly requests = signal<VerificationRequest[]>([]);
   readonly evidence = signal<Record<string, string | undefined>>({});
@@ -135,6 +187,47 @@ export class MaMesAnnoncesComponent implements OnInit {
 
   ngOnInit(): void {
     void this.load();
+  }
+
+  // En ligne, en attente de relecture, refusée ou retirée par la modération (avec le motif), vendue.
+  reviewState(listing: MaListing): { key: string; label: string; css: string; note: string | null } {
+    const review = this.reviews().get(listing.id);
+
+    if (listing.status === 'sold') {
+      return { key: 'sold', label: 'Vendue', css: 'bg-secondary text-muted-foreground', note: null };
+    }
+
+    if (review?.withdrawn_by_admin) {
+      return { key: 'withdrawn', label: 'Non publiée', css: 'bg-red-50 text-red-800', note: review.moderation_note };
+    }
+
+    if (listing.status === 'withdrawn') {
+      return { key: 'withdrawn', label: 'Retirée', css: 'bg-secondary text-muted-foreground', note: null };
+    }
+
+    if (review && !review.reviewed_at) {
+      return { key: 'pending', label: 'En attente de relecture', css: 'bg-amber-50 text-amber-800', note: null };
+    }
+
+    return { key: 'online', label: 'En ligne', css: 'bg-emerald-50 text-emerald-800', note: null };
+  }
+
+  requestsFor(listingId: string): ReceivedAccessRequest[] {
+    return this.accessRequests().filter(request => request.listing_id === listingId);
+  }
+
+  pendingCount(listingId: string): number {
+    return this.requestsFor(listingId).filter(request => request.status === 'pending').length;
+  }
+
+  buyerDetails(request: ReceivedAccessRequest): string {
+    return [request.buyer_title, request.buyer_location, request.buyer_budget ? `Budget ${request.buyer_budget}` : null, request.buyer_sector ? `Cherche : ${request.buyer_sector}` : null]
+      .filter(Boolean)
+      .join(' · ') || 'Profil repreneur';
+  }
+
+  async decide(requestId: string, approve: boolean): Promise<void> {
+    await this.run(() => this.access.decide(requestId, approve));
   }
 
   isFeatured(listing: MaListing): boolean {
@@ -182,9 +275,16 @@ export class MaMesAnnoncesComponent implements OnInit {
   }
 
   private async load(): Promise<void> {
-    const [listings, requests] = await Promise.all([this.maService.getMyListings(), this.maService.getMyVerificationRequests()]);
+    const [listings, requests, accessRequests, reviews] = await Promise.all([
+      this.maService.getMyListings(),
+      FEATURES.sellerPaidOffers ? this.maService.getMyVerificationRequests() : Promise.resolve([]),
+      this.access.listReceived(),
+      this.access.myListingReviews(),
+    ]);
     this.listings.set(listings);
     this.requests.set(requests);
+    this.accessRequests.set(accessRequests);
+    this.reviews.set(reviews);
     this.isLoading.set(false);
   }
 }

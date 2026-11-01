@@ -45,14 +45,31 @@ export interface AccessResult {
 @Injectable({ providedIn: 'root' })
 export class ListingAccessService {
   private readonly supabase = inject(SupabaseService);
-  // Mode démo : demandes gardées en mémoire, acceptées automatiquement pour pouvoir tester le parcours.
-  private readonly demoRequests = new Map<string, MyAccessRequest>();
+  // Mode démo (sans Supabase) : la demande est acceptée tout de suite, pour pouvoir parcourir le dossier.
+  static readonly DEMO_KEY = 'gofounders.demo.access';
+
+  static demoApproved(listingId: string): boolean {
+    try {
+      return (JSON.parse(localStorage.getItem(ListingAccessService.DEMO_KEY) ?? '[]') as string[]).includes(listingId);
+    } catch {
+      return false;
+    }
+  }
+
+  private demoApprove(listingId: string): void {
+    try {
+      const ids = new Set(JSON.parse(localStorage.getItem(ListingAccessService.DEMO_KEY) ?? '[]') as string[]);
+      ids.add(listingId);
+      localStorage.setItem(ListingAccessService.DEMO_KEY, JSON.stringify([...ids]));
+    } catch {
+      // Stockage indisponible : la démo reste sans accès.
+    }
+  }
 
   async requestAccess(listingId: string, message: string): Promise<AccessResult> {
     if (!this.supabase.isConfigured) {
-      const request = { status: 'pending' as const, created_at: new Date().toISOString(), decided_at: null };
-      this.demoRequests.set(listingId, request);
-      return { success: true, status: 'pending', message: 'Demande envoyée (mode démo).' };
+      this.demoApprove(listingId);
+      return { success: true, status: 'approved', message: 'Mode démo : demande acceptée automatiquement.' };
     }
 
     const { data, error } = await this.supabase.client.rpc('request_listing_access', {
@@ -76,7 +93,7 @@ export class ListingAccessService {
 
   async getMyRequest(listingId: string): Promise<MyAccessRequest | null> {
     if (!this.supabase.isConfigured) {
-      return this.demoRequests.get(listingId) ?? null;
+      return ListingAccessService.demoApproved(listingId) ? { status: 'approved', created_at: new Date().toISOString(), decided_at: null } : null;
     }
 
     const { data, error } = await this.supabase.client.rpc('get_my_access_request', { p_listing_id: listingId });

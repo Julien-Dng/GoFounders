@@ -5,6 +5,7 @@ import { MaListing } from '../models/ma-listing.model';
 import { SupabaseMaListingInsert, SupabaseMaListingRow } from '../models/supabase-database.model';
 import { ProCategory, canAccessMaDetails } from '../models/user.model';
 import { AuthService } from './auth.service';
+import { ListingAccessService } from './listing-access.service';
 import { SupabaseService } from './supabase.service';
 
 // Colonnes anonymisées lisibles par tous ; le dossier complet passe par get_ma_listing_detail (Supabase).
@@ -206,8 +207,8 @@ export class MaService {
 
   async getListingDetail(listingId: string): Promise<MaListingData | undefined> {
     if (!this.supabase.isConfigured) {
-      // Mode démo : même règle que Supabase (acheteur avec accès ou admin).
-      const allowed = (canAccessMaDetails(this.auth.currentUser()?.profileType) && this.auth.hasMaAccess()) || this.auth.isAdmin();
+      // Mode démo : même règle que Supabase (acheteur avec accès et demande acceptée, ou admin).
+      const allowed = (canAccessMaDetails(this.auth.currentUser()?.profileType) && this.auth.hasMaAccess() && ListingAccessService.demoApproved(listingId)) || this.auth.isAdmin();
       return allowed ? findMaListingById(listingId) : undefined;
     }
 
@@ -254,6 +255,53 @@ export class MaService {
       .maybeSingle();
 
     return error || !data ? null : (data as SupabaseMaListingRow);
+  }
+
+  // Annonce complète de son propriétaire, pour la modifier (get_my_ma_listings renvoie toutes les colonnes).
+  async getMyListingRow(listingId: string): Promise<SupabaseMaListingRow | null> {
+    if (!this.supabase.isConfigured) {
+      return null;
+    }
+
+    const { data, error } = await this.supabase.client.rpc('get_my_ma_listings');
+    const rows = error ? [] : ((data ?? []) as SupabaseMaListingRow[]);
+    return rows.find(row => row.id === listingId) ?? null;
+  }
+
+  // Modification par le propriétaire : l'annonce repasse en relecture (trigger enforce_ma_listing_moderation).
+  async updateListing(listingId: string, data: Omit<MaListing, 'id' | 'createdAt' | 'ownerId' | 'status'> & { publicSummary?: string; enrichment?: ListingEnrichment }): Promise<boolean> {
+    if (!this.supabase.isConfigured) {
+      return true;
+    }
+
+    const { error } = await this.supabase.client
+      .from('ma_listings')
+      .update({
+        sector: data.sector,
+        region: data.region,
+        type: data.type,
+        revenue: data.revenue,
+        margin: data.margin,
+        age: data.age,
+        price_min: data.priceMin,
+        price_max: data.priceMax,
+        public_summary: (data.publicSummary ?? data.description).slice(0, 220),
+        sale_reason: data.saleReason,
+        confidential_description: data.description,
+        contact_info: data.contactInfo,
+        revenue_year: data.enrichment?.revenueYear ?? null,
+        revenue_history: data.enrichment?.revenueHistory ?? [],
+        included_assets: data.enrichment?.includedAssets ?? [],
+        monthly_visitors: data.enrichment?.monthlyVisitors ?? null,
+        acquisition_channels: data.enrichment?.acquisitionChannels ?? [],
+        team_size: data.enrichment?.teamSize ?? null,
+        owner_hours_per_week: data.enrichment?.ownerHoursPerWeek ?? null,
+        growth_notes: data.enrichment?.growthNotes || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', listingId);
+
+    return !error;
   }
 
   async createListing(data: Omit<MaListing, 'id' | 'createdAt'> & { publicSummary?: string; enrichment?: ListingEnrichment }): Promise<string> {

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MarketplaceProfile } from '../../core/data/mock-platform.data';
 import { isTalentMarketplaceRole } from '../../core/models/user.model';
+import { FEATURES } from '../../core/config/features';
 import { AuthService } from '../../core/services/auth.service';
 import { MaService } from '../../core/services/ma.service';
 import { MatchingService } from '../../core/services/matching.service';
@@ -275,6 +276,7 @@ interface QuickActionItem {
             </div>
 
             <div class="col-span-3 space-y-6">
+              @if (showAssistant) {
               <div class="animate-fade-in-up delay-200 rounded-2xl border border-accent/20 bg-secondary p-6">
                 <div class="mb-4 flex items-center gap-2">
                   <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary">
@@ -319,6 +321,7 @@ interface QuickActionItem {
                   }
                 </div>
               </div>
+              }
 
               <div class="animate-fade-in-up delay-300 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6">
                 <h3 class="mb-4 text-lg font-semibold">Statistiques</h3>
@@ -405,11 +408,12 @@ export class DashboardComponent {
   readonly profileType = computed(() => this.currentUser()?.profileType);
   readonly usesTalentMarketplace = computed(() => isTalentMarketplaceRole(this.profileType()));
   // PRO concerne la marketplace Talents & Associés ; acheteurs et vendeurs ont leur offre M&A.
-  readonly showProUpsell = computed(() => this.usesTalentMarketplace() && this.planLabel() === 'FREE');
+  readonly showProUpsell = computed(() => FEATURES.associates && this.usesTalentMarketplace() && this.planLabel() === 'FREE');
+  readonly showAssistant = FEATURES.assistant;
 
   readonly sidebarItems = computed<SidebarItem[]>(() => [
     { id: 'accueil', label: 'Accueil', icon: 'home', path: '/dashboard', badge: null },
-    ...(this.usesTalentMarketplace()
+    ...(FEATURES.associates && this.usesTalentMarketplace()
       ? [{ id: 'recherche', label: 'Recherche', icon: 'search' as const, path: '/recherche', badge: null }]
       : []),
     { id: 'profil', label: 'Mon profil', icon: 'user', path: this.ownProfilePath(), badge: null },
@@ -418,7 +422,7 @@ export class DashboardComponent {
     ...(this.profileType() === 'seller' || this.profileType() === 'pro'
       ? [{ id: 'statistiques', label: 'Mes statistiques', icon: 'ma' as const, path: '/ma/statistiques', badge: null }]
       : []),
-    { id: 'assistant', label: 'Assistant IA', icon: 'sparkles', path: '/coaching-ia', badge: null },
+    ...(FEATURES.assistant ? [{ id: 'assistant', label: 'Assistant IA', icon: 'sparkles' as const, path: '/coaching-ia', badge: null }] : []),
     { id: 'abonnement', label: 'Abonnement', icon: 'credit-card', path: '/tarifs', badge: null },
     { id: 'parametres', label: 'Paramètres', icon: 'settings', path: '/parametres', badge: null },
     ...(this.auth.isAdmin()

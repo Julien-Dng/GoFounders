@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 
 export type ModerationFilter = 'to_review' | 'active' | 'withdrawn' | 'all';
-export type ModerationAction = 'approve' | 'withdraw' | 'restore';
+export type ModerationAction = 'approve' | 'reject' | 'withdraw' | 'restore';
 
 export interface ModeratedListing {
   id: string;
@@ -83,7 +83,8 @@ export class ModerationService {
     }
 
     const messages: Record<ModerationAction, string> = {
-      approve: 'Annonce marquée comme relue.',
+      approve: 'Annonce publiée, le vendeur est prévenu.',
+      reject: 'Annonce refusée, le vendeur reçoit le motif.',
       withdraw: 'Annonce retirée, le vendeur est prévenu.',
       restore: 'Annonce remise en ligne, le vendeur est prévenu.',
     };

@@ -19,9 +19,9 @@ import { ModeratedListing, ModerationAction, ModerationFilter, ModerationService
           <p class="mt-4 text-muted-foreground">Page réservée aux administrateurs.</p>
         } @else {
           <p class="mt-2 max-w-3xl text-sm text-muted-foreground">
-            Les annonces sont en ligne dès leur publication. Vérifiez qu'elles sont sérieuses et bien anonymisées
-            (pas de nom d'entreprise, d'adresse ou de coordonnées dans le résumé public). Un retrait masque l'annonce
-            et envoie le motif au vendeur.
+            Une nouvelle annonce (ou une annonce modifiée) reste invisible jusqu'à votre relecture : délai annoncé aux vendeurs,
+            24 h ouvrées. Vérifiez qu'elle est sérieuse et bien anonymisée (pas de nom d'entreprise, d'adresse ou de coordonnées
+            dans le résumé public), puis publiez-la ou refusez-la avec un motif, envoyé au vendeur.
           </p>
 
           <div class="mt-6 flex flex-wrap gap-2" role="tablist" aria-label="Filtrer les annonces">
@@ -97,7 +97,7 @@ import { ModeratedListing, ModerationAction, ModerationFilter, ModerationService
                     }
                   </div>
 
-                  <label class="mb-1 mt-5 block text-sm font-semibold" [attr.for]="'note-' + listing.id">Motif envoyé au vendeur (obligatoire pour un retrait)</label>
+                  <label class="mb-1 mt-5 block text-sm font-semibold" [attr.for]="'note-' + listing.id">Motif envoyé au vendeur (obligatoire pour un refus ou un retrait)</label>
                   <input
                     [id]="'note-' + listing.id"
                     type="text"
@@ -108,10 +108,10 @@ import { ModeratedListing, ModerationAction, ModerationFilter, ModerationService
                     class="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-accent"
                   >
                   <div class="mt-3 flex flex-wrap gap-2">
-                    @if (listing.status === 'active') {
-                      @if (!listing.reviewed_at) {
-                        <button type="button" (click)="act(listing, 'approve')" [disabled]="busy()" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50">Marquer comme relue</button>
-                      }
+                    @if (listing.status === 'active' && !listing.reviewed_at) {
+                      <button type="button" (click)="act(listing, 'approve')" [disabled]="busy()" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50">Publier l'annonce</button>
+                      <button type="button" (click)="act(listing, 'reject')" [disabled]="busy() || (notes()[listing.id] ?? '').trim().length < 5" class="rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:border-destructive hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50">Refuser (motif obligatoire)</button>
+                    } @else if (listing.status === 'active') {
                       <button type="button" (click)="act(listing, 'withdraw')" [disabled]="busy() || (notes()[listing.id] ?? '').trim().length < 5" class="rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:border-destructive hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50">Retirer l'annonce</button>
                     } @else {
                       <button type="button" (click)="act(listing, 'restore')" [disabled]="busy()" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50">Remettre en ligne</button>
@@ -179,14 +179,14 @@ export class AdminAnnoncesComponent implements OnInit {
 
   statusLabel(listing: ModeratedListing): string {
     if (listing.withdrawn_by_admin) {
-      return 'Retirée par la modération';
+      return 'Refusée ou retirée par la modération';
     }
 
     if (listing.status !== 'active') {
       return listing.status === 'sold' ? 'Vendue' : 'Retirée par le vendeur';
     }
 
-    return listing.reviewed_at ? 'En ligne · relue' : 'En ligne · à relire';
+    return listing.reviewed_at ? 'En ligne' : 'En attente de relecture (invisible du public)';
   }
 
   statusClass(listing: ModeratedListing): string {

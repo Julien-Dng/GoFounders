@@ -8,6 +8,8 @@ import { AiService, MaListingAnalysis } from '../../../core/services/ai.service'
 import { AuthService } from '../../../core/services/auth.service';
 import { StatsService } from '../../../core/services/stats.service';
 import { OFFER_PRICES } from '../../../core/config/offers';
+import { MA_NDA_VERSION, maNdaArticles } from '../../../core/legal/nda';
+import { ListingAccessService, MyAccessRequest } from '../../../core/services/listing-access.service';
 import { FEATURES } from '../../../core/config/features';
 import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../../../core/ma/listing-metrics';
 import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsset, labelOf, lastGrowth, revenueSeries } from '../../../core/ma/listing-options';
@@ -171,7 +173,12 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
                           </li>
                         }
                       </ul>
-                      @if (cta()) {
+                      @if (canRequest()) {
+                        <p class="mt-4 text-base font-semibold" [class]="requestStatusCss()">{{ requestStatusText() }}</p>
+                        @if (!myRequest()) {
+                          <button type="button" (click)="scrollToRequest()" class="mt-4 block w-full rounded-lg border border-primary px-5 py-3 text-center font-semibold text-primary transition-colors hover:bg-primary hover:text-white">Demander l'accès au dossier</button>
+                        }
+                      } @else if (cta()) {
                         <a [routerLink]="cta()!.link" [queryParams]="cta()!.params" [fragment]="cta()!.fragment" class="mt-5 block rounded border border-primary px-5 py-3 text-center font-medium text-primary transition-colors hover:bg-primary hover:text-white">{{ cta()!.label }}</a>
                       } @else {
                         <p class="mt-4 text-base text-muted-foreground">{{ lockedMessage() }}</p>
@@ -179,6 +186,44 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
                     </div>
                   </div>
                 </section>
+
+                @if (canRequest() && !myRequest()) {
+                  <section id="demande-acces" class="mt-8 scroll-mt-24 rounded-xl bg-secondary p-6" aria-labelledby="request-title">
+                    <h2 id="request-title" class="text-2xl text-primary">Demander l'accès au dossier</h2>
+                    <p class="mt-2 text-base text-muted-foreground">
+                      Le cédant reçoit votre présentation et décide de vous ouvrir son dossier. Vous êtes prévenu de sa réponse.
+                    </p>
+                    <label for="request-message" class="mb-1.5 mt-5 block font-semibold text-primary">Présentez-vous et votre projet de reprise</label>
+                    <textarea id="request-message" rows="5" maxlength="1500" [value]="requestMessage()" (input)="requestMessage.set($any($event.target).value)" class="w-full resize-y rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" placeholder="Parcours, budget et financement envisagés, pourquoi cette entreprise vous intéresse, délai souhaité."></textarea>
+                    <p class="mt-1 text-sm text-muted-foreground">20 caractères minimum. Le cédant voit aussi votre nom et votre profil repreneur.</p>
+
+                    <details class="mt-5 rounded-lg bg-white p-4 ring-1 ring-border" [open]="ndaOpen()" (toggle)="ndaOpen.set($any($event.target).open)">
+                      <summary class="cursor-pointer font-semibold text-primary">Lire l'engagement de confidentialité</summary>
+                      <div class="mt-3 max-h-80 space-y-4 overflow-y-auto pr-2 text-sm leading-relaxed text-foreground/85">
+                        @for (article of ndaArticles(); track article.title) {
+                          <div>
+                            <h3 class="font-semibold text-primary">{{ article.title }}</h3>
+                            @for (paragraph of article.paragraphs; track $index) {
+                              <p class="mt-1">{{ paragraph }}</p>
+                            }
+                          </div>
+                        }
+                        <p class="text-muted-foreground">Version {{ ndaVersion }}. GoFounders n'est pas partie à cet engagement et n'assure pas de conseil juridique.</p>
+                      </div>
+                    </details>
+                    <label class="mt-4 flex cursor-pointer items-start gap-3">
+                      <input type="checkbox" [checked]="ndaAccepted()" (change)="ndaAccepted.set($any($event.target).checked)" class="mt-1 h-5 w-5 flex-shrink-0 accent-[#1D4ED8]">
+                      <span class="text-base text-foreground/85">J'ai lu et j'accepte l'engagement de confidentialité envers le cédant de cette entreprise.</span>
+                    </label>
+
+                    @if (requestError()) {
+                      <p class="mt-4 rounded-lg bg-red-50 px-4 py-3 text-base text-red-800" role="alert">{{ requestError() }}</p>
+                    }
+                    <button type="button" (click)="sendRequest()" [disabled]="requestBusy() || !ndaAccepted() || requestMessage().trim().length < 20" class="mt-5 rounded-lg bg-accent px-6 py-3.5 font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50">
+                      {{ requestBusy() ? 'Envoi…' : 'Envoyer ma demande' }}
+                    </button>
+                  </section>
+                }
               }
 
               <section class="mt-10 border-t border-border pt-8" aria-labelledby="next-title">
@@ -269,6 +314,13 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
                       <p class="mt-1 whitespace-pre-line break-words text-base font-medium text-primary">{{ item.contactInfo }}</p>
                     </div>
                   }
+                } @else if (canRequest()) {
+                  <div class="mt-5 border-t border-border pt-5">
+                    <p class="text-base font-semibold" [class]="requestStatusCss()">{{ requestStatusText() }}</p>
+                    @if (!myRequest()) {
+                      <button type="button" (click)="scrollToRequest()" class="mt-4 block w-full rounded-lg bg-accent px-5 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90">Demander l'accès au dossier</button>
+                    }
+                  </div>
                 } @else if (!hasDossier()) {
                   <div class="mt-5 border-t border-border pt-5">
                     <p class="text-base text-foreground/85">{{ lockedMessage() }}</p>
@@ -295,7 +347,7 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
             </aside>
           </div>
 
-          @if (canContact() || cta()) {
+          @if (canContact() || cta() || (canRequest() && !myRequest())) {
             <div class="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-4 border-t border-border bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
               <div class="min-w-0">
                 <p class="text-sm text-muted-foreground">Prix demandé</p>
@@ -303,6 +355,8 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
               </div>
               @if (canContact()) {
                 <a [routerLink]="'/messages'" [queryParams]="{ conversation: item.ownerId }" class="flex-shrink-0 rounded bg-accent px-5 py-3 font-medium text-white">Contacter</a>
+              } @else if (canRequest() && !myRequest()) {
+                <button type="button" (click)="scrollToRequest()" class="flex-shrink-0 rounded bg-accent px-5 py-3 font-medium text-white">Demander l'accès</button>
               } @else if (cta()) {
                 <a [routerLink]="cta()!.link" [queryParams]="cta()!.params" [fragment]="cta()!.fragment" class="flex-shrink-0 rounded bg-accent px-5 py-3 font-medium text-white">{{ cta()!.short }}</a>
               }
@@ -324,6 +378,7 @@ export class MaDetailComponent implements OnInit {
   private readonly ai = inject(AiService);
   private readonly auth = inject(AuthService);
   private readonly stats = inject(StatsService);
+  private readonly access = inject(ListingAccessService);
   private readonly loadedListing = signal<MaListingData | undefined>(undefined);
 
   private readonly listingId = toSignal(
@@ -435,7 +490,7 @@ export class MaDetailComponent implements OnInit {
     }
 
     if (role === 'buyer') {
-      return `L'accès repreneur (${this.accessLabel}) ouvre tous les dossiers et le contact direct des cédants.`;
+      return `Avec l'accès repreneur (${this.accessLabel}), demandez ce dossier : le cédant vous l'ouvre s'il accepte votre demande.`;
     }
 
     return 'Le dossier complet est réservé aux comptes repreneur.';
@@ -449,20 +504,86 @@ export class MaDetailComponent implements OnInit {
       return { label: 'Créer un compte repreneur', short: 'Créer un compte', link: '/inscription', params: { profil: 'buyer', returnUrl: this.currentUrl() }, fragment: undefined };
     }
 
-    if (this.isBuyer()) {
-      return { label: "Prendre l'accès repreneur", short: "Prendre l'accès", link: '/tarifs', params: null, fragment: 'ma-access' };
+    if (this.isBuyer() && !this.auth.hasMaAccess()) {
+      return { label: "Prendre l'accès repreneur", short: "Prendre l'accès", link: '/tarifs', params: null, fragment: 'repreneurs' };
     }
 
     return null;
   });
   readonly steps = [
-    { title: 'Contactez le cédant', text: "Présentez-vous et votre projet de reprise dans la messagerie. Le nom de l'entreprise vous est communiqué si le cédant donne suite." },
+    { title: 'Demandez l’accès au dossier', text: "Présentez-vous et acceptez l'engagement de confidentialité. Si le cédant accepte, vous lisez son dossier et vous échangez dans la messagerie ; le nom de l'entreprise vous est communiqué s'il donne suite." },
     { title: 'Demandez les justificatifs', text: "Bilans des trois derniers exercices, relevés de chiffre d'affaires, accès en lecture aux outils (analytics, paiements, comptabilité)." },
     { title: 'Faites-vous accompagner', text: "Un expert-comptable et un avocat vérifient le dossier avant toute lettre d'intention. GoFounders n'intervient pas dans la négociation." },
   ];
 
   // Analyse de dossier par l'IA : réservée aux repreneurs (contrôle d'accès refait côté back).
   readonly isBuyer = computed(() => this.auth.currentUser()?.profileType === 'buyer');
+
+  // Demande d'accès au dossier (repreneur avec accès en cours) et engagement de confidentialité.
+  readonly myRequest = signal<MyAccessRequest | null>(null);
+  readonly requestMessage = signal('');
+  readonly ndaAccepted = signal(false);
+  readonly ndaOpen = signal(false);
+  readonly requestBusy = signal(false);
+  readonly requestError = signal('');
+  readonly ndaVersion = MA_NDA_VERSION;
+  readonly canRequest = computed(() => this.isBuyer() && this.auth.hasMaAccess() && !this.hasDossier() && !this.isOwner() && !!this.listing());
+  readonly ndaArticles = computed(() => {
+    const listing = this.listing();
+    return maNdaArticles({
+      buyerName: this.auth.currentUser()?.displayName || 'le Repreneur',
+      listingLabel: listing ? `${listing.sector}, ${listing.region}` : 'cette annonce',
+    });
+  });
+  readonly requestStatusText = computed(() => {
+    const request = this.myRequest();
+
+    if (!request) {
+      return 'Demandez l’accès : le cédant décide de vous ouvrir son dossier.';
+    }
+
+    if (request.status === 'refused') {
+      return 'Le cédant n’a pas donné suite à votre demande.';
+    }
+
+    return `Demande envoyée le ${new Date(request.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} : le cédant vous répond depuis son espace, vous serez prévenu.`;
+  });
+  readonly requestStatusCss = computed(() =>
+    !this.myRequest() ? 'text-foreground/85' : this.myRequest()!.status === 'refused' ? 'text-muted-foreground' : 'text-accent'
+  );
+
+  scrollToRequest(): void {
+    document.getElementById('demande-acces')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async sendRequest(): Promise<void> {
+    const listing = this.listing();
+
+    if (!listing || this.requestBusy()) {
+      return;
+    }
+
+    this.requestBusy.set(true);
+    this.requestError.set('');
+
+    try {
+      const result = await this.access.requestAccess(listing.id, this.requestMessage().trim());
+
+      if (!result.success) {
+        this.requestError.set(result.message);
+        return;
+      }
+
+      if (result.status === 'approved') {
+        await this.loadListing();
+        return;
+      }
+
+      this.myRequest.set({ status: 'pending', created_at: new Date().toISOString(), decided_at: null });
+    } finally {
+      this.requestBusy.set(false);
+    }
+  }
   readonly analysis = signal<MaListingAnalysis | null>(null);
   readonly analysing = signal(false);
   readonly analysisError = signal('');
@@ -510,6 +631,10 @@ export class MaDetailComponent implements OnInit {
     this.hasDossier.set(!!dossier);
     this.loadedListing.set(listing);
     this.loaded.set(true);
+
+    if (listing && !dossier && this.isBuyer() && this.auth.hasMaAccess()) {
+      this.myRequest.set(await this.access.getMyRequest(id));
+    }
 
     // Vue de la page pour tous ; consultation du dossier seulement quand il a réellement été ouvert.
     if (listing) {

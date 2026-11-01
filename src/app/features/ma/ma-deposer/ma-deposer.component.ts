@@ -25,8 +25,8 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
     <div class="min-h-screen bg-secondary pb-12 pt-20">
       <div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         <div class="mb-10 text-center">
-          <h1 class="mb-2 text-4xl">Déposer une annonce</h1>
-          <p class="text-muted-foreground">Publication gratuite pendant le lancement. Votre annonce reste anonymisée.</p>
+          <h1 class="mb-2 text-4xl">{{ editingId() ? 'Modifier mon annonce' : 'Déposer une annonce' }}</h1>
+          <p class="text-muted-foreground">{{ editingId() ? 'Après modification, votre annonce repasse en relecture avant d’être de nouveau visible (en général sous 24 h ouvrées).' : 'Publication gratuite pendant le lancement. Votre annonce reste anonymisée et elle est relue par notre équipe avant sa mise en ligne.' }}</p>
         </div>
 
         <div class="mb-8">
@@ -339,9 +339,10 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                     <polyline points="22 4 12 14.01 9 11.01"/>
                   </svg>
                 </div>
-                <h2 class="mb-3 text-3xl font-semibold">Annonce publiée</h2>
+                <h2 class="mb-3 text-3xl font-semibold">{{ editingId() ? 'Modifications enregistrées' : 'Annonce envoyée' }}</h2>
                 <p class="mx-auto mb-8 max-w-xl leading-relaxed text-muted-foreground">
-                  Votre annonce est en ligne, anonymisée, dans la liste des entreprises à reprendre. Notre équipe la relit dans les prochains jours.
+                  Notre équipe relit votre annonce avant {{ editingId() ? 'de la remettre en ligne' : 'sa mise en ligne' }}, en général sous 24 h ouvrées :
+                  nous vérifions qu'elle est sérieuse et qu'elle ne permet pas de vous reconnaître. Vous serez prévenu dès qu'elle sera visible.
                 </p>
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
                   <a routerLink="/dashboard" class="rounded-lg bg-accent px-6 py-3 font-semibold text-white transition-colors hover:bg-accent/90">
@@ -451,10 +452,57 @@ export class MaDeposerComponent {
     this.age.set(params.get('anciennete') ?? '');
     this.priceMin.set(this.formatEuros(amount('prixMin')));
     this.priceMax.set(this.formatEuros(amount('prixMax')));
+
+    const editing = params.get('modifier');
+    if (editing) {
+      this.editingId.set(editing);
+      void this.loadForEdit(editing);
+    }
   }
 
   readonly progressPercent = computed(() => Math.round((this.currentStep() / this.totalSteps) * 100));
-  readonly finalActionLabel = computed(() => (this.isSubmitting() ? 'Publication…' : 'Publier gratuitement'));
+  readonly finalActionLabel = computed(() =>
+    this.isSubmitting() ? 'Envoi…' : this.editingId() ? 'Enregistrer les modifications' : 'Envoyer pour publication (gratuit)'
+  );
+
+  // Modification d'une annonce existante (/ma/deposer?modifier=<id>), réservée à son propriétaire.
+  readonly editingId = signal<string | null>(null);
+  private editingContact = '';
+
+  private async loadForEdit(listingId: string): Promise<void> {
+    const row = await this.maService.getMyListingRow(listingId);
+
+    if (!row) {
+      this.editingId.set(null);
+      return;
+    }
+
+    this.editingContact = row.contact_info ?? '';
+    this.sector.set(row.sector);
+    this.region.set(row.region);
+    this.listingType.set(row.type);
+    this.teaser.set(row.public_summary ?? '');
+    this.details.set(row.confidential_description ?? '');
+    this.saleReason.set(row.sale_reason ?? '');
+    this.revenue.set(this.formatEuros(row.revenue));
+    this.margin.set(row.margin === null ? '' : `${row.margin} %`);
+    this.age.set(row.age === null ? '' : `${row.age} ans`);
+    this.priceMin.set(this.formatEuros(row.price_min));
+    this.priceMax.set(this.formatEuros(row.price_max));
+
+    if (row.revenue_year && this.yearOptions.includes(row.revenue_year)) {
+      this.revenueYear.set(row.revenue_year);
+    }
+
+    const history = row.revenue_history ?? [];
+    this.history.set(this.historyYears().map(year => this.formatEuros(history.find(point => point.year === year)?.revenue ?? null)));
+    this.teamSize.set(row.team_size === null || row.team_size === undefined ? '' : String(row.team_size));
+    this.ownerHours.set(row.owner_hours_per_week === null || row.owner_hours_per_week === undefined ? '' : String(row.owner_hours_per_week));
+    this.monthlyVisitors.set(row.monthly_visitors === null || row.monthly_visitors === undefined ? '' : String(row.monthly_visitors));
+    this.includedAssets.set(row.included_assets ?? []);
+    this.channels.set(row.acquisition_channels ?? []);
+    this.growthNotes.set(row.growth_notes ?? '');
+  }
 
   nextStep(): void {
     this.currentStep.update(step => Math.min(step + 1, this.totalSteps));
@@ -491,8 +539,8 @@ export class MaDeposerComponent {
     this.isSubmitting.set(true);
 
     try {
-      const listingId = await this.maService.createListing({
-        ownerId: user.uid,
+      const editing = this.editingId();
+      const payload = {
         sector: this.sector().trim() || 'Secteur à préciser',
         region: this.region().trim() || 'France',
         type: this.listingType(),
@@ -504,8 +552,7 @@ export class MaDeposerComponent {
         saleReason: this.saleReason().trim() || 'Cession à qualifier avec le repreneur.',
         description: this.buildDescription(),
         publicSummary: this.teaser().trim() || undefined,
-        contactInfo: user.email,
-        status: 'active',
+        contactInfo: this.editingContact || user.email,
         enrichment: {
           revenueYear: this.revenue().trim() ? this.revenueYear() : null,
           revenueHistory: this.historyPoints(),
@@ -516,10 +563,18 @@ export class MaDeposerComponent {
           ownerHoursPerWeek: this.optionalInteger(this.ownerHours(), 100),
           growthNotes: this.growthNotes().trim(),
         },
-      });
+      };
 
-      if (listingId) {
-        this.createdListingId.set(listingId);
+      if (editing) {
+        if (await this.maService.updateListing(editing, payload)) {
+          this.createdListingId.set(editing);
+        }
+      } else {
+        const listingId = await this.maService.createListing({ ...payload, ownerId: user.uid, status: 'active' });
+
+        if (listingId) {
+          this.createdListingId.set(listingId);
+        }
       }
 
       this.checkoutRequested.set(true);
