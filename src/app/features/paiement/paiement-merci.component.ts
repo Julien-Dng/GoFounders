@@ -11,7 +11,7 @@ import { AuthService } from '../../core/services/auth.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-secondary px-4 pb-16 pt-28 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-[40rem] rounded-xl border border-border bg-white p-8 text-center">
+      <div class="mx-auto max-w-[40rem] rounded-xl bg-white shadow-lg ring-1 ring-border p-8 text-center">
         @if (checking()) {
           <h1 class="text-3xl text-primary">Paiement reçu, activation en cours…</h1>
           <p class="mt-3 text-base text-muted-foreground">Nous attendons la confirmation de Stripe. Cela prend en général quelques secondes.</p>
@@ -21,8 +21,8 @@ import { AuthService } from '../../core/services/auth.service';
             Votre offre est active. Un reçu vous a été envoyé par e-mail par Stripe. Vous retrouvez vos factures dans « Mon abonnement ».
           </p>
           <div class="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-            <a routerLink="/dashboard" class="rounded bg-primary px-5 py-3 font-medium text-white transition-colors hover:bg-primary/90">Aller au tableau de bord</a>
-            <a routerLink="/ma" class="rounded border border-primary px-5 py-3 font-medium text-primary transition-colors hover:bg-primary hover:text-white">Voir les annonces</a>
+            <a routerLink="/dashboard" class="rounded-lg bg-primary px-5 py-3 font-medium text-white transition-colors hover:bg-primary/90">Aller au tableau de bord</a>
+            <a routerLink="/ma" class="rounded-lg border border-primary px-5 py-3 font-medium text-primary transition-colors hover:bg-primary hover:text-white">Voir les annonces</a>
           </div>
           <p class="mt-6 text-sm text-muted-foreground">Votre offre n'apparaît pas encore ? Rechargez la page dans une minute ou écrivez-nous.</p>
         }

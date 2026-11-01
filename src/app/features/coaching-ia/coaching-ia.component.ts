@@ -118,7 +118,7 @@ const ACTION_LINKS: Record<AiAction, ChatAction> = {
           </div>
 
           <div class="xl:col-span-9">
-            <div class="flex h-[calc(100vh-240px)] min-h-[38rem] flex-col rounded-2xl border border-border bg-white">
+            <div class="flex h-[calc(100vh-240px)] min-h-[38rem] flex-col rounded-2xl bg-white shadow-lg ring-1 ring-border">
               <div class="flex-1 overflow-y-auto p-6 sm:p-8">
                 <div class="space-y-6">
                   @if (chatHistory().length === 0) {

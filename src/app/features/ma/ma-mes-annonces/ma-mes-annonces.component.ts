@@ -24,7 +24,7 @@ import { PaymentService } from '../../../core/services/payment.service';
           <div class="flex flex-wrap gap-2">
             <a routerLink="/ma/statistiques" class="rounded-lg border border-border bg-white px-5 py-3 text-center text-sm font-semibold transition-colors hover:border-amber-500">Mes statistiques</a>
             @if (canPublish()) {
-              <a routerLink="/ma/deposer" class="rounded-lg bg-amber-500 px-5 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-amber-600">Déposer une annonce</a>
+              <a routerLink="/ma/deposer" class="rounded-lg bg-accent px-5 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-accent/90">Déposer une annonce</a>
             }
           </div>
         </div>
@@ -42,13 +42,13 @@ import { PaymentService } from '../../../core/services/payment.service';
         } @else if (isLoading()) {
           <p class="text-muted-foreground">Chargement…</p>
         } @else if (listings().length === 0) {
-          <div class="rounded-2xl border border-border bg-white p-10 text-center">
+          <div class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-10 text-center">
             <p class="text-muted-foreground">Vous n'avez pas encore d'annonce.</p>
           </div>
         } @else {
           <ul class="space-y-6">
             @for (listing of listings(); track listing.id) {
-              <li class="rounded-2xl border border-border bg-white p-6">
+              <li class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-6">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <div class="flex flex-wrap items-center gap-2">
@@ -76,7 +76,7 @@ import { PaymentService } from '../../../core/services/payment.service';
                     <p class="mt-1 text-sm text-muted-foreground">Votre annonce en tête de liste avec le badge « En vedette ».</p>
                     <div class="mt-3 flex flex-wrap gap-2">
                       <button type="button" (click)="buy('FEATURE_7D', listing)" [disabled]="busy()" class="rounded-lg border border-border bg-white px-3 py-2 text-sm font-semibold transition-colors hover:border-amber-500 disabled:opacity-50">7 jours · {{ prices.FEATURE_7D.amount }} €</button>
-                      <button type="button" (click)="buy('FEATURE_30D', listing)" [disabled]="busy()" class="rounded-lg bg-amber-500 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-amber-600 disabled:opacity-50">30 jours · {{ prices.FEATURE_30D.amount }} €</button>
+                      <button type="button" (click)="buy('FEATURE_30D', listing)" [disabled]="busy()" class="rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent/90 disabled:opacity-50">30 jours · {{ prices.FEATURE_30D.amount }} €</button>
                     </div>
                   </div>
 

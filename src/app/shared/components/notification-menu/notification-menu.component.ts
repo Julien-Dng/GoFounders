@@ -43,7 +43,7 @@ import { NotificationService } from '../../../core/services/notification.service
 
       @if (isMenuOpen()) {
         <div
-          class="absolute right-0 z-50 mt-3 w-80 overflow-hidden rounded-2xl border border-border bg-white shadow-2xl"
+          class="absolute right-0 z-50 mt-3 w-80 overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border shadow-2xl"
           role="menu"
           (click)="$event.stopPropagation()"
         >

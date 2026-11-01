@@ -50,7 +50,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
           </div>
         </div>
 
-        <div class="mb-6 rounded-lg border border-border bg-white p-5 sm:p-6">
+        <div class="mb-6 rounded-lg bg-white shadow-lg ring-1 ring-border p-5 sm:p-6">
           <h2 class="text-2xl text-primary">Un profil complet inspire plus vite confiance</h2>
           <p class="mt-2 max-w-2xl text-base leading-relaxed text-muted-foreground">
             Ajoutez une photo nette, une bio concrète et quelques liens utiles. L'objectif n'est pas de faire long, mais de donner assez de signaux pour déclencher une conversation qualifiée.
@@ -58,7 +58,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
         </div>
 
         <div class="grid gap-6 xl:grid-cols-[340px_minmax(0,1fr)]">
-          <aside class="self-start rounded-3xl border border-border bg-white p-6">
+          <aside class="self-start rounded-3xl bg-white shadow-lg ring-1 ring-border p-6">
             <div class="text-center">
               <div class="mx-auto mb-4 h-32 w-32 overflow-hidden rounded-3xl border border-border bg-primary">
                 @if (previewPhoto()) {
@@ -108,7 +108,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
 
           </aside>
 
-          <section class="rounded-3xl border border-border bg-white p-6 sm:p-8">
+          <section class="rounded-3xl bg-white shadow-lg ring-1 ring-border p-6 sm:p-8">
             <div [formGroup]="profileForm" class="space-y-8">
               <div>
                 <h2 class="text-xl font-semibold text-primary">Informations principales</h2>
@@ -463,7 +463,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                 </div>
 
                 @if (projectId()) {
-                  <div id="demandes-acces" class="rounded-2xl border border-border bg-white p-5 sm:p-6">
+                  <div id="demandes-acces" class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-5 sm:p-6">
                     <h2 class="text-xl font-semibold text-primary">Demandes d'accès à la partie confidentielle</h2>
                     <p class="mt-1 text-sm text-muted-foreground">Acceptez les associés avec qui vous voulez aller plus loin. Vous pouvez retirer un accès à tout moment.</p>
 

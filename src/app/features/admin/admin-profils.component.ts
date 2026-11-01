@@ -29,11 +29,11 @@ import { PendingProfileVerification, VerificationService } from '../../core/serv
           }
 
           @if (requests().length === 0) {
-            <div class="mt-6 rounded-2xl border border-border bg-white p-10 text-center text-muted-foreground">Aucune demande en attente.</div>
+            <div class="mt-6 rounded-2xl bg-white shadow-lg ring-1 ring-border p-10 text-center text-muted-foreground">Aucune demande en attente.</div>
           } @else {
             <ul class="mt-6 space-y-6">
               @for (request of requests(); track request.id) {
-                <li class="rounded-2xl border border-border bg-white p-6">
+                <li class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-6">
                   <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <h2 class="font-semibold">{{ request.display_name }}</h2>

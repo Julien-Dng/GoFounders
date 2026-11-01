@@ -23,7 +23,7 @@ export interface ProfileCardData {
   imports: [RouterLink, CompatibilityBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="bg-card rounded-2xl border border-border p-6 transition-all  duration-200 flex flex-col gap-4">
+    <div class="bg-card rounded-2xl p-6 shadow-lg ring-1 ring-border transition-all duration-200 flex flex-col gap-4">
       <div class="flex items-start justify-between">
         <div class="flex items-center gap-3">
           <div class="relative flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-primary font-semibold text-white">

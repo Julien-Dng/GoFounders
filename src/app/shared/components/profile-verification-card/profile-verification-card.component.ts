@@ -8,7 +8,7 @@ import { ProfileVerificationRequest, VerificationService } from '../../../core/s
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <section class="rounded-3xl border border-border bg-white p-6 sm:p-8" aria-labelledby="verification-title">
+    <section class="rounded-3xl bg-white shadow-lg ring-1 ring-border p-6 sm:p-8" aria-labelledby="verification-title">
       <div class="flex items-start gap-3">
         <span class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent" aria-hidden="true">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

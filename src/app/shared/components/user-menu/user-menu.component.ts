@@ -39,7 +39,7 @@ import { AuthService } from '../../../core/services/auth.service';
 
       @if (isMenuOpen()) {
         <div
-          class="absolute right-0 top-full z-[120] mt-3 w-64 overflow-hidden rounded-2xl border border-border bg-white shadow-2xl"
+          class="absolute right-0 top-full z-[120] mt-3 w-64 overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border shadow-2xl"
           role="menu"
           (click)="$event.stopPropagation()"
         >
@@ -177,7 +177,7 @@ import { AuthService } from '../../../core/services/auth.service';
         (click)="cancelLogout()"
       >
         <div
-          class="w-full max-w-md rounded-3xl border border-border bg-white p-7 shadow-2xl"
+          class="w-full max-w-md rounded-3xl bg-white shadow-lg ring-1 ring-border p-7 shadow-2xl"
           (click)="$event.stopPropagation()"
         >
           <div class="mb-5 flex items-center gap-3">

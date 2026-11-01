@@ -29,9 +29,9 @@ const RANGES: Array<[number, string]> = [
         @if (isLoading()) {
           <p class="mt-6 text-muted-foreground">Chargement…</p>
         } @else if (!listing()) {
-          <div class="mt-6 rounded-2xl border border-border bg-white p-10 text-center text-muted-foreground">Annonce introuvable.</div>
+          <div class="mt-6 rounded-2xl bg-white shadow-lg ring-1 ring-border p-10 text-center text-muted-foreground">Annonce introuvable.</div>
         } @else if (existing()) {
-          <div class="mt-6 rounded-2xl border border-border bg-white p-6">
+          <div class="mt-6 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6">
             <p class="font-semibold">{{ listing()!.sector }} · {{ listing()!.region }}</p>
             <p class="mt-2 text-sm text-foreground/80">{{ statusLabel(existing()!) }}</p>
             @if (existing()!.admin_note && existing()!.status === 'rejected') {
@@ -47,7 +47,7 @@ const RANGES: Array<[number, string]> = [
             Votre témoignage aide les prochains cédants et repreneurs à faire confiance à la plateforme.
           </p>
 
-          <section class="mt-6 rounded-2xl border border-border bg-white p-6">
+          <section class="mt-6 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6">
             <label class="block text-sm font-semibold" for="sale-price">Prix de vente final (€)</label>
             <input id="sale-price" type="number" min="1" step="1000" inputmode="numeric" [value]="salePrice() ?? ''" (input)="onPrice($event)" class="mt-1 w-full rounded-lg border border-border px-3 py-2.5 text-sm outline-none focus:border-accent" placeholder="Ex. 180000">
 
@@ -87,7 +87,7 @@ const RANGES: Array<[number, string]> = [
               <p class="mt-4 text-sm text-destructive" role="alert">{{ message() }}</p>
             }
 
-            <button type="button" (click)="submit()" [disabled]="!canSubmit() || busy()" class="mt-5 w-full rounded-lg bg-amber-500 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-50">
+            <button type="button" (click)="submit()" [disabled]="!canSubmit() || busy()" class="mt-5 w-full rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50">
               Déclarer la vente
             </button>
           </section>

@@ -45,11 +45,11 @@ import { ModeratedListing, ModerationAction, ModerationFilter, ModerationService
           @if (isLoading()) {
             <p class="mt-6 text-muted-foreground">Chargement…</p>
           } @else if (listings().length === 0) {
-            <div class="mt-6 rounded-2xl border border-border bg-white p-10 text-center text-muted-foreground">Aucune annonce dans cette liste.</div>
+            <div class="mt-6 rounded-2xl bg-white shadow-lg ring-1 ring-border p-10 text-center text-muted-foreground">Aucune annonce dans cette liste.</div>
           } @else {
             <ul class="mt-6 space-y-6">
               @for (listing of listings(); track listing.id) {
-                <li class="rounded-2xl border border-border bg-white p-6">
+                <li class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-6">
                   <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <div class="flex flex-wrap items-center gap-2">

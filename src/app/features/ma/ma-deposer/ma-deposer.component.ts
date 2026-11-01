@@ -24,18 +24,18 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
             <span class="text-sm font-semibold text-amber-600">{{ progressPercent() }}%</span>
           </div>
           <div class="h-2 overflow-hidden rounded-full bg-muted">
-            <div class="h-full rounded-full bg-amber-500 transition-all duration-300" [style.width]="progressPercent() + '%'"></div>
+            <div class="h-full rounded-full bg-accent transition-all duration-300" [style.width]="progressPercent() + '%'"></div>
           </div>
         </div>
 
-        <div class="rounded-2xl border border-border bg-white p-6 sm:p-10">
+        <div class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-6 sm:p-10">
           @if (!canPublish()) {
             <div class="text-center">
               <h2 class="mb-2 text-2xl font-semibold">Compte pro requis</h2>
               <p class="mx-auto mb-6 max-w-xl text-muted-foreground">
                 Pour publier des annonces pour vos clients et contacter les repreneurs, activez un compte pro.
               </p>
-              <a routerLink="/tarifs" fragment="pros" class="rounded-lg bg-amber-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-amber-600">Voir les offres professionnelles</a>
+              <a routerLink="/tarifs" fragment="pros" class="rounded-lg bg-accent px-6 py-3 font-semibold text-white transition-colors hover:bg-accent/90">Voir les offres professionnelles</a>
             </div>
           } @else if (!checkoutRequested()) {
             <div class="space-y-8">
@@ -209,11 +209,11 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
                 </button>
 
                 @if (currentStep() < totalSteps) {
-                  <button type="button" (click)="nextStep()" class="rounded-lg bg-amber-500 px-5 py-3 font-semibold text-white transition-colors hover:bg-amber-600">
+                  <button type="button" (click)="nextStep()" class="rounded-lg bg-accent px-5 py-3 font-semibold text-white transition-colors hover:bg-accent/90">
                     Continuer
                   </button>
                 } @else {
-                  <button type="button" (click)="submitListing()" [disabled]="isSubmitting()" class="rounded-lg bg-amber-500 px-5 py-3 font-semibold text-white transition-colors hover:bg-amber-600 disabled:cursor-wait disabled:opacity-60">
+                  <button type="button" (click)="submitListing()" [disabled]="isSubmitting()" class="rounded-lg bg-accent px-5 py-3 font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-wait disabled:opacity-60">
                     {{ finalActionLabel() }}
                   </button>
                 }
@@ -233,7 +233,7 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
                   Votre annonce a bien été enregistrée dans Supabase. Elle apparaît maintenant dans la marketplace M&A.
                 </p>
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
-                  <a routerLink="/dashboard" class="rounded-lg bg-amber-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-amber-600">
+                  <a routerLink="/dashboard" class="rounded-lg bg-accent px-6 py-3 font-semibold text-white transition-colors hover:bg-accent/90">
                     Mon tableau de bord
                   </a>
                   <a routerLink="/ma/mes-annonces" class="rounded-lg border border-border px-6 py-3 font-semibold transition-colors hover:border-amber-500">
@@ -252,7 +252,7 @@ import { AiService, MaListingDraft } from '../../../core/services/ai.service';
                   Votre annonce n'a pas pu être enregistrée. Vérifiez votre connexion puis réessayez.
                 </p>
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
-                  <button type="button" (click)="checkoutRequested.set(false)" class="rounded-lg bg-amber-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-amber-600">
+                  <button type="button" (click)="checkoutRequested.set(false)" class="rounded-lg bg-accent px-6 py-3 font-semibold text-white transition-colors hover:bg-accent/90">
                     Revenir à mon annonce
                   </button>
                 </div>

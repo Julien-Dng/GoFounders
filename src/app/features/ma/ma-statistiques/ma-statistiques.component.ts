@@ -34,7 +34,7 @@ const EMPTY_STATS: SellerStats = { listings: [], daily: [], contacts: { contacts
         </div>
 
         @if (!isLoading() && proStats(); as pro) {
-          <section class="mb-6 rounded-2xl border border-border bg-white p-6" aria-labelledby="pro-stats-title">
+          <section class="mb-6 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6" aria-labelledby="pro-stats-title">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-baseline sm:justify-between">
               <h2 id="pro-stats-title" class="text-lg font-semibold">Votre fiche dans l'annuaire</h2>
               @if (!pro.is_listed) {
@@ -64,15 +64,15 @@ const EMPTY_STATS: SellerStats = { listings: [], daily: [], contacts: { contacts
         @if (isLoading()) {
           <p class="text-muted-foreground">Chargement…</p>
         } @else if (stats().listings.length === 0) {
-          <div class="rounded-2xl border border-border bg-white p-10 text-center">
+          <div class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-10 text-center">
             <p class="text-muted-foreground">Vous n'avez pas encore d'annonce.</p>
             <p class="mt-1 text-sm text-muted-foreground">Contacts reçus sur {{ days() }} jours : {{ stats().contacts.contacts_period }} ({{ stats().contacts.contacts_total }} au total).</p>
-            <a routerLink="/ma/deposer" class="mt-4 inline-block rounded-lg bg-amber-500 px-5 py-3 text-sm font-semibold text-white hover:bg-amber-600">Déposer une annonce</a>
+            <a routerLink="/ma/deposer" class="mt-4 inline-block rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-white hover:bg-accent/90">Déposer une annonce</a>
           </div>
         } @else {
           <div class="grid gap-4 sm:grid-cols-3">
             @for (tile of tiles(); track tile.label) {
-              <div class="rounded-2xl border border-border bg-white p-5">
+              <div class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-5">
                 <div class="text-sm font-semibold text-muted-foreground">{{ tile.label }}</div>
                 <div class="mt-2 text-4xl font-semibold text-primary">{{ tile.value }}</div>
                 <div class="mt-1 text-sm text-muted-foreground">{{ tile.detail }}</div>
@@ -80,7 +80,7 @@ const EMPTY_STATS: SellerStats = { listings: [], daily: [], contacts: { contacts
             }
           </div>
 
-          <section class="mt-6 rounded-2xl border border-border bg-white p-6" aria-labelledby="chart-title">
+          <section class="mt-6 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6" aria-labelledby="chart-title">
             <div class="flex items-baseline justify-between gap-3">
               <h2 id="chart-title" class="text-lg font-semibold">Vues de vos annonces par jour</h2>
               <span class="h-5 text-sm text-foreground/80" aria-live="polite">{{ hoveredLabel() }}</span>
@@ -136,7 +136,7 @@ const EMPTY_STATS: SellerStats = { listings: [], daily: [], contacts: { contacts
             </details>
           </section>
 
-          <section class="mt-6 rounded-2xl border border-border bg-white p-6">
+          <section class="mt-6 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6">
             <h2 class="text-lg font-semibold">Détail par annonce</h2>
             <div class="mt-4 overflow-x-auto">
               <table class="w-full min-w-[620px] text-left text-sm">

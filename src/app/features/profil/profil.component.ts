@@ -20,7 +20,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
   template: `
     @if (isUnavailable()) {
       <div class="flex min-h-screen items-center justify-center bg-secondary px-4 pt-20">
-        <div class="max-w-md rounded-2xl border border-border bg-white p-8 text-center" role="alert">
+        <div class="max-w-md rounded-2xl bg-white shadow-lg ring-1 ring-border p-8 text-center" role="alert">
           <h1 class="mb-3 text-2xl font-semibold text-primary">Ce profil n'est pas accessible</h1>
           <p class="mb-6 text-sm leading-relaxed text-muted-foreground">
             Il n'existe pas, ou il ne correspond pas à votre type de compte : les porteurs de projet voient les associés,
@@ -36,7 +36,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
         <div class="relative z-10 mx-auto -mt-12 max-w-[78rem] px-4 pb-12 sm:-mt-16 sm:px-6 lg:-mt-20 lg:px-8">
           <div class="grid grid-cols-1 gap-8 xl:grid-cols-12">
             <div class="xl:col-span-8">
-              <div class="mb-6 rounded-2xl border border-border bg-white p-6 sm:p-8">
+              <div class="mb-6 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6 sm:p-8">
                 <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
                   <div class="relative lg:-mt-1">
                     <div class="h-28 w-28 overflow-hidden rounded-2xl bg-primary text-3xl font-semibold text-white sm:h-32 sm:w-32 sm:text-4xl">
@@ -60,9 +60,9 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
 
                   <div class="flex-1 pt-2">
                     <div class="mb-3">
-                      <div class="mb-2 flex flex-col gap-3 sm:flex-row sm:items-center">
-                        <h1 class="text-3xl font-semibold">{{ profileName() }}</h1>
-                        <span class="inline-flex rounded-full bg-primary px-3 py-1 text-sm font-semibold text-white">{{ profileRole() }}</span>
+                      <div class="mb-2 flex flex-wrap items-center gap-x-3 gap-y-2">
+                        <h1 class="text-3xl">{{ profileName() }}</h1>
+                        <span class="inline-flex whitespace-nowrap rounded-full bg-primary px-3 py-1 text-sm font-semibold text-white">{{ profileRole() }}</span>
                       </div>
                       <div class="mb-3 flex items-center gap-2 text-muted-foreground">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -142,7 +142,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                 </div>
               </div>
 
-              <div class="mb-6 rounded-2xl border border-border bg-white">
+              <div class="mb-6 rounded-2xl bg-white shadow-lg ring-1 ring-border">
                 <div class="border-b border-border px-2">
                   <div class="flex flex-wrap gap-1">
                     @for (tab of tabs; track tab.id) {
@@ -265,7 +265,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
             </div>
 
             <div class="space-y-6 xl:col-span-4">
-              <div class="rounded-2xl border border-border bg-white p-6">
+              <div class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-6">
                 <h3 class="mb-4 text-lg font-semibold">Informations clés</h3>
                 <div class="space-y-4">
                   @for (info of quickInfo(); track info.label) {
@@ -291,7 +291,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
               }
 
               @if (socialLinks().length > 0) {
-                <div class="rounded-2xl border border-border bg-white p-6">
+                <div class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-6">
                   <h3 class="mb-4 text-lg font-semibold">Liens professionnels</h3>
                   <div class="space-y-3">
                     @for (link of socialLinks(); track link.label) {
@@ -373,7 +373,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                 <div class="relative overflow-hidden rounded-2xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-300/25 dark:from-amber-500/15 dark:to-orange-500/10">
                   <div class="relative z-10">
                     <div class="mb-4 flex items-center gap-3">
-                      <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500">
+                      <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-accent">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                         </svg>
@@ -383,7 +383,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                     <p class="mb-4 text-sm leading-relaxed text-foreground/80 dark:text-amber-100/85">
                       Accédez aux informations complètes en passant par un échange sécurisé et, si besoin, un cadre de confidentialité.
                     </p>
-                    <a routerLink="/messages" [queryParams]="{ conversation: profileId() }" class="flex w-full items-center justify-center gap-2 rounded-lg bg-amber-500 px-4 py-3 font-semibold text-white transition-colors hover:bg-amber-600">
+                    <a routerLink="/messages" [queryParams]="{ conversation: profileId() }" class="flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 font-semibold text-white transition-colors hover:bg-accent/90">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                         <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
@@ -392,7 +392,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                     </a>
                     <p class="mt-3 text-center text-sm text-muted-foreground dark:text-amber-100/70">Mise en relation avec des experts juridiques partenaires</p>
                   </div>
-                  <div class="absolute -right-16 -top-16 h-32 w-32 rounded-full bg-amber-500/10 dark:bg-amber-300/10"></div>
+                  <div class="absolute -right-16 -top-16 h-32 w-32 rounded-full bg-accent/10"></div>
                 </div>
               }
 

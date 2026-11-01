@@ -27,11 +27,11 @@ type SearchProfileType = ProfileType;
   imports: [NgClass, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-white px-4 pb-12 pt-24 sm:px-6 lg:px-8">
+    <div class="min-h-screen bg-secondary px-4 pb-12 pt-24 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-[1600px]">
         <div class="flex flex-col gap-8 xl:flex-row">
           <aside class="w-full xl:w-[280px] xl:flex-shrink-0">
-            <div class="sticky top-28 rounded-2xl bg-secondary p-6">
+            <div class="sticky top-28 rounded-2xl bg-white p-6 shadow-lg ring-1 ring-border">
               <div class="mb-6 rounded-2xl border border-accent/15 bg-accent/5 p-4">
                 <div class="mb-2 text-sm font-semibold text-accent">Visibilité</div>
                 <h2 class="mb-2 text-xl font-semibold text-primary">{{ audiencePanelTitle() }}</h2>
@@ -253,8 +253,8 @@ type SearchProfileType = ProfileType;
               @for (profile of filteredProfiles(); track profile.id; let profileIndex = $index) {
                 <div
                   #searchCard
-                  class="search-card-reveal flex min-h-[21.5rem] flex-col rounded-2xl border bg-white p-6 transition-all"
-                  [ngClass]="profile.featured ? 'border-accent/50' : 'border-border'"
+                  class="search-card-reveal flex min-h-[21.5rem] flex-col rounded-2xl bg-white p-6 shadow-lg ring-1 transition-all hover:shadow-xl"
+                  [ngClass]="profile.featured ? 'ring-accent/50' : 'ring-border'"
                   [style.--reveal-delay]="revealDelay(profileIndex)"
                 >
                   <div class="mb-4 flex items-start justify-between">
@@ -321,8 +321,8 @@ type SearchProfileType = ProfileType;
                     }
                   </div>
 
-                  <div class="mt-auto flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div class="flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1.5 text-accent" [title]="canSeeReasons() ? (profile.matchReasons ?? []).join(' · ') : reasonsUpsell">
+                  <div class="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+                    <div class="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-accent/10 px-3 py-1.5 text-accent" [title]="canSeeReasons() ? (profile.matchReasons ?? []).join(' · ') : reasonsUpsell">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
                       </svg>
@@ -330,7 +330,7 @@ type SearchProfileType = ProfileType;
                     </div>
                     <a
                       [routerLink]="['/profil', profile.id]"
-                      class="flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90"
+                      class="flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90"
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
@@ -340,7 +340,7 @@ type SearchProfileType = ProfileType;
                   </div>
                 </div>
               } @empty {
-                <div class="rounded-2xl border border-border bg-secondary p-12 text-center text-muted-foreground md:col-span-2 xl:col-span-3">
+                <div class="rounded-2xl bg-white p-12 text-center shadow-lg text-muted-foreground md:col-span-2 xl:col-span-3">
                   Aucun résultat avec ces filtres pour le moment.
                 </div>
               }

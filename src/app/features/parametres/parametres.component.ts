@@ -28,7 +28,7 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
 
         <div class="space-y-4 animate-fade-in-up delay-100">
           <!-- COMPTE -->
-          <section class="rounded-2xl border border-border bg-white p-6" aria-labelledby="compte-titre">
+          <section class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-6" aria-labelledby="compte-titre">
             <h2 id="compte-titre" class="mb-4 text-lg font-semibold">Compte</h2>
 
             <div class="border-b border-border py-3">
@@ -87,7 +87,7 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
           </section>
 
           <!-- CONFIDENTIALITÉ -->
-          <section class="rounded-2xl border border-border bg-white p-6" aria-labelledby="confidentialite-titre">
+          <section class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-6" aria-labelledby="confidentialite-titre">
             <h2 id="confidentialite-titre" class="mb-4 text-lg font-semibold">Confidentialité</h2>
             <div class="flex items-start justify-between gap-4">
               <div>

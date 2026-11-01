@@ -27,7 +27,7 @@ import { ConversationMessage, findConversationById, findMarketplaceProfileById }
           </div>
         </div>
 
-        <div class="flex h-[calc(100vh-220px)] flex-col rounded-2xl border border-border bg-white">
+        <div class="flex h-[calc(100vh-220px)] flex-col rounded-2xl bg-white shadow-lg ring-1 ring-border">
           <div class="flex-1 overflow-y-auto p-6">
             @if (currentMessages().length > 0) {
               <div class="space-y-4">

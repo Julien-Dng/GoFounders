@@ -56,7 +56,7 @@ export interface MaCardData {
         <span class="text-lg font-semibold text-amber-600">{{ card.priceRange }}</span>
         <a
           [routerLink]="['/ma/annonce', card.id]"
-          class="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 transition-colors"
+          class="px-4 py-2 bg-accent text-white rounded-lg text-sm font-semibold hover:bg-accent/90 transition-colors"
         >
           Voir l'annonce
         </a>

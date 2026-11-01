@@ -36,7 +36,7 @@ interface ConversationPreview {
       <div class="mx-auto flex h-full w-full max-w-[1500px]">
 
       <!-- ZONE DE CHAT -->
-      <div class="flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-white">
+      <div class="flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border">
 
         <!-- Top bar : infos conversation -->
         <div class="flex flex-shrink-0 items-center gap-3 border-b border-border bg-white px-4 py-3">
@@ -167,7 +167,7 @@ interface ConversationPreview {
 
       <div class="ml-3 flex w-72 flex-shrink-0 gap-3 xl:w-[37rem]">
         <!-- MINI PROFIL -->
-        <aside class="order-2 hidden h-full w-72 flex-shrink-0 overflow-hidden rounded-2xl border border-border bg-white xl:block">
+        <aside class="order-2 hidden h-full w-72 flex-shrink-0 overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border xl:block">
           @if (selectedConv()) {
             <div class="h-20 bg-primary" aria-hidden="true"></div>
 
@@ -225,7 +225,7 @@ interface ConversationPreview {
         </aside>
 
         <!-- LISTE DES CONVERSATIONS -->
-        <aside class="order-1 flex min-h-0 w-72 flex-shrink-0 flex-col overflow-hidden rounded-2xl border border-border bg-white">
+        <aside class="order-1 flex min-h-0 w-72 flex-shrink-0 flex-col overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border">
 
         <div class="border-b border-border px-4 py-4">
           <h2 class="text-lg font-semibold">Messages</h2>

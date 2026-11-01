@@ -32,7 +32,7 @@ import { PaymentService } from '../../core/services/payment.service';
                 PRO : contacts illimités, raisons détaillées de chaque score de compatibilité et assistant IA personnel. 49 € par mois, sans engagement.
               </p>
             </div>
-            <button type="button" (click)="activatePlan('PRO')" class="w-full rounded bg-primary px-5 py-3 font-medium text-white transition-colors hover:bg-primary/90">
+            <button type="button" (click)="activatePlan('PRO')" class="w-full rounded-lg bg-primary px-5 py-3 font-medium text-white transition-colors hover:bg-primary/90">
               {{ isSimulation ? 'Activer PRO (paiement simulé)' : 'Passer en PRO' }}
             </button>
           </section>
@@ -46,11 +46,11 @@ import { PaymentService } from '../../core/services/payment.service';
               </p>
             </div>
             @if (isSimulation) {
-              <button type="button" (click)="activatePlan('PREMIUM')" class="w-full rounded border border-primary px-5 py-3 font-medium text-primary transition-colors hover:bg-primary hover:text-white">
+              <button type="button" (click)="activatePlan('PREMIUM')" class="w-full rounded-lg border border-primary px-5 py-3 font-medium text-primary transition-colors hover:bg-primary hover:text-white">
                 Activer PREMIUM (paiement simulé)
               </button>
             } @else {
-              <a href="mailto:support@gofounders.fr?subject=Accompagnement%20PREMIUM" class="block w-full rounded border border-primary px-5 py-3 text-center font-medium text-primary transition-colors hover:bg-primary hover:text-white">
+              <a href="mailto:support@gofounders.fr?subject=Accompagnement%20PREMIUM" class="block w-full rounded-lg border border-primary px-5 py-3 text-center font-medium text-primary transition-colors hover:bg-primary hover:text-white">
                 Demander un premier échange gratuit
               </a>
             }
@@ -63,28 +63,28 @@ import { PaymentService } from '../../core/services/payment.service';
               <p class="mt-2 max-w-[60ch] text-base leading-relaxed text-muted-foreground">{{ maDescription() }}</p>
             </div>
             @if (isBuyer()) {
-              <button type="button" (click)="activateMaAccess()" [disabled]="hasMaAccess()" class="w-full rounded bg-primary px-5 py-3 font-medium text-white transition-colors hover:bg-primary/90 disabled:cursor-default disabled:bg-emerald-700">
+              <button type="button" (click)="activateMaAccess()" [disabled]="hasMaAccess()" class="w-full rounded-lg bg-primary px-5 py-3 font-medium text-white transition-colors hover:bg-primary/90 disabled:cursor-default disabled:bg-emerald-700">
                 {{ hasMaAccess() ? 'Accès actif jusqu’au ' + maAccessEnd() : isSimulation ? "Activer l'accès repreneur (paiement simulé)" : "Payer l'accès repreneur" }}
               </button>
             } @else if (isSeller()) {
-              <a routerLink="/ma/deposer" class="block w-full rounded bg-primary px-5 py-3 text-center font-medium text-white transition-colors hover:bg-primary/90">Publier mon annonce</a>
+              <a routerLink="/ma/deposer" class="block w-full rounded-lg bg-primary px-5 py-3 text-center font-medium text-white transition-colors hover:bg-primary/90">Publier mon annonce</a>
             } @else {
-              <a routerLink="/ma" class="block w-full rounded border border-primary px-5 py-3 text-center font-medium text-primary transition-colors hover:bg-primary hover:text-white">Voir les annonces</a>
+              <a routerLink="/ma" class="block w-full rounded-lg border border-primary px-5 py-3 text-center font-medium text-primary transition-colors hover:bg-primary hover:text-white">Voir les annonces</a>
             }
           </section>
         </div>
 
         @if (!isSimulation) {
-          <div class="mt-6 flex flex-col gap-3 rounded-lg border border-border bg-white p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div class="mt-6 flex flex-col gap-3 rounded-lg bg-white shadow-lg ring-1 ring-border p-5 sm:flex-row sm:items-center sm:justify-between">
             <p class="text-base text-muted-foreground">Moyens de paiement, factures, résiliation : tout se gère dans l'espace sécurisé de Stripe.</p>
-            <button type="button" (click)="openPortal()" class="flex-shrink-0 rounded border border-primary px-5 py-2.5 font-medium text-primary transition-colors hover:bg-primary hover:text-white">Gérer mes abonnements et factures</button>
+            <button type="button" (click)="openPortal()" class="flex-shrink-0 rounded-lg border border-primary px-5 py-2.5 font-medium text-primary transition-colors hover:bg-primary hover:text-white">Gérer mes abonnements et factures</button>
           </div>
         }
 
         @if (isSimulation) {
-        <div class="mt-6 rounded-lg border border-border bg-white p-5 text-sm text-muted-foreground">
-          <strong class="text-primary">Note projet :</strong>
-          les boutons ci-dessus simulent l'état après paiement. Le branchement Stripe réel viendra ensuite via Checkout + webhook.
+        <div class="mt-6 rounded-lg bg-white shadow-lg ring-1 ring-border p-5 text-sm text-muted-foreground">
+          <strong class="text-primary">Mode démonstration :</strong>
+          les boutons ci-dessus simulent l'état après paiement. Le paiement réel par Stripe s'active avec paymentMode: 'stripe' (voir backend/README.md).
         </div>
         }
 

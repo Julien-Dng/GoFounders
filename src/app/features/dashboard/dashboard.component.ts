@@ -180,7 +180,7 @@ interface QuickActionItem {
         <div class="p-8">
           <div class="grid grid-cols-12 gap-6">
             <div class="col-span-3 space-y-6">
-              <div class="animate-fade-in-up rounded-2xl border border-border bg-white p-6">
+              <div class="animate-fade-in-up rounded-2xl bg-white shadow-lg ring-1 ring-border p-6">
                 <h3 class="mb-4 text-lg font-semibold">Mon profil</h3>
                 <div class="mb-4">
                   <div class="mb-2 flex items-center justify-between">
@@ -213,7 +213,7 @@ interface QuickActionItem {
             </div>
 
             <div class="col-span-6 space-y-6">
-              <div class="animate-fade-in-up delay-100 rounded-2xl border border-border bg-white p-6">
+              <div class="animate-fade-in-up delay-100 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6">
                 <div class="mb-6 flex items-center justify-between">
                   <div class="flex items-center gap-2">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -248,7 +248,7 @@ interface QuickActionItem {
                 </div>
               </div>
 
-              <div class="animate-fade-in-up delay-200 rounded-2xl border border-border bg-white p-6">
+              <div class="animate-fade-in-up delay-200 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6">
                 <h2 class="mb-6 text-xl font-semibold">Activité récente</h2>
                 <div class="space-y-4">
                   @for (activity of activities(); track activity.id) {
@@ -320,7 +320,7 @@ interface QuickActionItem {
                 </div>
               </div>
 
-              <div class="animate-fade-in-up delay-300 rounded-2xl border border-border bg-white p-6">
+              <div class="animate-fade-in-up delay-300 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6">
                 <h3 class="mb-4 text-lg font-semibold">Statistiques</h3>
                 <div class="space-y-4">
                   @for (stat of stats(); track stat.label) {

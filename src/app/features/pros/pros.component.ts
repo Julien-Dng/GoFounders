@@ -29,7 +29,7 @@ import { StatsService } from '../../core/services/stats.service';
         </div>
 
         @if (entries().length === 0) {
-          <div class="rounded-2xl border border-border bg-white p-10 text-center text-muted-foreground">Aucun professionnel dans cette catégorie pour l'instant.</div>
+          <div class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-10 text-center text-muted-foreground">Aucun professionnel dans cette catégorie pour l'instant.</div>
         } @else {
           <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             @for (entry of entries(); track entry.id) {
@@ -79,7 +79,7 @@ import { StatsService } from '../../core/services/stats.service';
           </div>
         }
 
-        <div class="mt-12 rounded-2xl border border-border bg-white p-6 text-center">
+        <div class="mt-12 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6 text-center">
           <p class="font-semibold">Vous êtes un professionnel de la transmission ?</p>
           <a routerLink="/tarifs" fragment="pros" class="mt-2 inline-block text-sm font-semibold text-accent hover:underline">Apparaître dans l'annuaire</a>
         </div>
