@@ -207,7 +207,7 @@ interface LandingFaqItem {
             <p class="mt-5 font-bold text-primary">L'équipe GoFounders</p>
           </div>
           <figure class="h-full lg:col-span-5">
-            <img src="/assets/images/provisoire/fondateurs-ecran.jpg" alt="Deux associés travaillent ensemble devant un ordinateur" width="1400" height="933" loading="lazy" class="h-full max-h-[28rem] w-full object-cover lg:max-h-none">
+            <img src="/assets/images/provisoire/fondateurs-ecran.jpg" alt="Un fondateur travaille sur le site de son entreprise, sur deux écrans" width="1400" height="933" loading="lazy" class="h-full max-h-[28rem] w-full object-cover object-[15%_center] lg:max-h-none">
           </figure>
         </div>
       </section>

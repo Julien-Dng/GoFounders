@@ -6,7 +6,7 @@ Photos libres d'utilisation (licence Unsplash), choisies pour évoquer des activ
 
 | Fichier | Source Unsplash | Utilisation |
 |---|---|---|
-| fondateurs-ecran.jpg | photo-1531482615713-2afd69097998 | Accueil, section « Notre conviction » |
+| fondateurs-ecran.jpg | photo-1542744094-3a31f272c490 | Accueil, section « Notre conviction » |
 | repreneur-tableau-de-bord.jpg | photo-1556155092-490a1ba16284 | Accueil, carte Repreneurs |
 | cedant-echange.jpg | photo-1517245386807-bb43f82c33c4 | Accueil, carte Cédants |
 | equipe-ordinateurs.jpg | photo-1522071820081-009f0129c71c | Accueil, carte Associés (module masqué au lancement) |
