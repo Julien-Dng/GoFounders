@@ -474,7 +474,7 @@ export class TarifsComponent {
     ['Nouveaux contacts par mois', 'Porteurs de projet : 3. Associés : illimités', 'Illimités', 'Illimités'],
     ['Réponses dans vos conversations', 'Illimitées', 'Illimitées', 'Illimitées'],
     ['Score de compatibilité', '✓', '✓', '✓'],
-    ['Matching intelligent (raisons détaillées)', '✗', '✓', '✓'],
+    ['Matching intelligent', '✗', '✓', '✓'],
     ['Assistant IA personnel', '✗', '✓', '✓'],
     ['Recherche avancée', '✗', '✓', '✓'],
     ['Projet mis en avant dans les résultats', '✗', '✓', '✓'],
