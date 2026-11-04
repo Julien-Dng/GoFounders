@@ -24,6 +24,8 @@ interface ConversationPreview {
   unread: number;
   profile?: MarketplaceProfile;
   messages: ConversationMessage[];
+  // Brouillon : conversation pas encore créée, elle ne l'est qu'à l'envoi du premier message.
+  draft?: boolean;
 }
 
 @Component({
@@ -44,10 +46,11 @@ interface ConversationPreview {
             <app-avatar class="h-9 w-9 text-sm" [photoUrl]="selectedConv()!.profile?.photoURL" [initials]="selectedConv()!.initials" [name]="selectedConv()!.name" />
             <div class="flex-1 min-w-0">
               <div class="font-semibold text-sm">{{ selectedConv()!.name }}</div>
-              <div class="text-sm text-green-500 font-medium flex items-center gap-1">
-                <span class="w-1.5 h-1.5 bg-green-500 rounded-full inline-block"></span>
-                En ligne
-              </div>
+              @if (selectedConv()!.draft) {
+                <div class="text-sm text-muted-foreground">Nouvelle conversation : elle sera créée à l'envoi de votre premier message.</div>
+              } @else if (selectedProfile()?.title) {
+                <div class="truncate text-sm text-muted-foreground">{{ selectedProfile()!.title }}</div>
+              }
             </div>
           } @else {
             <span class="text-muted-foreground text-sm">Sélectionnez une conversation</span>
@@ -406,10 +409,34 @@ export class MessagesComponent implements OnInit {
 
   async sendMessage(): Promise<void> {
     const content = this.newMessage().trim();
-    const activeId = this.selectedConv()?.id;
+    const active = this.selectedConv();
+    const activeId = active?.id;
     const user = this.auth.currentUser();
 
     if (!content || !activeId || !user) {
+      return;
+    }
+
+    if (active?.draft) {
+      const createdId = await this.messagingService.ensureConversationWithProfile(user, active.participantProfileId);
+
+      if (!createdId) {
+        return;
+      }
+
+      const sent = await this.messagingService.sendThreadMessage(createdId, user.uid, content);
+
+      if (!sent) {
+        return;
+      }
+
+      this.newMessage.set('');
+      await this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { conversation: createdId },
+        queryParamsHandling: 'merge',
+      });
+      await this.loadConversations();
       return;
     }
 
@@ -460,24 +487,46 @@ export class MessagesComponent implements OnInit {
     let threads = await this.messagingService.getConversationThreads(user);
     let selectedConversationId = requestedConversationOrProfileId;
 
+    let draft: ConversationPreview | null = null;
+
     if (
       requestedConversationOrProfileId &&
       !threads.some(thread => thread.id === requestedConversationOrProfileId)
     ) {
-      const createdConversationId = await this.messagingService.ensureConversationWithProfile(user, requestedConversationOrProfileId);
+      // Ouvrir la messagerie depuis un profil ne crée rien : la conversation n'existe qu'au premier message envoyé.
+      const participantId = await this.messagingService.resolveConversationParticipantId(requestedConversationOrProfileId);
+      const existing = threads.find(thread => thread.participantProfileId === participantId);
 
-      if (createdConversationId) {
-        selectedConversationId = createdConversationId;
-        threads = await this.messagingService.getConversationThreads(user);
+      if (existing) {
+        selectedConversationId = existing.id;
         await this.router.navigate([], {
           relativeTo: this.route,
-          queryParams: { conversation: createdConversationId },
+          queryParams: { conversation: existing.id },
           queryParamsHandling: 'merge',
         });
+      } else if (participantId !== user.uid) {
+        const profile = await this.matchingService.getMarketplaceProfileById(participantId, false);
+
+        if (profile) {
+          draft = {
+            id: requestedConversationOrProfileId,
+            participantProfileId: participantId,
+            name: profile.displayName,
+            initials: profile.initials,
+            lastMessage: 'Nouvelle conversation',
+            time: '',
+            unread: 0,
+            profile,
+            messages: [],
+            draft: true,
+          };
+        } else {
+          selectedConversationId = null;
+        }
       }
     }
 
-    this.conversations.set(threads.map(thread => this.toPreview(thread)));
+    this.conversations.set([...(draft ? [draft] : []), ...threads.map(thread => this.toPreview(thread))]);
     this.localMessages.set(threads.reduce<Record<string, ConversationMessage[]>>((messagesByConversation, thread) => {
       messagesByConversation[thread.id] = [...thread.messages];
       return messagesByConversation;
@@ -485,7 +534,9 @@ export class MessagesComponent implements OnInit {
 
     if (selectedConversationId) {
       this.selectedConversationId.set(selectedConversationId);
-      this.markConversationAsRead(selectedConversationId);
+      if (!draft) {
+        this.markConversationAsRead(selectedConversationId);
+      }
     }
   }
 
