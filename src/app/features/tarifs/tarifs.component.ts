@@ -65,7 +65,7 @@ interface Plan {
               <h2 [id]="group.id + '-title'" class="text-3xl text-primary sm:text-4xl">{{ group.title }}</h2>
               <p class="mt-3 text-lg leading-relaxed text-muted-foreground">{{ group.description }}</p>
             </div>
-            <div class="mx-auto mt-10 grid gap-6" [class]="group.offers.length >= 3 ? 'md:grid-cols-3' : 'max-w-4xl md:grid-cols-2'">
+            <div class="mx-auto mt-10 grid gap-6" [class]="group.offers.length >= 3 ? 'md:grid-cols-3' : group.offers.length === 2 ? 'max-w-4xl md:grid-cols-2' : 'max-w-md'">
               @for (offer of group.offers; track offer.title; let first = $first) {
                 <div class="flex flex-col rounded-2xl bg-white p-7 shadow-lg" [class]="first && group.offers.length > 1 ? 'ring-2 ring-accent' : 'ring-1 ring-border'">
                   <h3 class="text-lg font-bold text-primary">{{ offer.title }}</h3>
