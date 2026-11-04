@@ -207,7 +207,7 @@ interface LandingFaqItem {
             <p class="mt-5 font-bold text-primary">L'équipe GoFounders</p>
           </div>
           <figure class="h-full lg:col-span-5">
-            <img src="/assets/images/provisoire/fondateur-boutique.jpg" alt="Un commerçant derrière son comptoir, souriant, avec une cliente" width="1400" height="934" loading="lazy" class="h-full max-h-[28rem] w-full object-cover lg:max-h-none">
+            <img src="/assets/images/provisoire/fondateurs-ecran.jpg" alt="Deux associés travaillent ensemble devant un ordinateur" width="1400" height="933" loading="lazy" class="h-full max-h-[28rem] w-full object-cover lg:max-h-none">
           </figure>
         </div>
       </section>
@@ -302,7 +302,7 @@ interface LandingFaqItem {
 
       <section class="px-4 pb-16 sm:px-6 lg:px-8 lg:pb-24" aria-labelledby="sell-title">
         <div class="relative mx-auto max-w-[78rem] overflow-hidden rounded-3xl bg-primary px-6 py-14 text-white sm:px-12 lg:py-16">
-          <img src="/assets/images/provisoire/proprietaire-restaurant.jpg" alt="" aria-hidden="true" width="1400" height="933" loading="lazy" class="absolute inset-0 h-full w-full object-cover object-[center_20%]">
+          <img src="/assets/images/provisoire/bureau-vue-dessus.jpg" alt="" aria-hidden="true" width="1400" height="933" loading="lazy" class="absolute inset-0 h-full w-full object-cover">
           <div class="absolute inset-0" style="background: rgba(15, 27, 45, 0.86)" aria-hidden="true"></div>
           <div class="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
@@ -379,16 +379,16 @@ export class LandingComponent implements OnInit {
       description: 'Rachetez une activité qui a déjà des clients et un historique, au lieu de repartir de zéro.',
       href: '/ma',
       cta: 'Voir les annonces',
-      image: '/assets/images/provisoire/rendez-vous-repreneur.jpg',
-      imageAlt: 'Deux personnes en rendez-vous autour d’un ordinateur',
+      image: '/assets/images/provisoire/repreneur-tableau-de-bord.jpg',
+      imageAlt: 'Un repreneur étudie les indicateurs d’une activité en ligne sur son ordinateur',
     },
     {
       title: 'Cédants',
       description: 'Passez la main discrètement, à un repreneur qui a pris un accès payant et montré son sérieux.',
       href: '/ma/deposer',
       cta: 'Déposer une annonce',
-      image: '/assets/images/provisoire/cedant-cafe.jpg',
-      imageAlt: 'Le gérant d’un café sert un client au comptoir',
+      image: '/assets/images/provisoire/cedant-echange.jpg',
+      imageAlt: 'Un échange de travail autour d’un ordinateur portable',
     },
     {
       title: 'Associés',
@@ -396,8 +396,8 @@ export class LandingComponent implements OnInit {
       description: 'Trouvez un associé pour votre projet, ou rejoignez un projet qui a besoin de vos compétences.',
       href: '/associes',
       cta: 'Trouver un associé',
-      image: '/assets/images/provisoire/bureau-equipe.jpg',
-      imageAlt: 'Une équipe au travail dans un bureau lumineux',
+      image: '/assets/images/provisoire/equipe-ordinateurs.jpg',
+      imageAlt: 'Une petite équipe travaille sur ses ordinateurs',
     },
   ];
 
