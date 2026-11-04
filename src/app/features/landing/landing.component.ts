@@ -34,7 +34,7 @@ interface LandingFaqItem {
         <div class="relative mx-auto grid max-w-[78rem] gap-14 lg:grid-cols-12 lg:items-center">
           <div class="lg:col-span-6">
             <h1 class="max-w-[16ch] text-[2.6rem] leading-[1.08] text-white sm:text-[3.5rem] lg:text-[3.75rem]">
-              Reprenez une entreprise qui a déjà ses clients
+              Votre entreprise mérite le bon repreneur. Votre ambition, la bonne société.
             </h1>
             <p class="mt-6 max-w-[50ch] text-lg leading-relaxed text-white/70">
               SaaS, e-commerce, agences, sites de contenu : des entreprises françaises rentables, dont les fondateurs veulent passer la main.
