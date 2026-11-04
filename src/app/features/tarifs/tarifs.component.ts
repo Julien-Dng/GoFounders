@@ -53,7 +53,7 @@ interface Plan {
           </nav>
         </header>
 
-        @if (statusMessage()) {
+        @if (statusMessage() && !statusProduct()) {
           <div class="mx-auto mt-8 max-w-3xl rounded-xl border px-5 py-4 text-base" [class]="statusIsError() ? 'border-red-200 bg-red-50 text-red-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'" role="status">
             {{ statusMessage() }}
           </div>
@@ -87,6 +87,9 @@ interface Plan {
                         <button type="button" (click)="buy(offer.product)" [disabled]="busyProduct() === offer.product" class="w-full rounded-lg px-4 py-3 font-semibold text-white transition-colors disabled:cursor-wait disabled:opacity-60" [class]="first && group.offers.length > 1 ? 'bg-accent hover:bg-accent/90' : 'bg-primary hover:bg-primary/90'">
                           {{ busyProduct() === offer.product ? 'Activation…' : (offer.cta ?? 'Activer') }}
                         </button>
+                        @if (statusProduct() === offer.product && statusMessage()) {
+                          <p class="mt-3 text-sm font-medium" [class]="statusIsError() ? 'text-red-700' : 'text-emerald-700'" role="status">{{ statusMessage() }}</p>
+                        }
                       }
                     } @else if (offer.link) {
                       <a [routerLink]="offer.link.href" [fragment]="offer.link.fragment" class="block w-full rounded-lg bg-primary px-4 py-3 text-center font-semibold text-white transition-colors hover:bg-primary/90">{{ offer.link.label }}</a>
@@ -239,6 +242,7 @@ export class TarifsComponent {
   ];
 
   readonly busyProduct = signal<AccountProduct | null>(null);
+  readonly statusProduct = signal<AccountProduct | null>(null);
   readonly statusMessage = signal(
     this.route.snapshot.queryParamMap.get('paiement') === 'annule' ? 'Paiement annulé : aucun montant n’a été prélevé.' : ''
   );
@@ -376,6 +380,9 @@ export class TarifsComponent {
     }
 
     this.busyProduct.set(product);
+    // Le message s'affiche sous le bouton cliqué, sinon il resterait hors de vue en haut de page.
+    this.statusProduct.set(product);
+    this.statusMessage.set('');
 
     try {
       const result = await this.payment.purchase(product);

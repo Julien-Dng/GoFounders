@@ -6,6 +6,7 @@ import { MaListingData } from '../../../core/data/mock-platform.data';
 import { MaService } from '../../../core/services/ma.service';
 import { AiService, MaListingAnalysis } from '../../../core/services/ai.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { PaymentService } from '../../../core/services/payment.service';
 import { StatsService } from '../../../core/services/stats.service';
 import { OFFER_PRICES } from '../../../core/config/offers';
 import { MA_NDA_VERSION, maNdaArticles } from '../../../core/legal/nda';
@@ -179,7 +180,14 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
                           <button type="button" (click)="scrollToRequest()" class="mt-4 block w-full rounded-lg border border-primary px-5 py-3 text-center font-semibold text-primary transition-colors hover:bg-primary hover:text-white">Demander l'accès au dossier</button>
                         }
                       } @else if (cta()) {
-                        <a [routerLink]="cta()!.link" [queryParams]="cta()!.params" [fragment]="cta()!.fragment" class="mt-5 block rounded border border-primary px-5 py-3 text-center font-medium text-primary transition-colors hover:bg-primary hover:text-white">{{ cta()!.label }}</a>
+                        @if (cta()!.buy) {
+                          <button type="button" (click)="buyAccess()" [disabled]="buying()" class="mt-5 block w-full rounded border border-primary px-5 py-3 text-center font-medium text-primary transition-colors hover:bg-primary hover:text-white disabled:cursor-wait disabled:opacity-60">{{ buying() ? 'Ouverture du paiement…' : cta()!.label }}</button>
+                        @if (buyError()) {
+                          <p class="mt-3 text-sm font-medium text-red-700" role="alert">{{ buyError() }}</p>
+                        }
+                        } @else {
+                          <a [routerLink]="cta()!.link" [queryParams]="cta()!.params" [fragment]="cta()!.fragment" class="mt-5 block rounded border border-primary px-5 py-3 text-center font-medium text-primary transition-colors hover:bg-primary hover:text-white">{{ cta()!.label }}</a>
+                        }
                       } @else {
                         <p class="mt-4 text-base text-muted-foreground">{{ lockedMessage() }}</p>
                       }
@@ -325,7 +333,15 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
                   <div class="mt-5 border-t border-border pt-5">
                     <p class="text-base text-foreground/85">{{ lockedMessage() }}</p>
                     @if (cta(); as action) {
-                      <a [routerLink]="action.link" [queryParams]="action.params" [fragment]="action.fragment" class="mt-4 block rounded-lg bg-accent px-5 py-3.5 font-semibold text-center font-medium text-white transition-colors hover:bg-accent/90">{{ action.label }}</a>
+                      @if (action.buy) {
+                        <button type="button" (click)="buyAccess()" [disabled]="buying()" class="mt-4 block w-full rounded-lg bg-accent px-5 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-wait disabled:opacity-60">{{ buying() ? 'Ouverture du paiement…' : action.label }}</button>
+                        @if (buyError()) {
+                          <p class="mt-3 text-sm font-medium text-red-700" role="alert">{{ buyError() }}</p>
+                        }
+                        <a routerLink="/tarifs" fragment="repreneurs" class="mt-3 block text-center font-medium text-accent underline-offset-4 hover:underline">Ce que comprend l'accès</a>
+                      } @else {
+                        <a [routerLink]="action.link" [queryParams]="action.params" [fragment]="action.fragment" class="mt-4 block rounded-lg bg-accent px-5 py-3.5 font-semibold text-center font-medium text-white transition-colors hover:bg-accent/90">{{ action.label }}</a>
+                      }
                       @if (!isAuthenticated()) {
                         <a routerLink="/connexion" [queryParams]="{ returnUrl: currentUrl() }" class="mt-3 block text-center font-medium text-accent underline-offset-4 hover:underline">J'ai déjà un compte</a>
                       }
@@ -358,7 +374,11 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
               } @else if (canRequest() && !myRequest()) {
                 <button type="button" (click)="scrollToRequest()" class="flex-shrink-0 rounded bg-accent px-5 py-3 font-medium text-white">Demander l'accès</button>
               } @else if (cta()) {
-                <a [routerLink]="cta()!.link" [queryParams]="cta()!.params" [fragment]="cta()!.fragment" class="flex-shrink-0 rounded bg-accent px-5 py-3 font-medium text-white">{{ cta()!.short }}</a>
+                @if (cta()!.buy) {
+                  <button type="button" (click)="buyAccess()" [disabled]="buying()" class="flex-shrink-0 rounded bg-accent px-5 py-3 font-medium text-white disabled:opacity-60">{{ buying() ? 'Ouverture…' : cta()!.short }}</button>
+                } @else {
+                  <a [routerLink]="cta()!.link" [queryParams]="cta()!.params" [fragment]="cta()!.fragment" class="flex-shrink-0 rounded bg-accent px-5 py-3 font-medium text-white">{{ cta()!.short }}</a>
+                }
               }
             </div>
           }
@@ -377,6 +397,9 @@ export class MaDetailComponent implements OnInit {
   private readonly maService = inject(MaService);
   private readonly ai = inject(AiService);
   private readonly auth = inject(AuthService);
+  private readonly payment = inject(PaymentService);
+  readonly buying = signal(false);
+  readonly buyError = signal('');
   private readonly stats = inject(StatsService);
   private readonly access = inject(ListingAccessService);
   private readonly loadedListing = signal<MaListingData | undefined>(undefined);
@@ -501,11 +524,12 @@ export class MaDetailComponent implements OnInit {
     }
 
     if (!this.isAuthenticated()) {
-      return { label: 'Créer un compte repreneur', short: 'Créer un compte', link: '/inscription', params: { profil: 'buyer', returnUrl: this.currentUrl() }, fragment: undefined };
+      return { label: 'Créer un compte repreneur', short: 'Créer un compte', link: '/inscription', params: { profil: 'buyer', returnUrl: this.currentUrl() }, fragment: undefined, buy: false };
     }
 
     if (this.isBuyer() && !this.auth.hasMaAccess()) {
-      return { label: "Prendre l'accès repreneur", short: "Prendre l'accès", link: '/tarifs', params: null, fragment: 'repreneurs' };
+      // Le bouton lance directement le paiement (Stripe Checkout, ou paiement simulé en test).
+      return { label: "Prendre l'accès repreneur", short: "Prendre l'accès", link: '/tarifs', params: null, fragment: 'repreneurs', buy: true };
     }
 
     return null;
@@ -518,6 +542,22 @@ export class MaDetailComponent implements OnInit {
 
   // Analyse de dossier par l'IA : réservée aux repreneurs (contrôle d'accès refait côté back).
   readonly isBuyer = computed(() => this.auth.currentUser()?.profileType === 'buyer');
+
+  // Accès repreneur depuis la fiche : redirection vers le paiement, ou activation immédiate en paiement simulé.
+  async buyAccess(): Promise<void> {
+    this.buyError.set('');
+    this.buying.set(true);
+
+    try {
+      const result = await this.payment.purchase('MA_ACCESS');
+
+      if (!result.success) {
+        this.buyError.set(result.message);
+      }
+    } finally {
+      this.buying.set(false);
+    }
+  }
 
   // Demande d'accès au dossier (repreneur avec accès en cours) et engagement de confidentialité.
   readonly myRequest = signal<MyAccessRequest | null>(null);

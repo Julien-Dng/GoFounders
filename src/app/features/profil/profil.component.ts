@@ -186,7 +186,15 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                         <h3 class="mb-4 text-xl font-semibold">Ce que {{ isOwnProfile() ? 'je' : 'ce profil' }} recherche</h3>
                         <div class="flex flex-wrap gap-3">
                           @for (item of searchingFor(); track item) {
-                            <span class="rounded-lg border border-accent/20 bg-accent/10 px-4 py-2 font-semibold text-accent">{{ item }}</span>
+                            <span class="rounded-full bg-accent/10 px-3 py-1 text-sm font-semibold text-accent">{{ item }}</span>
+                          } @empty {
+                            <p class="text-sm text-muted-foreground">
+                              @if (isOwnProfile()) {
+                                Pas encore précisé. <a routerLink="/profil/modifier" class="font-semibold text-accent hover:underline">Indiquez ce que vous recherchez</a> pour être mieux mis en relation.
+                              } @else {
+                                Pas encore précisé.
+                              }
+                            </p>
                           }
                         </div>
                       </div>
@@ -610,8 +618,8 @@ export class ProfilComponent implements OnInit {
     this.isOwnProfile()
       ? (this.ownProject()?.lookingFor?.length
           ? this.ownProject()?.lookingFor ?? []
-          : (this.currentUser()?.lookingFor?.length ? this.currentUser()?.lookingFor ?? [] : ['Recherche à préciser']))
-      : (this.publicProfile()?.lookingFor ?? ['Échange qualifié'])
+          : (this.currentUser()?.lookingFor ?? []))
+      : (this.publicProfile()?.lookingFor ?? [])
   );
   readonly skills = computed(() =>
     this.isOwnProfile()

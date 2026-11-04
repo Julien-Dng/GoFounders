@@ -36,6 +36,11 @@ const STAGE_LABELS: Record<string, string> = {
           <div class="mt-8 flex flex-col gap-3 sm:flex-row">
             @if (canBrowseFull()) {
               <a routerLink="/recherche" class="rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90">Ouvrir la recherche complète</a>
+            } @else if (isAuthenticated()) {
+              <p class="max-w-[60ch] rounded-xl bg-white/10 px-5 py-4 text-base leading-relaxed text-white/85">
+                Votre compte actuel sert à la reprise d'entreprise. Pour chercher un associé ou rejoindre un projet,
+                créez un second compte, porteur de projet ou associé, avec une autre adresse e-mail.
+              </p>
             } @else {
               <a routerLink="/inscription" [queryParams]="{ profil: 'entrepreneur' }" class="rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90">Je cherche un associé</a>
               <a routerLink="/inscription" [queryParams]="{ profil: 'talent' }" class="rounded-lg border border-white/30 px-6 py-3.5 text-center font-semibold text-white transition-colors hover:border-white/70">Je veux devenir associé</a>
@@ -194,6 +199,7 @@ export class AssociesComponent implements OnInit {
   readonly projects = computed(() => this.entries().filter(entry => entry.kind === 'project'));
   readonly visible = computed(() => (this.tab() === 'talent' ? this.talents() : this.projects()));
   readonly canBrowseFull = computed(() => isTalentMarketplaceRole(this.auth.currentUser()?.profileType));
+  readonly isAuthenticated = this.auth.isAuthenticated;
 
   readonly topSkills = computed(() => {
     const counts = new Map<string, number>();

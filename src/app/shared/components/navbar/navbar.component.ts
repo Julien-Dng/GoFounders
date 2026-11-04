@@ -281,10 +281,8 @@ export class NavbarComponent {
   }
 
   // Acheteurs et vendeurs n'ont pas accès à la recherche Talents & Associés.
-  private readonly hidesRecherche = computed(() => {
-    const profileType = this.auth.currentUser()?.profileType;
-    return !FEATURES.associates || (!!profileType && !isTalentMarketplaceRole(profileType));
-  });
+  // « Trouver un associé » reste visible pour tous les rôles dès que le module est actif.
+  private readonly hidesRecherche = computed(() => !FEATURES.associates);
 
   // Refonte « Reprise » : les annonces passent au premier plan. « Vendre » ne concerne que les visiteurs
   // et les vendeurs (/ma/deposer leur est réservée) ; l'assistant IA sort de la navigation (route conservée).
@@ -305,8 +303,10 @@ export class NavbarComponent {
     { href: '/tarifs', label: 'Tarifs' },
   ];
 
-  // Visiteurs : vitrine publique /associes ; porteurs de projet et associés connectés : recherche complète.
-  private readonly associateHref = computed(() => (this.auth.isAuthenticated() ? '/recherche' : '/associes'));
+  // Repreneurs, cédants et pros : vitrine /associes (la recherche complète est réservée aux deux rôles concernés).
+  private readonly associateHref = computed(() =>
+    isTalentMarketplaceRole(this.auth.currentUser()?.profileType) ? '/recherche' : '/associes'
+  );
 
   readonly navLinks = computed(() =>
     this.allNavLinks
