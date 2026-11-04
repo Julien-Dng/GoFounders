@@ -163,7 +163,7 @@ interface Plan {
                     <th scope="col" class="w-[22%] px-4 py-4">
                       <span class="block font-semibold text-primary">{{ plan.name }}</span>
                       <span class="font-display mt-1 block text-2xl font-semibold text-primary">{{ plan.price }}<span class="font-sans text-sm font-normal text-muted-foreground">{{ plan.period === '/mois' ? ' par mois' : '' }}</span></span>
-                      <span class="mt-1 block text-sm font-normal text-muted-foreground" [style.padding-bottom.px]="plan.name === 'PRO' ? 5 : null">{{ plan.description }}</span>
+                      <span class="mt-1 block text-sm font-normal text-muted-foreground" [style.padding-bottom.px]="plan.name === 'PRO' ? 25 : null">{{ plan.description }}</span>
                     </th>
                   }
                 </tr>
