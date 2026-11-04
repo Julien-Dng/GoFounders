@@ -1,0 +1,15 @@
+# La CLI Vercel ne lit pas .gitignore : tout ce qui n'est pas nécessaire au build du front reste en local.
+.env
+.env.*
+*.env
+src/environments/environment.ts
+src/environments/environment.development.ts
+backend
+supabase
+docs
+modif.md
+CLAUDE.md
+.claude
+.omc
+.angular
+dist
