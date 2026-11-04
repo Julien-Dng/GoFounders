@@ -418,8 +418,8 @@ export class TarifsComponent {
         { text: 'Recherche et profils illimités', included: true },
         { text: 'Score de compatibilité', included: true },
         { text: 'Réponses illimitées à vos conversations', included: true },
-        { text: 'Porteurs de projet : 3 nouveaux contacts par mois', included: true },
-        { text: 'Associés : contacts illimités', included: true },
+        { text: 'Porteur de projet : vous pouvez écrire à 3 nouveaux associés par mois', included: true },
+        { text: 'Associé : vous écrivez à autant de projets que vous voulez', included: true },
         { text: 'Raisons détaillées du score', included: false },
         { text: 'Assistant IA personnel', included: false },
       ],
@@ -471,8 +471,9 @@ export class TarifsComponent {
 
   readonly comparisonRows: string[][] = [
     ['Profil et recherche', 'Illimités', 'Illimités', 'Illimités'],
-    ['Nouveaux contacts par mois', 'Porteurs de projet : 3. Associés : illimités', 'Illimités', 'Illimités'],
-    ['Réponses dans vos conversations', 'Illimitées', 'Illimitées', 'Illimitées'],
+    ['Porteur de projet : écrire à de nouveaux associés', '3 par mois', 'Sans limite', 'Sans limite'],
+    ['Associé : écrire à de nouveaux porteurs de projet', 'Sans limite', 'Sans limite', 'Sans limite'],
+    ['Répondre dans vos conversations', 'Sans limite', 'Sans limite', 'Sans limite'],
     ['Score de compatibilité', '✓', '✓', '✓'],
     ['Matching intelligent (raisons détaillées)', '✗', '✓', '✓'],
     ['Assistant IA personnel', '✗', '✓', '✓'],
