@@ -152,7 +152,8 @@ class StripeClient:
     async def _post(self, path: str, data: dict[str, Any]) -> dict[str, Any]:
         response = await self._http.post(
             f"{STRIPE_API}/{path}",
-            data=encode_form(data),
+            # Un dict : httpx traiterait une liste de paires comme un flux synchrone, refusé par AsyncClient.
+            data=dict(encode_form(data)),
             headers={"Authorization": f"Bearer {self._key}"},
         )
         body = response.json() if response.content else {}

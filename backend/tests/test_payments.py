@@ -1,10 +1,13 @@
+import asyncio
 import hashlib
 import hmac
 import json
 import os
 import time
 from collections import defaultdict, deque
+from urllib.parse import parse_qs
 
+import httpx
 import pytest
 
 os.environ.setdefault("SUPABASE_URL", "https://test.supabase.co")
@@ -14,7 +17,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 
 from app.config import Settings, get_settings  # noqa: E402
 from app.main import app, get_stripe, get_supabase  # noqa: E402
-from app.payments import WebhookSignatureError, checkout_params, encode_form, verify_webhook  # noqa: E402
+from app.payments import StripeClient, WebhookSignatureError, checkout_params, encode_form, verify_webhook  # noqa: E402
 
 AUTH = {"Authorization": "Bearer valid"}
 LISTING_ID = "22222222-2222-2222-2222-222222222222"
@@ -280,3 +283,27 @@ def test_deleted_subscription_ends_rights(client_for):
     event = {"type": "customer.subscription.deleted", "data": {"object": {"metadata": {"user_id": "user-1", "product": "PRO"}}}}
     assert post_event(client_for(supabase), event).status_code == 200
     assert supabase.ended == [("user-1", "PRO")]
+
+
+def test_stripe_client_sends_a_form_with_the_real_http_client():
+    """Sans faux client : httpx doit accepter le corps et l'envoyer encodé en formulaire."""
+    seen: dict = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["content_type"] = request.headers["content-type"]
+        seen["authorization"] = request.headers["authorization"]
+        seen["form"] = parse_qs(request.content.decode())
+        return httpx.Response(200, json={"id": "cs_1", "url": "https://stripe.test/pay"})
+
+    async def run() -> str:
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http:
+            params = checkout_params(
+                "MA_ACCESS", user_id="u1", customer_id="cus_1", site_url="https://site.test", listing_id=None, evidence=None
+            )
+            return await StripeClient("sk_test_x", http).create_checkout_session(params)
+
+    assert asyncio.run(run()) == "https://stripe.test/pay"
+    assert seen["content_type"] == "application/x-www-form-urlencoded"
+    assert seen["authorization"] == "Bearer sk_test_x"
+    assert seen["form"]["line_items[0][price_data][unit_amount]"] == ["14900"]
+    assert seen["form"]["metadata[product]"] == ["MA_ACCESS"]
