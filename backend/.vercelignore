@@ -1,0 +1,9 @@
+# La CLI Vercel ne lit pas .gitignore : les secrets et fichiers locaux restent ici.
+.env
+.env.*
+*.env
+.venv
+__pycache__
+tests
+requirements-dev.txt
+README.md
