@@ -435,7 +435,13 @@ async def stripe_webhook(
     obj = (event.get("data") or {}).get("object") or {}
 
     try:
-        if kind == "checkout.session.completed" and obj.get("payment_status") in ("paid", "no_payment_required"):
+        # Paiement immédiat (carte) : checkout.session.completed avec payment_status « paid ».
+        # Paiement différé (prélèvement SEPA...) : completed arrive « unpaid », puis async_payment_succeeded.
+        # apply_purchase est idempotent (référence = identifiant de session) : recevoir les deux ne double rien.
+        paid_checkout = (
+            kind == "checkout.session.completed" and obj.get("payment_status") in ("paid", "no_payment_required")
+        ) or kind == "checkout.session.async_payment_succeeded"
+        if paid_checkout:
             metadata = obj.get("metadata") or {}
             if metadata.get("user_id") and metadata.get("product"):
                 await supabase.apply_purchase(

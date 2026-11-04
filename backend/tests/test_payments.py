@@ -229,6 +229,30 @@ def test_unpaid_checkout_is_ignored(client_for):
     assert supabase.purchases == []
 
 
+def test_delayed_payment_success_applies_purchase(client_for):
+    # Prélèvement SEPA : la session se termine « unpaid », puis Stripe confirme le paiement plus tard.
+    supabase = FakeSupabase()
+    client = client_for(supabase)
+    metadata = {"user_id": "user-1", "product": "MA_ACCESS"}
+    completed = {"type": "checkout.session.completed", "data": {"object": {"id": "cs_3", "payment_status": "unpaid", "metadata": metadata}}}
+    succeeded = {
+        "type": "checkout.session.async_payment_succeeded",
+        "data": {"object": {"id": "cs_3", "payment_status": "paid", "amount_total": 14900, "metadata": metadata}},
+    }
+    assert post_event(client, completed).status_code == 200
+    assert supabase.purchases == []
+    assert post_event(client, succeeded).status_code == 200
+    assert supabase.purchases[0]["reference"] == "cs_3"
+    assert supabase.purchases[0]["product"] == "MA_ACCESS"
+
+
+def test_delayed_payment_failure_grants_nothing(client_for):
+    supabase = FakeSupabase()
+    event = {"type": "checkout.session.async_payment_failed", "data": {"object": {"id": "cs_4", "metadata": {"user_id": "u", "product": "MA_ACCESS"}}}}
+    assert post_event(client_for(supabase), event).status_code == 200
+    assert supabase.purchases == []
+
+
 def test_renewal_extends_subscription(client_for):
     supabase = FakeSupabase()
     event = {

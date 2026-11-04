@@ -82,7 +82,7 @@ Tant que `STRIPE_SECRET_KEY` est vide, les routes de paiement répondent `503` e
 2. **Stripe, mode test d'abord** (dashboard.stripe.com, interrupteur « Mode test ») :
    - Développeurs > Clés API : copier la clé secrète `sk_test_…` dans `STRIPE_SECRET_KEY` ;
    - Développeurs > Webhooks > Ajouter un endpoint : `https://<votre-back>/api/stripe/webhook`, événements
-     `checkout.session.completed`, `invoice.paid`, `customer.subscription.deleted` ; copier le secret de
+     `checkout.session.completed`, `checkout.session.async_payment_succeeded` (paiements différés, ex. SEPA), `invoice.paid`, `customer.subscription.deleted` ; copier le secret de
      signature `whsec_…` dans `STRIPE_WEBHOOK_SECRET` ;
    - Paramètres > Facturation > Portail client : activer le portail (résiliation, factures, moyens de paiement).
 3. **`.env`** : renseigner aussi `SITE_URL` (adresse publique du site Angular).
