@@ -548,7 +548,7 @@ export class AuthService {
           updated_at: new Date().toISOString(),
         })
         .eq('id', userId)
-        .select('*')
+        .select(PROFILE_COLUMNS)
         .single();
 
       return {
@@ -613,7 +613,7 @@ export class AuthService {
         updated_at: new Date().toISOString(),
       })
       .eq('id', activeUser.uid)
-      .select('*')
+      .select(PROFILE_COLUMNS)
       .single();
 
     if (error || !data) {
