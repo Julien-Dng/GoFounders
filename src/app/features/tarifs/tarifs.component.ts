@@ -475,7 +475,7 @@ export class TarifsComponent {
     ['Associé : écrire à de nouveaux porteurs de projet', 'Sans limite', 'Sans limite', 'Sans limite'],
     ['Répondre dans vos conversations', 'Sans limite', 'Sans limite', 'Sans limite'],
     ['Score de compatibilité', '✓', '✓', '✓'],
-    ['Matching intelligent (raisons détaillées)', '✗', '✓', '✓'],
+    ['Matching intelligent', '✗', '✓', '✓'],
     ['Assistant IA personnel', '✗', '✓', '✓'],
     ['Recherche avancée', '✗', '✓', '✓'],
     ['Projet mis en avant dans les résultats', '✗', '✓', '✓'],

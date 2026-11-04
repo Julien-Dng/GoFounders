@@ -53,3 +53,5 @@ ui-debug.log
 __pycache__/
 .venv/
 .pytest_cache/
+.vercel
+.env*
