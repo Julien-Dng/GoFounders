@@ -271,8 +271,13 @@ export class NavbarComponent {
   });
 
   constructor() {
-    const saved = typeof localStorage !== 'undefined' && localStorage.getItem('gofounders.dark') === 'true';
-    if (saved) this.doc.documentElement.classList.add('dark');
+    // Mode sombre retiré : on efface un ancien choix enregistré pour revenir au thème clair.
+    this.doc.documentElement.classList.remove('dark');
+    try {
+      localStorage.removeItem('gofounders.dark');
+    } catch {
+      // Stockage indisponible : rien à effacer.
+    }
   }
 
   // Acheteurs et vendeurs n'ont pas accès à la recherche Talents & Associés.

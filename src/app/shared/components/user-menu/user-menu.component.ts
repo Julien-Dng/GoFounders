@@ -1,4 +1,4 @@
-import { DOCUMENT, NgClass } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, HostListener, Input, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -108,47 +108,6 @@ import { AuthService } from '../../../core/services/auth.service';
               <span>Paramètres</span>
             </a>
 
-            <div class="flex items-center justify-between rounded-xl px-3 py-2.5 transition-colors hover:bg-secondary">
-              <div class="flex items-center gap-3">
-                <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-secondary text-muted-foreground" aria-hidden="true">
-                  @if (isDark()) {
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>
-                    </svg>
-                  } @else {
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="12" r="4"/>
-                      <path d="M12 2v2"/>
-                      <path d="M12 20v2"/>
-                      <path d="m4.93 4.93 1.41 1.41"/>
-                      <path d="m17.66 17.66 1.41 1.41"/>
-                      <path d="M2 12h2"/>
-                      <path d="M20 12h2"/>
-                      <path d="m6.34 17.66-1.41 1.41"/>
-                      <path d="m19.07 4.93-1.41 1.41"/>
-                    </svg>
-                  }
-                </span>
-                <span class="text-sm font-medium text-foreground">Mode sombre</span>
-              </div>
-              <button
-                type="button"
-                (click)="toggleDarkMode($event)"
-                role="switch"
-                [attr.aria-checked]="isDark()"
-                aria-label="Activer ou désactiver le mode sombre"
-                class="relative inline-flex h-5 w-9 flex-shrink-0 rounded-full transition-colors duration-300 focus:outline-none"
-                [class.bg-accent]="isDark()"
-                [class.bg-gray-200]="!isDark()"
-              >
-                <span
-                  class="mt-0.5 inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform duration-300"
-                  [class.translate-x-4]="isDark()"
-                  [class.translate-x-0.5]="!isDark()"
-                ></span>
-              </button>
-            </div>
-
             <div class="my-1 border-t border-border"></div>
 
             <button
@@ -221,12 +180,10 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class UserMenuComponent {
   private readonly auth = inject(AuthService);
-  private readonly doc = inject(DOCUMENT);
 
   @Input() avatarClass = 'h-11 w-11';
   @Input() buttonClass = '';
 
-  readonly isDark = signal(typeof localStorage !== 'undefined' && localStorage.getItem('gofounders.dark') === 'true');
   readonly isMenuOpen = signal(false);
   readonly isLogoutConfirmOpen = signal(false);
   private readonly failedPhotoUrl = signal('');
@@ -245,14 +202,6 @@ export class UserMenuComponent {
   @HostListener('document:click')
   handleDocumentClick(): void {
     this.closeMenu();
-  }
-
-  toggleDarkMode(event: Event): void {
-    event.stopPropagation();
-    const next = !this.isDark();
-    this.isDark.set(next);
-    this.doc.documentElement.classList.toggle('dark', next);
-    localStorage.setItem('gofounders.dark', String(next));
   }
 
   toggleMenu(event: Event): void {

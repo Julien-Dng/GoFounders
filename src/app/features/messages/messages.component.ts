@@ -188,27 +188,50 @@ interface ConversationPreview {
                     <div class="mt-1 text-lg font-semibold text-accent">{{ compatibility.score }}%</div>
                   </div>
                 }
-                <div class="rounded-xl bg-secondary p-3">
-                  <div class="text-sm font-semibold text-muted-foreground">Ville</div>
-                  <div class="mt-1 truncate text-sm font-semibold">{{ selectedProfile()?.location ?? 'France' }}</div>
-                </div>
-              </div>
-
-              <div class="mt-4 rounded-xl border border-border bg-background/60 p-3 text-left">
-                <div class="mb-2 flex items-center gap-2 text-sm font-semibold text-green-600">
-                  <span class="h-2 w-2 rounded-full bg-green-500"></span>
-                  {{ selectedProfile()?.availabilityLabel ?? 'Disponible pour échanger' }}
-                </div>
-                <p class="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-                  {{ selectedProfile()?.bio ?? 'Profil disponible pour échanger sur une opportunité GoFounders.' }}
-                </p>
-              </div>
-
-              <div class="mt-4 flex flex-wrap justify-center gap-1.5">
-                @for (skill of selectedProfileSkills(); track skill) {
-                  <span class="rounded-full bg-accent/10 px-2.5 py-1 text-sm font-semibold text-accent">{{ skill }}</span>
+                @if (selectedProfile()?.location) {
+                  <div class="rounded-xl bg-secondary p-3">
+                    <div class="text-sm font-semibold text-muted-foreground">Ville</div>
+                    <div class="mt-1 truncate text-sm font-semibold">{{ selectedProfile()!.location }}</div>
+                  </div>
                 }
               </div>
+
+              @if (contactFacts().length > 0) {
+                <dl class="mt-3 space-y-2 text-left">
+                  @for (fact of contactFacts(); track fact.label) {
+                    <div class="rounded-xl bg-secondary px-3 py-2">
+                      <dt class="text-sm text-muted-foreground">{{ fact.label }}</dt>
+                      <dd class="text-sm font-semibold text-primary">{{ fact.value }}</dd>
+                    </div>
+                  }
+                </dl>
+              }
+
+              <div class="mt-3 rounded-xl border border-border p-3 text-left">
+                @if (selectedProfile()?.availabilityLabel) {
+                  <p class="mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-700">
+                    <span class="h-2 w-2 rounded-full bg-emerald-600" aria-hidden="true"></span>
+                    {{ selectedProfile()!.availabilityLabel }}
+                  </p>
+                }
+                @if (selectedProfile()?.bio) {
+                  <p class="line-clamp-5 whitespace-pre-line text-sm leading-relaxed text-foreground/85">{{ selectedProfile()!.bio }}</p>
+                } @else {
+                  <p class="text-sm leading-relaxed text-muted-foreground">Ce membre n'a pas encore rédigé sa présentation.</p>
+                }
+              </div>
+
+              @if (selectedProfileSkills().length > 0) {
+                <div class="mt-3 flex flex-wrap justify-center gap-1.5">
+                  @for (skill of selectedProfileSkills(); track skill) {
+                    <span class="rounded-full bg-accent/10 px-2.5 py-1 text-sm font-semibold text-accent">{{ skill }}</span>
+                  }
+                </div>
+              }
+
+              @if (selectedConv()!.participantProfileId) {
+                <a [routerLink]="['/profil', selectedConv()!.participantProfileId]" class="mt-4 block rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-primary/90">Voir le profil complet</a>
+              }
             </div>
           } @else {
             <div class="p-5 text-center">
@@ -308,6 +331,10 @@ export class MessagesComponent implements OnInit {
     }
   }, { allowSignalWrites: true });
   readonly selectedProfileSkills = computed(() => this.selectedProfile()?.skills.slice(0, 4) ?? []);
+  // Informations utiles du contact (type de profil, secteur et budget M&A), sans le plan ni la ville déjà affichée.
+  readonly contactFacts = computed(() =>
+    (this.selectedProfile()?.quickInfo ?? []).filter(fact => fact.label !== 'Plan' && fact.label !== 'Localisation' && fact.label !== 'Disponibilité')
+  );
   readonly newMessage = signal('');
   readonly sendError = this.messagingService.lastError;
   // Compteur visible pour les porteurs de projet en FREE (limite de nouveaux contacts ; null = illimité).

@@ -129,8 +129,8 @@ export class MatchingService {
   }
 
   private mapProfileRowToMarketplaceProfile(profile: SupabaseProfileRow): MarketplaceProfile {
-    const skills = profile.skills?.length ? profile.skills : ['Expertise', 'Projet', 'Collaboration'];
-    const lookingFor = profile.looking_for?.length ? profile.looking_for : ['Projet entrepreneurial'];
+    const skills = profile.skills?.length ? profile.skills : [];
+    const lookingFor = profile.looking_for?.length ? profile.looking_for : [];
     const title = profile.title?.trim() || this.roleLabel(profile.role);
 
     return {
@@ -141,25 +141,25 @@ export class MatchingService {
       location: profile.location ?? 'France',
       stage: 'MVP',
       sector: this.inferSector([...skills, ...lookingFor, title]),
-      bio: profile.bio ?? 'Profil GoFounders en cours de completion.',
+      bio: profile.bio?.trim() ?? '',
       skills,
       match: 0,
       initials: this.initials(profile.display_name),
       photoURL: profile.photo_url ?? undefined,
       verified: Boolean(profile.verified_at),
       availableNow: (profile.availability_label ?? '').toLowerCase().includes('disponible'),
-      availabilityLabel: profile.availability_label ?? 'Disponibilite a confirmer',
+      availabilityLabel: profile.availability_label?.trim() ?? '',
       lookingFor,
-      about: profile.bio ?? 'Ce profil sera enrichi avec les informations ajoutees dans Supabase.',
+      about: profile.bio?.trim() ?? '',
       projectSummary: profile.role === 'talent'
-        ? 'Cet associe souhaite rejoindre un projet aligne avec ses competences.'
-        : 'Ce profil entrepreneur presente un projet ou une opportunite a qualifier.',
-      experienceSummary: 'Experience detaillee a completer dans le profil.',
+        ? 'Cet associé souhaite rejoindre un projet aligné avec ses compétences.'
+        : 'Ce porteur de projet présente une opportunité à découvrir.',
+      experienceSummary: '',
       quickInfo: [
         { label: 'Type de profil', value: this.roleLabel(profile.role) },
         { label: 'Plan', value: profile.plan },
         { label: 'Localisation', value: profile.location ?? 'France' },
-        { label: 'Disponibilite', value: profile.availability_label ?? 'A confirmer' },
+        ...(profile.availability_label ? [{ label: 'Disponibilité', value: profile.availability_label }] : []),
         ...(profile.ma_sector ? [{ label: 'Secteur M&A', value: profile.ma_sector }] : []),
         ...(profile.ma_budget ? [{ label: profile.role === 'seller' ? 'Ordre de grandeur' : 'Budget', value: profile.ma_budget }] : []),
         ...(profile.ma_region ? [{ label: 'Région visée', value: profile.ma_region }] : []),
@@ -170,7 +170,7 @@ export class MatchingService {
   private mapProjectRowToMarketplaceProfile(project: SupabaseProjectRow, owner?: SupabaseProfileRow | null): MarketplaceProfile {
     const projectName = project.name;
     const ownerName = owner?.display_name ?? 'Fondateur';
-    const skills = project.skills_needed?.length ? project.skills_needed : project.looking_for?.length ? project.looking_for : ['Projet', 'Equipe', 'Execution'];
+    const skills = project.skills_needed?.length ? project.skills_needed : project.looking_for?.length ? project.looking_for : [];
     const stage = this.stageLabel(project.stage);
 
     return {

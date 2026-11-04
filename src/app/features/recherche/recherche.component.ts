@@ -30,12 +30,11 @@ type SearchProfileType = ProfileType;
     <div class="min-h-screen bg-secondary px-4 pb-12 pt-24 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-[1600px]">
         <div class="flex flex-col gap-8 xl:flex-row">
-          <aside class="w-full xl:w-[280px] xl:flex-shrink-0">
+          <aside class="w-full xl:w-[340px] xl:flex-shrink-0">
             <div class="sticky top-28 rounded-2xl bg-white p-6 shadow-lg ring-1 ring-border">
-              <div class="mb-6 rounded-2xl border border-accent/15 bg-accent/5 p-4">
-                <div class="mb-2 text-sm font-semibold text-accent">Visibilité</div>
-                <h2 class="mb-2 text-xl font-semibold text-primary">{{ audiencePanelTitle() }}</h2>
-                <p class="text-sm leading-relaxed text-muted-foreground">{{ audiencePanelDescription() }}</p>
+              <div class="mb-6 rounded-xl bg-accent/5 px-4 py-3">
+                <p class="text-base font-semibold text-primary">{{ audiencePanelTitle() }}</p>
+                <p class="mt-1 text-sm leading-relaxed text-muted-foreground">{{ audiencePanelDescription() }}</p>
               </div>
 
               <div class="mb-6 flex items-center justify-between">

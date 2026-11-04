@@ -482,7 +482,10 @@ export class DashboardComponent {
       ? { label: 'Analyser mes matches', icon: 'target', path: '/recherche' }
       : { label: 'Explorer le M&A', icon: 'target', path: '/ma' },
     { label: 'Améliorer mon profil', icon: 'user', path: '/profil/modifier' },
-    { label: 'Comprendre mes statistiques', icon: 'chart', path: this.profileType() === 'seller' || this.profileType() === 'pro' ? '/ma/statistiques' : '/dashboard' },
+    // Statistiques : seulement pour les vendeurs et les pros, qui ont une page dédiée ; sinon, la messagerie.
+    this.profileType() === 'seller' || this.profileType() === 'pro'
+      ? { label: 'Comprendre mes statistiques', icon: 'chart', path: '/ma/statistiques' }
+      : { label: 'Voir mes conversations', icon: 'chart', path: '/messages' },
   ]);
 
   constructor() {
