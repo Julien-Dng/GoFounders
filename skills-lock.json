@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "skills": {
+    "stripe-apps": {
+      "source": "fcakyon/claude-codex-settings",
+      "sourceType": "github",
+      "skillPath": "plugins/stripe-skills/skills/stripe-apps/SKILL.md",
+      "computedHash": "94a974db20914858bc2449e45c4093f3ee4905c747b67f95bd0feefaf1030dbe"
+    },
+    "stripe-best-practices": {
+      "source": "fcakyon/claude-codex-settings",
+      "sourceType": "github",
+      "skillPath": "plugins/stripe-skills/skills/stripe-best-practices/SKILL.md",
+      "computedHash": "147dae88d672ffe8b2ed920cb5746ac807bf0fa94a7874b8119d337193aa8255"
+    },
+    "stripe-docs": {
+      "source": "fcakyon/claude-codex-settings",
+      "sourceType": "github",
+      "skillPath": "plugins/stripe-skills/skills/stripe-docs/SKILL.md",
+      "computedHash": "61e34f679470285791329ca41d912e6117184d008badf39428f937d3b57bbbbf"
+    },
+    "upgrade-stripe": {
+      "source": "fcakyon/claude-codex-settings",
+      "sourceType": "github",
+      "skillPath": "plugins/stripe-skills/skills/upgrade-stripe/SKILL.md",
+      "computedHash": "87726e07b18be6e719f00bb80d297812fe2141a5a45bdc0e0c99794fff69970a"
+    }
+  }
+}
