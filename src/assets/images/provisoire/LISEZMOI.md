@@ -1,18 +1,18 @@
 # Photos provisoires
 
-Photos libres d'utilisation (licence Unsplash), utilisées pour visualiser la refonte.
-À remplacer par de vraies photos (cédants et repreneurs avec leur accord, lieux réels) avant la mise en ligne.
+Photos libres d'utilisation (licence Unsplash), choisies pour évoquer des activités numériques
+(SaaS, e-commerce, tableaux de bord) plutôt que des commerces physiques.
+À remplacer, si possible, par de vraies photos (cédants et repreneurs avec leur accord) avant la mise en ligne.
 
-| Fichier | Source |
-|---|---|
-| fondateur-boutique.jpg | photo-1556742049-0cfed4f6a45d |
-| rendez-vous-repreneur.jpg | photo-1551836022-d5d88e9218df |
-| cedant-cafe.jpg | photo-1556740749-887f6717d7e4 |
-| bureau-equipe.jpg | photo-1559136555-9303baea8ebd |
-| dossier-chiffres.jpg | photo-1554224155-6726b3ff858f |
-| proprietaire-restaurant.jpg | photo-1556157382-97eda2d62296 |
+| Fichier | Source Unsplash | Utilisation |
+|---|---|---|
+| fondateurs-ecran.jpg | photo-1531482615713-2afd69097998 | Accueil, section « Notre conviction » |
+| repreneur-tableau-de-bord.jpg | photo-1556155092-490a1ba16284 | Accueil, carte Repreneurs |
+| cedant-echange.jpg | photo-1517245386807-bb43f82c33c4 | Accueil, carte Cédants |
+| equipe-ordinateurs.jpg | photo-1522071820081-009f0129c71c | Accueil, carte Associés (module masqué au lancement) |
+| bureau-vue-dessus.jpg | photo-1519389950473-47ba0277781c | Accueil, bandeau final (sous un voile sombre) |
+| statistiques-ecran.jpg | photo-1551288049-bebda4e38f71 | `/ma`, bandeau final (sous un voile sombre) |
+| accord-conclu.jpg | photo-1600880292203-757bb62b4baf | `/tarifs`, section Accompagnement |
 
 Pour remplacer une photo : garder le même nom de fichier (format paysage, 1400 px de large environ).
-
-Utilisation : accueil (section éditoriale, trois profils, discrétion, bandeau final), bandeau final de `/ma` (cedant-cafe), section Accompagnement de `/tarifs` (rendez-vous-repreneur).
 Pas de photo sur les fiches d'annonces (anonymes) ni sur les ventes réussies (jamais de visage de banque d'images à côté d'un vrai témoignage).

@@ -247,7 +247,7 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
       <app-success-stories background="bg-secondary" />
 
       <section class="relative overflow-hidden bg-primary px-4 py-20 text-primary-foreground sm:px-6 lg:px-8 lg:py-24" aria-labelledby="ma-sell-title">
-        <img src="/assets/images/provisoire/cedant-cafe.jpg" alt="" aria-hidden="true" width="1400" height="933" loading="lazy" class="absolute inset-0 h-full w-full object-cover">
+        <img src="/assets/images/provisoire/statistiques-ecran.jpg" alt="" aria-hidden="true" width="1400" height="933" loading="lazy" class="absolute inset-0 h-full w-full object-cover">
         <div class="absolute inset-0" style="background: rgba(15, 27, 45, 0.86)" aria-hidden="true"></div>
         <div class="relative mx-auto flex max-w-[78rem] flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
