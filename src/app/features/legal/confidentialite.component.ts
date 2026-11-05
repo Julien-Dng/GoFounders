@@ -39,6 +39,11 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
                 Les données sont utilisées pour fournir le service, sécuriser les comptes, gérer les paiements, faciliter les mises en relation
                 et améliorer l'expérience utilisateur.
               </p>
+              <p class="mt-3 leading-relaxed">
+                Pour éviter qu'un même professionnel bénéficie plusieurs fois de l'essai gratuit, nous conservons une empreinte
+                chiffrée de son adresse e-mail et l'empreinte de sa carte bancaire fournie par Stripe (aucun numéro de carte),
+                y compris après la suppression de son compte.
+              </p>
             </section>
 
             <section>

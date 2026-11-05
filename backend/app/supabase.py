@@ -198,6 +198,22 @@ class SupabaseClient:
         )
         return bool(rows)
 
+    async def trial_claimed(self, *, email_hash: str | None = None, card_fingerprint: str | None = None) -> bool:
+        """Un essai gratuit pro a-t-il déjà été accordé à cette adresse e-mail ou à cette carte ?"""
+        for column, value in (("email_hash", email_hash), ("card_fingerprint", card_fingerprint)):
+            if value and await self._select("pro_trial_claims", {column: f"eq.{value}", "select": "id", "limit": "1"}):
+                return True
+        return False
+
+    async def record_trial_claim(self, *, email_hash: str | None, card_fingerprint: str | None, subscription_id: str) -> None:
+        response = await self._http.post(
+            f"{self._url}/rest/v1/pro_trial_claims",
+            json={"email_hash": email_hash, "card_fingerprint": card_fingerprint, "stripe_subscription_id": subscription_id},
+            headers={**self._service_headers(), "Prefer": "return=minimal"},
+        )
+        if response.status_code >= 300:
+            raise SupabaseError(f"Essai non enregistré ({response.status_code})")
+
     async def can_unlock_listing(self, user_id: str, listing_id: str) -> bool:
         """Demande acceptée par le cédant et pas encore débloquée (avant de faire payer la mise en relation)."""
         rows = await self._select(

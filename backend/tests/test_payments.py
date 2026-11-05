@@ -53,6 +53,15 @@ class FakeSupabase:
     async def has_purchased(self, user_id: str, products: frozenset[str]) -> bool:
         return self.purchased
 
+    claimed_emails: set = set()
+    claimed_cards: set = set()
+
+    async def trial_claimed(self, *, email_hash=None, card_fingerprint=None) -> bool:
+        return (email_hash is not None and email_hash in self.claimed_emails) or (card_fingerprint is not None and card_fingerprint in self.claimed_cards)
+
+    async def record_trial_claim(self, *, email_hash, card_fingerprint, subscription_id) -> None:
+        self.recorded = (email_hash, card_fingerprint, subscription_id)
+
     async def apply_purchase(self, **kwargs) -> bool:
         self.purchases.append(kwargs)
         return True
@@ -227,6 +236,61 @@ def test_no_trial_for_other_subscriptions(client_for):
     stripe = FakeStripe()
     client_for(FakeSupabase("entrepreneur"), stripe).post("/api/paiements/session", json={"product": "PRO"}, headers=AUTH)
     assert "trial_period_days" not in stripe.sessions[0]["subscription_data"]
+
+
+def test_pro_trial_refused_for_an_email_that_already_had_one(client_for):
+    # Compte supprimé puis recréé avec la même adresse : pas de second essai.
+    from app.payments import email_fingerprint
+    supabase, stripe = FakeSupabase("pro"), FakeStripe()
+    supabase.claimed_emails = {email_fingerprint("A@B.fr ")}
+    client_for(supabase, stripe).post("/api/paiements/session", json={"product": "PRO_DIRECTORY"}, headers=AUTH)
+    assert "trial_period_days" not in stripe.sessions[0]["subscription_data"]
+
+
+class TrialStripe:
+    def __init__(self, fingerprint: str | None, trialing: bool = True) -> None:
+        self.fingerprint, self.trialing = fingerprint, trialing
+        self.ended: list[str] = []
+
+    async def trial_card_fingerprint(self, subscription_id: str):
+        return self.fingerprint, self.trialing
+
+    async def end_trial_now(self, subscription_id: str) -> None:
+        self.ended.append(subscription_id)
+
+
+def trial_event() -> dict:
+    return {"type": "checkout.session.completed", "data": {"object": {
+        "id": "cs_trial", "payment_status": "no_payment_required", "subscription": "sub_1",
+        "customer_details": {"email": "avocat@cabinet.fr"},
+        "metadata": {"user_id": "user-2", "product": "PRO_DIRECTORY"},
+    }}}
+
+
+def test_trial_with_an_already_used_card_is_charged_now(client_for):
+    supabase = FakeSupabase("pro")
+    supabase.claimed_cards = {"card_fp"}
+    client = client_for(supabase)
+    app.state.stripe = TrialStripe("card_fp")
+    try:
+        assert post_event(client, trial_event()).status_code == 200
+        assert app.state.stripe.ended == ["sub_1"]
+        assert supabase.purchases[0]["product"] == "PRO_DIRECTORY"
+    finally:
+        app.state.stripe = None
+
+
+def test_first_trial_is_recorded(client_for):
+    from app.payments import email_fingerprint
+    supabase = FakeSupabase("pro")
+    client = client_for(supabase)
+    app.state.stripe = TrialStripe("card_new")
+    try:
+        assert post_event(client, trial_event()).status_code == 200
+        assert app.state.stripe.ended == []
+        assert supabase.recorded == (email_fingerprint("avocat@cabinet.fr"), "card_new", "sub_1")
+    finally:
+        app.state.stripe = None
 
 
 def test_verification_requires_evidence(client_for):

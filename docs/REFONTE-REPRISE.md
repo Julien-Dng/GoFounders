@@ -72,7 +72,7 @@ Pas de commission sur les ventes (une commission sur une cession de fonds de com
 | Accès repreneur Plus | Acheteur | 390 € / an | Analyses IA illimitées, alerte à chaque nouvelle annonce, accès anticipé de 48 h |
 | Mise en avant | Vendeur ou pro | 14 € (7 j) ou 49 € (30 j) | Annonce en tête de liste, badge « En vedette » (`/ma/mes-annonces`) |
 | Dossier vérifié | Vendeur ou pro | 199 € une fois | Badge « Dossier vérifié » après contrôle **manuel** des justificatifs par un admin (`/admin/verifications`) |
-| Annuaire des pros | Rôle `pro` | 79 € / mois | Fiche dans `/pros`, contactable par tous les membres |
+| Annuaire des pros | Rôle `pro` | 19 € / mois (1 mois d'essai gratuit) | Fiche dans `/pros`, contactable par tous les membres |
 | Compte pro | Rôle `pro` | 199 € / mois | Annuaire + publication de plusieurs annonces + contact direct des repreneurs |
 | PRO associés | Porteur de projet | 49 € / mois | Inchangé (V6) |
 | Accompagnement PREMIUM | Tous | Sur devis | Formulaire sur `/tarifs`, demande envoyée aux admins (`premium_requests`) |

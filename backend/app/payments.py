@@ -37,7 +37,7 @@ OFFERS: dict[str, Offer] = {
     # Anciennes offres repreneur (avant la mise en relation à l'unité) : plus proposées sur le site.
     "MA_ACCESS": Offer("Accès repreneur (12 mois)", 14900, "payment", frozenset({"buyer"})),
     "MA_PLUS": Offer("Accès repreneur Plus (12 mois)", 39000, "payment", frozenset({"buyer"})),
-    "PRO_DIRECTORY": Offer("Annuaire des professionnels", 7900, "subscription", frozenset({"pro"})),
+    "PRO_DIRECTORY": Offer("Annuaire des professionnels", 1900, "subscription", frozenset({"pro"})),
     "PRO_ACCOUNT": Offer("Compte pro", 19900, "subscription", frozenset({"pro"})),
     "FEATURE_7D": Offer("Mise en avant de l'annonce (7 jours)", 1400, "payment", frozenset({"seller", "pro"}), True),
     "FEATURE_30D": Offer("Mise en avant de l'annonce (30 jours)", 4900, "payment", frozenset({"seller", "pro"}), True),
@@ -45,7 +45,13 @@ OFFERS: dict[str, Offer] = {
 }
 
 
-# Offres professionnelles : un mois d'essai gratuit, une seule fois par membre.
+def email_fingerprint(email: str | None) -> str | None:
+    """Empreinte d'une adresse e-mail (anti-abus de l'essai), jamais l'adresse en clair."""
+    cleaned = (email or "").strip().lower()
+    return hashlib.sha256(cleaned.encode()).hexdigest() if cleaned else None
+
+
+# Offres professionnelles : un mois d'essai gratuit, une seule fois par personne (compte, adresse e-mail et carte).
 PRO_TRIAL_PRODUCTS = frozenset({"PRO_DIRECTORY", "PRO_ACCOUNT"})
 PRO_TRIAL_DAYS = 30
 
@@ -179,6 +185,25 @@ class StripeClient:
             message = body.get("error", {}).get("message", response.text[:200]) if isinstance(body, dict) else response.text[:200]
             raise StripeError(f"Stripe {path} ({response.status_code}) : {message}")
         return body
+
+    async def _get(self, path: str, params: dict[str, str]) -> dict[str, Any]:
+        response = await self._http.get(f"{STRIPE_API}/{path}", params=params, headers={"Authorization": f"Bearer {self._key}"})
+        body = response.json() if response.content else {}
+        if response.status_code >= 400:
+            message = body.get("error", {}).get("message", response.text[:200]) if isinstance(body, dict) else response.text[:200]
+            raise StripeError(f"Stripe {path} ({response.status_code}) : {message}")
+        return body
+
+    async def trial_card_fingerprint(self, subscription_id: str) -> tuple[str | None, bool]:
+        """Empreinte de la carte d'un abonnement et indication « en période d'essai »."""
+        subscription = await self._get(f"subscriptions/{subscription_id}", {"expand[]": "default_payment_method"})
+        method = subscription.get("default_payment_method") or {}
+        card = method.get("card") if isinstance(method, dict) else None
+        return ((card or {}).get("fingerprint"), subscription.get("status") == "trialing")
+
+    async def end_trial_now(self, subscription_id: str) -> None:
+        """Supprime l'essai gratuit : le premier mois est facturé tout de suite."""
+        await self._post(f"subscriptions/{subscription_id}", {"trial_end": "now", "proration_behavior": "none"})
 
     async def create_customer(self, user_id: str, email: str | None) -> str:
         customer = await self._post("customers", {"email": email, "metadata": {"user_id": user_id}})

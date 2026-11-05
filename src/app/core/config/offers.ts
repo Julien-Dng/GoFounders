@@ -22,7 +22,7 @@ export const OFFER_PRICES: Record<AccountProduct | ListingProduct, OfferPrice> =
   FEATURE_30D: { amount: 49, label: '49 € (30 jours)' },
   VERIFICATION: { amount: 199, label: '199 € une fois' },
   INTRO: { amount: 50, label: '50 €' },
-  PRO_DIRECTORY: { amount: 79, label: '79 € / mois' },
+  PRO_DIRECTORY: { amount: 19, label: '19 € / mois' },
   PRO_ACCOUNT: { amount: 199, label: '199 € / mois' },
 };
 
