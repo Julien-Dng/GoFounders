@@ -18,12 +18,6 @@ import { AuthService } from '../../../core/services/auth.service';
         </div>
 
         <div class="bg-white rounded-2xl border border-border p-10 animate-fade-in-scale delay-100">
-          @if (returnUrl()) {
-            <div class="mb-6 rounded-xl border border-accent/20 bg-accent/5 px-4 py-3 text-sm text-accent">
-              Connectez-vous pour accéder à la page demandée.
-            </div>
-          }
-
           @if (infoMessage()) {
             <div class="mb-6 rounded-xl border border-success/20 bg-success/5 px-4 py-3 text-sm text-success">
               {{ infoMessage() }}
@@ -118,10 +112,6 @@ import { AuthService } from '../../../core/services/auth.service';
           >
             {{ isSubmitting() ? 'Connexion...' : 'Se connecter' }}
           </button>
-
-          <p class="mt-4 text-center text-sm text-muted-foreground">
-            Sans page demandée, la connexion redirige vers le dashboard.
-          </p>
         </div>
 
         <p class="text-center text-sm text-muted-foreground mt-6 animate-fade-in delay-300">
