@@ -44,9 +44,9 @@ interface LandingFaqItem {
             </h1>
             <p class="mt-6 max-w-[52ch] text-lg leading-relaxed text-white/70">
               @if (showAssociates) {
-                Découvrez des entreprises numériques à reprendre, trouvez un associé ou réunissez les compétences pour lancer et développer votre projet.
+                Découvrez des entreprises à reprendre partout en France, trouvez un associé ou réunissez les compétences pour lancer et développer votre projet.
               } @else {
-                SaaS, e-commerce, agences, sites de contenu : des entreprises françaises rentables, dont les fondateurs veulent passer la main.
+                Commerces, restaurants, artisans, sociétés de services, PME industrielles ou entreprises en ligne : des entreprises françaises rentables dont les dirigeants veulent passer la main.
               }
             </p>
 
@@ -474,7 +474,7 @@ export class LandingComponent implements OnInit {
   ];
 
   readonly faq: LandingFaqItem[] = [
-    { question: 'Quel type d’entreprises trouve-t-on sur GoFounders ?', answer: 'Principalement des entreprises numériques françaises : SaaS, e-commerce, sites de contenu, petites agences, avec un chiffre d’affaires entre 50 k€ et 1 M€. Des TPE plus classiques peuvent aussi être proposées.' },
+    { question: 'Quel type d’entreprises trouve-t-on sur GoFounders ?', answer: 'Des entreprises françaises de tous secteurs : commerces, restaurants, artisans et entreprises du bâtiment, sociétés de services, PME industrielles, mais aussi entreprises en ligne (e-commerce, logiciels, sites, agences). Surtout des TPE et petites PME, de quelques dizaines de milliers d’euros à quelques millions d’euros de chiffre d’affaires.' },
     { question: 'Mon annonce de cession est-elle confidentielle ?', answer: 'Oui. Seule une annonce anonymisée est publique, après relecture par notre équipe. Le dossier complet et vos coordonnées ne s’ouvrent qu’aux repreneurs que vous acceptez, après qu’ils ont accepté un engagement de confidentialité.' },
     { question: 'Combien coûte la reprise pour un repreneur ?', answer: 'Créer son compte et demander l’accès à un dossier est gratuit. Si le cédant accepte votre demande, la mise en relation coûte 50 € : vous lisez son dossier complet, obtenez ses coordonnées et échangez avec lui. Aucun paiement s’il refuse, et aucune commission sur la vente.' },
     { question: 'GoFounders prend-il une commission sur la vente ?', answer: 'Non. La publication est gratuite pour les cédants et nous ne prenons aucun pourcentage sur le prix de vente.' },

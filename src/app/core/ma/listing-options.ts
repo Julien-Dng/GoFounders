@@ -1,8 +1,9 @@
-// Options des annonces enrichies (supabase/2026-10-26-annonces-enrichies.sql) : les valeurs doivent rester
-// identiques aux listes autorisées par la contrainte ma_listings_enrichment_check.
+// Options des annonces enrichies (supabase/2026-10-26-annonces-enrichies.sql, élargies par
+// 2026-11-05c-toutes-entreprises.sql) : les valeurs doivent rester identiques aux listes autorisées
+// par la contrainte ma_listings_enrichment_check.
 
-export type IncludedAsset = 'site' | 'domaine' | 'marque' | 'code' | 'clients' | 'stock' | 'contrats' | 'reseaux' | 'publicite' | 'equipe' | 'locaux' | 'materiel';
-export type AcquisitionChannel = 'seo' | 'publicite' | 'reseaux' | 'email' | 'marketplaces' | 'bouche_a_oreille' | 'partenariats' | 'commercial';
+export type IncludedAsset = 'site' | 'domaine' | 'marque' | 'code' | 'clients' | 'stock' | 'contrats' | 'reseaux' | 'publicite' | 'equipe' | 'locaux' | 'materiel' | 'vehicules' | 'licences';
+export type AcquisitionChannel = 'seo' | 'publicite' | 'reseaux' | 'email' | 'marketplaces' | 'bouche_a_oreille' | 'partenariats' | 'commercial' | 'emplacement' | 'appels_offres';
 export type ListingType = 'cession' | 'fonds_commerce' | 'parts_sociales';
 
 export interface RevenuePoint {
@@ -22,7 +23,9 @@ export const INCLUDED_ASSETS: Array<{ value: IncludedAsset; label: string }> = [
   { value: 'publicite', label: 'Comptes publicitaires' },
   { value: 'equipe', label: 'Équipe ou prestataires' },
   { value: 'locaux', label: 'Locaux ou bail' },
-  { value: 'materiel', label: 'Matériel' },
+  { value: 'materiel', label: 'Matériel et équipements' },
+  { value: 'vehicules', label: 'Véhicules' },
+  { value: 'licences', label: 'Licences, agréments, autorisations' },
 ];
 
 export const ACQUISITION_CHANNELS: Array<{ value: AcquisitionChannel; label: string }> = [
@@ -34,6 +37,8 @@ export const ACQUISITION_CHANNELS: Array<{ value: AcquisitionChannel; label: str
   { value: 'bouche_a_oreille', label: 'Bouche-à-oreille' },
   { value: 'partenariats', label: 'Partenariats' },
   { value: 'commercial', label: 'Prospection commerciale' },
+  { value: 'emplacement', label: 'Emplacement et clientèle de passage' },
+  { value: 'appels_offres', label: "Appels d'offres, marchés publics" },
 ];
 
 export const LISTING_TYPES: Array<{ value: ListingType; label: string; hint: string }> = [

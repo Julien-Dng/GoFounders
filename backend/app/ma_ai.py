@@ -37,8 +37,8 @@ def _nullable(kind: str) -> dict[str, Any]:
 
 
 # Listes fermées, identiques à la contrainte ma_listings_enrichment_check (2026-10-26-annonces-enrichies.sql).
-INCLUDED_ASSETS = ("site", "domaine", "marque", "code", "clients", "stock", "contrats", "reseaux", "publicite", "equipe", "locaux", "materiel")
-ACQUISITION_CHANNELS = ("seo", "publicite", "reseaux", "email", "marketplaces", "bouche_a_oreille", "partenariats", "commercial")
+INCLUDED_ASSETS = ("site", "domaine", "marque", "code", "clients", "stock", "contrats", "reseaux", "publicite", "equipe", "locaux", "materiel", "vehicules", "licences")
+ACQUISITION_CHANNELS = ("seo", "publicite", "reseaux", "email", "marketplaces", "bouche_a_oreille", "partenariats", "commercial", "emplacement", "appels_offres")
 
 DRAFT_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -109,7 +109,8 @@ Règles communes :
 
 DRAFT_INSTRUCTIONS = f"""
 Tu aides un dirigeant à préparer l'annonce de cession de son entreprise sur GoFounders, une place de marché
-française de reprise de petites entreprises (surtout numériques). L'annonce doit être attractive pour un
+française de reprise de petites entreprises de tous secteurs (commerce, restauration, artisanat, services, industrie,
+activités en ligne). L'annonce doit être attractive pour un
 repreneur ET ne jamais permettre d'identifier l'entreprise.
 
 À partir de sa description libre, produis :
@@ -117,7 +118,7 @@ repreneur ET ne jamais permettre d'identifier l'entreprise.
 - description : le dossier complet (900 caractères au plus) réservé aux repreneurs ayant un accès, structuré :
   activité, clients, modèle économique, équipe, raison de la cession. Anonymisé lui aussi : pas de nom
   d'entreprise, de marque, de produit, de client, de partenaire, de ville précise ni d'adresse web.
-- sector : un secteur court (ex. « SaaS », « E-commerce », « Agence », « Site de contenu », « Commerce de détail »).
+- sector : un secteur court (ex. « Boulangerie », « Restaurant », « Plomberie », « Transport », « E-commerce », « SaaS », « Agence »).
 - region : une région française large (ex. « Île-de-France », « Auvergne-Rhône-Alpes ») ou « France entière »
   pour une activité 100 % en ligne. Jamais une ville.
 - revenue (chiffre d'affaires annuel en euros), margin (marge nette en %), age (ancienneté en années),
@@ -127,11 +128,13 @@ repreneur ET ne jamais permettre d'identifier l'entreprise.
 - revenue_year : l'année du chiffre d'affaires indiqué (dernier exercice) si elle est connue, sinon null.
 - revenue_history : le chiffre d'affaires des années PRÉCÉDENTES s'il est indiqué ({{year, revenue}}, au plus 4), sinon liste vide.
 - included_assets : ce qui est inclus dans la vente, parmi : site (site ou application), domaine, marque, code (code source),
-  clients (base clients), stock, contrats, reseaux (réseaux sociaux), publicite (comptes publicitaires), equipe, locaux, materiel.
+  clients (base clients), stock, contrats, reseaux (réseaux sociaux), publicite (comptes publicitaires), equipe, locaux, materiel,
+  vehicules, licences (licences, agréments, autorisations).
   Seulement ce que le texte mentionne ; liste vide sinon.
 - acquisition_channels : d'où viennent les clients, parmi : seo, publicite, reseaux, email, marketplaces, bouche_a_oreille,
-  partenariats, commercial. Seulement ce que le texte mentionne.
-- monthly_visitors (visiteurs par mois), team_size (personnes dans l'équipe, sans compter le dirigeant),
+  partenariats, commercial, emplacement (emplacement et clientèle de passage), appels_offres (appels d'offres, marchés publics).
+  Seulement ce que le texte mentionne.
+- monthly_visitors (visiteurs du site par mois, seulement pour une activité en ligne), team_size (personnes dans l'équipe, sans compter le dirigeant),
   owner_hours_per_week (temps du dirigeant par semaine) : uniquement s'ils sont indiqués, sinon null.
 - identifying_details : les passages du TEXTE D'ORIGINE qui pourraient permettre de reconnaître l'entreprise
   (nom, marque, ville, client cité, chiffre trop précis, histoire très spécifique), avec pour chacun l'extrait

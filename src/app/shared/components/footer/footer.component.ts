@@ -19,7 +19,7 @@ import { FEATURES } from '../../../core/config/features';
               <span class="font-display text-xl font-semibold">GoFounders</span>
             </div>
             <p class="mt-4 max-w-sm text-sm leading-relaxed text-primary-foreground/70">
-              Reprendre ou céder une entreprise numérique en France, et trouver ses associés. Annonces anonymisées, sans commission sur la vente.
+              Reprendre ou céder une entreprise en France, et trouver ses associés. Annonces anonymisées, sans commission sur la vente.
             </p>
           </div>
 

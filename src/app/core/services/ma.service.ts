@@ -55,7 +55,7 @@ export interface ProDirectoryEntry {
 
 // Mode démo (sans Supabase) : exemples de fiches pour visualiser l'annuaire.
 const DEMO_PRO_DIRECTORY: ProDirectoryEntry[] = [
-  { id: 'demo-pro-1', display_name: 'Claire Dubois', title: 'Transmission Conseil', pro_category: 'cabinet_cession', location: 'Lyon', bio: 'Accompagnement de cessions de PME et d’entreprises numériques, de la valorisation à la signature.', website_url: 'https://exemple.fr', linkedin_url: null, photo_url: null, has_pro_account: true },
+  { id: 'demo-pro-1', display_name: 'Claire Dubois', title: 'Transmission Conseil', pro_category: 'cabinet_cession', location: 'Lyon', bio: 'Accompagnement de cessions de TPE et PME, de la valorisation à la signature.', website_url: 'https://exemple.fr', linkedin_url: null, photo_url: null, has_pro_account: true },
   { id: 'demo-pro-2', display_name: 'Karim Benali', title: 'Cabinet Benali Expertise', pro_category: 'expert_comptable', location: 'Paris', bio: 'Expert-comptable spécialisé dans l’audit d’acquisition et la reprise de TPE.', website_url: null, linkedin_url: null, photo_url: null, has_pro_account: false },
   { id: 'demo-pro-3', display_name: 'Maître Sophie Laurent', title: 'Laurent Avocats', pro_category: 'avocat', location: 'Bordeaux', bio: 'Droit des sociétés, protocoles de cession et garanties d’actif et de passif.', website_url: null, linkedin_url: null, photo_url: null, has_pro_account: false },
 ];

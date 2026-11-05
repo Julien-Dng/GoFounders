@@ -25,7 +25,7 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
           <div>
             <h1 class="text-[2.25rem] leading-tight text-white sm:text-5xl">Entreprises à reprendre</h1>
             <p class="mt-3 max-w-[62ch] text-lg leading-relaxed text-white/70 sm:mt-4">
-              Des entreprises rentables, surtout numériques, entre 50 k€ et 1 M€ de chiffre d'affaires.<span class="hidden sm:inline"> Les annonces sont anonymisées :
+              Des entreprises rentables de tous secteurs, partout en France : commerces, restaurants, artisans, services, industrie et entreprises en ligne.<span class="hidden sm:inline"> Les annonces sont anonymisées :
               le nom de l'entreprise n'est communiqué qu'aux repreneurs que le cédant accepte.</span>
             </p>
           </div>
@@ -70,7 +70,7 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
               type="search"
               [value]="query()"
               (input)="query.set($any($event.target).value)"
-              placeholder="SaaS, e-commerce, agence, Lyon…"
+              placeholder="Boulangerie, BTP, e-commerce, Lyon…"
               class="w-full rounded-xl border border-input bg-white py-3.5 pl-12 pr-4 shadow-sm text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
             >
           </div>

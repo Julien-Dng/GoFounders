@@ -109,7 +109,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                     <div class="grid gap-5 sm:grid-cols-2">
                       <label class="space-y-2">
                         <span class="font-semibold">Secteur</span>
-                        <input type="text" [value]="sector()" (input)="sector.set($any($event.target).value)" placeholder="E-commerce, SaaS, Agence…" class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20">
+                        <input type="text" [value]="sector()" (input)="sector.set($any($event.target).value)" placeholder="Boulangerie, plomberie, e-commerce, agence…" class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20">
                       </label>
                       <label class="space-y-2">
                         <span class="font-semibold">Région</span>
@@ -228,7 +228,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
 
                     <div class="mt-8 grid gap-5 sm:grid-cols-2">
                       <label class="space-y-2">
-                        <span class="font-semibold">Visiteurs par mois <span class="font-normal text-muted-foreground">(site ou application)</span></span>
+                        <span class="font-semibold">Visiteurs du site par mois <span class="font-normal text-muted-foreground">(si votre activité est en ligne)</span></span>
                         <input type="number" min="0" inputmode="numeric" [value]="monthlyVisitors()" (input)="monthlyVisitors.set($any($event.target).value)" placeholder="Ex. 12000" class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 tabular">
                       </label>
                     </div>

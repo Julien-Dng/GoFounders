@@ -3,7 +3,7 @@
 // Les multiples sont des repères courants pour les petites entreprises (moins de 1 M€ de CA) ;
 // ils ne remplacent pas l'avis d'un expert-comptable. À ajuster ici si besoin.
 
-export type BusinessKind = 'saas' | 'ecommerce' | 'contenu' | 'agence' | 'appli' | 'autre';
+export type BusinessKind = 'saas' | 'ecommerce' | 'contenu' | 'agence' | 'appli' | 'commerce' | 'restauration' | 'artisanat' | 'services' | 'industrie' | 'autre';
 export type Growth = 'baisse' | 'stable' | 'croissance' | 'forte';
 export type Recurring = 'faible' | 'moyenne' | 'forte';
 export type FounderDependence = 'forte' | 'moyenne' | 'faible';
@@ -38,6 +38,11 @@ export const BUSINESS_KIND_LABELS: Record<BusinessKind, string> = {
   contenu: 'Site de contenu, newsletter',
   agence: 'Agence, services',
   appli: 'Application mobile',
+  commerce: 'Commerce de détail, boutique',
+  restauration: 'Restauration, café, hôtellerie',
+  artisanat: 'Artisanat, BTP',
+  services: 'Services aux entreprises ou aux particuliers',
+  industrie: 'Industrie, production, négoce',
   autre: 'Autre activité',
 };
 
@@ -48,6 +53,13 @@ const BASE_MULTIPLES: Record<BusinessKind, [number, number]> = {
   contenu: [2.5, 4],
   agence: [1.5, 3],
   appli: [2.5, 4],
+  // Entreprises « traditionnelles » : repères prudents, à faire valider par un expert-comptable.
+  // Pour un fonds de commerce (commerce, restauration), les professionnels raisonnent aussi en % du CA.
+  commerce: [2, 3.5],
+  restauration: [2, 3.5],
+  artisanat: [2, 4],
+  services: [2, 4],
+  industrie: [3, 5],
   autre: [1.5, 3],
 };
 

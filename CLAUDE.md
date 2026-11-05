@@ -5,7 +5,7 @@
 
 ---
 
-> ⚠️ **Branche `refonte-reprise`** : le produit est en cours de recentrage sur la reprise d'entreprises numériques
+> ⚠️ **Branche `refonte-reprise`** : le produit est centré sur la reprise d'entreprises de tous secteurs (commerce, restauration, artisanat, services, industrie, activités en ligne ; élargi en novembre 2026, migration `2026-11-05c-toutes-entreprises.sql`) et la recherche d'associés
 > (vitrine : landing, menus, `/ma` ; logique de base venant de `V6`, plus les outils IA M&A et les offres de la reprise : accès Plus, mise en avant, dossier vérifié, rôle `pro` et annuaire, PREMIUM). Voir `docs/REFONTE-REPRISE.md` et le système de design `docs/DESIGN.md` (sobre, « fiche de cession ») : ces notes priment sur
 > les sections ci-dessous en cas de conflit. Le backend réel est **Supabase** (pas Firebase).
 > **Premier lancement** : modules masqués par `src/app/core/config/features.ts` (associés, pros, assistant, Plus, offres
