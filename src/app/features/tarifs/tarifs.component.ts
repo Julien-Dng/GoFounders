@@ -163,7 +163,35 @@ interface Plan {
             </div>
 
             <h3 class="mt-14 text-center text-2xl text-primary">Le détail des formules</h3>
-            <div class="relative mt-6 overflow-x-auto rounded-2xl bg-white p-4 shadow-lg ring-1 ring-border sm:p-6">
+
+            <!-- Téléphones : une carte par ligne du tableau, les trois formules côte à côte. -->
+            <div class="mt-6 overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border sm:hidden">
+              <div class="grid grid-cols-3 gap-2 border-b border-primary bg-secondary px-4 py-3 text-center text-sm font-semibold text-primary">
+                @for (plan of plans; track plan.name) {
+                  <span>{{ plan.name }}<span class="block font-normal text-muted-foreground">{{ plan.price }}{{ plan.period === '/mois' ? '/mois' : '' }}</span></span>
+                }
+              </div>
+              <ul>
+                @for (row of comparisonRows; track $index) {
+                  <li class="border-b border-border px-4 py-3 last:border-b-0">
+                    <p class="text-sm font-medium text-foreground/85">{{ row[0] }}</p>
+                    <div class="mt-1.5 grid grid-cols-3 gap-2 text-center text-sm">
+                      @for (cell of row.slice(1); track $index) {
+                        @if (cell === '✓') {
+                          <span class="font-semibold text-emerald-700" aria-label="Inclus">✓</span>
+                        } @else if (cell === '✗') {
+                          <span class="text-muted-foreground" aria-label="Non inclus">–</span>
+                        } @else {
+                          <span class="font-semibold text-primary">{{ cell }}</span>
+                        }
+                      }
+                    </div>
+                  </li>
+                }
+              </ul>
+            </div>
+
+            <div class="relative mt-6 hidden overflow-x-auto rounded-2xl bg-white p-4 shadow-lg ring-1 ring-border sm:block sm:p-6">
               <table class="tabular w-full min-w-[680px] border-collapse text-left text-base">
                 <caption class="sr-only">Comparaison des formules Découverte, Projet PRO et Accompagnement</caption>
                 <thead>
