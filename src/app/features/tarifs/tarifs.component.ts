@@ -76,15 +76,17 @@ interface Plan {
 
         @if (tab() === 'reprise') {
         <div id="panneau-reprise" role="tabpanel" aria-labelledby="onglet-reprise">
-        @for (group of offerGroups(); track group.id) {
-          <section [id]="group.id" class="mt-20 scroll-mt-24" [attr.aria-labelledby]="group.id + '-title'">
-            <div class="mx-auto max-w-[60ch] text-center">
-              <h2 [id]="group.id + '-title'" class="text-3xl text-primary sm:text-4xl">{{ group.title }}</h2>
-              <p class="mt-3 text-lg leading-relaxed text-muted-foreground">{{ group.description }}</p>
-            </div>
-            <div class="mx-auto mt-10 grid gap-6" [class]="group.offers.length >= 3 ? 'md:grid-cols-3' : group.offers.length === 2 ? 'max-w-4xl md:grid-cols-2' : 'max-w-md'">
-              @for (offer of group.offers; track offer.title; let first = $first) {
-                <div class="flex flex-col rounded-2xl bg-white p-7 shadow-lg" [class]="first && group.offers.length > 1 ? 'ring-2 ring-accent' : 'ring-1 ring-border'">
+        <section id="repreneurs" class="mt-16 scroll-mt-24" aria-labelledby="reprise-title">
+          <div class="mx-auto max-w-[62ch] text-center">
+            <h2 id="reprise-title" class="text-3xl text-primary sm:text-4xl">Reprendre ou céder une entreprise</h2>
+            <p class="mt-3 text-lg leading-relaxed text-muted-foreground">
+              Publier une annonce est gratuit, sans commission sur la vente. Le repreneur ne paie que lorsqu'un cédant accepte d'échanger avec lui.
+            </p>
+          </div>
+          <div class="mx-auto mt-10 grid max-w-4xl gap-6 md:grid-cols-2">
+            @for (offer of mainOffers(); track offer.title; let first = $first) {
+              <div [id]="first ? 'cedants' : null" class="flex scroll-mt-24">
+                <div class="flex flex-col rounded-2xl bg-white p-7 shadow-lg" [class]="first ? 'w-full ring-1 ring-border' : 'w-full ring-2 ring-accent'">
                   <h3 class="text-lg font-bold text-primary">{{ offer.title }}</h3>
                   <p class="tabular mt-3 text-[2rem] font-extrabold leading-tight tracking-tight text-primary">{{ offer.price }}</p>
                   <p class="mt-2 text-base text-muted-foreground">{{ offer.description }}</p>
@@ -101,7 +103,7 @@ interface Plan {
                       @if (isOwned(offer.product)) {
                         <p class="rounded-lg bg-emerald-50 py-3 text-center font-semibold text-emerald-800">Actif sur votre compte</p>
                       } @else {
-                        <button type="button" (click)="buy(offer.product)" [disabled]="busyProduct() === offer.product" class="w-full rounded-lg px-4 py-3 font-semibold text-white transition-colors disabled:cursor-wait disabled:opacity-60" [class]="first && group.offers.length > 1 ? 'bg-accent hover:bg-accent/90' : 'bg-primary hover:bg-primary/90'">
+                        <button type="button" (click)="buy(offer.product)" [disabled]="busyProduct() === offer.product" class="w-full rounded-lg bg-primary px-4 py-3 font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-wait disabled:opacity-60">
                           {{ busyProduct() === offer.product ? 'Activation…' : (offer.cta ?? 'Activer') }}
                         </button>
                         @if (statusProduct() === offer.product && statusMessage()) {
@@ -109,14 +111,36 @@ interface Plan {
                         }
                       }
                     } @else if (offer.link) {
-                      <a [routerLink]="offer.link.href" [fragment]="offer.link.fragment" class="block w-full rounded-lg bg-primary px-4 py-3 text-center font-semibold text-white transition-colors hover:bg-primary/90">{{ offer.link.label }}</a>
+                      <a [routerLink]="offer.link.href" [fragment]="offer.link.fragment" class="block w-full rounded-lg px-4 py-3 text-center font-semibold transition-colors" [class]="first ? 'bg-primary text-white hover:bg-primary/90' : 'bg-accent text-white hover:bg-accent/90'">{{ offer.link.label }}</a>
                     }
                   </div>
                 </div>
-              }
+              </div>
+            }
+          </div>
+
+          @if (extraOffers().length > 0) {
+            <div class="mx-auto mt-12 max-w-4xl">
+              <h3 class="text-center text-xl font-bold text-primary">Options pour donner plus de visibilité à votre annonce</h3>
+              <div class="mt-6 grid gap-4 md:grid-cols-2">
+                @for (offer of extraOffers(); track offer.title) {
+                  <div class="flex flex-col rounded-2xl bg-white p-6 ring-1 ring-border">
+                    <div class="flex items-baseline justify-between gap-3">
+                      <h4 class="text-lg font-bold text-primary">{{ offer.title }}</h4>
+                      <p class="tabular flex-shrink-0 font-extrabold text-primary">{{ offer.price }}</p>
+                    </div>
+                    <p class="mt-2 flex-1 text-base text-muted-foreground">{{ offer.description }}</p>
+                    @if (offer.product) {
+                      <button type="button" (click)="buy(offer.product)" [disabled]="busyProduct() === offer.product" class="mt-4 font-semibold text-accent underline-offset-4 hover:underline disabled:opacity-60">{{ offer.cta ?? 'Activer' }}</button>
+                    } @else if (offer.link) {
+                      <a [routerLink]="offer.link.href" class="mt-4 font-semibold text-accent underline-offset-4 hover:underline">{{ offer.link.label }} →</a>
+                    }
+                  </div>
+                }
+              </div>
             </div>
-          </section>
-        }
+          }
+        </section>
 
         </div>
         }
@@ -385,6 +409,15 @@ export class TarifsComponent {
         && !((offer.title === 'Mise en avant' || offer.title === 'Dossier vérifié') && !FEATURES.sellerPaidOffers)
       ),
     })));
+
+  // Onglet reprise : les deux offres principales côte à côte (céder, reprendre), puis les options.
+  readonly mainOffers = computed(() => {
+    const groups = this.offerGroups();
+    const seller = groups.find(group => group.id === 'cedants')?.offers[0];
+    const buyer = groups.find(group => group.id === 'repreneurs')?.offers[0];
+    return [seller, buyer].filter((offer): offer is RepriseOffer => !!offer);
+  });
+  readonly extraOffers = computed(() => this.offerGroups().flatMap(group => group.offers.slice(1)));
 
   readonly prosGroup = computed(() => (FEATURES.pros ? this.allOfferGroups().find(group => group.id === 'pros') ?? null : null));
 
