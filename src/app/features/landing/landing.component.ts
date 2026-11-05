@@ -4,6 +4,8 @@ import { MaListingData } from '../../core/data/mock-platform.data';
 import { OFFER_PRICES } from '../../core/config/offers';
 import { FEATURES } from '../../core/config/features';
 import { MaService } from '../../core/services/ma.service';
+import { AuthService } from '../../core/services/auth.service';
+import { isTalentMarketplaceRole } from '../../core/models/user.model';
 import { formatEuros, formatMultiple, listingMetrics } from '../../core/ma/listing-metrics';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
 import { SuccessStoriesComponent } from '../../shared/components/success-stories/success-stories.component';
@@ -34,10 +36,18 @@ interface LandingFaqItem {
         <div class="relative mx-auto grid max-w-[78rem] gap-14 lg:grid-cols-12 lg:items-center">
           <div class="lg:col-span-6">
             <h1 class="max-w-[16ch] text-[2.6rem] leading-[1.08] text-white sm:text-[3.5rem] lg:text-[3.75rem]">
-              Votre entreprise mérite le bon repreneur. Votre ambition, la bonne société
+              @if (showAssociates) {
+                Reprenez une entreprise. Trouvez vos associés.
+              } @else {
+                Reprenez une entreprise qui a déjà ses clients
+              }
             </h1>
-            <p class="mt-6 max-w-[50ch] text-lg leading-relaxed text-white/70">
-              SaaS, e-commerce, agences, sites de contenu : des entreprises françaises rentables, dont les fondateurs veulent passer la main.
+            <p class="mt-6 max-w-[52ch] text-lg leading-relaxed text-white/70">
+              @if (showAssociates) {
+                Découvrez des entreprises numériques à reprendre, trouvez un associé ou réunissez les compétences pour lancer et développer votre projet.
+              } @else {
+                SaaS, e-commerce, agences, sites de contenu : des entreprises françaises rentables, dont les fondateurs veulent passer la main.
+              }
             </p>
 
             <div class="mt-9 rounded-xl bg-white p-2 shadow-2xl" role="search">
@@ -64,14 +74,32 @@ interface LandingFaqItem {
               </div>
             </div>
 
-            <div class="mt-6 flex flex-col gap-3 sm:flex-row">
-              <a routerLink="/ma" class="rounded-lg border border-white/30 px-6 py-3.5 text-center font-semibold text-white transition-colors hover:border-white/70">Voir toutes les annonces</a>
-              <a routerLink="/estimation" class="rounded-lg border border-white/30 px-6 py-3.5 text-center font-semibold text-white transition-colors hover:border-white/70">Estimer mon entreprise gratuitement</a>
-            </div>
+            @if (showAssociates) {
+              <div class="mt-6 grid gap-3 sm:grid-cols-2">
+                <a routerLink="/ma" class="group flex flex-col rounded-xl border border-white/20 bg-white/[0.06] p-5 transition-colors hover:border-white/60 hover:bg-white/[0.1]">
+                  <span class="text-lg font-bold text-white">Reprendre ou céder une entreprise</span>
+                  <span class="mt-1.5 flex-1 text-base leading-relaxed text-white/70">Découvrez une activité à reprendre ou trouvez votre repreneur.</span>
+                  <span class="mt-4 font-semibold text-[#9DB8FF] group-hover:text-white">Explorer les entreprises →</span>
+                </a>
+                <a [routerLink]="associatesHref()" class="group flex flex-col rounded-xl border border-white/20 bg-white/[0.06] p-5 transition-colors hover:border-white/60 hover:bg-white/[0.1]">
+                  <span class="text-lg font-bold text-white">Trouver un associé et créer son équipe</span>
+                  <span class="mt-1.5 flex-1 text-base leading-relaxed text-white/70">Présentez votre projet ou rejoignez une équipe qui cherche vos compétences.</span>
+                  <span class="mt-4 font-semibold text-[#9DB8FF] group-hover:text-white">Explorer les projets et associés →</span>
+                </a>
+              </div>
+              <p class="mt-4 text-base text-white/60">
+                Vous pensez à vendre ? <a routerLink="/estimation" class="font-semibold text-white underline-offset-4 hover:underline">Estimez votre entreprise gratuitement</a>
+              </p>
+            } @else {
+              <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+                <a routerLink="/ma" class="rounded-lg border border-white/30 px-6 py-3.5 text-center font-semibold text-white transition-colors hover:border-white/70">Voir toutes les annonces</a>
+                <a routerLink="/estimation" class="rounded-lg border border-white/30 px-6 py-3.5 text-center font-semibold text-white transition-colors hover:border-white/70">Estimer mon entreprise gratuitement</a>
+              </div>
+            }
           </div>
 
           @if (featuredListing(); as item) {
-            <figure class="relative lg:col-span-6 lg:min-h-[30rem]">
+            <figure class="relative lg:col-span-6" [class]="showAssociates ? 'lg:min-h-[46rem]' : 'lg:min-h-[30rem]'">
               <article class="relative mx-auto max-w-[27rem] rounded-2xl bg-[#DCE5F7] p-6 text-primary shadow-2xl sm:p-7 lg:absolute lg:left-0 lg:top-0 lg:w-[25rem]" aria-label="Annonce en ligne">
                 <div class="flex items-start justify-between gap-4">
                   <div class="min-w-0">
@@ -108,24 +136,43 @@ interface LandingFaqItem {
                 </div>
               </article>
 
-              <aside class="relative z-10 mx-auto -mt-4 w-[20rem] max-w-full rounded-2xl bg-[#DCE5F7] p-5 text-primary shadow-2xl lg:absolute lg:bottom-0 lg:right-0 lg:mt-0" aria-label="Exemple de profil repreneur">
-                <p class="text-sm font-semibold text-primary/60">Exemple de profil repreneur</p>
-                <div class="mt-3 flex items-center gap-3">
-                  <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-primary font-bold text-white" aria-hidden="true">R</span>
-                  <div class="min-w-0">
-                    <p class="font-bold leading-snug">Ancien directeur commercial</p>
-                    <p class="text-sm text-primary/70">Budget 300 à 600 k€ · E-commerce</p>
+              @if (showAssociates) {
+                <aside class="relative z-10 mx-auto -mt-4 w-[21rem] max-w-full rounded-2xl bg-white p-5 text-primary shadow-2xl lg:absolute lg:bottom-0 lg:right-0 lg:mt-0" aria-label="Exemple de projet qui constitue son équipe">
+                  <p class="text-sm font-semibold text-primary/60">Exemple de projet · Lyon</p>
+                  <p class="mt-1 text-lg font-bold leading-snug">Logiciel de planning pour les cabinets infirmiers</p>
+                  <p class="mt-1 text-sm text-primary/70">Prototype en test chez 4 cabinets</p>
+                  <p class="mt-4 text-sm font-semibold text-primary/60">Cherche à rejoindre l'équipe</p>
+                  <ul class="mt-2 space-y-2">
+                    <li class="flex items-center justify-between gap-2 rounded-lg bg-secondary px-3 py-2">
+                      <span class="font-semibold">Associé technique</span>
+                      <span class="rounded-full bg-accent/10 px-2 py-0.5 text-sm font-semibold text-accent">Prioritaire</span>
+                    </li>
+                    <li class="flex items-center justify-between gap-2 rounded-lg bg-secondary px-3 py-2">
+                      <span class="font-semibold">Profil commercial</span>
+                      <span class="rounded-full bg-secondary px-2 py-0.5 text-sm font-semibold text-primary/60 ring-1 ring-border">Ouvert</span>
+                    </li>
+                  </ul>
+                </aside>
+              } @else {
+                <aside class="relative z-10 mx-auto -mt-4 w-[20rem] max-w-full rounded-2xl bg-[#DCE5F7] p-5 text-primary shadow-2xl lg:absolute lg:bottom-0 lg:right-0 lg:mt-0" aria-label="Exemple de profil repreneur">
+                  <p class="text-sm font-semibold text-primary/60">Exemple de profil repreneur</p>
+                  <div class="mt-3 flex items-center gap-3">
+                    <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-primary font-bold text-white" aria-hidden="true">R</span>
+                    <div class="min-w-0">
+                      <p class="font-bold leading-snug">Ancien directeur commercial</p>
+                      <p class="text-sm text-primary/70">Budget 300 à 600 k€ · E-commerce</p>
+                    </div>
                   </div>
-                </div>
-                <div class="mt-4 space-y-2" aria-hidden="true">
-                  <div class="h-2.5 w-full rounded bg-primary/10"></div>
-                  <div class="h-2.5 w-2/3 rounded bg-primary/10"></div>
-                </div>
-                <div class="mt-4 grid grid-cols-2 gap-2 text-sm font-semibold" aria-hidden="true">
-                  <span class="rounded-lg border border-primary/25 py-2 text-center text-primary/70">Refuser</span>
-                  <span class="rounded-lg bg-accent py-2 text-center text-white">Accepter</span>
-                </div>
-              </aside>
+                  <div class="mt-4 space-y-2" aria-hidden="true">
+                    <div class="h-2.5 w-full rounded bg-primary/10"></div>
+                    <div class="h-2.5 w-2/3 rounded bg-primary/10"></div>
+                  </div>
+                  <div class="mt-4 grid grid-cols-2 gap-2 text-sm font-semibold" aria-hidden="true">
+                    <span class="rounded-lg border border-primary/25 py-2 text-center text-primary/70">Refuser</span>
+                    <span class="rounded-lg bg-accent py-2 text-center text-white">Accepter</span>
+                  </div>
+                </aside>
+              }
             </figure>
           }
         </div>
@@ -326,6 +373,7 @@ interface LandingFaqItem {
 export class LandingComponent implements OnInit {
   private readonly maService = inject(MaService);
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
   private readonly listings = signal<MaListingData[]>([]);
 
   readonly heroQuery = signal('');
@@ -401,6 +449,9 @@ export class LandingComponent implements OnInit {
     },
   ];
 
+  readonly showAssociates = FEATURES.associates;
+  // Porteurs de projet et associés connectés : recherche complète ; les autres : vitrine publique.
+  readonly associatesHref = computed(() => (isTalentMarketplaceRole(this.auth.currentUser()?.profileType) ? '/recherche' : '/associes'));
   readonly visibleAudiences = this.audiences.filter(audience => !('feature' in audience) || FEATURES.associates);
 
   readonly steps = [

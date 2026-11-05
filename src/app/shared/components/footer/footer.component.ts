@@ -52,7 +52,7 @@ export class FooterComponent {
         { label: 'Entreprises à reprendre', href: '/ma' },
         { label: 'Céder mon entreprise', href: '/ma/deposer' },
         { label: 'Estimer mon entreprise', href: '/estimation' },
-        ...(FEATURES.associates ? [{ label: 'Trouver un associé', href: '/associes' }] : []),
+        ...(FEATURES.associates ? [{ label: 'Associés & équipe', href: '/associes' }] : []),
         ...(FEATURES.pros ? [{ label: 'Annuaire des professionnels', href: '/pros' }] : []),
         { label: 'Tarifs', href: '/tarifs' },
       ],
