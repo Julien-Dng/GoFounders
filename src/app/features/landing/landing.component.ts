@@ -181,6 +181,8 @@ interface LandingFaqItem {
         </div>
       </section>
 
+      <!-- Téléphones : les annonces en cours passent avant le bandeau et les étapes (ordre visuel seulement). -->
+      <div class="flex flex-col">
       <section class="bg-[#16243B] px-4 py-9 text-white sm:px-6 lg:px-8" aria-label="Les engagements de GoFounders">
         <dl class="mx-auto grid max-w-[78rem] grid-cols-2 gap-y-8 text-center lg:grid-cols-4">
           @for (fact of facts; track fact.label; let last = $last) {
@@ -193,16 +195,19 @@ interface LandingFaqItem {
         </dl>
       </section>
 
-      <section class="bg-secondary px-4 py-16 sm:px-6 lg:px-8 lg:py-24" aria-labelledby="steps-title">
+      <section class="bg-secondary px-4 py-12 sm:py-16 sm:px-6 lg:px-8 lg:py-24" aria-labelledby="steps-title">
         <div class="mx-auto max-w-[78rem]">
           <h2 id="steps-title" class="text-center text-3xl text-primary sm:text-4xl">Comment se passe une reprise</h2>
           <p class="mx-auto mt-3 max-w-[56ch] text-center text-lg text-muted-foreground">Trois étapes, sans intermédiaire ni commission.</p>
-          <ol class="mt-12 grid gap-6 md:grid-cols-3">
+          <ol class="mt-8 grid gap-3 sm:mt-12 sm:gap-6 md:grid-cols-3">
             @for (step of steps; track step.title; let index = $index) {
-              <li class="rounded-2xl bg-white p-7 shadow-lg">
-                <span class="tabular flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 text-lg font-extrabold text-accent">{{ index + 1 }}</span>
-                <h3 class="mt-5 text-xl font-bold text-primary">{{ step.title }}</h3>
-                <p class="mt-2 text-base leading-relaxed text-muted-foreground">{{ step.description }}</p>
+              <li class="flex gap-4 rounded-2xl bg-white p-4 shadow-lg sm:block sm:p-7">
+                <span class="tabular flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-accent/10 font-extrabold text-accent sm:h-11 sm:w-11 sm:text-lg">{{ index + 1 }}</span>
+                <div>
+                  <h3 class="text-lg font-bold text-primary sm:mt-5 sm:text-xl">{{ step.title }}</h3>
+                  <p class="mt-1 text-base leading-relaxed text-muted-foreground sm:hidden">{{ step.short }}</p>
+                  <p class="mt-2 hidden text-base leading-relaxed text-muted-foreground sm:block">{{ step.description }}</p>
+                </div>
               </li>
             }
           </ol>
@@ -210,7 +215,7 @@ interface LandingFaqItem {
       </section>
 
       @if (latestListings().length > 0) {
-        <section class="px-4 py-16 sm:px-6 lg:px-8 lg:py-24" aria-labelledby="latest-title">
+        <section class="max-sm:order-first px-4 py-12 sm:py-16 sm:px-6 lg:px-8 lg:py-24" aria-labelledby="latest-title">
           <div class="mx-auto max-w-[78rem]">
             <h2 id="latest-title" class="text-center text-3xl text-primary sm:text-4xl">En ce moment sur GoFounders</h2>
             <p class="mx-auto mt-3 max-w-[56ch] text-center text-lg text-muted-foreground">Quelques entreprises actuellement à reprendre.</p>
@@ -242,6 +247,7 @@ interface LandingFaqItem {
           </div>
         </section>
       }
+      </div>
 
       <section class="hidden bg-secondary px-4 py-16 sm:block sm:px-6 lg:px-8 lg:py-24" aria-label="Notre conviction">
         <div class="mx-auto grid max-w-[78rem] items-center gap-10 overflow-hidden rounded-3xl bg-white shadow-lg lg:grid-cols-12 lg:gap-0">
@@ -458,9 +464,9 @@ export class LandingComponent implements OnInit {
   readonly visibleAudiences = this.audiences.filter(audience => !('feature' in audience) || FEATURES.associates);
 
   readonly steps = [
-    { title: 'Parcourez les annonces', description: 'Secteur, chiffre d’affaires, marge, ancienneté et fourchette de prix : les annonces anonymisées sont visibles par tous.' },
-    { title: 'Demandez l’accès au dossier', description: 'Gratuitement : vous vous présentez et acceptez un engagement de confidentialité. Si le cédant accepte, vous débloquez son dossier complet et son contact pour 50 €.' },
-    { title: 'Échangez avec le cédant', description: 'Vous discutez directement avec le vendeur, sans intermédiaire. Faites-vous accompagner par un expert-comptable et un avocat pour sécuriser la suite.' },
+    { title: 'Parcourez les annonces', short: 'Chiffres clés visibles par tous, entreprises anonymisées.', description: 'Secteur, chiffre d’affaires, marge, ancienneté et fourchette de prix : les annonces anonymisées sont visibles par tous.' },
+    { title: 'Demandez l’accès au dossier', short: 'Gratuit. Si le cédant accepte, 50 € ouvrent son dossier et son contact.', description: 'Gratuitement : vous vous présentez et acceptez un engagement de confidentialité. Si le cédant accepte, vous débloquez son dossier complet et son contact pour 50 €.' },
+    { title: 'Échangez avec le cédant', short: 'En direct, sans intermédiaire ni commission sur la vente.', description: 'Vous discutez directement avec le vendeur, sans intermédiaire. Faites-vous accompagner par un expert-comptable et un avocat pour sécuriser la suite.' },
   ];
 
   readonly protectionPoints = [
