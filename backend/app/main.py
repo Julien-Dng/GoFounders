@@ -217,7 +217,7 @@ async def coaching_message(
 # --- Outils IA de la marketplace M&A (refonte « reprise ») -------------------------------------------
 
 MA_AI_REQUESTS_PER_HOUR = 10
-# Analyses de dossier par mois avec l'accès repreneur 149 € ; illimitées avec l'accès Plus.
+# Analyses de dossier par mois pour un repreneur (dossiers débloqués uniquement) ; illimitées avec l'ancien accès Plus.
 FREE_ANALYSES_PER_MONTH = 3
 
 
@@ -255,18 +255,17 @@ async def ma_listing_analysis(
     supabase: Annotated[SupabaseClient, Depends(get_supabase)],
     ma_ai: Annotated[MaAi, Depends(get_ma_ai)],
 ) -> ListingAnalysis:
-    """Acheteur avec un accès repreneur en cours et une demande acceptée : analyse du dossier d'une annonce active."""
+    """Repreneur dont la mise en relation est débloquée (demande acceptée et payée) : analyse du dossier."""
     try:
         role = await supabase.get_role(user_id)
-        has_access = role == "buyer" and await supabase.has_active_ma_access(user_id)
-        approved = has_access and await supabase.has_approved_listing_access(str(listing_id), user_id)
+        unlocked = role == "buyer" and await supabase.has_approved_listing_access(str(listing_id), user_id)
     except SupabaseError as error:
         logger.error("Accès M&A illisible : %s", error)
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, "Données du profil indisponibles") from error
-    if not has_access:
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "L'analyse de dossier est réservée aux repreneurs avec un accès en cours")
-    if not approved:
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "Le cédant doit d'abord accepter votre demande d'accès à ce dossier")
+    if role != "buyer":
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "L'analyse de dossier est réservée aux comptes repreneur")
+    if not unlocked:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Débloquez d'abord la mise en relation avec le cédant pour analyser ce dossier")
 
     try:
         listing = await supabase.load_listing_for_analysis(str(listing_id))
@@ -285,7 +284,7 @@ async def ma_listing_analysis(
     if not allowed:
         raise HTTPException(
             status.HTTP_402_PAYMENT_REQUIRED,
-            f"Vous avez utilisé vos {FREE_ANALYSES_PER_MONTH} analyses du mois. Passez à l'accès Plus pour des analyses illimitées.",
+            f"Vous avez utilisé vos {FREE_ANALYSES_PER_MONTH} analyses du mois. Elles seront de nouveau disponibles le mois prochain.",
         )
 
     try:
@@ -350,7 +349,11 @@ async def create_checkout(
             raise HTTPException(status.HTTP_403_FORBIDDEN, "Cette offre n'est pas disponible pour votre type de compte")
 
         listing_id = str(payload.listing_id) if payload.listing_id else None
-        if offer.needs_listing:
+        if offer.needs_listing and offer.buyer_side:
+            # Mise en relation : seulement une demande acceptée par le cédant et pas encore débloquée.
+            if listing_id is None or not await supabase.can_unlock_listing(user_id, listing_id):
+                raise HTTPException(status.HTTP_409_CONFLICT, "Aucune demande acceptée à débloquer pour cette annonce")
+        elif offer.needs_listing:
             if listing_id is None or not await supabase.owns_listing(user_id, listing_id):
                 raise HTTPException(status.HTTP_404_NOT_FOUND, "Annonce introuvable ou qui ne vous appartient pas")
             if payload.product == "VERIFICATION" and len((payload.evidence or "").strip()) < 20:

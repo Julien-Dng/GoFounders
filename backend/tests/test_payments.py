@@ -25,10 +25,11 @@ SECRET = "whsec_test"
 
 
 class FakeSupabase:
-    def __init__(self, role: str = "buyer", customer: str | None = None, owns: bool = True) -> None:
+    def __init__(self, role: str = "buyer", customer: str | None = None, owns: bool = True, can_unlock: bool = True) -> None:
         self.role = role
         self.customer = customer
         self.owns = owns
+        self.can_unlock = can_unlock
         self.purchases: list[dict] = []
         self.extended: list[tuple] = []
         self.ended: list[tuple] = []
@@ -44,6 +45,9 @@ class FakeSupabase:
 
     async def owns_listing(self, user_id: str, listing_id: str) -> bool:
         return self.owns
+
+    async def can_unlock_listing(self, user_id: str, listing_id: str) -> bool:
+        return self.can_unlock
 
     async def apply_purchase(self, **kwargs) -> bool:
         self.purchases.append(kwargs)
@@ -178,6 +182,29 @@ def test_listing_offer_requires_own_listing(client_for):
     client = client_for(FakeSupabase("seller", owns=False))
     response = client.post("/api/paiements/session", json={"product": "FEATURE_7D", "listing_id": LISTING_ID}, headers=AUTH)
     assert response.status_code == 404
+
+
+def test_intro_checkout_for_an_accepted_request(client_for):
+    supabase, stripe = FakeSupabase("buyer"), FakeStripe()
+    response = client_for(supabase, stripe).post("/api/paiements/session", json={"product": "INTRO", "listing_id": LISTING_ID}, headers=AUTH)
+    assert response.status_code == 200
+    session = stripe.sessions[0]
+    assert session["line_items"][0]["price_data"]["unit_amount"] == 5000
+    assert session["metadata"]["listing_id"] == LISTING_ID
+    assert session["cancel_url"].endswith(f"/ma/annonce/{LISTING_ID}?paiement=annule")
+    assert session["success_url"].endswith(f"/ma/annonce/{LISTING_ID}?paiement=merci")
+
+
+def test_intro_refused_without_accepted_request(client_for):
+    stripe = FakeStripe()
+    response = client_for(FakeSupabase("buyer", can_unlock=False), stripe).post("/api/paiements/session", json={"product": "INTRO", "listing_id": LISTING_ID}, headers=AUTH)
+    assert response.status_code == 409
+    assert stripe.sessions == []
+
+
+def test_intro_requires_listing_and_buyer(client_for):
+    assert client_for(FakeSupabase("buyer")).post("/api/paiements/session", json={"product": "INTRO"}, headers=AUTH).status_code == 409
+    assert client_for(FakeSupabase("seller")).post("/api/paiements/session", json={"product": "INTRO", "listing_id": LISTING_ID}, headers=AUTH).status_code == 403
 
 
 def test_verification_requires_evidence(client_for):

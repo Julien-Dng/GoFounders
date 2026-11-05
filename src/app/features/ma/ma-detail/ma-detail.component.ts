@@ -157,6 +157,9 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
               }
 
               } @else {
+                @if (paymentNotice()) {
+                  <p class="mb-4 rounded-lg bg-accent/10 px-4 py-3 text-base font-medium text-primary" role="status">{{ paymentNotice() }}</p>
+                }
                 <section aria-labelledby="locked-title" class="relative min-h-[30rem] overflow-hidden rounded-xl bg-secondary">
                   <div class="space-y-3 p-6 blur-[3px] sm:p-8" aria-hidden="true">
                     @for (width of skeleton; track $index) {
@@ -178,6 +181,11 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
                         <p class="mt-4 text-base font-semibold" [class]="requestStatusCss()">{{ requestStatusText() }}</p>
                         @if (!myRequest()) {
                           <button type="button" (click)="scrollToRequest()" class="mt-4 block w-full rounded-lg border border-primary px-5 py-3 text-center font-semibold text-primary transition-colors hover:bg-primary hover:text-white">Demander l'accès au dossier</button>
+                        } @else if (needsUnlock()) {
+                          <button type="button" (click)="buyAccess()" [disabled]="buying()" class="mt-4 block w-full rounded-lg bg-accent px-5 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-wait disabled:opacity-60">{{ buying() ? 'Ouverture du paiement…' : unlockLabel }}</button>
+                          @if (buyError()) {
+                            <p class="mt-3 text-sm font-medium text-red-700" role="alert">{{ buyError() }}</p>
+                          }
                         }
                       } @else if (cta()) {
                         @if (cta()!.buy) {
@@ -199,7 +207,8 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
                   <section id="demande-acces" class="mt-8 scroll-mt-24 rounded-xl bg-secondary p-6" aria-labelledby="request-title">
                     <h2 id="request-title" class="text-2xl text-primary">Demander l'accès au dossier</h2>
                     <p class="mt-2 text-base text-muted-foreground">
-                      Le cédant reçoit votre présentation et décide de vous ouvrir son dossier. Vous êtes prévenu de sa réponse.
+                      Gratuit. Le cédant reçoit votre présentation et décide d'échanger avec vous ; vous êtes prévenu de sa réponse.
+                      S'il accepte, vous débloquez son dossier complet et son contact pour {{ introPrice }}. Aucun paiement s'il refuse.
                     </p>
                     <label for="request-message" class="mb-1.5 mt-5 block font-semibold text-primary">Présentez-vous et votre projet de reprise</label>
                     <textarea id="request-message" rows="5" maxlength="1500" [value]="requestMessage()" (input)="requestMessage.set($any($event.target).value)" class="w-full resize-y rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" placeholder="Parcours, budget et financement envisagés, pourquoi cette entreprise vous intéresse, délai souhaité."></textarea>
@@ -270,9 +279,6 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
 
                   @if (analysisError()) {
                     <p class="mt-4 text-base text-destructive" role="alert">{{ analysisError() }}</p>
-                    @if (features.buyerPlus && analysisError().includes('Plus')) {
-                      <a routerLink="/tarifs" fragment="repreneurs" class="mt-2 inline-block font-medium text-accent hover:underline">Découvrir l'accès Plus</a>
-                    }
                   }
 
                   @if (analysis(); as result) {
@@ -327,6 +333,14 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
                     <p class="text-base font-semibold" [class]="requestStatusCss()">{{ requestStatusText() }}</p>
                     @if (!myRequest()) {
                       <button type="button" (click)="scrollToRequest()" class="mt-4 block w-full rounded-lg bg-accent px-5 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90">Demander l'accès au dossier</button>
+                    } @else if (needsUnlock()) {
+                      <button type="button" (click)="buyAccess()" [disabled]="buying()" class="mt-4 block w-full rounded-lg bg-accent px-5 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-wait disabled:opacity-60">{{ buying() ? 'Ouverture du paiement…' : unlockLabel }}</button>
+                      @if (buyError()) {
+                        <p class="mt-3 text-sm font-medium text-red-700" role="alert">{{ buyError() }}</p>
+                      }
+                    }
+                    @if (!myRequest() || needsUnlock()) {
+                      <p class="mt-3 text-sm text-muted-foreground">{{ pricingNote }}</p>
                     }
                   </div>
                 } @else if (!hasDossier()) {
@@ -363,7 +377,7 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
             </aside>
           </div>
 
-          @if (canContact() || cta() || (canRequest() && !myRequest())) {
+          @if (canContact() || cta() || (canRequest() && !myRequest()) || needsUnlock()) {
             <div class="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-4 border-t border-border bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
               <div class="min-w-0">
                 <p class="text-sm text-muted-foreground">Prix demandé</p>
@@ -373,6 +387,8 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
                 <a [routerLink]="'/messages'" [queryParams]="{ conversation: item.ownerId }" class="flex-shrink-0 rounded bg-accent px-5 py-3 font-medium text-white">Contacter</a>
               } @else if (canRequest() && !myRequest()) {
                 <button type="button" (click)="scrollToRequest()" class="flex-shrink-0 rounded bg-accent px-5 py-3 font-medium text-white">Demander l'accès</button>
+              } @else if (needsUnlock()) {
+                <button type="button" (click)="buyAccess()" [disabled]="buying()" class="flex-shrink-0 rounded bg-accent px-5 py-3 font-medium text-white disabled:opacity-60">{{ buying() ? 'Ouverture…' : 'Débloquer · ' + introPrice }}</button>
               } @else if (cta()) {
                 @if (cta()!.buy) {
                   <button type="button" (click)="buyAccess()" [disabled]="buying()" class="flex-shrink-0 rounded bg-accent px-5 py-3 font-medium text-white disabled:opacity-60">{{ buying() ? 'Ouverture…' : cta()!.short }}</button>
@@ -504,16 +520,19 @@ export class MaDetailComponent implements OnInit {
     'Les coordonnées du cédant et la messagerie',
     "L'analyse du dossier (points forts, vigilance, questions)",
   ];
-  private readonly accessLabel = OFFER_PRICES.MA_ACCESS.label.replace(/ /g, '\u00a0');
+  // Mise en relation à l'unité : demande gratuite, puis paiement seulement si le cédant accepte.
+  readonly introPrice = OFFER_PRICES.INTRO.label.replace(/ /g, '\u00a0');
+  readonly unlockLabel = `Débloquer le dossier et le contact · ${this.introPrice}`;
+  readonly pricingNote = `Demande gratuite. Vous ne payez ${this.introPrice} que si le cédant accepte d'échanger avec vous.`;
   readonly lockedMessage = computed(() => {
     const role = this.auth.currentUser()?.profileType;
 
     if (!this.isAuthenticated()) {
-      return `Réservé aux repreneurs avec l'accès (${this.accessLabel}). Créez votre compte repreneur pour commencer.`;
+      return `Créez votre compte repreneur (gratuit) et demandez l'accès au dossier. Si le cédant accepte, la mise en relation coûte ${this.introPrice}.`;
     }
 
     if (role === 'buyer') {
-      return `Avec l'accès repreneur (${this.accessLabel}), demandez ce dossier : le cédant vous l'ouvre s'il accepte votre demande.`;
+      return `Demandez l'accès gratuitement. Si le cédant accepte, débloquez son dossier et son contact pour ${this.introPrice}.`;
     }
 
     return 'Le dossier complet est réservé aux comptes repreneur.';
@@ -527,15 +546,10 @@ export class MaDetailComponent implements OnInit {
       return { label: 'Créer un compte repreneur', short: 'Créer un compte', link: '/inscription', params: { profil: 'buyer', returnUrl: this.currentUrl() }, fragment: undefined, buy: false };
     }
 
-    if (this.isBuyer() && !this.auth.hasMaAccess()) {
-      // Le bouton lance directement le paiement (Stripe Checkout, ou paiement simulé en test).
-      return { label: "Prendre l'accès repreneur", short: "Prendre l'accès", link: '/tarifs', params: null, fragment: 'repreneurs', buy: true };
-    }
-
     return null;
   });
   readonly steps = [
-    { title: 'Demandez l’accès au dossier', text: "Présentez-vous et acceptez l'engagement de confidentialité. Si le cédant accepte, vous lisez son dossier et vous échangez dans la messagerie ; le nom de l'entreprise vous est communiqué s'il donne suite." },
+    { title: 'Demandez l’accès au dossier', text: "Gratuitement : présentez-vous et acceptez l'engagement de confidentialité. Si le cédant accepte, la mise en relation (50 €) ouvre son dossier complet, ses coordonnées et la messagerie ; le nom de l'entreprise vous est communiqué s'il donne suite." },
     { title: 'Demandez les justificatifs', text: "Bilans des trois derniers exercices, relevés de chiffre d'affaires, accès en lecture aux outils (analytics, paiements, comptabilité)." },
     { title: 'Faites-vous accompagner', text: "Un expert-comptable et un avocat vérifient le dossier avant toute lettre d'intention. GoFounders n'intervient pas dans la négociation." },
   ];
@@ -543,17 +557,27 @@ export class MaDetailComponent implements OnInit {
   // Analyse de dossier par l'IA : réservée aux repreneurs (contrôle d'accès refait côté back).
   readonly isBuyer = computed(() => this.auth.currentUser()?.profileType === 'buyer');
 
-  // Accès repreneur depuis la fiche : redirection vers le paiement, ou activation immédiate en paiement simulé.
+  // Mise en relation (50 €) : redirection vers le paiement, ou déblocage immédiat en paiement simulé.
   async buyAccess(): Promise<void> {
+    const listing = this.listing();
+
+    if (!listing) {
+      return;
+    }
+
     this.buyError.set('');
     this.buying.set(true);
 
     try {
-      const result = await this.payment.purchase('MA_ACCESS');
+      const result = await this.payment.purchaseForListing('INTRO', listing.id);
 
       if (!result.success) {
         this.buyError.set(result.message);
+        return;
       }
+
+      // Paiement simulé : droits déjà accordés. Stripe : la page est quittée pour le paiement.
+      await this.loadListing();
     } finally {
       this.buying.set(false);
     }
@@ -567,7 +591,9 @@ export class MaDetailComponent implements OnInit {
   readonly requestBusy = signal(false);
   readonly requestError = signal('');
   readonly ndaVersion = MA_NDA_VERSION;
-  readonly canRequest = computed(() => this.isBuyer() && this.auth.hasMaAccess() && !this.hasDossier() && !this.isOwner() && !!this.listing());
+  readonly canRequest = computed(() => this.isBuyer() && !this.hasDossier() && !this.isOwner() && !!this.listing());
+  // Le cédant a accepté : reste à payer la mise en relation pour ouvrir le dossier et le contact.
+  readonly needsUnlock = computed(() => this.canRequest() && this.myRequest()?.status === 'approved' && !this.myRequest()?.unlocked);
   readonly ndaArticles = computed(() => {
     const listing = this.listing();
     return maNdaArticles({
@@ -584,6 +610,10 @@ export class MaDetailComponent implements OnInit {
 
     if (request.status === 'refused') {
       return 'Le cédant n’a pas donné suite à votre demande.';
+    }
+
+    if (request.status === 'approved' && !request.unlocked) {
+      return 'Le cédant accepte d’échanger avec vous. Débloquez la mise en relation pour lire son dossier complet et obtenir son contact.';
     }
 
     return `Demande envoyée le ${new Date(request.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} : le cédant vous répond depuis son espace, vous serez prévenu.`;
@@ -615,11 +645,12 @@ export class MaDetailComponent implements OnInit {
       }
 
       if (result.status === 'approved') {
+        // Déjà acceptée (ou mode démo) : on recharge l'état, le déblocage reste à faire.
         await this.loadListing();
         return;
       }
 
-      this.myRequest.set({ status: 'pending', created_at: new Date().toISOString(), decided_at: null });
+      this.myRequest.set({ status: 'pending', created_at: new Date().toISOString(), decided_at: null, unlocked: false });
     } finally {
       this.requestBusy.set(false);
     }
@@ -658,8 +689,35 @@ export class MaDetailComponent implements OnInit {
     }
   }
 
+  // Retour de Stripe sur la fiche : le webhook peut arriver quelques secondes après le paiement.
+  readonly paymentNotice = signal('');
+
   ngOnInit(): void {
-    void this.loadListing();
+    void this.loadListing().then(() => this.handlePaymentReturn());
+  }
+
+  private async handlePaymentReturn(): Promise<void> {
+    const outcome = this.route.snapshot.queryParamMap.get('paiement');
+
+    if (outcome === 'annule') {
+      this.paymentNotice.set('Paiement annulé : aucun montant n’a été prélevé.');
+      return;
+    }
+
+    if (outcome !== 'merci' || this.hasDossier()) {
+      return;
+    }
+
+    this.paymentNotice.set('Paiement reçu : ouverture du dossier en cours…');
+    for (const delay of [2000, 3000, 5000, 8000]) {
+      await new Promise(resolve => setTimeout(resolve, delay));
+      await this.loadListing();
+      if (this.hasDossier()) {
+        this.paymentNotice.set('');
+        return;
+      }
+    }
+    this.paymentNotice.set('Paiement reçu. Le dossier s’ouvre dès que la confirmation de Stripe arrive : rechargez la page dans une minute.');
   }
 
   private async loadListing(): Promise<void> {
@@ -672,7 +730,7 @@ export class MaDetailComponent implements OnInit {
     this.loadedListing.set(listing);
     this.loaded.set(true);
 
-    if (listing && !dossier && this.isBuyer() && this.auth.hasMaAccess()) {
+    if (listing && !dossier && this.isBuyer()) {
       this.myRequest.set(await this.access.getMyRequest(id));
     }
 

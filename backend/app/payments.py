@@ -26,10 +26,15 @@ class Offer:
     mode: Literal["payment", "subscription"]
     roles: frozenset[str] | None = None  # None : tous les rôles
     needs_listing: bool = False
+    # Offre liée à l'annonce d'un autre membre (mise en relation) plutôt qu'à une annonce du payeur.
+    buyer_side: bool = False
 
 
 OFFERS: dict[str, Offer] = {
     "PRO": Offer("GoFounders PRO", 2900, "subscription", frozenset({"entrepreneur", "talent"})),
+    # Mise en relation : dossier complet et contact d'un cédant qui a accepté la demande (novembre 2026).
+    "INTRO": Offer("Mise en relation avec le cédant", 5000, "payment", frozenset({"buyer"}), True, True),
+    # Anciennes offres repreneur (avant la mise en relation à l'unité) : plus proposées sur le site.
     "MA_ACCESS": Offer("Accès repreneur (12 mois)", 14900, "payment", frozenset({"buyer"})),
     "MA_PLUS": Offer("Accès repreneur Plus (12 mois)", 39000, "payment", frozenset({"buyer"})),
     "PRO_DIRECTORY": Offer("Annuaire des professionnels", 7900, "subscription", frozenset({"pro"})),
@@ -133,8 +138,12 @@ def checkout_params(
         "metadata": metadata,
         "locale": "fr",
         "allow_promotion_codes": True,
-        "success_url": f"{site_url}/paiement/merci?session_id={{CHECKOUT_SESSION_ID}}",
-        "cancel_url": f"{site_url}/tarifs?paiement=annule",
+        "success_url": (
+            f"{site_url}/ma/annonce/{listing_id}?paiement=merci"
+            if offer.buyer_side and listing_id
+            else f"{site_url}/paiement/merci?session_id={{CHECKOUT_SESSION_ID}}"
+        ),
+        "cancel_url": f"{site_url}/ma/annonce/{listing_id}?paiement=annule" if offer.buyer_side and listing_id else f"{site_url}/tarifs?paiement=annule",
     }
     if offer.mode == "subscription":
         # Retrouvé dans les événements de renouvellement et de résiliation.

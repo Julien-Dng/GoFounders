@@ -166,9 +166,10 @@ LISTING = {
 }
 
 
-def test_analysis_requires_buyer_with_active_access(client_for):
+def test_analysis_requires_buyer_with_unlocked_dossier(client_for):
+    # Mise en relation non débloquée (demande en attente, refusée, ou acceptée mais non payée), ou compte non repreneur.
     backend = FakeJsonBackend(ANALYSIS)
-    for supabase in (FakeSupabase("buyer", has_access=False, listing=LISTING), FakeSupabase("seller", has_access=True, listing=LISTING)):
+    for supabase in (FakeSupabase("buyer", approved=False, listing=LISTING), FakeSupabase("seller", approved=True, listing=LISTING)):
         client = client_for(supabase, backend)
         assert client.post(f"/api/ma/annonces/{LISTING_ID}/analyse", headers=AUTH).status_code == 403
     assert backend.calls == []
@@ -288,12 +289,12 @@ def test_listing_as_text_formats_enriched_fields():
     assert "Canaux d'acquisition : non renseigné" in text
 
 
-def test_analysis_requires_accepted_access_request(client_for):
+def test_analysis_requires_unlocked_access_request(client_for):
     backend = FakeJsonBackend(ANALYSIS)
     client = client_for(FakeSupabase("buyer", has_access=True, listing=LISTING, approved=False), backend)
     response = client.post(f"/api/ma/annonces/{LISTING_ID}/analyse", headers=AUTH)
     assert response.status_code == 403
-    assert "accepter" in response.json()["detail"]
+    assert "Débloquez" in response.json()["detail"]
     assert backend.calls == []
 
 

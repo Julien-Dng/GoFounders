@@ -3,7 +3,8 @@
 // simulation, webhook Stripe ensuite) : voir supabase/2026-10-20b-offres-reprise.sql.
 
 export type AccountProduct = 'PRO' | 'PREMIUM' | 'MA_ACCESS' | 'MA_PLUS' | 'PRO_DIRECTORY' | 'PRO_ACCOUNT';
-export type ListingProduct = 'FEATURE_7D' | 'FEATURE_30D' | 'VERIFICATION';
+// INTRO : mise en relation avec le cédant d'une annonce (payée par le repreneur, après acceptation).
+export type ListingProduct = 'FEATURE_7D' | 'FEATURE_30D' | 'VERIFICATION' | 'INTRO';
 
 export interface OfferPrice {
   amount: number;
@@ -14,11 +15,13 @@ export const OFFER_PRICES: Record<AccountProduct | ListingProduct, OfferPrice> =
   // Prix de lancement à tester (associés & équipe), sans engagement.
   PRO: { amount: 29, label: '29 € / mois' },
   PREMIUM: { amount: 0, label: 'Sur devis' },
+  // Ancien accès repreneur annuel : plus proposé (remplacé par INTRO), gardé pour les accès déjà payés.
   MA_ACCESS: { amount: 149, label: '149 € / an' },
   MA_PLUS: { amount: 390, label: '390 € / an' },
   FEATURE_7D: { amount: 14, label: '14 € (7 jours)' },
   FEATURE_30D: { amount: 49, label: '49 € (30 jours)' },
   VERIFICATION: { amount: 199, label: '199 € une fois' },
+  INTRO: { amount: 50, label: '50 €' },
   PRO_DIRECTORY: { amount: 79, label: '79 € / mois' },
   PRO_ACCOUNT: { amount: 199, label: '199 € / mois' },
 };

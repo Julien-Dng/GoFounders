@@ -8,7 +8,7 @@ export const FEATURES = {
   // Assistant IA personnel /coaching-ia (lié à l'offre PRO).
   assistant: false,
   // Accès repreneur Plus (390 €/an : analyses illimitées, alertes).
-  buyerPlus: true,
+  buyerPlus: false,
   // Offres cédant payantes : mise en avant (14 € ou 49 €) et dossier vérifié (199 €).
   sellerPaidOffers: true,
 } as const;

@@ -305,9 +305,9 @@ interface LandingFaqItem {
 
       <section class="bg-secondary px-4 py-16 sm:px-6 lg:px-8 lg:py-24" aria-labelledby="prices-title">
         <div class="mx-auto max-w-[78rem]">
-          <h2 id="prices-title" class="text-center text-3xl text-primary sm:text-4xl">Vendre est gratuit. Reprendre coûte {{ buyerPrice }}.</h2>
+          <h2 id="prices-title" class="text-center text-3xl text-primary sm:text-4xl">Vendre est gratuit. Une mise en relation coûte {{ buyerPrice }}.</h2>
           <p class="mx-auto mt-3 max-w-[60ch] text-center text-lg text-muted-foreground">
-            Pas de commission sur la vente. Les repreneurs paient l'accès aux dossiers complets, une fois par an.
+            Pas de commission sur la vente. Le repreneur ne paie que lorsqu'un cédant accepte d'échanger avec lui.
           </p>
           <div class="mx-auto mt-12 grid max-w-4xl gap-6 md:grid-cols-2">
             @for (row of priceRows; track row.who; let first = $first) {
@@ -383,11 +383,11 @@ export class LandingComponent implements OnInit {
   readonly facts = [
     { value: '0 %', label: 'de commission sur la vente' },
     { value: 'Gratuit', label: 'pour publier une annonce' },
-    { value: '149 €', label: "l'accès repreneur, pour 12 mois" },
+    { value: OFFER_PRICES.INTRO.label, label: 'par mise en relation acceptée par le cédant' },
     { value: 'NDA', label: 'accepté par chaque repreneur avant votre dossier' },
   ];
 
-  readonly buyerPrice = OFFER_PRICES.MA_ACCESS.label.replace(' / ', ' par ');
+  readonly buyerPrice = OFFER_PRICES.INTRO.label;
 
   readonly euros = formatEuros;
   readonly multiple = formatMultiple;
@@ -456,7 +456,7 @@ export class LandingComponent implements OnInit {
 
   readonly steps = [
     { title: 'Parcourez les annonces', description: 'Secteur, chiffre d’affaires, marge, ancienneté et fourchette de prix : les annonces anonymisées sont visibles par tous.' },
-    { title: 'Demandez l’accès au dossier', description: 'Avec l’accès repreneur, vous vous présentez et acceptez un engagement de confidentialité. Le cédant vous ouvre son dossier complet.' },
+    { title: 'Demandez l’accès au dossier', description: 'Gratuitement : vous vous présentez et acceptez un engagement de confidentialité. Si le cédant accepte, vous débloquez son dossier complet et son contact pour 50 €.' },
     { title: 'Échangez avec le cédant', description: 'Vous discutez directement avec le vendeur, sans intermédiaire. Faites-vous accompagner par un expert-comptable et un avocat pour sécuriser la suite.' },
   ];
 
@@ -468,13 +468,13 @@ export class LandingComponent implements OnInit {
 
   readonly priceRows = [
     { who: 'Cédant', detail: 'Annonce anonymisée, contacts directs des repreneurs.', price: 'Gratuit', href: '/ma/deposer', cta: 'Déposer une annonce' },
-    { who: 'Repreneur', detail: 'Pendant 12 mois, demandez l’accès aux dossiers complets et échangez avec les vendeurs.', price: OFFER_PRICES.MA_ACCESS.label, href: '/tarifs', cta: 'Voir l’accès repreneur' },
+    { who: 'Repreneur', detail: 'Demande d’accès gratuite. Vous ne payez que si le cédant accepte : dossier complet, contact et messagerie.', price: `${OFFER_PRICES.INTRO.label} par mise en relation`, href: '/ma', cta: 'Voir les annonces' },
   ];
 
   readonly faq: LandingFaqItem[] = [
     { question: 'Quel type d’entreprises trouve-t-on sur GoFounders ?', answer: 'Principalement des entreprises numériques françaises : SaaS, e-commerce, sites de contenu, petites agences, avec un chiffre d’affaires entre 50 k€ et 1 M€. Des TPE plus classiques peuvent aussi être proposées.' },
     { question: 'Mon annonce de cession est-elle confidentielle ?', answer: 'Oui. Seule une annonce anonymisée est publique, après relecture par notre équipe. Le dossier complet et vos coordonnées ne s’ouvrent qu’aux repreneurs que vous acceptez, après qu’ils ont accepté un engagement de confidentialité.' },
-    { question: 'Que comprend l’accès repreneur ?', answer: 'Pendant 12 mois, vous pouvez demander l’accès au dossier complet de chaque annonce. Dès que le vendeur accepte, vous lisez son dossier et échangez directement avec lui. 3 analyses de dossier par l’IA sont incluses chaque mois.' },
+    { question: 'Combien coûte la reprise pour un repreneur ?', answer: 'Créer son compte et demander l’accès à un dossier est gratuit. Si le cédant accepte votre demande, la mise en relation coûte 50 € : vous lisez son dossier complet, obtenez ses coordonnées et échangez avec lui. Aucun paiement s’il refuse, et aucune commission sur la vente.' },
     { question: 'GoFounders prend-il une commission sur la vente ?', answer: 'Non. La publication est gratuite pour les cédants et nous ne prenons aucun pourcentage sur le prix de vente.' },
     { question: 'GoFounders m’accompagne-t-il juridiquement ?', answer: 'Non, nous ne fournissons pas de conseil juridique. Nous vous mettons en relation avec des experts juridiques et comptables partenaires pour sécuriser la transaction.' },
   ];

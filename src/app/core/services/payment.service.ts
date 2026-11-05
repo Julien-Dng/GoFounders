@@ -7,6 +7,7 @@ import { canAccessMaDetails, canPublishMaListing } from '../models/user.model';
 import { API_URL } from './ai.service';
 import { AuthService } from './auth.service';
 import { SupabaseService } from './supabase.service';
+import { ListingAccessService } from './listing-access.service';
 
 export type PaymentMode = 'simulation' | 'stripe';
 export type PaymentProduct = AccountProduct;
@@ -26,6 +27,7 @@ const LISTING_MESSAGES: Record<ListingProduct, string> = {
   FEATURE_7D: 'Annonce mise en avant pendant 7 jours',
   FEATURE_30D: 'Annonce mise en avant pendant 30 jours',
   VERIFICATION: 'Demande de vérification envoyée : un membre de l’équipe GoFounders examine vos justificatifs',
+  INTRO: 'Mise en relation débloquée : le dossier complet et le contact du cédant sont ouverts',
 };
 
 export interface PaymentResult {
@@ -121,6 +123,9 @@ export class PaymentService {
     }
 
     if (!this.supabase.isConfigured) {
+      if (product === 'INTRO' && ListingAccessService.demoUnlock(listingId)) {
+        return { success: true, message: `${LISTING_MESSAGES.INTRO} (mode démo).` };
+      }
       return { success: false, message: 'Disponible uniquement avec la base Supabase (mode démo).' };
     }
 
@@ -197,6 +202,7 @@ export class PaymentService {
       JUSTIFICATIFS_REQUIS: 'Décrivez vos justificatifs (au moins 20 caractères).',
       DEJA_VERIFIEE: 'Cette annonce est déjà vérifiée.',
       ANNONCE_INTROUVABLE: 'Annonce introuvable.',
+      RIEN_A_DEBLOQUER: 'Le cédant doit d’abord accepter votre demande, ou la mise en relation est déjà débloquée.',
       MESSAGE_TROP_COURT: 'Décrivez votre besoin en quelques phrases (au moins 20 caractères).',
     };
     const code = Object.keys(known).find(key => message.includes(key));

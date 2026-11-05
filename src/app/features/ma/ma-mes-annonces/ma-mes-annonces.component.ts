@@ -107,7 +107,7 @@ import { FEATURES } from '../../../core/config/features';
                               </p>
                             </div>
                             <span class="flex-shrink-0 text-sm font-semibold" [class]="request.status === 'approved' ? 'text-emerald-700' : request.status === 'refused' ? 'text-muted-foreground' : 'text-accent'">
-                              {{ request.status === 'approved' ? 'Accès accordé' : request.status === 'refused' ? 'Refusée' : 'En attente de votre réponse' }}
+                              {{ request.status === 'approved' ? (request.unlocked ? 'Mise en relation ouverte' : 'Acceptée · en attente du repreneur') : request.status === 'refused' ? 'Refusée' : 'En attente de votre réponse' }}
                             </span>
                           </div>
                           @if (request.message) {

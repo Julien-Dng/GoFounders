@@ -42,10 +42,10 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
           <div class="mx-auto max-w-[78rem] rounded-2xl bg-white p-4 shadow-lg ring-1 ring-border sm:flex sm:p-5 sm:items-center sm:justify-between sm:gap-8">
             <div class="text-base leading-relaxed text-foreground/85">
               @if (accessRequiredNotice()) {
-                <p class="font-semibold text-primary">Le dossier complet demande un accès repreneur.</p>
+                <p class="font-semibold text-primary">Le dossier complet est réservé aux repreneurs acceptés par le cédant.</p>
               }
               <p>
-                Avec l'accès repreneur ({{ accessPrice }}), demandez le dossier complet d'une annonce : le vendeur vous ouvre le détail de l'activité, le motif de cession et ses coordonnées.
+                Demandez gratuitement l'accès au dossier d'une annonce. Si le cédant accepte, la mise en relation coûte {{ introPrice }} : dossier complet, coordonnées du cédant et messagerie. Rien à payer s'il refuse.
               </p>
               @if (showEarlyAccessHint()) {
                 <p class="mt-1 hidden text-muted-foreground sm:block">Avec l'accès Plus, analyses de dossier illimitées et alertes sur les nouvelles annonces.</p>
@@ -289,10 +289,10 @@ export class MaHomeComponent implements OnInit {
   readonly filtersOpen = signal(false);
   readonly listings = signal<MaListingData[]>([]);
   readonly accessRequiredNotice = computed(() =>
-    this.route.snapshot.queryParamMap.get('access') === 'required' && !this.auth.hasMaAccess()
+    this.route.snapshot.queryParamMap.get('access') === 'required'
   );
 
-  readonly accessPrice = OFFER_PRICES.MA_ACCESS.label.replace(' / ', ' par ');
+  readonly introPrice = OFFER_PRICES.INTRO.label;
   readonly revenueRanges = [
     { value: '', label: 'Tous les montants' },
     { value: '0-100000', label: 'Moins de 100 k€' },
@@ -337,13 +337,14 @@ export class MaHomeComponent implements OnInit {
     const user = this.auth.currentUser();
     return FEATURES.buyerPlus && (!user || (user.profileType === 'buyer' && !hasBuyerPlus(user)));
   });
-  readonly canViewSensitiveDetails = computed(() => canAccessMaDetails(this.profileType()) && this.auth.hasMaAccess());
+  // Bandeau d'explication : masqué pour les vendeurs et les autres rôles, montré aux visiteurs et repreneurs.
+  readonly canViewSensitiveDetails = computed(() => this.auth.isAuthenticated() && !canAccessMaDetails(this.profileType()));
   readonly canDepositListing = computed(() => !this.auth.isAuthenticated() || canPublishMaListing(this.profileType()));
   readonly showAccessCta = computed(() =>
-    !this.auth.isAuthenticated() || (canAccessMaDetails(this.profileType()) && !this.auth.hasMaAccess())
+    !this.auth.isAuthenticated()
   );
   readonly accessCtaLabel = computed(() =>
-    this.auth.isAuthenticated() ? "Prendre l'accès repreneur" : 'Créer un compte repreneur'
+    'Créer un compte repreneur (gratuit)'
   );
   readonly filteredListings = computed(() => {
     const region = this.normalize(this.region());
@@ -407,11 +408,11 @@ export class MaHomeComponent implements OnInit {
 
   async continueToMaAccess(): Promise<void> {
     if (!this.auth.isAuthenticated()) {
-      await this.router.navigate(['/inscription'], { queryParams: { profil: 'buyer', returnUrl: '/tarifs#ma-access' } });
+      await this.router.navigate(['/inscription'], { queryParams: { profil: 'buyer', returnUrl: '/ma' } });
       return;
     }
 
-    await this.router.navigate(['/tarifs'], { fragment: 'ma-access' });
+    await this.router.navigate(['/tarifs'], { fragment: 'repreneurs' });
   }
 
   resetFilters(): void {

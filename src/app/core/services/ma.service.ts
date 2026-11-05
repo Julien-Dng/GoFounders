@@ -207,8 +207,8 @@ export class MaService {
 
   async getListingDetail(listingId: string): Promise<MaListingData | undefined> {
     if (!this.supabase.isConfigured) {
-      // Mode démo : même règle que Supabase (acheteur avec accès et demande acceptée, ou admin).
-      const allowed = (canAccessMaDetails(this.auth.currentUser()?.profileType) && this.auth.hasMaAccess() && ListingAccessService.demoApproved(listingId)) || this.auth.isAdmin();
+      // Mode démo : même règle que Supabase (repreneur dont la mise en relation est débloquée, ou admin).
+      const allowed = (canAccessMaDetails(this.auth.currentUser()?.profileType) && ListingAccessService.demoUnlocked(listingId)) || this.auth.isAdmin();
       return allowed ? findMaListingById(listingId) : undefined;
     }
 

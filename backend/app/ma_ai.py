@@ -2,7 +2,7 @@
 
 - Brouillon d'annonce pour un vendeur : à partir d'une description libre, un teaser public, une description
   anonymisée, les champs du formulaire et la liste des détails qui pourraient l'identifier.
-- Analyse de dossier pour un acheteur avec un accès repreneur en cours : synthèse, points forts, points de
+- Analyse de dossier pour un repreneur dont la mise en relation est débloquée : synthèse, points forts, points de
   vigilance, questions à poser au vendeur, vérifications à faire avec un professionnel.
 
 Ni l'un ni l'autre ne constitue un conseil juridique, comptable ou financier : le rappel figure dans les

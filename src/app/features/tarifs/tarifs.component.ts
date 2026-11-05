@@ -47,7 +47,7 @@ interface Plan {
             @if (features.associates) {
               Vous cherchez une entreprise à reprendre ou des personnes avec qui entreprendre ? Un seul compte, et les offres qui correspondent à votre objectif.
             } @else {
-              Publier une annonce est gratuit et nous ne prenons aucune commission sur la vente. Les repreneurs paient l'accès aux dossiers.
+              Publier une annonce est gratuit et nous ne prenons aucune commission sur la vente. Les repreneurs paient chaque mise en relation acceptée par un cédant.
             }
           </p>
           @if (features.associates) {
@@ -347,21 +347,20 @@ export class TarifsComponent {
     {
       id: 'repreneurs',
       title: 'Repreneurs',
-      description: 'Demandez l’accès aux dossiers complets des entreprises à reprendre et échangez directement avec les vendeurs.',
+      description: 'Demandez gratuitement l’accès aux dossiers des entreprises à reprendre. Vous payez la mise en relation seulement si le cédant accepte.',
       offers: [
         {
           title: 'Reprendre une entreprise',
-          price: OFFER_PRICES.MA_ACCESS.label,
-          description: 'Pour étudier les entreprises à reprendre et entrer en contact avec leurs vendeurs.',
+          price: `${OFFER_PRICES.INTRO.label} par mise en relation`,
+          description: 'Vous ne payez que lorsqu’un cédant accepte d’échanger avec vous.',
           features: [
-            'Demandes d’accès aux dossiers complets de toutes les annonces',
-            'Dossier et contact du vendeur ouverts dès qu’il accepte votre demande',
+            'Compte repreneur et demandes d’accès aux dossiers gratuits',
             'Engagement de confidentialité accepté en ligne, une fois par dossier',
-            `${FREE_AI_ANALYSES_PER_MONTH} analyses de dossier par l'IA chaque mois`,
-            'Valable 12 mois, sans renouvellement automatique',
+            `Si le cédant accepte : ${OFFER_PRICES.INTRO.label} pour son dossier complet, ses coordonnées et la messagerie`,
+            `Analyse du dossier par l'IA (jusqu'à ${FREE_AI_ANALYSES_PER_MONTH} par mois)`,
+            'Rien à payer si le cédant refuse, sans abonnement',
           ],
-          product: 'MA_ACCESS',
-          cta: "Prendre l'accès repreneur",
+          link: { href: '/ma', label: 'Voir les annonces' },
         },
         {
           title: 'Accès repreneur Plus',

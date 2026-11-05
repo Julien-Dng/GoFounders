@@ -29,7 +29,7 @@ const CATEGORIES: FaqCategory[] = [
     entries: [
       { question: 'Combien coûte la publication d’une annonce ?', answer: 'Rien. La publication est gratuite pendant le lancement et GoFounders ne prend aucune commission sur le prix de vente.' },
       { question: 'Mon annonce est-elle anonyme ?', answer: 'Oui. Le public voit seulement le secteur, la région, les chiffres clés et un court résumé. La présentation détaillée, le motif de cession et vos coordonnées ne s’ouvrent qu’aux repreneurs que vous acceptez.' },
-      { question: 'Qui peut voir mon dossier complet ?', answer: 'Uniquement les repreneurs que vous acceptez. Un repreneur doit avoir pris l’accès repreneur, se présenter et accepter un engagement de confidentialité pour demander votre dossier ; vous recevez sa demande avec son profil et vous l’acceptez ou la refusez.' },
+      { question: 'Qui peut voir mon dossier complet ?', answer: 'Uniquement les repreneurs que vous acceptez. Un repreneur doit se présenter et accepter un engagement de confidentialité pour demander votre dossier ; vous recevez sa demande avec son profil et vous l’acceptez ou la refusez. S’il est accepté, il paie la mise en relation pour lire votre dossier et vous écrire.' },
       { question: 'Comment préparer mon annonce ?', answer: 'Le formulaire de dépôt vous guide en cinq étapes. Vous pouvez aussi décrire votre entreprise en quelques phrases : l’IA prépare une annonce anonymisée et vous signale ce qui permettrait de vous reconnaître. Vous relisez et modifiez tout avant de publier.' },
       { question: 'Comment fixer mon prix ?', answer: 'L’outil d’estimation gratuite donne une première fourchette à partir de votre bénéfice et de votre secteur. C’est un ordre de grandeur, pas une évaluation : faites confirmer le prix par un expert-comptable ou un conseil en cession.' },
       { question: 'Quand mon annonce est-elle publiée ?', answer: 'Après relecture par notre équipe, en général sous 24 h ouvrées. Nous vérifions qu’elle est sérieuse et qu’elle ne permet pas de vous reconnaître. Vous êtes prévenu dès qu’elle est en ligne, ou du motif si elle doit être corrigée. Une annonce modifiée repasse en relecture.' },
@@ -41,7 +41,7 @@ const CATEGORIES: FaqCategory[] = [
     id: 'repreneurs',
     title: 'Reprendre une entreprise',
     entries: [
-      { question: 'Que comprend l’accès repreneur ?', answer: `Pour ${price('MA_ACCESS')}, pendant 12 mois : le droit de demander l’accès au dossier complet de chaque annonce, l’échange direct avec les cédants qui vous acceptent et ${FREE_AI_ANALYSES_PER_MONTH} analyses de dossier par l’IA chaque mois.` },
+      { question: 'Combien coûte une mise en relation ?', answer: `La demande d’accès est gratuite. Si le cédant accepte, vous payez ${price('INTRO')} pour cette entreprise : son dossier complet, ses coordonnées, la messagerie avec lui et l’analyse du dossier par l’IA (jusqu’à ${FREE_AI_ANALYSES_PER_MONTH} analyses par mois). Rien à payer si le cédant refuse.` },
       { question: 'Comment ouvrir le dossier d’une annonce ?', answer: 'Sur la fiche de l’annonce, cliquez sur « Demander l’accès au dossier » : présentez-vous en quelques phrases et acceptez l’engagement de confidentialité. Le cédant reçoit votre demande et vous êtes prévenu de sa réponse. S’il accepte, le dossier complet et ses coordonnées s’affichent.' },
       { question: 'Quelle différence avec l’accès Plus ?', answer: `L’accès Plus (${price('MA_PLUS')}) ajoute les analyses de dossier illimitées et les alertes sur les nouvelles annonces qui correspondent à votre recherche.`, feature: 'buyerPlus' },
       { question: 'Puis-je voir les annonces sans payer ?', answer: 'Oui. Toutes les annonces sont visibles gratuitement dans leur version anonymisée : secteur, région, chiffre d’affaires, marge, bénéfice, ancienneté et prix demandé.' },
@@ -55,7 +55,7 @@ const CATEGORIES: FaqCategory[] = [
     title: 'Paiement et abonnements',
     entries: [
       { question: 'Comment se fait le paiement ?', answer: 'Par carte bancaire, sur la page de paiement sécurisée de Stripe. GoFounders ne voit ni ne conserve vos numéros de carte.' },
-      { question: 'L’accès repreneur se renouvelle-t-il automatiquement ?', answer: `Non. L’accès repreneur${FEATURES.buyerPlus ? ' et l’accès Plus sont payés' : ' est payé'} une fois et valable 12 mois, sans renouvellement automatique.` },
+      { question: 'Y a-t-il un abonnement pour les repreneurs ?', answer: 'Non. Vous payez seulement chaque mise en relation acceptée par un cédant, une fois par entreprise, sans abonnement ni renouvellement.' },
       { question: 'Comment résilier un abonnement mensuel ?', answer: `Les abonnements mensuels (PRO à ${price('PRO')}, comptes professionnels) sont sans engagement. Depuis « Mon abonnement », le bouton « Gérer mes abonnements et factures » vous permet de résilier et de télécharger vos factures.`, feature: 'associates' },
       { question: 'Où trouver mes factures ?', answer: 'Un reçu vous est envoyé par e-mail après chaque paiement. Depuis « Mon abonnement », le bouton « Gérer mes abonnements et factures » vous permet de les retrouver.' },
       { question: 'J’ai une question sur un paiement ou une facture', answer: 'Écrivez-nous depuis la page contact en choisissant le sujet « Paiement ou facture », en indiquant la date et le montant.' },

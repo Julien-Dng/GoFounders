@@ -9,6 +9,8 @@ export interface MyAccessRequest {
   status: AccessRequestStatus;
   created_at: string;
   decided_at: string | null;
+  // Mise en relation payée (dossier et contact débloqués) : supabase/2026-11-05b-mise-en-relation.sql.
+  unlocked: boolean;
 }
 
 export interface ReceivedAccessRequest {
@@ -27,6 +29,7 @@ export interface ReceivedAccessRequest {
   nda_accepted_at: string;
   created_at: string;
   decided_at: string | null;
+  unlocked: boolean;
 }
 
 export interface ListingReview {
@@ -45,25 +48,45 @@ export interface AccessResult {
 @Injectable({ providedIn: 'root' })
 export class ListingAccessService {
   private readonly supabase = inject(SupabaseService);
-  // Mode démo (sans Supabase) : la demande est acceptée tout de suite, pour pouvoir parcourir le dossier.
+  // Mode démo (sans Supabase) : la demande est acceptée tout de suite ; la mise en relation se débloque
+  // ensuite par un paiement simulé, pour parcourir tout le parcours.
   static readonly DEMO_KEY = 'gofounders.demo.access';
+  static readonly DEMO_UNLOCK_KEY = 'gofounders.demo.unlocked';
 
-  static demoApproved(listingId: string): boolean {
+  private static readIds(key: string): string[] {
     try {
-      return (JSON.parse(localStorage.getItem(ListingAccessService.DEMO_KEY) ?? '[]') as string[]).includes(listingId);
+      return JSON.parse(localStorage.getItem(key) ?? '[]') as string[];
     } catch {
-      return false;
+      return [];
     }
   }
 
-  private demoApprove(listingId: string): void {
+  private static addId(key: string, listingId: string): void {
     try {
-      const ids = new Set(JSON.parse(localStorage.getItem(ListingAccessService.DEMO_KEY) ?? '[]') as string[]);
-      ids.add(listingId);
-      localStorage.setItem(ListingAccessService.DEMO_KEY, JSON.stringify([...ids]));
+      localStorage.setItem(key, JSON.stringify([...new Set([...ListingAccessService.readIds(key), listingId])]));
     } catch {
       // Stockage indisponible : la démo reste sans accès.
     }
+  }
+
+  static demoApproved(listingId: string): boolean {
+    return ListingAccessService.readIds(ListingAccessService.DEMO_KEY).includes(listingId);
+  }
+
+  static demoUnlocked(listingId: string): boolean {
+    return ListingAccessService.readIds(ListingAccessService.DEMO_UNLOCK_KEY).includes(listingId);
+  }
+
+  static demoUnlock(listingId: string): boolean {
+    if (!ListingAccessService.demoApproved(listingId)) {
+      return false;
+    }
+    ListingAccessService.addId(ListingAccessService.DEMO_UNLOCK_KEY, listingId);
+    return true;
+  }
+
+  private demoApprove(listingId: string): void {
+    ListingAccessService.addId(ListingAccessService.DEMO_KEY, listingId);
   }
 
   async requestAccess(listingId: string, message: string): Promise<AccessResult> {
@@ -87,13 +110,15 @@ export class ListingAccessService {
     return {
       success: true,
       status,
-      message: status === 'approved' ? 'Le cédant vous a déjà ouvert son dossier.' : 'Demande envoyée. Le cédant vous répond depuis son espace ; vous serez prévenu.',
+      message: status === 'approved' ? 'Le cédant a déjà accepté votre demande.' : 'Demande envoyée. Le cédant vous répond depuis son espace ; vous serez prévenu.',
     };
   }
 
   async getMyRequest(listingId: string): Promise<MyAccessRequest | null> {
     if (!this.supabase.isConfigured) {
-      return ListingAccessService.demoApproved(listingId) ? { status: 'approved', created_at: new Date().toISOString(), decided_at: null } : null;
+      return ListingAccessService.demoApproved(listingId)
+        ? { status: 'approved', created_at: new Date().toISOString(), decided_at: null, unlocked: ListingAccessService.demoUnlocked(listingId) }
+        : null;
     }
 
     const { data, error } = await this.supabase.client.rpc('get_my_access_request', { p_listing_id: listingId });
@@ -118,7 +143,7 @@ export class ListingAccessService {
     const { error } = await this.supabase.client.rpc('decide_listing_access', { p_request_id: requestId, p_approve: approve, p_note: null });
     return error
       ? { success: false, message: this.readableError(error.message) }
-      : { success: true, message: approve ? 'Accès accepté : le repreneur voit maintenant votre dossier complet et peut vous écrire.' : 'Demande refusée. Le repreneur en est informé.' };
+      : { success: true, message: approve ? 'Demande acceptée : le repreneur est invité à débloquer la mise en relation pour lire votre dossier et vous écrire.' : 'Demande refusée. Le repreneur en est informé.' };
   }
 
   async myListingReviews(): Promise<Map<string, ListingReview>> {
@@ -133,7 +158,7 @@ export class ListingAccessService {
 
   private readableError(message: string): string {
     const known: Record<string, string> = {
-      ACCES_REPRENEUR_REQUIS: 'La demande d’accès est réservée aux repreneurs avec un accès en cours.',
+      ACCES_REPRENEUR_REQUIS: 'La demande d’accès est réservée aux comptes repreneur.',
       ANNONCE_INDISPONIBLE: 'Cette annonce n’est plus disponible.',
       NDA_REQUIS: 'Acceptez l’engagement de confidentialité pour envoyer votre demande.',
       PRESENTATION_REQUISE: 'Présentez-vous en quelques phrases (au moins 20 caractères).',

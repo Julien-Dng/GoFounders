@@ -63,13 +63,14 @@ import { OFFER_PRICES } from '../../core/config/offers';
           <section class="grid gap-4 py-6 sm:grid-cols-[1fr_16rem] sm:items-center sm:gap-8" aria-labelledby="abo-ma">
             <div>
               <p class="text-sm text-muted-foreground">Reprise d'entreprise</p>
-              <h2 id="abo-ma" class="mt-1 text-2xl text-primary">{{ isSeller() ? 'Publication gratuite' : 'Accès repreneur, 149 € pour 12 mois' }}</h2>
+              <h2 id="abo-ma" class="mt-1 text-2xl text-primary">{{ isSeller() ? 'Publication gratuite' : 'Mise en relation, ' + introPrice + ' par entreprise' }}</h2>
               <p class="mt-2 max-w-[60ch] text-base leading-relaxed text-muted-foreground">{{ maDescription() }}</p>
             </div>
             @if (isBuyer()) {
-              <button type="button" (click)="activateMaAccess()" [disabled]="hasMaAccess()" class="w-full rounded-lg bg-primary px-5 py-3 font-medium text-white transition-colors hover:bg-primary/90 disabled:cursor-default disabled:bg-emerald-700">
-                {{ hasMaAccess() ? 'Accès actif jusqu’au ' + maAccessEnd() : isSimulation ? "Activer l'accès repreneur (paiement simulé)" : "Payer l'accès repreneur" }}
-              </button>
+              <a routerLink="/ma" class="block w-full rounded-lg bg-primary px-5 py-3 text-center font-medium text-white transition-colors hover:bg-primary/90">Voir les annonces</a>
+              @if (hasMaAccess()) {
+                <p class="mt-2 text-center text-sm text-muted-foreground">Ancien accès repreneur actif jusqu’au {{ maAccessEnd() }}</p>
+              }
             } @else if (isSeller()) {
               <a routerLink="/ma/deposer" class="block w-full rounded-lg bg-primary px-5 py-3 text-center font-medium text-white transition-colors hover:bg-primary/90">Publier mon annonce</a>
             } @else {
@@ -101,6 +102,7 @@ import { OFFER_PRICES } from '../../core/config/offers';
 })
 export class AbonnementComponent {
   readonly proPrice = OFFER_PRICES.PRO.label;
+  readonly introPrice = OFFER_PRICES.INTRO.label;
   readonly features = FEATURES;
   private readonly auth = inject(AuthService);
   private readonly payment = inject(PaymentService);
@@ -115,7 +117,7 @@ export class AbonnementComponent {
   });
   readonly maDescription = computed(() => {
     if (this.isBuyer()) {
-      return "Accès repreneur pendant 12 mois : demandez le dossier complet des annonces ; dès qu'un vendeur accepte, vous lisez son dossier et échangez directement avec lui.";
+      return `Demandez gratuitement l'accès au dossier des annonces qui vous intéressent. Si le cédant accepte, vous payez ${this.introPrice} pour lire son dossier complet et échanger directement avec lui ; rien s'il refuse.`;
     }
 
     if (this.isSeller()) {
@@ -141,8 +143,4 @@ export class AbonnementComponent {
     }
   }
 
-  async activateMaAccess(): Promise<void> {
-    const result = await this.payment.purchase('MA_ACCESS');
-    this.statusMessage.set(result.message);
-  }
 }

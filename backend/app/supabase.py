@@ -190,6 +190,20 @@ class SupabaseClient:
     async def mark_email_failed(self, email_id: str, attempts: int, error: str) -> None:
         await self._patch_outbox(email_id, {"attempts": attempts, "last_error": error})
 
+    async def can_unlock_listing(self, user_id: str, listing_id: str) -> bool:
+        """Demande acceptée par le cédant et pas encore débloquée (avant de faire payer la mise en relation)."""
+        rows = await self._select(
+            "ma_access_requests",
+            {
+                "listing_id": f"eq.{listing_id}",
+                "buyer_id": f"eq.{user_id}",
+                "status": "eq.approved",
+                "contact_unlocked_at": "is.null",
+                "select": "id",
+            },
+        )
+        return bool(rows)
+
     async def owns_listing(self, user_id: str, listing_id: str) -> bool:
         rows = await self._select("ma_listings", {"id": f"eq.{listing_id}", "owner_id": f"eq.{user_id}", "select": "id"})
         return bool(rows)

@@ -75,7 +75,7 @@ PREMIUM = accompagnement humain. Les talents n'ont pas besoin de payer.
 
 ### M&A (indépendant de l'abonnement, réservé aux rôles acheteur et vendeur)
 - **Vendeur** (`seller`) : publication **gratuite** de son annonce anonymisée (offre de lancement) ; il ne voit pas le détail des annonces des autres vendeurs
-- **Acheteur** (`buyer`) : **149 € pour 12 mois** d'accès aux dossiers complets + contact direct des vendeurs (`ma_access_expires_at`)
+- **Acheteur** (`buyer`) : **mise en relation à 50 € par entreprise** (`2026-11-05b-mise-en-relation.sql`, produit `INTRO`) : demande d'accès gratuite (présentation + NDA) → le cédant accepte → paiement → dossier complet, coordonnées et messagerie (`contact_unlocked_at`). Rien à payer en cas de refus. L'ancien accès 149 €/12 mois (`ma_access_expires_at`) n'est plus vendu ; un accès encore en cours débloque les demandes acceptées jusqu'à son échéance. Accès Plus masqué
 - **Porteur de projet / Talent** : annonces **anonymisées** uniquement
 - Helpers : `canAccessMaDetails()` et `canPublishMaListing()` dans `user.model.ts` ; accès valide = `has_active_ma_access()` côté Supabase
 

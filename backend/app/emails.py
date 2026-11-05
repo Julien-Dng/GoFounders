@@ -50,11 +50,18 @@ TEMPLATES: dict[str, Template] = {
         "/ma/mes-annonces",
     ),
     "access_approved": Template(
-        "Le cédant vous ouvre son dossier",
+        "Le cédant accepte d'échanger avec vous",
         ("Bonne nouvelle : le cédant de l'annonce « {listing_label} » a accepté votre demande.",
-         "Vous pouvez lire son dossier complet et échanger avec lui dans la messagerie."),
-        "Ouvrir le dossier",
+         "Débloquez la mise en relation pour lire son dossier complet, obtenir ses coordonnées et lui écrire."),
+        "Débloquer la mise en relation",
         "/ma/annonce/{listing_id}",
+    ),
+    "contact_unlocked": Template(
+        "Un repreneur a ouvert votre dossier",
+        ("Un repreneur dont vous avez accepté la demande a débloqué la mise en relation pour votre annonce « {listing_label} ».",
+         "Il peut maintenant lire votre dossier complet et vous écrire dans la messagerie."),
+        "Ouvrir la messagerie",
+        "/messages",
     ),
     "access_refused": Template(
         "Votre demande d'accès n'a pas été retenue",
