@@ -63,6 +63,13 @@ TEMPLATES: dict[str, Template] = {
         "Voir qui a ouvert mon dossier",
         "/ma/mes-annonces",
     ),
+    "project_invite": Template(
+        "Un porteur de projet vous ouvre son projet",
+        ("Un porteur de projet a consulté votre profil d'associé et vous donne accès à la partie confidentielle de son projet.",
+         "Pour préserver la confidentialité, ses détails ne figurent pas dans cet e-mail. Ils peuvent demander d'accepter d'abord un engagement de confidentialité."),
+        "Découvrir le projet",
+        "/profil/{project_id}",
+    ),
     "access_refused": Template(
         "Votre demande d'accès n'a pas été retenue",
         ("Le cédant de l'annonce « {listing_label} » n'a pas donné suite à votre demande d'accès.",

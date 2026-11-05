@@ -70,3 +70,9 @@ def test_send_pending_marks_sent_failed_and_unknown():
     assert sender.messages[0][1].text.startswith("Bonjour Claire,")
     failed = {email_id: attempts for email_id, attempts, _ in store.failed}
     assert failed == {"2": 3, "3": 5, "4": 5}
+
+
+def test_project_invite_email_has_no_project_details():
+    email = render("project_invite", {"project_id": "p-1"}, "https://gofounders.fr", "Léa")
+    assert "https://gofounders.fr/profil/p-1" in email.text
+    assert "Bonjour Léa" in email.text

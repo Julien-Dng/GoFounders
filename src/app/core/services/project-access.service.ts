@@ -34,6 +34,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   NDA_REQUIS: "Ce projet exige l'acceptation de l'engagement de confidentialité.",
   ACCES_RESERVE_ASSOCIES: "Seuls les associés peuvent demander l'accès à un projet.",
   PROJET_INDISPONIBLE: "Ce projet n'est plus disponible.",
+  PROJET_REQUIS: "Publiez d'abord votre projet (Modifier mon profil) pour l'ouvrir à un associé.",
+  ASSOCIE_INTROUVABLE: "Ce profil n'est pas un associé.",
 };
 
 // Partie confidentielle des projets : demandes d'accès, décision du porteur, preuve d'acceptation du NDA.
@@ -91,6 +93,39 @@ export class ProjectAccessService {
     }
 
     return { success: true, status: data as ProjectAccessStatus };
+  }
+
+  // Le porteur ouvre lui-même son projet à un associé (2026-11-05f-inviter-associe.sql).
+  async inviteToProject(talentId: string, project: { id: string; name: string } | null): Promise<RequestAccessResult> {
+    const user = this.auth.currentUser();
+
+    if (!user) {
+      return { success: false, message: 'Connectez-vous pour continuer.' };
+    }
+
+    if (!this.supabase.isConfigured) {
+      if (!project) {
+        return { success: false, message: ERROR_MESSAGES['PROJET_REQUIS'] };
+      }
+      const requests = this.readLocal().filter(item => !(item.projectId === project.id && item.requesterId === talentId));
+      const now = new Date().toISOString();
+      requests.push({
+        id: `local-${Date.now()}`, projectId: project.id, requesterId: talentId, ownerId: user.uid, status: 'approved',
+        ndaVersion: null, ndaAcceptedAt: null, ndaIp: null, ndaUserAgent: null,
+        projectName: project.name, ownerName: user.displayName, requesterName: 'Associé', createdAt: now, decidedAt: now,
+      });
+      this.writeLocal(requests);
+      return { success: true, status: 'approved' };
+    }
+
+    const { error } = await this.supabase.client.rpc('invite_to_project', { p_talent: talentId });
+
+    if (error) {
+      const code = Object.keys(ERROR_MESSAGES).find(key => error.message.includes(key));
+      return { success: false, message: code ? ERROR_MESSAGES[code] : "L'invitation n'a pas pu être envoyée. Réessayez dans un instant." };
+    }
+
+    return { success: true, status: 'approved' };
   }
 
   async getConfidentialDetails(projectId: string): Promise<string | null> {

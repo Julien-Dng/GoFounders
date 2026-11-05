@@ -335,7 +335,14 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
 
                   @switch (accessState()) {
                     @case ('approved') {
-                      @if (confidentialDetails()) {
+                      @if (publicProfile()?.ndaRequired && !myRequest()?.ndaAcceptedAt) {
+                        <p class="mb-4 text-sm leading-relaxed text-foreground/80">
+                          Le porteur de ce projet vous ouvre sa partie confidentielle. Acceptez d’abord son engagement de confidentialité pour la lire.
+                        </p>
+                        <button type="button" (click)="startAccessRequest()" [disabled]="isRequestingAccess()" class="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-wait disabled:opacity-70">
+                          Lire l'engagement et accéder au projet
+                        </button>
+                      } @else if (confidentialDetails()) {
                         <p class="whitespace-pre-line text-sm leading-relaxed text-foreground/85">{{ confidentialDetails() }}</p>
                       } @else {
                         <p class="text-sm text-muted-foreground">Le porteur n'a pas encore rempli cette partie.</p>
@@ -377,7 +384,30 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                 </div>
               }
 
-              @if (!isOwnProfile() && !isProjectProfile()) {
+              @if (canInvite()) {
+                <div class="rounded-2xl border border-primary/15 bg-white p-6" aria-live="polite">
+                  <div class="mb-3 flex items-center gap-2">
+                    <svg class="text-primary" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <h3 class="text-lg font-semibold">Votre projet</h3>
+                  </div>
+                  @if (invited()) {
+                    <p class="text-sm leading-relaxed text-emerald-800">
+                      La partie confidentielle de votre projet est ouverte à cet associé{{ myProjectNda() ? ', après acceptation de l’engagement de confidentialité' : '' }}.
+                    </p>
+                    <a routerLink="/profil/modifier" class="mt-3 inline-block text-sm font-semibold text-accent hover:underline">Gérer les accès à mon projet</a>
+                  } @else {
+                    <p class="mb-4 text-sm leading-relaxed text-foreground/80">
+                      Ce profil vous intéresse ? Ouvrez-lui la partie confidentielle de votre projet{{ myProjectNda() ? ' : il devra d’abord accepter votre engagement de confidentialité' : '' }}. Il en est prévenu, et vous pouvez retirer l’accès à tout moment.
+                    </p>
+                    <button type="button" (click)="inviteToProject()" [disabled]="inviting()" class="w-full rounded-lg bg-primary px-4 py-3 font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-wait disabled:opacity-70">
+                      {{ inviting() ? 'Envoi…' : 'Ouvrir mon projet à cet associé' }}
+                    </button>
+                  }
+                  @if (inviteMessage()) {
+                    <p class="mt-3 text-sm text-destructive" role="alert">{{ inviteMessage() }}</p>
+                  }
+                </div>
+              } @else if (!isOwnProfile() && !isProjectProfile()) {
                 <div class="relative overflow-hidden rounded-2xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-300/25 dark:from-amber-500/15 dark:to-orange-500/10">
                   <div class="relative z-10">
                     <div class="mb-4 flex items-center gap-3">
@@ -524,6 +554,12 @@ export class ProfilComponent implements OnInit {
   // Profil absent ou masqué par Supabase (rôle non complémentaire, voir 2026-10-12-profils-par-role.sql).
   readonly isUnavailable = signal(false);
   readonly ownProject = signal<EditableProject | null>(null);
+  // Porteur de projet qui consulte un associé : invitation à la partie confidentielle de son projet.
+  readonly myProject = signal<EditableProject | null>(null);
+  readonly myProjectNda = computed(() => this.myProject()?.ndaRequired === true);
+  readonly invited = signal(false);
+  readonly inviting = signal(false);
+  readonly inviteMessage = signal('');
 
   private readonly routeId = toSignal(
     this.route.params.pipe(map((params: Record<string, string>) => params['id'] ?? '')),
@@ -625,6 +661,13 @@ export class ProfilComponent implements OnInit {
     this.isOwnProfile()
       ? (this.currentUser()?.skills ?? [])
       : (this.publicProfile()?.skills ?? [])
+  );
+  // Seulement pour un porteur dont le projet a une partie confidentielle : sinon il n'y a rien à ouvrir.
+  readonly canInvite = computed(() =>
+    !this.isOwnProfile()
+    && this.currentUser()?.profileType === 'entrepreneur'
+    && this.publicProfile()?.profileType === 'talent'
+    && !!this.myProject()?.confidentialDetails?.trim()
   );
   readonly isProjectProfile = computed(() => !this.isOwnProfile() && this.publicProfile()?.profileType === 'entrepreneur');
   readonly accessState = computed(() => this.myRequest()?.status ?? 'none');
@@ -754,6 +797,45 @@ export class ProfilComponent implements OnInit {
 
     if (profile?.profileType === 'entrepreneur') {
       await this.loadAccess(profile.id);
+    }
+
+    if (profile?.profileType === 'talent' && this.currentUser()?.profileType === 'entrepreneur') {
+      await this.loadInvitation(profile.id);
+    }
+  }
+
+  // Porteur de projet sur le profil d'un associé : son projet est-il déjà ouvert à cet associé ?
+  private async loadInvitation(talentId: string): Promise<void> {
+    const ownerId = this.currentUser()?.uid;
+    const project = ownerId ? await this.projectService.getOwnedProject(ownerId) : null;
+    this.myProject.set(project);
+
+    if (project) {
+      const requests = await this.projectAccess.listForProject(project.id);
+      this.invited.set(requests.some(request => request.requesterId === talentId && request.status === 'approved'));
+    }
+  }
+
+  async inviteToProject(): Promise<void> {
+    const talentId = this.publicProfile()?.id;
+
+    if (!talentId || this.inviting()) {
+      return;
+    }
+
+    this.inviting.set(true);
+    this.inviteMessage.set('');
+
+    try {
+      const project = this.myProject();
+      const result = await this.projectAccess.inviteToProject(talentId, project ? { id: project.id, name: project.name } : null);
+      if (result.success) {
+        this.invited.set(true);
+      } else {
+        this.inviteMessage.set(result.message ?? "L'invitation n'a pas pu être envoyée.");
+      }
+    } finally {
+      this.inviting.set(false);
     }
   }
 
