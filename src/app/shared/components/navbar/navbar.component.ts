@@ -319,11 +319,12 @@ export class NavbarComponent {
     { id: 'ma',         label: 'Annonces',     icon: 'search', path: '/ma',          badge: null, exact: true  },
     { id: 'vendre',     label: 'Vendre',       icon: 'chart', path: '/ma/deposer',  badge: null, exact: true  },
     { id: 'recherche',  label: 'Associés & équipe', icon: 'users', path: '/recherche', badge: null, exact: true  },
+    { id: 'tarifs',     label: 'Tarifs',       icon: 'credit-card', path: '/tarifs',  badge: null, exact: true  },
     { id: 'mes-annonces', label: 'Mes annonces', icon: 'chart', path: '/ma/mes-annonces', badge: null, exact: true },
     { id: 'statistiques', label: 'Mes statistiques', icon: 'bars', path: '/ma/statistiques', badge: null, exact: true },
     { id: 'annuaire',   label: 'Annuaire des pros', icon: 'users', path: '/pros',      badge: null, exact: true  },
     { id: 'messages',   label: 'Messages',     icon: 'messages', path: '/messages',    badge: null, exact: false },
-    { id: 'abonnement', label: 'Abonnement',   icon: 'credit-card', path: '/tarifs',      badge: null, exact: true  },
+    { id: 'abonnement', label: 'Mon abonnement', icon: 'credit-card', path: '/abonnement', badge: null, exact: true  },
     { id: 'parametres', label: 'Paramètres',   icon: 'settings', path: '/parametres',  badge: null, exact: true  },
     { id: 'admin-annonces', label: 'Modération des annonces', icon: 'shield', path: '/admin/annonces', badge: null, exact: true },
     { id: 'admin-profils', label: 'Profils à vérifier', icon: 'shield', path: '/admin/profils', badge: null, exact: true },
@@ -340,7 +341,17 @@ export class NavbarComponent {
       && !((item.id === 'verifications' || item.id.startsWith('admin-')) && !this.auth.isAdmin())
       && !(item.id === 'annuaire' && !FEATURES.pros)
       && !(item.id === 'verifications' && !FEATURES.sellerPaidOffers)
-    ).map(item => (item.id === 'recherche' ? { ...item, path: this.associateHref() } : item))
+      // Visiteurs : mêmes liens que le menu ordinateur, sans les pages de compte.
+      && !(['messages', 'abonnement', 'parametres'].includes(item.id) && !this.auth.isAuthenticated())
+    ).map(item => {
+      if (item.id === 'recherche') {
+        return { ...item, path: this.associateHref() };
+      }
+      if (item.id === 'accueil') {
+        return this.auth.isAuthenticated() ? { ...item, label: 'Dashboard' } : { ...item, path: '/' };
+      }
+      return item;
+    })
   );
 
   private readonly currentUrl = toSignal(
