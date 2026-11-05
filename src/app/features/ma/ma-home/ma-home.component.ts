@@ -344,7 +344,7 @@ export class MaHomeComponent implements OnInit {
     !this.auth.isAuthenticated()
   );
   readonly accessCtaLabel = computed(() =>
-    'Créer un compte repreneur (gratuit)'
+    'Créer un compte repreneur'
   );
   readonly filteredListings = computed(() => {
     const region = this.normalize(this.region());

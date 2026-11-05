@@ -236,6 +236,6 @@ export class AssociesComponent implements OnInit {
       return { path: '', params: null, label: entry.kind === 'talent' ? 'Visible par les porteurs de projet' : 'Visible par les associés' };
     }
 
-    return { path: '/inscription', params: { profil: wantedRole, returnUrl: `/profil/${entry.profile_id}` }, label: `${label} (inscription gratuite)` };
+    return { path: '/inscription', params: { profil: wantedRole, returnUrl: `/profil/${entry.profile_id}` }, label: `${label}` };
   }
 }
