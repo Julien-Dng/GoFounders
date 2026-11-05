@@ -325,7 +325,7 @@ interface Plan {
               <h2 id="pros-title" class="text-3xl text-primary sm:text-4xl">Vous êtes un professionnel ?</h2>
               <p class="mt-3 text-lg leading-relaxed text-muted-foreground">{{ group.description }}</p>
             </div>
-            <div class="mx-auto mt-10 grid max-w-4xl gap-6 md:grid-cols-2">
+            <div class="mx-auto mt-10 grid gap-6" [class]="group.offers.length > 1 ? 'max-w-4xl md:grid-cols-2' : 'max-w-md'">
               @for (offer of group.offers; track offer.title) {
                 <div class="flex flex-col rounded-2xl bg-white p-7 shadow-lg ring-1 ring-border">
                   <h3 class="text-lg font-bold text-primary">{{ offer.title }}</h3>
@@ -419,7 +419,10 @@ export class TarifsComponent {
   });
   readonly extraOffers = computed(() => this.offerGroups().flatMap(group => group.offers.slice(1)));
 
-  readonly prosGroup = computed(() => (FEATURES.pros ? this.allOfferGroups().find(group => group.id === 'pros') ?? null : null));
+  readonly prosGroup = computed(() => {
+    const group = FEATURES.pros ? this.allOfferGroups().find(item => item.id === 'pros') : undefined;
+    return group ? { ...group, offers: group.offers.filter(offer => offer.product !== 'PRO_ACCOUNT' || FEATURES.proAccount) } : null;
+  });
 
   private readonly allOfferGroups = computed(() => [
     {

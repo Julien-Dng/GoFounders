@@ -3,8 +3,11 @@
 export const FEATURES = {
   // Trouver un associé : /associes, /recherche, rôles porteur de projet et associé, offre PRO (prix dans offers.ts).
   associates: true,
-  // Professionnels : rôle pro, annuaire /pros et compte pro (prix dans offers.ts, 1 mois d'essai gratuit).
+  // Professionnels : rôle pro, annuaire /pros et fiche annuaire (prix dans offers.ts, 1 mois d'essai gratuit).
   pros: true,
+  // Compte pro des cabinets (publication d'annonces pour leurs clients, contact des repreneurs) : masqué au lancement,
+  // seule la fiche annuaire est proposée. À activer quand des cabinets le demandent.
+  proAccount: false,
   // Assistant IA personnel /coaching-ia (lié à l'offre PRO).
   assistant: false,
   // Accès repreneur Plus (390 €/an : analyses illimitées, alertes).

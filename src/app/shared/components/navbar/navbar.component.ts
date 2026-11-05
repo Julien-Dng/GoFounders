@@ -288,7 +288,8 @@ export class NavbarComponent {
   // et les vendeurs (/ma/deposer leur est réservée) ; l'assistant IA sort de la navigation (route conservée).
   private readonly hidesVendre = computed(() => {
     const profileType = this.auth.currentUser()?.profileType;
-    return !!profileType && profileType !== 'seller' && profileType !== 'pro';
+    // Pros : « Vendre » seulement quand le compte pro (publication pour leurs clients) est proposé.
+    return !!profileType && profileType !== 'seller' && !(profileType === 'pro' && FEATURES.proAccount);
   });
 
   private readonly ownsListings = computed(() => {

@@ -208,7 +208,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                   <h2 class="text-xl font-semibold text-primary">Votre fiche professionnelle</h2>
                   <p class="mt-1 text-sm text-muted-foreground">
                     Votre métier, votre intitulé, votre localisation, votre présentation et votre site apparaissent dans l'annuaire
-                    quand votre fiche ou votre compte pro est actif.
+                    quand votre fiche est active.
                   </p>
                   <label for="pro-category" class="mb-2 mt-4 block text-sm font-semibold">Métier</label>
                   <select id="pro-category" [value]="proCategory()" (change)="proCategory.set($any($event.target).value)" class="w-full rounded-xl border border-border bg-white px-4 py-3 outline-none focus:border-accent sm:max-w-sm">
@@ -217,7 +217,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                       <option [value]="category.value">{{ category.label }}</option>
                     }
                   </select>
-                  <a routerLink="/tarifs" fragment="pros" class="mt-3 block text-sm font-semibold text-accent hover:underline">Gérer ma fiche annuaire et mon compte pro</a>
+                  <a routerLink="/tarifs" fragment="pros" class="mt-3 block text-sm font-semibold text-accent hover:underline">Gérer ma fiche annuaire</a>
                 </div>
               }
 

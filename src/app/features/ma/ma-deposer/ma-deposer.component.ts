@@ -1,3 +1,4 @@
+import { FEATURES } from '../../../core/config/features';
 import { ChangeDetectionStrategy, Component, WritableSignal, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -42,11 +43,19 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
         <div class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-6 sm:p-10">
           @if (!canPublish()) {
             <div class="text-center">
-              <h2 class="mb-2 text-2xl font-semibold">Compte pro requis</h2>
+              <h2 class="mb-2 text-2xl font-semibold">{{ proAccountOffered ? 'Compte pro requis' : 'Bientôt pour les cabinets' }}</h2>
               <p class="mx-auto mb-6 max-w-xl text-muted-foreground">
-                Pour publier des annonces pour vos clients et contacter les repreneurs, activez un compte pro.
+                @if (proAccountOffered) {
+                  Pour publier des annonces pour vos clients et contacter les repreneurs, activez un compte pro.
+                } @else {
+                  La publication d'annonces pour le compte de vos clients sera bientôt proposée aux cabinets. Écrivez-nous si vous êtes intéressé.
+                }
               </p>
-              <a routerLink="/tarifs" fragment="pros" class="rounded-lg bg-accent px-6 py-3 font-semibold text-white transition-colors hover:bg-accent/90">Voir les offres professionnelles</a>
+              @if (proAccountOffered) {
+                <a routerLink="/tarifs" fragment="pros" class="rounded-lg bg-accent px-6 py-3 font-semibold text-white transition-colors hover:bg-accent/90">Voir les offres professionnelles</a>
+              } @else {
+                <a routerLink="/contact" class="rounded-lg bg-accent px-6 py-3 font-semibold text-white transition-colors hover:bg-accent/90">Nous contacter</a>
+              }
             </div>
           } @else if (!checkoutRequested()) {
             <div class="space-y-8">
@@ -377,6 +386,8 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
   `
 })
 export class MaDeposerComponent {
+  // Compte pro des cabinets proposé ou non (features.ts) : sinon, message « bientôt ».
+  readonly proAccountOffered = FEATURES.proAccount;
   private readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly maService = inject(MaService);

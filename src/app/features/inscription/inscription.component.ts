@@ -371,7 +371,7 @@ interface ProfileOption {
                   </div>
 
                   <p class="text-sm text-muted-foreground md:col-span-2">
-                    Après l'inscription, activez votre fiche dans l'annuaire des professionnels ou un compte pro (publication d'annonces pour vos clients, contact des repreneurs) depuis la page Tarifs.
+                    Après l'inscription, activez votre fiche dans l'annuaire des professionnels depuis la page Tarifs : le premier mois est offert.
                   </p>
                 </div>
               }

@@ -38,9 +38,9 @@ import { FEATURES } from '../../../core/config/features';
 
         @if (!canPublish()) {
           <div class="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-950">
-            <h2 class="mb-1 text-lg font-semibold">Compte pro requis</h2>
-            <p class="text-sm">Pour publier des annonces pour vos clients, activez un compte pro.</p>
-            <a routerLink="/tarifs" fragment="pros" class="mt-3 inline-block text-sm font-semibold text-amber-700 hover:underline">Voir les offres professionnelles</a>
+            <h2 class="mb-1 text-lg font-semibold">{{ proAccountOffered ? 'Compte pro requis' : 'Bientôt pour les cabinets' }}</h2>
+            <p class="text-sm">{{ proAccountOffered ? 'Pour publier des annonces pour vos clients, activez un compte pro.' : 'La publication d’annonces pour le compte de vos clients sera bientôt proposée aux cabinets.' }}</p>
+            <a [routerLink]="proAccountOffered ? '/tarifs' : '/contact'" [fragment]="proAccountOffered ? 'pros' : undefined" class="mt-3 inline-block text-sm font-semibold text-amber-700 hover:underline">{{ proAccountOffered ? 'Voir les offres professionnelles' : 'Nous contacter' }}</a>
           </div>
         } @else if (isLoading()) {
           <p class="text-muted-foreground">Chargement…</p>
@@ -167,6 +167,8 @@ import { FEATURES } from '../../../core/config/features';
   `,
 })
 export class MaMesAnnoncesComponent implements OnInit {
+  // Compte pro des cabinets proposé ou non (features.ts) : sinon, message « bientôt ».
+  readonly proAccountOffered = FEATURES.proAccount;
   private readonly auth = inject(AuthService);
   private readonly maService = inject(MaService);
   private readonly payment = inject(PaymentService);
