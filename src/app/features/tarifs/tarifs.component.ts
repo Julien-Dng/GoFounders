@@ -164,31 +164,46 @@ interface Plan {
 
             <h3 class="mt-14 text-center text-2xl text-primary">Le détail des formules</h3>
 
-            <!-- Téléphones : une carte par ligne du tableau, les trois formules côte à côte. -->
-            <div class="mt-6 overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border sm:hidden">
-              <div class="grid grid-cols-3 gap-2 border-b border-primary bg-secondary px-4 py-3 text-center text-sm font-semibold text-primary">
-                @for (plan of plans; track plan.name) {
-                  <span>{{ plan.name }}<span class="block font-normal text-muted-foreground">{{ plan.price }}{{ plan.period === '/mois' ? '/mois' : '' }}</span></span>
+            <!-- Téléphones : on choisit une formule, et on voit tout ce qu'elle comprend (une seule colonne). -->
+            <div class="mt-6 sm:hidden">
+              <div class="grid grid-cols-3 gap-1 rounded-xl bg-white p-1 shadow-sm ring-1 ring-border" role="tablist" aria-label="Formule à détailler">
+                @for (plan of plans; track plan.name; let index = $index) {
+                  <button
+                    type="button"
+                    role="tab"
+                    [attr.aria-selected]="detailPlan() === index"
+                    (click)="detailPlan.set(index)"
+                    class="rounded-lg px-1 py-2.5 text-[0.8rem] font-semibold leading-tight transition-colors min-[400px]:text-sm"
+                    [class]="detailPlan() === index ? 'bg-primary text-white' : 'text-primary'"
+                  >{{ plan.name }}</button>
                 }
               </div>
-              <ul>
-                @for (row of comparisonRows; track $index) {
-                  <li class="border-b border-border px-4 py-3 last:border-b-0">
-                    <p class="text-sm font-medium text-foreground/85">{{ row[0] }}</p>
-                    <div class="mt-1.5 grid grid-cols-3 gap-2 text-center text-sm">
-                      @for (cell of row.slice(1); track $index) {
-                        @if (cell === '✓') {
-                          <span class="font-semibold text-emerald-700" aria-label="Inclus">✓</span>
-                        } @else if (cell === '✗') {
-                          <span class="text-muted-foreground" aria-label="Non inclus">–</span>
-                        } @else {
-                          <span class="font-semibold text-primary">{{ cell }}</span>
-                        }
+
+              <div class="mt-4 rounded-2xl bg-white p-5 shadow-lg ring-1 ring-border" role="tabpanel">
+                <div class="flex items-baseline justify-between gap-3 border-b border-border pb-4">
+                  <p class="text-lg font-bold text-primary">{{ plans[detailPlan()].name }}</p>
+                  <p class="tabular text-lg font-extrabold text-primary">{{ plans[detailPlan()].price }}<span class="text-sm font-normal text-muted-foreground">{{ plans[detailPlan()].period === '/mois' ? ' / mois' : '' }}</span></p>
+                </div>
+                <ul class="mt-2 divide-y divide-border">
+                  @for (row of comparisonRows; track $index) {
+                    <li class="flex items-start gap-3 py-3">
+                      @if (row[detailPlan() + 1] === '✗') {
+                        <span class="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-xs text-muted-foreground" aria-hidden="true">–</span>
+                        <span class="text-base text-muted-foreground line-through decoration-muted-foreground/40">{{ row[0] }}</span>
+                        <span class="sr-only">Non inclus</span>
+                      } @else {
+                        <svg class="mt-0.5 flex-shrink-0 text-emerald-600" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span class="text-base text-foreground/85">
+                          {{ row[0] }}
+                          @if (row[detailPlan() + 1] !== '✓') {
+                            <span class="mt-0.5 block text-sm font-semibold text-primary">{{ row[detailPlan() + 1] }}</span>
+                          }
+                        </span>
                       }
-                    </div>
-                  </li>
-                }
-              </ul>
+                    </li>
+                  }
+                </ul>
+              </div>
             </div>
 
             <div class="relative mt-6 hidden overflow-x-auto rounded-2xl bg-white p-4 shadow-lg ring-1 ring-border sm:block sm:p-6">
@@ -346,6 +361,8 @@ export class TarifsComponent {
     }
   }, { allowSignalWrites: true });
 
+  // Téléphones : formule affichée dans « Le détail des formules » (Projet PRO par défaut).
+  readonly detailPlan = signal(1);
   readonly busyProduct = signal<AccountProduct | null>(null);
   readonly statusProduct = signal<AccountProduct | null>(null);
   readonly statusMessage = signal(
