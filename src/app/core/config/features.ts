@@ -4,7 +4,7 @@ export const FEATURES = {
   // Trouver un associé : /associes, /recherche, rôles porteur de projet et associé, offre PRO (prix dans offers.ts).
   associates: true,
   // Professionnels : rôle pro, annuaire /pros (79 €/mois) et compte pro (199 €/mois).
-  pros: false,
+  pros: true,
   // Assistant IA personnel /coaching-ia (lié à l'offre PRO).
   assistant: false,
   // Accès repreneur Plus (390 €/an : analyses illimitées, alertes).
