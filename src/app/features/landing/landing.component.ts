@@ -99,7 +99,7 @@ interface LandingFaqItem {
           </div>
 
           @if (featuredListing(); as item) {
-            <figure class="relative lg:col-span-6" [class]="showAssociates ? 'lg:min-h-[46rem]' : 'lg:min-h-[30rem]'">
+            <figure class="relative lg:col-span-6 lg:min-h-[30rem]">
               <article class="relative mx-auto max-w-[27rem] rounded-2xl bg-[#DCE5F7] p-6 text-primary shadow-2xl sm:p-7 lg:absolute lg:left-0 lg:top-0 lg:w-[25rem]" aria-label="Annonce en ligne">
                 <div class="flex items-start justify-between gap-4">
                   <div class="min-w-0">
@@ -137,21 +137,23 @@ interface LandingFaqItem {
               </article>
 
               @if (showAssociates) {
-                <aside class="relative z-10 mx-auto -mt-4 w-[21rem] max-w-full rounded-2xl bg-white p-5 text-primary shadow-2xl lg:absolute lg:bottom-0 lg:right-0 lg:mt-0" aria-label="Exemple de projet qui constitue son équipe">
+                <aside class="relative z-10 mx-auto -mt-4 w-[20rem] max-w-full rounded-2xl bg-[#DCE5F7] p-5 text-primary shadow-2xl lg:absolute lg:bottom-0 lg:right-0 lg:mt-0" aria-label="Exemple de projet qui constitue son équipe">
                   <p class="text-sm font-semibold text-primary/60">Exemple de projet · Lyon</p>
-                  <p class="mt-1 text-lg font-bold leading-snug">Logiciel de planning pour les cabinets infirmiers</p>
-                  <p class="mt-1 text-sm text-primary/70">Prototype en test chez 4 cabinets</p>
-                  <p class="mt-4 text-sm font-semibold text-primary/60">Cherche à rejoindre l'équipe</p>
-                  <ul class="mt-2 space-y-2">
-                    <li class="flex items-center justify-between gap-2 rounded-lg bg-secondary px-3 py-2">
-                      <span class="font-semibold">Associé technique</span>
-                      <span class="rounded-full bg-accent/10 px-2 py-0.5 text-sm font-semibold text-accent">Prioritaire</span>
-                    </li>
-                    <li class="flex items-center justify-between gap-2 rounded-lg bg-secondary px-3 py-2">
-                      <span class="font-semibold">Profil commercial</span>
-                      <span class="rounded-full bg-secondary px-2 py-0.5 text-sm font-semibold text-primary/60 ring-1 ring-border">Ouvert</span>
-                    </li>
-                  </ul>
+                  <div class="mt-3 flex items-center gap-3">
+                    <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-accent font-bold text-white" aria-hidden="true">P</span>
+                    <div class="min-w-0">
+                      <p class="font-bold leading-snug">Logiciel de planning santé</p>
+                      <p class="text-sm text-primary/70">Cherche à compléter son équipe</p>
+                    </div>
+                  </div>
+                  <div class="mt-4 flex flex-wrap gap-2 text-sm font-semibold">
+                    <span class="rounded-lg bg-white/70 px-2.5 py-1.5">Associé technique</span>
+                    <span class="rounded-lg bg-white/70 px-2.5 py-1.5">Profil commercial</span>
+                  </div>
+                  <div class="mt-4 grid grid-cols-2 gap-2 text-sm font-semibold" aria-hidden="true">
+                    <span class="rounded-lg border border-primary/25 py-2 text-center text-primary/70">Plus tard</span>
+                    <span class="rounded-lg bg-accent py-2 text-center text-white">Rejoindre</span>
+                  </div>
                 </aside>
               } @else {
                 <aside class="relative z-10 mx-auto -mt-4 w-[20rem] max-w-full rounded-2xl bg-[#DCE5F7] p-5 text-primary shadow-2xl lg:absolute lg:bottom-0 lg:right-0 lg:mt-0" aria-label="Exemple de profil repreneur">
