@@ -22,7 +22,7 @@ export const OFFER_PRICES: Record<AccountProduct | ListingProduct, OfferPrice> =
   FEATURE_30D: { amount: 49, label: '49 € (30 jours)' },
   VERIFICATION: { amount: 199, label: '199 € une fois' },
   INTRO: { amount: 50, label: '50 €' },
-  PRO_DIRECTORY: { amount: 79, label: '79 € / mois' },
+  PRO_DIRECTORY: { amount: 19, label: '19 € / mois' },
   PRO_ACCOUNT: { amount: 199, label: '199 € / mois' },
 };
 
@@ -32,6 +32,9 @@ export const FREE_AI_ANALYSES_PER_MONTH = 3;
 // Nouveaux contacts par mois d'un porteur de projet en formule gratuite (à garder identique à
 // free_quota_limits dans supabase/2026-11-05-associes-offres.sql).
 export const FREE_CONTACTS_PER_MONTH = 5;
+
+// Offres professionnelles (annuaire, compte pro) : essai gratuit, une fois par membre (backend/app/payments.py).
+export const PRO_TRIAL_LABEL = '1 mois d’essai gratuit';
 
 // Adresse de contact affichée sur le site (page contact, messages d'erreur). À changer en un seul endroit
 // si le nom de domaine change.

@@ -28,7 +28,7 @@ from .llm_anthropic import AnthropicBackend
 from .llm_openai import OpenAIBackend
 from .ma_ai import DraftRequest, ListingAnalysis, ListingDraft, MaAi, MaAiUnusable
 from .models import ChatRequest, ChatResponse, ContextItem, ContextResponse, UserContext
-from .payments import OFFERS, StripeClient, StripeError, WebhookSignatureError, checkout_params, verify_webhook
+from .payments import OFFERS, PRO_TRIAL_DAYS, PRO_TRIAL_PRODUCTS, email_fingerprint, StripeClient, StripeError, WebhookSignatureError, checkout_params, verify_webhook
 from .supabase import SupabaseClient, SupabaseError
 
 logger = logging.getLogger(__name__)
@@ -359,6 +359,14 @@ async def create_checkout(
             if payload.product == "VERIFICATION" and len((payload.evidence or "").strip()) < 20:
                 raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Décrivez vos justificatifs (au moins 20 caractères)")
 
+        trial_days = 0
+        if (
+            payload.product in PRO_TRIAL_PRODUCTS
+            and not await supabase.has_purchased(user_id, PRO_TRIAL_PRODUCTS)
+            and not await supabase.trial_claimed(email_hash=email_fingerprint(profile.get("email")))
+        ):
+            trial_days = PRO_TRIAL_DAYS
+
         customer_id = await ensure_customer(supabase, stripe, user_id, profile)
         url = await stripe.create_checkout_session(
             checkout_params(
@@ -368,6 +376,7 @@ async def create_checkout(
                 site_url=settings.site_url.rstrip("/"),
                 listing_id=listing_id if offer.needs_listing else None,
                 evidence=payload.evidence,
+                trial_days=trial_days,
             )
         )
     except SupabaseError as error:
@@ -415,6 +424,25 @@ def iso(timestamp: int | None) -> str | None:
     return datetime.fromtimestamp(timestamp, UTC).isoformat() if timestamp else None
 
 
+async def guard_pro_trial(request: Request, supabase: SupabaseClient, subscription_id: str, email: str | None) -> None:
+    """Essai gratuit pro : déjà utilisé avec cette carte (autre compte, compte recréé) → facturé tout de suite.
+    Sinon, l'essai est mémorisé (empreintes de l'e-mail et de la carte). Une erreur ici ne bloque pas le paiement."""
+    stripe = request.app.state.stripe
+    if stripe is None:
+        return
+    try:
+        fingerprint, trialing = await stripe.trial_card_fingerprint(subscription_id)
+        if not trialing:
+            return
+        if fingerprint and await supabase.trial_claimed(card_fingerprint=fingerprint):
+            await stripe.end_trial_now(subscription_id)
+            logger.info("Essai pro refusé (carte déjà utilisée) : %s", subscription_id)
+            return
+        await supabase.record_trial_claim(email_hash=email_fingerprint(email), card_fingerprint=fingerprint, subscription_id=subscription_id)
+    except (StripeError, SupabaseError) as error:
+        logger.error("Contrôle de l'essai pro impossible (%s) : %s", subscription_id, error)
+
+
 @app.post("/api/stripe/webhook")
 async def stripe_webhook(
     request: Request,
@@ -457,6 +485,8 @@ async def stripe_webhook(
                     amount_cents=obj.get("amount_total"),
                     subscription_id=obj.get("subscription"),
                 )
+                if metadata["product"] in PRO_TRIAL_PRODUCTS and obj.get("subscription"):
+                    await guard_pro_trial(request, supabase, str(obj["subscription"]), (obj.get("customer_details") or {}).get("email"))
         elif kind == "invoice.paid" and obj.get("billing_reason") == "subscription_cycle":
             metadata = subscription_metadata(obj)
             lines = (obj.get("lines") or {}).get("data") or []

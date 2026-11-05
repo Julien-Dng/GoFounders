@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AccountProduct, FREE_AI_ANALYSES_PER_MONTH, FREE_CONTACTS_PER_MONTH, OFFER_PRICES } from '../../core/config/offers';
+import { AccountProduct, FREE_AI_ANALYSES_PER_MONTH, FREE_CONTACTS_PER_MONTH, OFFER_PRICES, PRO_TRIAL_LABEL } from '../../core/config/offers';
 import { FEATURES } from '../../core/config/features';
 import { hasBuyerPlus, isActiveUntil } from '../../core/models/user.model';
 import { PaymentService, PremiumTopic } from '../../core/services/payment.service';
@@ -76,15 +76,17 @@ interface Plan {
 
         @if (tab() === 'reprise') {
         <div id="panneau-reprise" role="tabpanel" aria-labelledby="onglet-reprise">
-        @for (group of offerGroups(); track group.id) {
-          <section [id]="group.id" class="mt-20 scroll-mt-24" [attr.aria-labelledby]="group.id + '-title'">
-            <div class="mx-auto max-w-[60ch] text-center">
-              <h2 [id]="group.id + '-title'" class="text-3xl text-primary sm:text-4xl">{{ group.title }}</h2>
-              <p class="mt-3 text-lg leading-relaxed text-muted-foreground">{{ group.description }}</p>
-            </div>
-            <div class="mx-auto mt-10 grid gap-6" [class]="group.offers.length >= 3 ? 'md:grid-cols-3' : group.offers.length === 2 ? 'max-w-4xl md:grid-cols-2' : 'max-w-md'">
-              @for (offer of group.offers; track offer.title; let first = $first) {
-                <div class="flex flex-col rounded-2xl bg-white p-7 shadow-lg" [class]="first && group.offers.length > 1 ? 'ring-2 ring-accent' : 'ring-1 ring-border'">
+        <section id="repreneurs" class="mt-16 scroll-mt-24" aria-labelledby="reprise-title">
+          <div class="mx-auto max-w-[62ch] text-center">
+            <h2 id="reprise-title" class="text-3xl text-primary sm:text-4xl">Reprendre ou céder une entreprise</h2>
+            <p class="mt-3 text-lg leading-relaxed text-muted-foreground">
+              Publier une annonce est gratuit, sans commission sur la vente. Le repreneur ne paie que lorsqu'un cédant accepte d'échanger avec lui.
+            </p>
+          </div>
+          <div class="mx-auto mt-10 grid max-w-4xl gap-6 md:grid-cols-2">
+            @for (offer of mainOffers(); track offer.title; let first = $first) {
+              <div [id]="first ? 'cedants' : null" class="flex scroll-mt-24">
+                <div class="flex flex-col rounded-2xl bg-white p-7 shadow-lg" [class]="first ? 'w-full ring-1 ring-border' : 'w-full ring-2 ring-accent'">
                   <h3 class="text-lg font-bold text-primary">{{ offer.title }}</h3>
                   <p class="tabular mt-3 text-[2rem] font-extrabold leading-tight tracking-tight text-primary">{{ offer.price }}</p>
                   <p class="mt-2 text-base text-muted-foreground">{{ offer.description }}</p>
@@ -101,7 +103,7 @@ interface Plan {
                       @if (isOwned(offer.product)) {
                         <p class="rounded-lg bg-emerald-50 py-3 text-center font-semibold text-emerald-800">Actif sur votre compte</p>
                       } @else {
-                        <button type="button" (click)="buy(offer.product)" [disabled]="busyProduct() === offer.product" class="w-full rounded-lg px-4 py-3 font-semibold text-white transition-colors disabled:cursor-wait disabled:opacity-60" [class]="first && group.offers.length > 1 ? 'bg-accent hover:bg-accent/90' : 'bg-primary hover:bg-primary/90'">
+                        <button type="button" (click)="buy(offer.product)" [disabled]="busyProduct() === offer.product" class="w-full rounded-lg bg-primary px-4 py-3 font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-wait disabled:opacity-60">
                           {{ busyProduct() === offer.product ? 'Activation…' : (offer.cta ?? 'Activer') }}
                         </button>
                         @if (statusProduct() === offer.product && statusMessage()) {
@@ -109,14 +111,36 @@ interface Plan {
                         }
                       }
                     } @else if (offer.link) {
-                      <a [routerLink]="offer.link.href" [fragment]="offer.link.fragment" class="block w-full rounded-lg bg-primary px-4 py-3 text-center font-semibold text-white transition-colors hover:bg-primary/90">{{ offer.link.label }}</a>
+                      <a [routerLink]="offer.link.href" [fragment]="offer.link.fragment" class="block w-full rounded-lg px-4 py-3 text-center font-semibold transition-colors" [class]="first ? 'bg-primary text-white hover:bg-primary/90' : 'bg-accent text-white hover:bg-accent/90'">{{ offer.link.label }}</a>
                     }
                   </div>
                 </div>
-              }
+              </div>
+            }
+          </div>
+
+          @if (extraOffers().length > 0) {
+            <div class="mx-auto mt-12 max-w-4xl">
+              <h3 class="text-center text-xl font-bold text-primary">Options pour donner plus de visibilité à votre annonce</h3>
+              <div class="mt-6 grid gap-4 md:grid-cols-2">
+                @for (offer of extraOffers(); track offer.title) {
+                  <div class="flex flex-col rounded-2xl bg-white p-6 ring-1 ring-border">
+                    <div class="flex items-baseline justify-between gap-3">
+                      <h4 class="text-lg font-bold text-primary">{{ offer.title }}</h4>
+                      <p class="tabular flex-shrink-0 font-extrabold text-primary">{{ offer.price }}</p>
+                    </div>
+                    <p class="mt-2 flex-1 text-base text-muted-foreground">{{ offer.description }}</p>
+                    @if (offer.product) {
+                      <button type="button" (click)="buy(offer.product)" [disabled]="busyProduct() === offer.product" class="mt-4 font-semibold text-accent underline-offset-4 hover:underline disabled:opacity-60">{{ offer.cta ?? 'Activer' }}</button>
+                    } @else if (offer.link) {
+                      <a [routerLink]="offer.link.href" class="mt-4 font-semibold text-accent underline-offset-4 hover:underline">{{ offer.link.label }} →</a>
+                    }
+                  </div>
+                }
+              </div>
             </div>
-          </section>
-        }
+          }
+        </section>
 
         </div>
         }
@@ -164,31 +188,46 @@ interface Plan {
 
             <h3 class="mt-14 text-center text-2xl text-primary">Le détail des formules</h3>
 
-            <!-- Téléphones : une carte par ligne du tableau, les trois formules côte à côte. -->
-            <div class="mt-6 overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border sm:hidden">
-              <div class="grid grid-cols-3 gap-2 border-b border-primary bg-secondary px-4 py-3 text-center text-sm font-semibold text-primary">
-                @for (plan of plans; track plan.name) {
-                  <span>{{ plan.name }}<span class="block font-normal text-muted-foreground">{{ plan.price }}{{ plan.period === '/mois' ? '/mois' : '' }}</span></span>
+            <!-- Téléphones : on choisit une formule, et on voit tout ce qu'elle comprend (une seule colonne). -->
+            <div class="mt-6 sm:hidden">
+              <div class="grid grid-cols-3 gap-1 rounded-xl bg-white p-1 shadow-sm ring-1 ring-border" role="tablist" aria-label="Formule à détailler">
+                @for (plan of plans; track plan.name; let index = $index) {
+                  <button
+                    type="button"
+                    role="tab"
+                    [attr.aria-selected]="detailPlan() === index"
+                    (click)="detailPlan.set(index)"
+                    class="rounded-lg px-1 py-2.5 text-[0.8rem] font-semibold leading-tight transition-colors min-[400px]:text-sm"
+                    [class]="detailPlan() === index ? 'bg-primary text-white' : 'text-primary'"
+                  >{{ plan.name }}</button>
                 }
               </div>
-              <ul>
-                @for (row of comparisonRows; track $index) {
-                  <li class="border-b border-border px-4 py-3 last:border-b-0">
-                    <p class="text-sm font-medium text-foreground/85">{{ row[0] }}</p>
-                    <div class="mt-1.5 grid grid-cols-3 gap-2 text-center text-sm">
-                      @for (cell of row.slice(1); track $index) {
-                        @if (cell === '✓') {
-                          <span class="font-semibold text-emerald-700" aria-label="Inclus">✓</span>
-                        } @else if (cell === '✗') {
-                          <span class="text-muted-foreground" aria-label="Non inclus">–</span>
-                        } @else {
-                          <span class="font-semibold text-primary">{{ cell }}</span>
-                        }
+
+              <div class="mt-4 rounded-2xl bg-white p-5 shadow-lg ring-1 ring-border" role="tabpanel">
+                <div class="flex items-baseline justify-between gap-3 border-b border-border pb-4">
+                  <p class="text-lg font-bold text-primary">{{ plans[detailPlan()].name }}</p>
+                  <p class="tabular text-lg font-extrabold text-primary">{{ plans[detailPlan()].price }}<span class="text-sm font-normal text-muted-foreground">{{ plans[detailPlan()].period === '/mois' ? ' / mois' : '' }}</span></p>
+                </div>
+                <ul class="mt-2 divide-y divide-border">
+                  @for (row of comparisonRows; track $index) {
+                    <li class="flex items-start gap-3 py-3">
+                      @if (row[detailPlan() + 1] === '✗') {
+                        <span class="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-xs text-muted-foreground" aria-hidden="true">–</span>
+                        <span class="text-base text-muted-foreground line-through decoration-muted-foreground/40">{{ row[0] }}</span>
+                        <span class="sr-only">Non inclus</span>
+                      } @else {
+                        <svg class="mt-0.5 flex-shrink-0 text-emerald-600" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span class="text-base text-foreground/85">
+                          {{ row[0] }}
+                          @if (row[detailPlan() + 1] !== '✓') {
+                            <span class="mt-0.5 block text-sm font-semibold text-primary">{{ row[detailPlan() + 1] }}</span>
+                          }
+                        </span>
                       }
-                    </div>
-                  </li>
-                }
-              </ul>
+                    </li>
+                  }
+                </ul>
+              </div>
             </div>
 
             <div class="relative mt-6 hidden overflow-x-auto rounded-2xl bg-white p-4 shadow-lg ring-1 ring-border sm:block sm:p-6">
@@ -346,6 +385,8 @@ export class TarifsComponent {
     }
   }, { allowSignalWrites: true });
 
+  // Téléphones : formule affichée dans « Le détail des formules » (Projet PRO par défaut).
+  readonly detailPlan = signal(1);
   readonly busyProduct = signal<AccountProduct | null>(null);
   readonly statusProduct = signal<AccountProduct | null>(null);
   readonly statusMessage = signal(
@@ -368,6 +409,15 @@ export class TarifsComponent {
         && !((offer.title === 'Mise en avant' || offer.title === 'Dossier vérifié') && !FEATURES.sellerPaidOffers)
       ),
     })));
+
+  // Onglet reprise : les deux offres principales côte à côte (céder, reprendre), puis les options.
+  readonly mainOffers = computed(() => {
+    const groups = this.offerGroups();
+    const seller = groups.find(group => group.id === 'cedants')?.offers[0];
+    const buyer = groups.find(group => group.id === 'repreneurs')?.offers[0];
+    return [seller, buyer].filter((offer): offer is RepriseOffer => !!offer);
+  });
+  readonly extraOffers = computed(() => this.offerGroups().flatMap(group => group.offers.slice(1)));
 
   readonly prosGroup = computed(() => (FEATURES.pros ? this.allOfferGroups().find(group => group.id === 'pros') ?? null : null));
 
@@ -441,21 +491,21 @@ export class TarifsComponent {
     {
       id: 'pros',
       title: 'Professionnels',
-      description: 'Experts-comptables, avocats, notaires et cabinets de cession : soyez visibles auprès des cédants et des repreneurs.',
+      description: `Experts-comptables, avocats, notaires et cabinets de cession : soyez visibles auprès des cédants et des repreneurs. ${PRO_TRIAL_LABEL}, sans engagement.`,
       offers: [
         {
           title: 'Annuaire des professionnels',
           price: OFFER_PRICES.PRO_DIRECTORY.label,
-          description: 'Votre fiche dans l’annuaire GoFounders.',
-          features: ['Fiche avec votre métier, votre zone et votre site', 'Contactable par tous les membres', 'Sans engagement'],
-          ...(this.isPro() ? { product: 'PRO_DIRECTORY' as const, cta: 'Activer ma fiche' } : { link: { href: '/inscription', label: 'Créer un compte professionnel' } }),
+          description: `Votre fiche dans l’annuaire GoFounders. ${PRO_TRIAL_LABEL}.`,
+          features: ['Fiche avec votre métier, votre zone et votre site', 'Contactable par tous les membres', `${PRO_TRIAL_LABEL}, puis ${OFFER_PRICES.PRO_DIRECTORY.label}`, 'Sans engagement : résiliable à tout moment, même pendant l’essai'],
+          ...(this.isPro() ? { product: 'PRO_DIRECTORY' as const, cta: 'Essayer gratuitement 1 mois' } : { link: { href: '/inscription', label: 'Créer un compte professionnel' } }),
         },
         {
           title: 'Compte pro',
           price: OFFER_PRICES.PRO_ACCOUNT.label,
-          description: 'Pour les cabinets qui accompagnent plusieurs cessions sur GoFounders.',
-          features: ["Fiche dans l'annuaire, mise en avant", 'Publication de plusieurs annonces pour vos clients', 'Contact direct des repreneurs', 'Sans engagement'],
-          ...(this.isPro() ? { product: 'PRO_ACCOUNT' as const, cta: 'Activer le compte pro' } : { link: { href: '/inscription', label: 'Créer un compte professionnel' } }),
+          description: `Pour les cabinets qui accompagnent plusieurs cessions sur GoFounders. ${PRO_TRIAL_LABEL}.`,
+          features: ["Fiche dans l'annuaire, mise en avant", 'Publication de plusieurs annonces pour vos clients', 'Contact direct des repreneurs', `${PRO_TRIAL_LABEL}, puis ${OFFER_PRICES.PRO_ACCOUNT.label}, sans engagement`],
+          ...(this.isPro() ? { product: 'PRO_ACCOUNT' as const, cta: 'Essayer gratuitement 1 mois' } : { link: { href: '/inscription', label: 'Créer un compte professionnel' } }),
         },
       ] as RepriseOffer[],
     },

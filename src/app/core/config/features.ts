@@ -3,7 +3,7 @@
 export const FEATURES = {
   // Trouver un associé : /associes, /recherche, rôles porteur de projet et associé, offre PRO (prix dans offers.ts).
   associates: true,
-  // Professionnels : rôle pro, annuaire /pros (79 €/mois) et compte pro (199 €/mois).
+  // Professionnels : rôle pro, annuaire /pros et compte pro (prix dans offers.ts, 1 mois d'essai gratuit).
   pros: true,
   // Assistant IA personnel /coaching-ia (lié à l'offre PRO).
   assistant: false,
