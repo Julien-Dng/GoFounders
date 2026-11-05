@@ -163,6 +163,13 @@ html {
   font-size: 16px;
 }
 
+/* Téléphones : texte un peu plus petit (toutes les tailles en rem suivent). */
+@media (max-width: 639px) {
+  html {
+    font-size: 14.5px;
+  }
+}
+
 @media (min-width: 1280px) {
   html {
     font-size: 17px;

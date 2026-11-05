@@ -1,3 +1,4 @@
+import { NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MaListingData } from '../../core/data/mock-platform.data';
@@ -19,7 +20,7 @@ interface LandingFaqItem {
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [RouterLink, FooterComponent, SuccessStoriesComponent],
+  imports: [NgClass, RouterLink, FooterComponent, SuccessStoriesComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-white">
@@ -35,7 +36,7 @@ interface LandingFaqItem {
 
         <div class="relative mx-auto grid max-w-[78rem] gap-14 lg:grid-cols-12 lg:items-center">
           <div class="lg:col-span-6">
-            <h1 class="max-w-[16ch] text-[2.6rem] leading-[1.08] text-white sm:text-[3.5rem] lg:text-[3.75rem]">
+            <h1 class="max-w-[16ch] text-[2.2rem] leading-[1.08] text-white sm:text-[3.5rem] lg:text-[3.75rem]">
               @if (showAssociates) {
                 Reprenez une entreprise. Trouvez vos associés.
               } @else {
@@ -75,16 +76,16 @@ interface LandingFaqItem {
             </div>
 
             @if (showAssociates) {
-              <div class="mt-6 grid gap-3 sm:grid-cols-2">
+              <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                 <a routerLink="/ma" class="group flex flex-col rounded-xl border border-white/20 bg-white/[0.06] p-5 transition-colors hover:border-white/60 hover:bg-white/[0.1]">
                   <span class="text-lg font-bold text-white">Reprendre ou céder une entreprise</span>
                   <span class="mt-1.5 flex-1 text-base leading-relaxed text-white/70">Découvrez une activité à reprendre ou trouvez votre repreneur.</span>
-                  <span class="mt-4 font-semibold text-[#9DB8FF] group-hover:text-white">Explorer les entreprises →</span>
+                  <span class="mt-4 whitespace-nowrap font-semibold text-[#9DB8FF] group-hover:text-white">Voir les entreprises&nbsp;→</span>
                 </a>
                 <a [routerLink]="associatesHref()" class="group flex flex-col rounded-xl border border-white/20 bg-white/[0.06] p-5 transition-colors hover:border-white/60 hover:bg-white/[0.1]">
                   <span class="text-lg font-bold text-white">Trouver un associé et créer son équipe</span>
                   <span class="mt-1.5 flex-1 text-base leading-relaxed text-white/70">Présentez votre projet ou rejoignez une équipe qui cherche vos compétences.</span>
-                  <span class="mt-4 font-semibold text-[#9DB8FF] group-hover:text-white">Explorer les projets et associés →</span>
+                  <span class="mt-4 whitespace-nowrap font-semibold text-[#9DB8FF] group-hover:text-white">Voir les projets et associés&nbsp;→</span>
                 </a>
               </div>
               <p class="mt-4 text-base text-white/60">
@@ -99,7 +100,7 @@ interface LandingFaqItem {
           </div>
 
           @if (featuredListing(); as item) {
-            <figure class="relative lg:col-span-6 lg:min-h-[30rem]">
+            <figure class="relative hidden lg:col-span-6 lg:block lg:min-h-[30rem]">
               <article class="relative mx-auto max-w-[27rem] rounded-2xl bg-[#DCE5F7] p-6 text-primary shadow-2xl sm:p-7 lg:absolute lg:left-0 lg:top-0 lg:w-[25rem]" aria-label="Annonce en ligne">
                 <div class="flex items-start justify-between gap-4">
                   <div class="min-w-0">
@@ -214,8 +215,8 @@ interface LandingFaqItem {
             <h2 id="latest-title" class="text-center text-3xl text-primary sm:text-4xl">En ce moment sur GoFounders</h2>
             <p class="mx-auto mt-3 max-w-[56ch] text-center text-lg text-muted-foreground">Quelques entreprises actuellement à reprendre.</p>
             <div class="mt-12 grid gap-6 md:grid-cols-3">
-              @for (item of latestListings(); track item.listing.id) {
-                <a [routerLink]="['/ma/annonce', item.listing.id]" class="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border transition-shadow hover:shadow-xl">
+              @for (item of latestListings(); track item.listing.id; let index = $index) {
+                <a [routerLink]="['/ma/annonce', item.listing.id]" [ngClass]="{ 'max-sm:hidden': index > 1 }" class="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border transition-shadow hover:shadow-xl">
                   <p class="bg-primary px-5 py-3 text-sm font-semibold text-white">{{ item.listing.sector }} · {{ item.listing.region }}</p>
                   <div class="flex flex-1 flex-col p-5">
                     <h3 class="line-clamp-3 text-lg font-bold leading-snug text-primary group-hover:text-accent">{{ item.listing.summary }}</h3>
@@ -242,7 +243,7 @@ interface LandingFaqItem {
         </section>
       }
 
-      <section class="bg-secondary px-4 py-16 sm:px-6 lg:px-8 lg:py-24" aria-label="Notre conviction">
+      <section class="hidden bg-secondary px-4 py-16 sm:block sm:px-6 lg:px-8 lg:py-24" aria-label="Notre conviction">
         <div class="mx-auto grid max-w-[78rem] items-center gap-10 overflow-hidden rounded-3xl bg-white shadow-lg lg:grid-cols-12 lg:gap-0">
           <div class="p-8 sm:p-12 lg:col-span-7">
             <p class="text-[1.75rem] font-bold leading-snug tracking-tight text-primary sm:text-[2.1rem]">
@@ -261,7 +262,7 @@ interface LandingFaqItem {
         </div>
       </section>
 
-      <section class="px-4 py-16 sm:px-6 lg:px-8 lg:py-24" aria-labelledby="audiences-title">
+      <section class="hidden px-4 py-16 sm:block sm:px-6 lg:px-8 lg:py-24" aria-labelledby="audiences-title">
         <div class="mx-auto max-w-[78rem]">
           <h2 id="audiences-title" class="text-center text-3xl text-primary sm:text-4xl">{{ visibleAudiences.length === 3 ? 'Une place de marché, trois façons de l’utiliser' : 'Une place de marché pour vendre ou reprendre' }}</h2>
           <div class="mt-12 grid gap-6" [class]="visibleAudiences.length === 3 ? 'md:grid-cols-3' : 'mx-auto max-w-4xl md:grid-cols-2'">
@@ -279,7 +280,7 @@ interface LandingFaqItem {
         </div>
       </section>
 
-      <section id="protection" class="bg-secondary px-4 py-16 sm:px-6 lg:px-8 lg:py-24" aria-labelledby="protection-title">
+      <section id="protection" class="hidden bg-secondary px-4 py-16 sm:block sm:px-6 lg:px-8 lg:py-24" aria-labelledby="protection-title">
         <div class="mx-auto max-w-[78rem]">
           <h2 id="protection-title" class="text-center text-3xl text-primary sm:text-4xl">La discrétion par défaut</h2>
           <p class="mx-auto mt-3 max-w-[60ch] text-center text-lg text-muted-foreground">
