@@ -89,7 +89,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                           @if (canSeeReasons()) {
                             <div class="mt-1 text-sm font-medium text-muted-foreground">{{ compatibilityReasons() }}</div>
                           } @else {
-                            <a routerLink="/tarifs" class="mt-1 inline-block text-sm font-semibold text-accent hover:underline">{{ reasonsUpsell }}</a>
+                            <a routerLink="/tarifs" fragment="associes" class="mt-1 inline-block text-sm font-semibold text-accent hover:underline">{{ reasonsUpsell }}</a>
                           }
                         </div>
                       }

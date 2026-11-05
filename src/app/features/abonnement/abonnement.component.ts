@@ -4,6 +4,7 @@ import { FEATURES } from '../../core/config/features';
 import { AuthService } from '../../core/services/auth.service';
 import { Plan, canAccessMaDetails, canPublishMaListing } from '../../core/models/user.model';
 import { PaymentService } from '../../core/services/payment.service';
+import { OFFER_PRICES } from '../../core/config/offers';
 
 @Component({
   selector: 'app-abonnement',
@@ -31,7 +32,7 @@ import { PaymentService } from '../../core/services/payment.service';
               <p class="text-sm text-muted-foreground">Votre plan actuel</p>
               <h2 id="abo-plan" class="mt-1 text-2xl text-primary">{{ currentPlan() }}</h2>
               <p class="mt-2 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
-                PRO : contacts illimités, raisons détaillées de chaque score de compatibilité et assistant IA personnel. 49 € par mois, sans engagement.
+                PRO : contacts illimités, raisons détaillées de chaque score de compatibilité, recherche avancée et projet mis en avant. {{ proPrice }}, sans engagement.
               </p>
             </div>
             <button type="button" (click)="activatePlan('PRO')" class="w-full rounded-lg bg-primary px-5 py-3 font-medium text-white transition-colors hover:bg-primary/90">
@@ -99,6 +100,7 @@ import { PaymentService } from '../../core/services/payment.service';
   `,
 })
 export class AbonnementComponent {
+  readonly proPrice = OFFER_PRICES.PRO.label;
   readonly features = FEATURES;
   private readonly auth = inject(AuthService);
   private readonly payment = inject(PaymentService);

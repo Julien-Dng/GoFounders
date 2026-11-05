@@ -4,6 +4,7 @@ import { isTalentMarketplaceRole } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { ShowcaseEntry, ShowcaseService } from '../../core/services/showcase.service';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
+import { FREE_CONTACTS_PER_MONTH } from '../../core/config/offers';
 
 type ShowcaseTab = 'talent' | 'project';
 
@@ -168,7 +169,7 @@ const STAGE_LABELS: Record<string, string> = {
             }
           </ol>
           <p class="mt-8 text-center text-base text-muted-foreground">
-            Gratuit pour les associés. Les porteurs de projet contactent 3 nouveaux associés par mois sans payer.
+            Rejoindre un projet est gratuit. Les porteurs de projet contactent {{ freeContacts }} nouveaux associés par mois sans payer.
             <a routerLink="/tarifs" fragment="associes" class="font-semibold text-accent underline-offset-4 hover:underline">Voir les tarifs</a>
           </p>
         </div>
@@ -179,6 +180,7 @@ const STAGE_LABELS: Record<string, string> = {
   `,
 })
 export class AssociesComponent implements OnInit {
+  readonly freeContacts = FREE_CONTACTS_PER_MONTH;
   private readonly auth = inject(AuthService);
   private readonly showcase = inject(ShowcaseService);
 

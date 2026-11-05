@@ -174,7 +174,7 @@ type SearchProfileType = ProfileType;
                     <p class="text-sm leading-relaxed text-muted-foreground">
                       Mots-clés, compétences précises et compatibilité minimale pour aller droit aux profils qui comptent.
                     </p>
-                    <a routerLink="/tarifs" class="mt-3 inline-block text-sm font-semibold text-accent hover:underline">Passer en PRO</a>
+                    <a routerLink="/tarifs" fragment="associes" class="mt-3 inline-block text-sm font-semibold text-accent hover:underline">Passer en PRO</a>
                   }
                 </div>
               </div>

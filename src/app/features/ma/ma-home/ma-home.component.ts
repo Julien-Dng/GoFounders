@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MaListingData } from '../../../core/data/mock-platform.data';
-import { EARLY_ACCESS_HOURS, OFFER_PRICES } from '../../../core/config/offers';
+import { OFFER_PRICES } from '../../../core/config/offers';
 import { canAccessMaDetails, canPublishMaListing, hasBuyerPlus } from '../../../core/models/user.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { MaService } from '../../../core/services/ma.service';
@@ -332,7 +332,6 @@ export class MaHomeComponent implements OnInit {
 
   private readonly profileType = computed(() => this.auth.currentUser()?.profileType);
   // Dossier complet : acheteur avec accès payé. Dépôt : vendeur (ou visiteur, invité à s'inscrire).
-  readonly earlyAccessHours = EARLY_ACCESS_HOURS;
   // Visiteurs et acheteurs sans accès Plus : les annonces de moins de 48 h leur sont masquées par Supabase.
   readonly showEarlyAccessHint = computed(() => {
     const user = this.auth.currentUser();

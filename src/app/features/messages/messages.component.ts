@@ -80,7 +80,7 @@ interface ConversationPreview {
             @if (sendError()) {
               <div class="mb-3 flex flex-col gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between" role="alert">
                 <span>{{ sendError() }}</span>
-                <a routerLink="/tarifs" class="font-semibold text-accent hover:underline">Voir l'offre PRO</a>
+                <a routerLink="/tarifs" fragment="associes" class="font-semibold text-accent hover:underline">Voir l'offre PRO</a>
               </div>
             }
             @if (messageQuotaLabel()) {

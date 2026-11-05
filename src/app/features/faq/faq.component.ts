@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { FREE_AI_ANALYSES_PER_MONTH, OFFER_PRICES } from '../../core/config/offers';
+import { FREE_AI_ANALYSES_PER_MONTH, FREE_CONTACTS_PER_MONTH, OFFER_PRICES } from '../../core/config/offers';
 import { FEATURES, FeatureName } from '../../core/config/features';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
 
@@ -77,7 +77,7 @@ const CATEGORIES: FaqCategory[] = [
     feature: 'associates',
     entries: [
       { question: 'Comment fonctionne la recherche d’associés ?', answer: 'Les porteurs de projet voient les associés disponibles, les associés voient les projets. Un score de compatibilité, calculé par règles (compétences, localisation, disponibilité, secteur), aide à repérer les meilleurs profils.' },
-      { question: 'Est-ce gratuit ?', answer: `Oui pour les associés. Les porteurs de projet peuvent contacter 3 nouveaux associés par mois gratuitement ; l’offre PRO (${price('PRO')}, sans engagement) lève cette limite et ajoute les raisons détaillées du score, la recherche avancée et l’assistant IA.` },
+      { question: 'Est-ce gratuit ?', answer: `Rejoindre un projet est gratuit. Les porteurs de projet peuvent contacter ${FREE_CONTACTS_PER_MONTH} nouveaux associés par mois gratuitement ; l’offre PRO (${price('PRO')}, sans engagement) lève cette limite et ajoute les raisons détaillées du score, la recherche avancée et la mise en avant du projet.` },
     ],
   },
 ];

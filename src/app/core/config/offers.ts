@@ -11,7 +11,8 @@ export interface OfferPrice {
 }
 
 export const OFFER_PRICES: Record<AccountProduct | ListingProduct, OfferPrice> = {
-  PRO: { amount: 49, label: '49 € / mois' },
+  // Prix de lancement à tester (associés & équipe), sans engagement.
+  PRO: { amount: 29, label: '29 € / mois' },
   PREMIUM: { amount: 0, label: 'Sur devis' },
   MA_ACCESS: { amount: 149, label: '149 € / an' },
   MA_PLUS: { amount: 390, label: '390 € / an' },
@@ -25,8 +26,9 @@ export const OFFER_PRICES: Record<AccountProduct | ListingProduct, OfferPrice> =
 // Analyses de dossier par l'IA incluses chaque mois avec l'accès repreneur 149 € (illimitées avec Plus).
 export const FREE_AI_ANALYSES_PER_MONTH = 3;
 
-// Accès anticipé des repreneurs Plus aux nouvelles annonces.
-export const EARLY_ACCESS_HOURS = 48;
+// Nouveaux contacts par mois d'un porteur de projet en formule gratuite (à garder identique à
+// free_quota_limits dans supabase/2026-11-05-associes-offres.sql).
+export const FREE_CONTACTS_PER_MONTH = 5;
 
 // Adresse de contact affichée sur le site (page contact, messages d'erreur). À changer en un seul endroit
 // si le nom de domaine change.

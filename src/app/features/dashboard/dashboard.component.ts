@@ -208,7 +208,7 @@ interface QuickActionItem {
                   </div>
                   <h3 class="mb-2 text-lg font-semibold">Passez en PRO</h3>
                   <p class="mb-4 text-sm leading-relaxed opacity-90">Contacts illimités, raisons détaillées de chaque score et assistant IA personnel.</p>
-                  <a routerLink="/tarifs" class="block w-full rounded-lg bg-white py-2.5 text-center font-semibold text-accent transition-colors hover:bg-white/95">Découvrir PRO</a>
+                  <a routerLink="/tarifs" fragment="associes" class="block w-full rounded-lg bg-white py-2.5 text-center font-semibold text-accent transition-colors hover:bg-white/95">Découvrir PRO</a>
                 </div>
               }
             </div>

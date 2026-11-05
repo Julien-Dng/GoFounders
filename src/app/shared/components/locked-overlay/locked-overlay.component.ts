@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core
 import { RouterLink } from '@angular/router';
 import { Plan } from '../../../core/models/user.model';
 import { PaymentService } from '../../../core/services/payment.service';
+import { OFFER_PRICES } from '../../../core/config/offers';
 
 @Component({
   selector: 'app-locked-overlay',
@@ -21,9 +22,10 @@ import { PaymentService } from '../../../core/services/payment.service';
         <p class="text-muted-foreground mb-6 leading-relaxed">{{ description }}</p>
         <a
           routerLink="/tarifs"
+          fragment="associes"
           class="locked-upgrade-cta block w-full py-3 bg-primary text-white rounded-lg font-semibold shadow-lg hover:bg-primary/90 transition-colors mb-3"
         >
-          Passer en {{ requiredPlan }} — {{ requiredPlan === 'PRO' ? '49€/mois' : 'Sur mesure' }}
+          Passer en {{ requiredPlan }} — {{ requiredPlan === 'PRO' ? proPrice : 'Sur mesure' }}
         </a>
         <button
           type="button"
@@ -37,6 +39,7 @@ import { PaymentService } from '../../../core/services/payment.service';
   `
 })
 export class LockedOverlayComponent {
+  readonly proPrice = OFFER_PRICES.PRO.label;
   private readonly payment = inject(PaymentService);
 
   @Input() requiredPlan: Plan = 'PRO';

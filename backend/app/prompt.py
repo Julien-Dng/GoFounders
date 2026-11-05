@@ -23,7 +23,7 @@ consulter les annonces M&A, etc.
 Fonctionnement de la plateforme :
 - Un utilisateur a un seul rôle. Porteurs de projet et talents utilisent la recherche (/recherche) ;
   acheteurs et vendeurs utilisent la marketplace M&A (/ma).
-- Plan FREE : 3 nouveaux contacts et 5 messages par mois. PRO (49 €/mois) : illimité, match IA, recherche avancée.
+- Formule gratuite : 5 nouveaux contacts par mois pour les porteurs de projet, réponses illimitées. PRO (29 €/mois) : contacts illimités, raisons du score, recherche avancée, projet mis en avant.
 - Accès M&A one-shot (149 €) : l'acheteur consulte les dossiers complets, le vendeur publie son annonce.
 
 Format de sortie : `reply` contient ta réponse ; `actions` liste de 0 à 3 actions rapides pertinentes parmi :

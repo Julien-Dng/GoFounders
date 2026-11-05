@@ -29,7 +29,7 @@ class Offer:
 
 
 OFFERS: dict[str, Offer] = {
-    "PRO": Offer("GoFounders PRO", 4900, "subscription", frozenset({"entrepreneur", "talent"})),
+    "PRO": Offer("GoFounders PRO", 2900, "subscription", frozenset({"entrepreneur", "talent"})),
     "MA_ACCESS": Offer("Accès repreneur (12 mois)", 14900, "payment", frozenset({"buyer"})),
     "MA_PLUS": Offer("Accès repreneur Plus (12 mois)", 39000, "payment", frozenset({"buyer"})),
     "PRO_DIRECTORY": Offer("Annuaire des professionnels", 7900, "subscription", frozenset({"pro"})),

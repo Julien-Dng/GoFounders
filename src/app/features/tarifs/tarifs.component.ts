@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AccountProduct, EARLY_ACCESS_HOURS, FREE_AI_ANALYSES_PER_MONTH, OFFER_PRICES } from '../../core/config/offers';
+import { AccountProduct, FREE_AI_ANALYSES_PER_MONTH, FREE_CONTACTS_PER_MONTH, OFFER_PRICES } from '../../core/config/offers';
 import { FEATURES } from '../../core/config/features';
 import { hasBuyerPlus, isActiveUntil } from '../../core/models/user.model';
 import { PaymentService, PremiumTopic } from '../../core/services/payment.service';
@@ -41,16 +42,30 @@ interface Plan {
     <div class="min-h-screen bg-secondary px-4 pb-20 pt-24 sm:px-6 lg:px-8 lg:pt-32">
       <div class="mx-auto max-w-[78rem]">
         <header class="mx-auto max-w-[62ch] text-center">
-          <h1 class="text-[2.25rem] leading-tight text-primary sm:text-5xl">Tarifs</h1>
+          <h1 class="text-[2.25rem] leading-tight text-primary sm:text-5xl">Des offres adaptées à votre projet</h1>
           <p class="mt-4 text-lg leading-relaxed text-muted-foreground">
-            Publier une annonce est gratuit et nous ne prenons aucune commission sur la vente. Les repreneurs paient l'accès aux dossiers,
-            les professionnels leur visibilité.
-          </p>
-          <nav class="mt-7 flex flex-wrap justify-center gap-2" aria-label="Offres par profil">
-            @for (anchor of anchors; track anchor.id) {
-              <a routerLink="/tarifs" [fragment]="anchor.id" class="rounded-full bg-white px-4 py-2 text-base font-semibold text-primary shadow-sm ring-1 ring-border transition-colors hover:text-accent">{{ anchor.label }}</a>
+            @if (features.associates) {
+              Vous cherchez une entreprise à reprendre ou des personnes avec qui entreprendre ? Un seul compte, et les offres qui correspondent à votre objectif.
+            } @else {
+              Publier une annonce est gratuit et nous ne prenons aucune commission sur la vente. Les repreneurs paient l'accès aux dossiers.
             }
-          </nav>
+          </p>
+          @if (features.associates) {
+            <div class="mt-8 inline-flex w-full flex-col gap-1.5 rounded-2xl bg-white p-1.5 shadow-sm ring-1 ring-border sm:w-auto sm:flex-row" role="tablist" aria-label="Choisissez votre objectif">
+              @for (option of tabs; track option.id) {
+                <button
+                  type="button"
+                  role="tab"
+                  [id]="'onglet-' + option.id"
+                  [attr.aria-selected]="tab() === option.id"
+                  [attr.aria-controls]="'panneau-' + option.id"
+                  (click)="selectTab(option.id)"
+                  class="rounded-xl px-5 py-3 text-base font-semibold transition-colors"
+                  [class]="tab() === option.id ? 'bg-primary text-white shadow' : 'text-primary hover:bg-secondary'"
+                >{{ option.label }}</button>
+              }
+            </div>
+          }
         </header>
 
         @if (statusMessage() && !statusProduct()) {
@@ -59,6 +74,8 @@ interface Plan {
           </div>
         }
 
+        @if (tab() === 'reprise') {
+        <div id="panneau-reprise" role="tabpanel" aria-labelledby="onglet-reprise">
         @for (group of offerGroups(); track group.id) {
           <section [id]="group.id" class="mt-20 scroll-mt-24" [attr.aria-labelledby]="group.id + '-title'">
             <div class="mx-auto max-w-[60ch] text-center">
@@ -101,12 +118,100 @@ interface Plan {
           </section>
         }
 
+        </div>
+        }
+
+        @if (tab() === 'associes' && features.associates) {
+        <div id="panneau-associes" role="tabpanel" aria-labelledby="onglet-associes">
+          <section id="associes" class="mt-16 scroll-mt-24" aria-labelledby="associes-title">
+            <div class="mx-auto max-w-[62ch] text-center">
+              <h2 id="associes-title" class="text-3xl text-primary sm:text-4xl">Trouver un associé, créer une équipe</h2>
+              <p class="mt-3 text-lg leading-relaxed text-muted-foreground">
+                Présentez votre projet et trouvez les compétences qui vous manquent, ou rejoignez un projet qui vous correspond.
+              </p>
+            </div>
+            <p class="mx-auto mt-8 max-w-3xl rounded-xl bg-emerald-50 px-5 py-4 text-center text-base font-medium text-emerald-900 ring-1 ring-emerald-200">
+              Vous souhaitez rejoindre un projet ? Créez votre profil et échangez gratuitement, sans limite.
+            </p>
+
+            <div class="mt-10 grid gap-6 md:grid-cols-3">
+              @for (plan of plans; track plan.name) {
+                <div class="flex flex-col rounded-2xl bg-white p-7 shadow-lg" [class]="plan.variant === 'pro' ? 'ring-2 ring-accent' : 'ring-1 ring-border'">
+                  <h3 class="text-lg font-bold text-primary">{{ plan.name }}</h3>
+                  <p class="tabular mt-3 text-[2rem] font-extrabold leading-tight tracking-tight text-primary">{{ plan.price }}<span class="text-base font-normal text-muted-foreground">{{ plan.period === '/mois' ? ' par mois' : '' }}</span></p>
+                  <p class="mt-2 text-base text-muted-foreground">{{ plan.description }}</p>
+                  <ul class="mt-5 flex-1 space-y-2.5 border-t border-border pt-5 text-base text-foreground/85">
+                    @for (feature of plan.highlights; track feature) {
+                      <li class="flex gap-2.5">
+                        <svg class="mt-1 flex-shrink-0 text-accent" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>{{ feature }}</span>
+                      </li>
+                    }
+                  </ul>
+                  <div class="mt-7">
+                    @if (plan.variant === 'premium') {
+                      <button type="button" (click)="askAccompaniment()" class="block w-full rounded-lg border border-primary px-4 py-3 text-center font-semibold text-primary transition-colors hover:bg-primary hover:text-white">{{ plan.cta }}</button>
+                    } @else {
+                      <a [routerLink]="planHref(plan)" [queryParams]="planParams(plan)" class="block w-full rounded-lg px-4 py-3 text-center font-semibold transition-colors" [class]="plan.variant === 'pro' ? 'bg-accent text-white hover:bg-accent/90' : 'border border-primary text-primary hover:bg-primary hover:text-white'">{{ plan.cta }}</a>
+                    }
+                    @if (plan.reassurance) {
+                      <p class="mt-2 text-center text-sm text-muted-foreground">{{ plan.reassurance }}</p>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+
+            <h3 class="mt-14 text-center text-2xl text-primary">Le détail des formules</h3>
+            <div class="relative mt-6 overflow-x-auto rounded-2xl bg-white p-4 shadow-lg ring-1 ring-border sm:p-6">
+              <table class="tabular w-full min-w-[680px] border-collapse text-left text-base">
+                <caption class="sr-only">Comparaison des formules Découverte, Projet PRO et Accompagnement</caption>
+                <thead>
+                  <tr class="border-b border-primary align-bottom">
+                    <th scope="col" class="w-[34%] py-4 pr-4 font-medium text-muted-foreground">Formule</th>
+                    @for (plan of plans; track plan.name) {
+                      <th scope="col" class="w-[22%] px-4 py-4">
+                        <span class="block font-semibold text-primary">{{ plan.name }}</span>
+                        <span class="mt-1 block text-sm font-normal text-muted-foreground">{{ plan.price }}{{ plan.period === '/mois' ? ' par mois' : '' }}</span>
+                      </th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of comparisonRows; track $index) {
+                    <tr class="border-b border-border last:border-b-0">
+                      <th scope="row" class="py-3.5 pr-4 font-normal text-foreground/85">{{ row[0] }}</th>
+                      @for (cell of row.slice(1); track $index) {
+                        <td class="px-4 py-3.5 text-foreground/85">
+                          @if (cell === '✓') {
+                            Inclus
+                          } @else if (cell === '✗') {
+                            <span class="text-muted-foreground" aria-hidden="true">–</span><span class="sr-only">Non inclus</span>
+                          } @else {
+                            {{ cell }}
+                          }
+                        </td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+        }
+
         <section id="premium" class="mt-20 grid scroll-mt-24 gap-8 overflow-hidden rounded-3xl bg-white p-6 shadow-lg ring-1 ring-border sm:p-10 lg:grid-cols-12" aria-labelledby="premium-title">
           <div class="lg:col-span-4">
             <h2 id="premium-title" class="text-3xl text-primary sm:text-4xl">Accompagnement</h2>
             <p class="mt-3 max-w-[40ch] text-base leading-relaxed text-muted-foreground">
-              Préparation du dossier de cession, présentation de repreneurs ou de cédants qualifiés, mise en relation avec nos experts partenaires.
-              Forfait sur devis, sans commission sur la vente.
+              @if (tab() === 'associes') {
+                Recherche menée avec vous, présentation de profils qualifiés, mise en relation avec des investisseurs et nos experts partenaires.
+                Forfait sur devis.
+              } @else {
+                Préparation du dossier de cession, présentation de repreneurs ou de cédants qualifiés, mise en relation avec nos experts partenaires.
+                Forfait sur devis, sans commission sur la vente.
+              }
             </p>
             <ul class="mt-4 space-y-1.5 text-base text-foreground/85">
               <li>Premier échange gratuit, devis sous 48 h ouvrées.</li>
@@ -147,80 +252,41 @@ interface Plan {
           </div>
         </section>
 
-        @if (features.associates) {
-        <section id="associes" class="mt-20 scroll-mt-24" aria-labelledby="associes-title">
-          <div class="mx-auto max-w-[62ch] text-center">
-            <h2 id="associes-title" class="text-3xl text-primary sm:text-4xl">Trouver un associé</h2>
-            <p class="mt-3 text-base leading-relaxed text-muted-foreground">
-              Gratuit pour se faire connaître, PRO pour trouver son associé plus vite, PREMIUM pour être accompagné. Les associés n'ont pas besoin de payer.
-            </p>
-          </div>
-
-          <div class="relative mt-10 overflow-x-auto rounded-2xl bg-white p-4 shadow-lg ring-1 ring-border sm:p-6">
-            <table class="tabular w-full min-w-[680px] border-collapse text-left text-base">
-              <caption class="sr-only">Comparaison des formules FREE, PRO et PREMIUM</caption>
-              <thead>
-                <tr class="border-b border-primary align-bottom">
-                  <th scope="col" class="w-[34%] py-4 pr-4 font-medium text-muted-foreground">Formule</th>
-                  @for (plan of plans; track plan.name) {
-                    <th scope="col" class="w-[22%] px-4 py-4">
-                      <span class="block font-semibold text-primary">{{ plan.name }}</span>
-                      <span class="font-display mt-1 block text-2xl font-semibold text-primary">{{ plan.price }}<span class="font-sans text-sm font-normal text-muted-foreground">{{ plan.period === '/mois' ? ' par mois' : '' }}</span></span>
-                      <span class="mt-1 block text-sm font-normal text-muted-foreground" [style.padding-bottom.px]="plan.name === 'PRO' ? 25 : null">{{ plan.description }}</span>
-                    </th>
-                  }
-                </tr>
-              </thead>
-              <tbody>
-                @for (row of comparisonRows; track $index) {
-                  <tr class="border-b border-border">
-                    <th scope="row" class="py-3.5 pr-4 font-normal text-foreground/85">{{ row[0] }}</th>
-                    <td class="px-4 py-3.5 text-foreground/85">
-                          @if (row[1] === '✓') {
-                            <span aria-hidden="true">Inclus</span><span class="sr-only">Inclus</span>
-                          } @else if (row[1] === '✗') {
-                            <span class="text-muted-foreground" aria-hidden="true">–</span><span class="sr-only">Non inclus</span>
-                          } @else {
-                            {{ row[1] }}
-                          }
-                    </td>
-                    <td class="px-4 py-3.5 text-foreground/85">
-                          @if (row[2] === '✓') {
-                            <span aria-hidden="true">Inclus</span><span class="sr-only">Inclus</span>
-                          } @else if (row[2] === '✗') {
-                            <span class="text-muted-foreground" aria-hidden="true">–</span><span class="sr-only">Non inclus</span>
-                          } @else {
-                            {{ row[2] }}
-                          }
-                    </td>
-                    <td class="px-4 py-3.5 text-foreground/85">
-                          @if (row[3] === '✓') {
-                            <span aria-hidden="true">Inclus</span><span class="sr-only">Inclus</span>
-                          } @else if (row[3] === '✗') {
-                            <span class="text-muted-foreground" aria-hidden="true">–</span><span class="sr-only">Non inclus</span>
-                          } @else {
-                            {{ row[3] }}
-                          }
-                    </td>
-                  </tr>
-                }
-                <tr>
-                  <td class="py-5 pr-4"></td>
-                  @for (plan of plans; track plan.name) {
-                    <td class="px-4 py-5 align-top">
-                      <a [routerLink]="planHref(plan)" [class]="plan.variant === 'pro'
-                        ? 'block rounded bg-primary px-4 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-primary/90'
-                        : 'block rounded border border-primary px-4 py-2.5 text-center text-sm font-medium text-primary transition-colors hover:bg-primary hover:text-white'">{{ plan.cta }}</a>
-                      @if (plan.reassurance) {
-                        <p class="mt-2 text-center text-sm text-muted-foreground">{{ plan.reassurance }}</p>
+        @if (prosGroup(); as group) {
+          <section id="pros" class="mt-20 scroll-mt-24" aria-labelledby="pros-title">
+            <div class="mx-auto max-w-[60ch] text-center">
+              <h2 id="pros-title" class="text-3xl text-primary sm:text-4xl">Vous êtes un professionnel ?</h2>
+              <p class="mt-3 text-lg leading-relaxed text-muted-foreground">{{ group.description }}</p>
+            </div>
+            <div class="mx-auto mt-10 grid max-w-4xl gap-6 md:grid-cols-2">
+              @for (offer of group.offers; track offer.title) {
+                <div class="flex flex-col rounded-2xl bg-white p-7 shadow-lg ring-1 ring-border">
+                  <h3 class="text-lg font-bold text-primary">{{ offer.title }}</h3>
+                  <p class="tabular mt-3 text-[2rem] font-extrabold leading-tight tracking-tight text-primary">{{ offer.price }}</p>
+                  <p class="mt-2 text-base text-muted-foreground">{{ offer.description }}</p>
+                  <ul class="mt-5 flex-1 space-y-2.5 border-t border-border pt-5 text-base text-foreground/85">
+                    @for (feature of offer.features; track feature) {
+                      <li class="flex gap-2.5"><span class="text-accent" aria-hidden="true">✓</span><span>{{ feature }}</span></li>
+                    }
+                  </ul>
+                  <div class="mt-7">
+                    @if (offer.product) {
+                      @if (isOwned(offer.product)) {
+                        <p class="rounded-lg bg-emerald-50 py-3 text-center font-semibold text-emerald-800">Actif sur votre compte</p>
+                      } @else {
+                        <button type="button" (click)="buy(offer.product)" [disabled]="busyProduct() === offer.product" class="w-full rounded-lg bg-primary px-4 py-3 font-semibold text-white transition-colors hover:bg-primary/90 disabled:opacity-60">{{ busyProduct() === offer.product ? 'Activation…' : (offer.cta ?? 'Activer') }}</button>
+                        @if (statusProduct() === offer.product && statusMessage()) {
+                          <p class="mt-3 text-sm font-medium" [class]="statusIsError() ? 'text-red-700' : 'text-emerald-700'" role="status">{{ statusMessage() }}</p>
+                        }
                       }
-                    </td>
-                  }
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+                    } @else if (offer.link) {
+                      <a [routerLink]="offer.link.href" class="block w-full rounded-lg bg-primary px-4 py-3 text-center font-semibold text-white transition-colors hover:bg-primary/90">{{ offer.link.label }}</a>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
         }
       </div>
     </div>
@@ -233,13 +299,24 @@ export class TarifsComponent {
   private readonly route = inject(ActivatedRoute);
 
   readonly features = FEATURES;
-  readonly anchors = [
-    { id: 'repreneurs', label: 'Repreneurs' },
-    { id: 'cedants', label: 'Cédants' },
-    ...(FEATURES.pros ? [{ id: 'pros', label: 'Professionnels' }] : []),
-    { id: 'premium', label: 'Accompagnement' },
-    ...(FEATURES.associates ? [{ id: 'associes', label: 'Trouver un associé' }] : []),
+  // Deux univers d'offres, un seul compte : l'onglet ne fait que filtrer ce qui est présenté.
+  readonly tabs = [
+    { id: 'reprise' as const, label: 'Reprendre ou céder une entreprise' },
+    { id: 'associes' as const, label: 'Trouver un associé / créer une équipe' },
   ];
+  private readonly fragment = toSignal(this.route.fragment, { initialValue: this.route.snapshot.fragment });
+  readonly tab = signal<'reprise' | 'associes'>(this.tabFor(this.route.snapshot.fragment, this.route.snapshot.queryParamMap.get('offre')));
+  private readonly topicEffect = effect(() => {
+    if (this.tab() === 'associes' && this.premiumTopic() === 'cession') {
+      this.premiumTopic.set('associes');
+    }
+  }, { allowSignalWrites: true });
+  private readonly fragmentEffect = effect(() => {
+    const fragment = this.fragment();
+    if (fragment === 'associes' || fragment === 'repreneurs' || fragment === 'cedants' || fragment === 'ma-access') {
+      this.tab.set(this.tabFor(fragment, null));
+    }
+  }, { allowSignalWrites: true });
 
   readonly busyProduct = signal<AccountProduct | null>(null);
   readonly statusProduct = signal<AccountProduct | null>(null);
@@ -255,7 +332,7 @@ export class TarifsComponent {
   readonly premiumResultIsError = signal(false);
 
   readonly offerGroups = computed(() => this.allOfferGroups()
-    .filter(group => group.id !== 'pros' || FEATURES.pros)
+    .filter(group => group.id !== 'pros')
     .map(group => ({
       ...group,
       offers: group.offers.filter(offer =>
@@ -264,6 +341,8 @@ export class TarifsComponent {
       ),
     })));
 
+  readonly prosGroup = computed(() => (FEATURES.pros ? this.allOfferGroups().find(group => group.id === 'pros') ?? null : null));
+
   private readonly allOfferGroups = computed(() => [
     {
       id: 'repreneurs',
@@ -271,7 +350,7 @@ export class TarifsComponent {
       description: 'Demandez l’accès aux dossiers complets des entreprises à reprendre et échangez directement avec les vendeurs.',
       offers: [
         {
-          title: 'Accès repreneur',
+          title: 'Reprendre une entreprise',
           price: OFFER_PRICES.MA_ACCESS.label,
           description: 'Pour étudier les entreprises à reprendre et entrer en contact avec leurs vendeurs.',
           features: [
@@ -292,7 +371,6 @@ export class TarifsComponent {
             "Tout l'accès repreneur, plus :",
             "Analyses de dossier par l'IA illimitées",
             'Alertes sur les nouvelles annonces qui correspondent à votre recherche',
-            `Accès anticipé : les nouvelles annonces ${EARLY_ACCESS_HOURS} h avant les autres`,
           ],
           product: 'MA_PLUS',
           cta: "Prendre l'accès Plus",
@@ -307,9 +385,9 @@ export class TarifsComponent {
         : 'Publiez gratuitement, sans commission sur la vente, et gardez la main sur qui voit votre dossier.',
       offers: [
         {
-          title: 'Publication',
+          title: 'Céder mon entreprise',
           price: 'Gratuit',
-          description: 'Offre de lancement.',
+          description: 'Publication gratuite pendant le lancement, sans commission sur la vente.',
           features: ["Annonce anonymisée, préparée avec l'IA et relue par notre équipe avant publication", 'Vous choisissez les repreneurs qui voient votre dossier et vos coordonnées', 'Chaque repreneur accepte un engagement de confidentialité', 'Estimation gratuite de la valeur de votre entreprise'],
           link: { href: '/ma/deposer', label: 'Déposer mon annonce' },
         },
@@ -323,8 +401,12 @@ export class TarifsComponent {
         {
           title: 'Dossier vérifié',
           price: OFFER_PRICES.VERIFICATION.label,
-          description: "Vos chiffres contrôlés par l'équipe GoFounders.",
-          features: ["Vérification de vos justificatifs (Stripe, Shopify, bilans)", 'Badge « Dossier vérifié » sur l’annonce', 'Plus de demandes de repreneurs sérieux'],
+          description: "Nous comparons les chiffres de votre annonce à vos justificatifs.",
+          features: [
+            "Chiffre d'affaires et bénéfice annoncés rapprochés de vos justificatifs : derniers bilans ou liasses fiscales, tableau de bord Stripe ou Shopify sur 12 mois",
+            'Badge « Dossier vérifié » sur l’annonce',
+            "Le badge atteste la concordance des chiffres avec les justificatifs fournis, pas la valeur de l'entreprise",
+          ],
           link: { href: '/ma/mes-annonces', label: 'Faire vérifier mon dossier' },
         },
       ] as RepriseOffer[],
@@ -351,6 +433,27 @@ export class TarifsComponent {
       ] as RepriseOffer[],
     },
   ]);
+
+  private tabFor(fragment: string | null, offre: string | null): 'reprise' | 'associes' {
+    return FEATURES.associates && (fragment === 'associes' || offre === 'associes') ? 'associes' : 'reprise';
+  }
+
+  selectTab(tab: 'reprise' | 'associes'): void {
+    this.tab.set(tab);
+    this.premiumTopic.set(tab === 'associes' ? 'associes' : 'cession');
+    this.statusMessage.set('');
+    void this.router.navigate([], { relativeTo: this.route, fragment: tab === 'associes' ? 'associes' : undefined, replaceUrl: true });
+  }
+
+  // Formule Accompagnement : formulaire de devis plus bas, sujet « associés » présélectionné.
+  askAccompaniment(): void {
+    this.premiumTopic.set('associes');
+    document.getElementById('premium')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  planParams(plan: Plan): Record<string, string> | null {
+    return !this.auth.isAuthenticated() && plan.variant === 'free' ? { profil: 'entrepreneur' } : null;
+  }
 
   private isPro(): boolean {
     return this.auth.currentUser()?.profileType === 'pro';
@@ -416,80 +519,72 @@ export class TarifsComponent {
 
   readonly plans: Plan[] = [
     {
-      name: 'FREE',
-      price: '0€',
+      name: 'Découverte',
+      price: 'Gratuit',
       period: 'gratuit',
-      description: 'Pour rejoindre la communauté et se faire connaître',
-      features: [
-        { text: 'Profil complet et visible', included: true },
-        { text: 'Recherche et profils illimités', included: true },
-        { text: 'Score de compatibilité', included: true },
-        { text: 'Réponses illimitées à vos conversations', included: true },
-        { text: 'Porteur de projet : vous pouvez écrire à 3 nouveaux associés par mois', included: true },
-        { text: 'Associé : vous écrivez à autant de projets que vous voulez', included: true },
-        { text: 'Raisons détaillées du score', included: false },
-        { text: 'Assistant IA personnel', included: false },
+      description: 'Créer son profil et découvrir les projets et associés',
+      features: [],
+      highlights: [
+        'Profil, présentation de votre projet et recherche',
+        'Réponses illimitées dans vos conversations',
+        'Score de compatibilité avec chaque profil',
+        `Porteur de projet : ${FREE_CONTACTS_PER_MONTH} nouveaux contacts par mois`,
+        'Rejoindre un projet : gratuit et sans limite',
       ],
-      highlights: ['Gratuit pour les associés', 'Recherche illimitée', 'Réponses illimitées'],
       cta: 'Créer mon profil',
       href: '/inscription',
       reassurance: '',
       variant: 'free',
     },
     {
-      name: 'PRO',
-      price: '49€',
+      name: 'Projet PRO',
+      price: OFFER_PRICES.PRO.label.replace(' / mois', ''),
       period: '/mois',
-      badge: 'Porteurs de projet',
-      description: 'Trouvez votre associé plus vite',
-      features: [
-        { text: 'Tout de FREE, plus :', included: true },
-        { text: 'Contacts illimités', included: true },
-        { text: 'Matching intelligent : pourquoi chaque profil vous correspond', included: true },
-        { text: 'Assistant IA personnel', included: true },
-        { text: 'Recherche avancée (mots-clés, compétences, score minimum)', included: true },
-        { text: 'Projet mis en avant dans les résultats', included: true },
+      description: 'Contacter davantage de profils et développer son équipe',
+      features: [],
+      highlights: [
+        'Nouveaux contacts illimités',
+        'Recherche avancée (mots-clés, compétences, score minimum)',
+        'Matching intelligent : pourquoi chaque profil vous correspond',
+        'Projet mis en avant dans les résultats',
+        ...(FEATURES.assistant ? ['Assistant IA personnel'] : []),
       ],
-      highlights: ['Contacts illimités', 'Matching intelligent', 'Assistant IA'],
-      cta: 'Passer en PRO',
+      cta: 'Développer mon équipe',
       href: '/abonnement',
       reassurance: 'Sans engagement',
       variant: 'pro',
     },
     {
-      name: 'PREMIUM',
+      name: 'Accompagnement',
       price: 'Sur devis',
       period: '',
-      description: 'On vous présente les bonnes personnes',
-      features: [
-        { text: 'Tout de PRO, plus :', included: true },
-        { text: "Présentations qualifiées d'associés", included: true },
-        { text: 'Mise en relation avec des investisseurs', included: true },
-        { text: 'Mise en relation avec des experts juridiques partenaires', included: true },
-        { text: 'Un interlocuteur dédié', included: true },
+      description: 'Être accompagné dans sa recherche',
+      features: [],
+      highlights: [
+        'Présentations de profils qualifiés',
+        'Mise en relation avec des investisseurs et des experts juridiques partenaires',
+        'Un interlocuteur dédié',
       ],
-      highlights: ['Accompagnement', 'Investisseurs', 'Experts partenaires'],
-      cta: 'Premier échange gratuit',
-      href: '/abonnement',
-      reassurance: 'Réponse sous 48 h',
+      cta: 'Parler de mon projet',
+      href: '/tarifs',
+      reassurance: 'Premier échange gratuit',
       variant: 'premium',
     },
   ];
 
   readonly comparisonRows: string[][] = [
-    ['Profil et recherche', 'Illimités', 'Illimités', 'Illimités'],
-    ['Porteur de projet : écrire à de nouveaux associés', '3 par mois', 'Sans limite', 'Sans limite'],
-    ['Associé : écrire à de nouveaux porteurs de projet', 'Sans limite', 'Sans limite', 'Sans limite'],
+    ['Profil, présentation du projet et recherche', '✓', '✓', '✓'],
+    ['Rejoindre un projet (écrire à des porteurs de projet)', 'Sans limite', 'Sans limite', 'Sans limite'],
+    ['Porteur de projet : écrire à de nouveaux associés', `${FREE_CONTACTS_PER_MONTH} par mois`, 'Sans limite', 'Sans limite'],
     ['Répondre dans vos conversations', 'Sans limite', 'Sans limite', 'Sans limite'],
     ['Score de compatibilité', '✓', '✓', '✓'],
-    ['Matching intelligent', '✗', '✓', '✓'],
-    ['Assistant IA personnel', '✗', '✓', '✓'],
+    ['Matching intelligent (raisons du score)', '✗', '✓', '✓'],
     ['Recherche avancée', '✗', '✓', '✓'],
     ['Projet mis en avant dans les résultats', '✗', '✓', '✓'],
-    ["Présentations qualifiées d'associés", '✗', '✗', '✓'],
+    ...(FEATURES.assistant ? [['Assistant IA personnel', '✗', '✓', '✓']] : []),
+    ['Présentations de profils qualifiés', '✗', '✗', '✓'],
     ['Mise en relation investisseurs et experts juridiques partenaires', '✗', '✗', '✓'],
     ['Interlocuteur dédié', '✗', '✗', '✓'],
-    ['Support', 'Email', 'Email prioritaire', 'Interlocuteur dédié'],
   ];
 
   planHref(plan: Plan): string {

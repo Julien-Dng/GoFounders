@@ -53,10 +53,10 @@ Principe : **seule la page tarifs fait foi**, et elle n'annonce que ce qui exist
 FREE généreux pour attirer du monde, PRO centré sur une promesse (« Trouvez votre associé plus vite »),
 PREMIUM = accompagnement humain. Les talents n'ont pas besoin de payer.
 
-| Fonctionnalité | FREE | PRO (49€/mois, sans engagement) | PREMIUM (sur devis) |
+| Fonctionnalité | FREE (« Découverte ») | PRO (« Projet PRO », 29 €/mois à tester, sans engagement) | PREMIUM (« Accompagnement », sur devis) |
 |---|---|---|---|
 | Profil, recherche, profils visibles | Illimités | Illimités | Illimités |
-| Nouveaux contacts / mois | Talents : illimités · Porteurs de projet : 3 | Illimités | Illimités |
+| Nouveaux contacts / mois | Talents : illimités · Porteurs de projet : 5 | Illimités | Illimités |
 | Réponses dans les conversations | Illimitées | Illimitées | Illimitées |
 | Score de compatibilité (%) | ✅ | ✅ | ✅ |
 | Matching intelligent (raisons détaillées du score) | ❌ | ✅ | ✅ |
@@ -67,7 +67,8 @@ PREMIUM = accompagnement humain. Les talents n'ont pas besoin de payer.
 | Mise en relation investisseurs et experts juridiques partenaires | ❌ | ❌ | ✅ |
 | Interlocuteur dédié | ❌ | ❌ | ✅ |
 
-- Quotas vérifiés par Supabase (`free_quota_limits`) : 3 nouveaux contacts par mois pour les porteurs de projet en FREE, aucune limite de messages
+- Quotas vérifiés par Supabase (`free_quota_limits`, `2026-11-05-associes-offres.sql`) : 5 nouveaux contacts par mois pour les porteurs de projet en FREE (`FREE_CONTACTS_PER_MONTH` dans `offers.ts`), aucune limite de messages
+- Page `/tarifs` à deux onglets (« Reprendre ou céder une entreprise » / « Trouver un associé / créer une équipe », fragment `#associes`) : un seul compte, les onglets ne font que présenter les offres. Offres pros en bas de page (« Vous êtes un professionnel ? »), masquées au lancement
 - Raisons du score : `canSeeMatchReasons()` dans `user.model.ts` (PRO et PREMIUM)
 - Recherche avancée : `canUseAdvancedSearch()` ; projets mis en avant : `isFeaturedProjectPlan()` (plan du porteur), triés en tête de `/recherche` avec le badge « Mis en avant »
 - Le générateur de pitch a été retiré (hors promesse de mise en relation)
