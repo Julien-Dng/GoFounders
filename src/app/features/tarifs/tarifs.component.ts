@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AccountProduct, FREE_AI_ANALYSES_PER_MONTH, FREE_CONTACTS_PER_MONTH, OFFER_PRICES } from '../../core/config/offers';
+import { AccountProduct, FREE_AI_ANALYSES_PER_MONTH, FREE_CONTACTS_PER_MONTH, OFFER_PRICES, PRO_TRIAL_LABEL } from '../../core/config/offers';
 import { FEATURES } from '../../core/config/features';
 import { hasBuyerPlus, isActiveUntil } from '../../core/models/user.model';
 import { PaymentService, PremiumTopic } from '../../core/services/payment.service';
@@ -441,21 +441,21 @@ export class TarifsComponent {
     {
       id: 'pros',
       title: 'Professionnels',
-      description: 'Experts-comptables, avocats, notaires et cabinets de cession : soyez visibles auprès des cédants et des repreneurs.',
+      description: `Experts-comptables, avocats, notaires et cabinets de cession : soyez visibles auprès des cédants et des repreneurs. ${PRO_TRIAL_LABEL}, sans engagement.`,
       offers: [
         {
           title: 'Annuaire des professionnels',
           price: OFFER_PRICES.PRO_DIRECTORY.label,
-          description: 'Votre fiche dans l’annuaire GoFounders.',
-          features: ['Fiche avec votre métier, votre zone et votre site', 'Contactable par tous les membres', 'Sans engagement'],
-          ...(this.isPro() ? { product: 'PRO_DIRECTORY' as const, cta: 'Activer ma fiche' } : { link: { href: '/inscription', label: 'Créer un compte professionnel' } }),
+          description: `Votre fiche dans l’annuaire GoFounders. ${PRO_TRIAL_LABEL}.`,
+          features: ['Fiche avec votre métier, votre zone et votre site', 'Contactable par tous les membres', `${PRO_TRIAL_LABEL}, puis ${OFFER_PRICES.PRO_DIRECTORY.label}`, 'Sans engagement : résiliable à tout moment, même pendant l’essai'],
+          ...(this.isPro() ? { product: 'PRO_DIRECTORY' as const, cta: 'Essayer gratuitement 1 mois' } : { link: { href: '/inscription', label: 'Créer un compte professionnel' } }),
         },
         {
           title: 'Compte pro',
           price: OFFER_PRICES.PRO_ACCOUNT.label,
-          description: 'Pour les cabinets qui accompagnent plusieurs cessions sur GoFounders.',
-          features: ["Fiche dans l'annuaire, mise en avant", 'Publication de plusieurs annonces pour vos clients', 'Contact direct des repreneurs', 'Sans engagement'],
-          ...(this.isPro() ? { product: 'PRO_ACCOUNT' as const, cta: 'Activer le compte pro' } : { link: { href: '/inscription', label: 'Créer un compte professionnel' } }),
+          description: `Pour les cabinets qui accompagnent plusieurs cessions sur GoFounders. ${PRO_TRIAL_LABEL}.`,
+          features: ["Fiche dans l'annuaire, mise en avant", 'Publication de plusieurs annonces pour vos clients', 'Contact direct des repreneurs', `${PRO_TRIAL_LABEL}, puis ${OFFER_PRICES.PRO_ACCOUNT.label}, sans engagement`],
+          ...(this.isPro() ? { product: 'PRO_ACCOUNT' as const, cta: 'Essayer gratuitement 1 mois' } : { link: { href: '/inscription', label: 'Créer un compte professionnel' } }),
         },
       ] as RepriseOffer[],
     },

@@ -28,7 +28,7 @@ from .llm_anthropic import AnthropicBackend
 from .llm_openai import OpenAIBackend
 from .ma_ai import DraftRequest, ListingAnalysis, ListingDraft, MaAi, MaAiUnusable
 from .models import ChatRequest, ChatResponse, ContextItem, ContextResponse, UserContext
-from .payments import OFFERS, StripeClient, StripeError, WebhookSignatureError, checkout_params, verify_webhook
+from .payments import OFFERS, PRO_TRIAL_DAYS, PRO_TRIAL_PRODUCTS, StripeClient, StripeError, WebhookSignatureError, checkout_params, verify_webhook
 from .supabase import SupabaseClient, SupabaseError
 
 logger = logging.getLogger(__name__)
@@ -359,6 +359,10 @@ async def create_checkout(
             if payload.product == "VERIFICATION" and len((payload.evidence or "").strip()) < 20:
                 raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Décrivez vos justificatifs (au moins 20 caractères)")
 
+        trial_days = 0
+        if payload.product in PRO_TRIAL_PRODUCTS and not await supabase.has_purchased(user_id, PRO_TRIAL_PRODUCTS):
+            trial_days = PRO_TRIAL_DAYS
+
         customer_id = await ensure_customer(supabase, stripe, user_id, profile)
         url = await stripe.create_checkout_session(
             checkout_params(
@@ -368,6 +372,7 @@ async def create_checkout(
                 site_url=settings.site_url.rstrip("/"),
                 listing_id=listing_id if offer.needs_listing else None,
                 evidence=payload.evidence,
+                trial_days=trial_days,
             )
         )
     except SupabaseError as error:

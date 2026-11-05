@@ -190,6 +190,14 @@ class SupabaseClient:
     async def mark_email_failed(self, email_id: str, attempts: int, error: str) -> None:
         await self._patch_outbox(email_id, {"attempts": attempts, "last_error": error})
 
+    async def has_purchased(self, user_id: str, products: frozenset[str]) -> bool:
+        """Le membre a-t-il déjà souscrit l'une de ces offres (pour n'accorder l'essai gratuit qu'une fois) ?"""
+        rows = await self._select(
+            "payments",
+            {"user_id": f"eq.{user_id}", "product": f"in.({','.join(sorted(products))})", "select": "id", "limit": "1"},
+        )
+        return bool(rows)
+
     async def can_unlock_listing(self, user_id: str, listing_id: str) -> bool:
         """Demande acceptée par le cédant et pas encore débloquée (avant de faire payer la mise en relation)."""
         rows = await self._select(

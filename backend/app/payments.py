@@ -45,6 +45,11 @@ OFFERS: dict[str, Offer] = {
 }
 
 
+# Offres professionnelles : un mois d'essai gratuit, une seule fois par membre.
+PRO_TRIAL_PRODUCTS = frozenset({"PRO_DIRECTORY", "PRO_ACCOUNT"})
+PRO_TRIAL_DAYS = 30
+
+
 class StripeError(Exception):
     pass
 
@@ -113,6 +118,7 @@ def checkout_params(
     site_url: str,
     listing_id: str | None,
     evidence: str | None,
+    trial_days: int = 0,
 ) -> dict[str, Any]:
     """Paramètres d'une session Stripe Checkout, prix définis ici (pas de produit à créer dans Stripe)."""
     offer = OFFERS[offer_code]
@@ -148,6 +154,9 @@ def checkout_params(
     if offer.mode == "subscription":
         # Retrouvé dans les événements de renouvellement et de résiliation.
         params["subscription_data"] = {"metadata": {"user_id": user_id, "product": offer_code}}
+        if trial_days > 0:
+            # Essai gratuit : rien n'est prélevé avant la fin de l'essai ; la carte est demandée dès l'inscription.
+            params["subscription_data"]["trial_period_days"] = trial_days
     else:
         params["invoice_creation"] = {"enabled": True}
     return params

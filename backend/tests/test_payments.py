@@ -25,7 +25,8 @@ SECRET = "whsec_test"
 
 
 class FakeSupabase:
-    def __init__(self, role: str = "buyer", customer: str | None = None, owns: bool = True, can_unlock: bool = True) -> None:
+    def __init__(self, role: str = "buyer", customer: str | None = None, owns: bool = True, can_unlock: bool = True, purchased: bool = False) -> None:
+        self.purchased = purchased
         self.role = role
         self.customer = customer
         self.owns = owns
@@ -48,6 +49,9 @@ class FakeSupabase:
 
     async def can_unlock_listing(self, user_id: str, listing_id: str) -> bool:
         return self.can_unlock
+
+    async def has_purchased(self, user_id: str, products: frozenset[str]) -> bool:
+        return self.purchased
 
     async def apply_purchase(self, **kwargs) -> bool:
         self.purchases.append(kwargs)
@@ -205,6 +209,24 @@ def test_intro_refused_without_accepted_request(client_for):
 def test_intro_requires_listing_and_buyer(client_for):
     assert client_for(FakeSupabase("buyer")).post("/api/paiements/session", json={"product": "INTRO"}, headers=AUTH).status_code == 409
     assert client_for(FakeSupabase("seller")).post("/api/paiements/session", json={"product": "INTRO", "listing_id": LISTING_ID}, headers=AUTH).status_code == 403
+
+
+def test_pro_offer_gets_one_month_free_trial(client_for):
+    stripe = FakeStripe()
+    assert client_for(FakeSupabase("pro"), stripe).post("/api/paiements/session", json={"product": "PRO_DIRECTORY"}, headers=AUTH).status_code == 200
+    assert stripe.sessions[0]["subscription_data"]["trial_period_days"] == 30
+
+
+def test_pro_trial_only_once(client_for):
+    stripe = FakeStripe()
+    client_for(FakeSupabase("pro", purchased=True), stripe).post("/api/paiements/session", json={"product": "PRO_ACCOUNT"}, headers=AUTH)
+    assert "trial_period_days" not in stripe.sessions[0]["subscription_data"]
+
+
+def test_no_trial_for_other_subscriptions(client_for):
+    stripe = FakeStripe()
+    client_for(FakeSupabase("entrepreneur"), stripe).post("/api/paiements/session", json={"product": "PRO"}, headers=AUTH)
+    assert "trial_period_days" not in stripe.sessions[0]["subscription_data"]
 
 
 def test_verification_requires_evidence(client_for):

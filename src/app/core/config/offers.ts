@@ -33,6 +33,9 @@ export const FREE_AI_ANALYSES_PER_MONTH = 3;
 // free_quota_limits dans supabase/2026-11-05-associes-offres.sql).
 export const FREE_CONTACTS_PER_MONTH = 5;
 
+// Offres professionnelles (annuaire, compte pro) : essai gratuit, une fois par membre (backend/app/payments.py).
+export const PRO_TRIAL_LABEL = '1 mois d’essai gratuit';
+
 // Adresse de contact affichée sur le site (page contact, messages d'erreur). À changer en un seul endroit
 // si le nom de domaine change.
 export const SUPPORT_EMAIL = 'support@gofounders.fr';
