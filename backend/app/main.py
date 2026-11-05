@@ -265,7 +265,7 @@ async def ma_listing_analysis(
     if role != "buyer":
         raise HTTPException(status.HTTP_403_FORBIDDEN, "L'analyse de dossier est réservée aux comptes repreneur")
     if not unlocked:
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "Débloquez d'abord la mise en relation avec le cédant pour analyser ce dossier")
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Débloquez d'abord ce dossier pour l'analyser")
 
     try:
         listing = await supabase.load_listing_for_analysis(str(listing_id))
@@ -350,9 +350,9 @@ async def create_checkout(
 
         listing_id = str(payload.listing_id) if payload.listing_id else None
         if offer.needs_listing and offer.buyer_side:
-            # Mise en relation : seulement une demande acceptée par le cédant et pas encore débloquée.
+            # Mise en relation : engagement de confidentialité accepté, dossier pas encore débloqué.
             if listing_id is None or not await supabase.can_unlock_listing(user_id, listing_id):
-                raise HTTPException(status.HTTP_409_CONFLICT, "Aucune demande acceptée à débloquer pour cette annonce")
+                raise HTTPException(status.HTTP_409_CONFLICT, "Acceptez d'abord l'engagement de confidentialité, ou ce dossier est déjà ouvert")
         elif offer.needs_listing:
             if listing_id is None or not await supabase.owns_listing(user_id, listing_id):
                 raise HTTPException(status.HTTP_404_NOT_FOUND, "Annonce introuvable ou qui ne vous appartient pas")

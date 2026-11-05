@@ -83,13 +83,13 @@ import { FEATURES } from '../../../core/config/features';
                 </div>
 
                 <section class="mt-5 border-t border-border pt-5" [attr.aria-label]="'Demandes d’accès pour ' + listing.sector">
-                  <h3 class="font-bold text-primary">Demandes d'accès au dossier
-                    @if (pendingCount(listing.id) > 0) {
-                      <span class="ml-1 rounded-full bg-accent px-2 py-0.5 text-sm font-semibold text-white">{{ pendingCount(listing.id) }} à traiter</span>
+                  <h3 class="font-bold text-primary">Repreneurs qui ont ouvert votre dossier
+                    @if (requestsFor(listing.id).length > 0) {
+                      <span class="ml-1 rounded-full bg-accent px-2 py-0.5 text-sm font-semibold text-white">{{ requestsFor(listing.id).length }}</span>
                     }
                   </h3>
                   @if (requestsFor(listing.id).length === 0) {
-                    <p class="mt-1 text-sm text-muted-foreground">Aucune demande pour le moment. Chaque repreneur se présente et accepte un engagement de confidentialité avant de vous écrire.</p>
+                    <p class="mt-1 text-sm text-muted-foreground">Personne pour le moment. Chaque repreneur accepte un engagement de confidentialité avant d'ouvrir votre dossier ; vous êtes prévenu à chaque ouverture.</p>
                   } @else {
                     <ul class="mt-3 space-y-3">
                       @for (request of requestsFor(listing.id); track request.id) {
@@ -106,20 +106,12 @@ import { FEATURES } from '../../../core/config/features';
                                 {{ buyerDetails(request) }}
                               </p>
                             </div>
-                            <span class="flex-shrink-0 text-sm font-semibold" [class]="request.status === 'approved' ? 'text-emerald-700' : request.status === 'refused' ? 'text-muted-foreground' : 'text-accent'">
-                              {{ request.status === 'approved' ? (request.unlocked ? 'Mise en relation ouverte' : 'Acceptée · en attente du repreneur') : request.status === 'refused' ? 'Refusée' : 'En attente de votre réponse' }}
-                            </span>
+                            <span class="flex-shrink-0 text-sm font-semibold text-emerald-700">Dossier ouvert</span>
                           </div>
                           @if (request.message) {
                             <p class="mt-2 whitespace-pre-line text-sm text-foreground/85">« {{ request.message }} »</p>
                           }
                           <p class="mt-2 text-sm text-muted-foreground">Engagement de confidentialité accepté le {{ formatDate(request.nda_accepted_at) }}.</p>
-                          @if (request.status === 'pending') {
-                            <div class="mt-3 flex flex-wrap gap-2">
-                              <button type="button" (click)="decide(request.id, true)" [disabled]="busy()" class="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent/90 disabled:opacity-50">Ouvrir mon dossier</button>
-                              <button type="button" (click)="decide(request.id, false)" [disabled]="busy()" class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-primary ring-1 ring-border hover:text-destructive disabled:opacity-50">Refuser</button>
-                            </div>
-                          }
                         </li>
                       }
                     </ul>
@@ -214,8 +206,9 @@ export class MaMesAnnoncesComponent implements OnInit {
     return { key: 'online', label: 'En ligne', css: 'bg-emerald-50 text-emerald-800', note: null };
   }
 
+  // Seuls les repreneurs qui ont payé l'ouverture du dossier (engagement accepté) sont montrés au cédant.
   requestsFor(listingId: string): ReceivedAccessRequest[] {
-    return this.accessRequests().filter(request => request.listing_id === listingId);
+    return this.accessRequests().filter(request => request.listing_id === listingId && request.unlocked);
   }
 
   pendingCount(listingId: string): number {

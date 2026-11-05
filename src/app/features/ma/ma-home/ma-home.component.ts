@@ -26,7 +26,7 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
             <h1 class="text-[2.25rem] leading-tight text-white sm:text-5xl">Entreprises à reprendre</h1>
             <p class="mt-3 max-w-[62ch] text-lg leading-relaxed text-white/70 sm:mt-4">
               Des entreprises rentables de tous secteurs, partout en France : commerces, restaurants, artisans, services, industrie et entreprises en ligne.<span class="hidden sm:inline"> Les annonces sont anonymisées :
-              le nom de l'entreprise n'est communiqué qu'aux repreneurs que le cédant accepte.</span>
+              le dossier complet n'est ouvert qu'aux repreneurs qui acceptent un engagement de confidentialité.</span>
             </p>
           </div>
           @if (canDepositListing()) {
@@ -42,10 +42,10 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
           <div class="mx-auto max-w-[78rem] rounded-2xl bg-white p-4 shadow-lg ring-1 ring-border sm:flex sm:p-5 sm:items-center sm:justify-between sm:gap-8">
             <div class="text-base leading-relaxed text-foreground/85">
               @if (accessRequiredNotice()) {
-                <p class="font-semibold text-primary">Le dossier complet est réservé aux repreneurs acceptés par le cédant.</p>
+                <p class="font-semibold text-primary">Le dossier complet est réservé aux repreneurs qui l'ont débloqué.</p>
               }
               <p>
-                Demandez gratuitement l'accès au dossier d'une annonce. Si le cédant accepte, la mise en relation coûte {{ introPrice }} : dossier complet, coordonnées du cédant et messagerie. Rien à payer s'il refuse.
+                Pour {{ introPrice }} par entreprise, débloquez le dossier complet d'une annonce, les coordonnées du cédant et la messagerie avec lui, après avoir accepté un engagement de confidentialité.
               </p>
               @if (showEarlyAccessHint()) {
                 <p class="mt-1 hidden text-muted-foreground sm:block">Avec l'accès Plus, analyses de dossier illimitées et alertes sur les nouvelles annonces.</p>

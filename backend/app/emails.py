@@ -58,10 +58,10 @@ TEMPLATES: dict[str, Template] = {
     ),
     "contact_unlocked": Template(
         "Un repreneur a ouvert votre dossier",
-        ("Un repreneur dont vous avez accepté la demande a débloqué la mise en relation pour votre annonce « {listing_label} ».",
-         "Il peut maintenant lire votre dossier complet et vous écrire dans la messagerie."),
-        "Ouvrir la messagerie",
-        "/messages",
+        ("Un repreneur a débloqué le dossier de votre annonce « {listing_label} », après avoir accepté l'engagement de confidentialité.",
+         "Il peut lire votre dossier complet, voir vos coordonnées et vous écrire dans la messagerie. Son nom figure dans votre espace « Mes annonces »."),
+        "Voir qui a ouvert mon dossier",
+        "/ma/mes-annonces",
     ),
     "access_refused": Template(
         "Votre demande d'accès n'a pas été retenue",

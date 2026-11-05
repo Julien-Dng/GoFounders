@@ -179,8 +179,8 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
                       </ul>
                       @if (canRequest()) {
                         <p class="mt-4 text-base font-semibold" [class]="requestStatusCss()">{{ requestStatusText() }}</p>
-                        @if (!myRequest()) {
-                          <button type="button" (click)="scrollToRequest()" class="mt-4 block w-full rounded-lg border border-primary px-5 py-3 text-center font-semibold text-primary transition-colors hover:bg-primary hover:text-white">Demander l'accès au dossier</button>
+                        @if (needsCommitment()) {
+                          <button type="button" (click)="scrollToRequest()" class="mt-4 block w-full rounded-lg border border-primary px-5 py-3 text-center font-semibold text-primary transition-colors hover:bg-primary hover:text-white">Débloquer le dossier · {{ introPrice }}</button>
                         } @else if (needsUnlock()) {
                           <button type="button" (click)="buyAccess()" [disabled]="buying()" class="mt-4 block w-full rounded-lg bg-accent px-5 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-wait disabled:opacity-60">{{ buying() ? 'Ouverture du paiement…' : unlockLabel }}</button>
                           @if (buyError()) {
@@ -203,16 +203,16 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
                   </div>
                 </section>
 
-                @if (canRequest() && !myRequest()) {
+                @if (needsCommitment()) {
                   <section id="demande-acces" class="mt-8 scroll-mt-24 rounded-xl bg-secondary p-6" aria-labelledby="request-title">
-                    <h2 id="request-title" class="text-2xl text-primary">Demander l'accès au dossier</h2>
+                    <h2 id="request-title" class="text-2xl text-primary">Débloquer le dossier et le contact</h2>
                     <p class="mt-2 text-base text-muted-foreground">
-                      Gratuit. Le cédant reçoit votre présentation et décide d'échanger avec vous ; vous êtes prévenu de sa réponse.
-                      S'il accepte, vous débloquez son dossier complet et son contact pour {{ introPrice }}. Aucun paiement s'il refuse.
+                      Pour {{ introPrice }}, vous accédez tout de suite au dossier complet de cette entreprise, aux coordonnées du cédant
+                      et à la messagerie avec lui. Acceptez d'abord l'engagement de confidentialité envers le cédant.
                     </p>
-                    <label for="request-message" class="mb-1.5 mt-5 block font-semibold text-primary">Présentez-vous et votre projet de reprise</label>
+                    <label for="request-message" class="mb-1.5 mt-5 block font-semibold text-primary">Un mot pour le cédant <span class="font-normal text-muted-foreground">(facultatif)</span></label>
                     <textarea id="request-message" rows="5" maxlength="1500" [value]="requestMessage()" (input)="requestMessage.set($any($event.target).value)" class="w-full resize-y rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" placeholder="Parcours, budget et financement envisagés, pourquoi cette entreprise vous intéresse, délai souhaité."></textarea>
-                    <p class="mt-1 text-sm text-muted-foreground">20 caractères minimum. Le cédant voit aussi votre nom et votre profil repreneur.</p>
+                    <p class="mt-1 text-sm text-muted-foreground">Le cédant est prévenu de votre accès et voit votre nom, votre profil repreneur et ce message.</p>
 
                     <details class="mt-5 rounded-lg bg-white p-4 ring-1 ring-border" [open]="ndaOpen()" (toggle)="ndaOpen.set($any($event.target).open)">
                       <summary class="cursor-pointer font-semibold text-primary">Lire l'engagement de confidentialité</summary>
@@ -236,8 +236,8 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
                     @if (requestError()) {
                       <p class="mt-4 rounded-lg bg-red-50 px-4 py-3 text-base text-red-800" role="alert">{{ requestError() }}</p>
                     }
-                    <button type="button" (click)="sendRequest()" [disabled]="requestBusy() || !ndaAccepted() || requestMessage().trim().length < 20" class="mt-5 rounded-lg bg-accent px-6 py-3.5 font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50">
-                      {{ requestBusy() ? 'Envoi…' : 'Envoyer ma demande' }}
+                    <button type="button" (click)="sendRequest()" [disabled]="requestBusy() || buying() || !ndaAccepted()" class="mt-5 rounded-lg bg-accent px-6 py-3.5 font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50">
+                      {{ requestBusy() || buying() ? 'Ouverture du paiement…' : unlockLabel }}
                     </button>
                   </section>
                 }
@@ -331,15 +331,15 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
                 } @else if (canRequest()) {
                   <div class="mt-5 border-t border-border pt-5">
                     <p class="text-base font-semibold" [class]="requestStatusCss()">{{ requestStatusText() }}</p>
-                    @if (!myRequest()) {
-                      <button type="button" (click)="scrollToRequest()" class="mt-4 block w-full rounded-lg bg-accent px-5 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90">Demander l'accès au dossier</button>
+                    @if (needsCommitment()) {
+                      <button type="button" (click)="scrollToRequest()" class="mt-4 block w-full rounded-lg bg-accent px-5 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90">Débloquer le dossier · {{ introPrice }}</button>
                     } @else if (needsUnlock()) {
                       <button type="button" (click)="buyAccess()" [disabled]="buying()" class="mt-4 block w-full rounded-lg bg-accent px-5 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-wait disabled:opacity-60">{{ buying() ? 'Ouverture du paiement…' : unlockLabel }}</button>
                       @if (buyError()) {
                         <p class="mt-3 text-sm font-medium text-red-700" role="alert">{{ buyError() }}</p>
                       }
                     }
-                    @if (!myRequest() || needsUnlock()) {
+                    @if (needsCommitment() || needsUnlock()) {
                       <p class="mt-3 text-sm text-muted-foreground">{{ pricingNote }}</p>
                     }
                   </div>
@@ -377,7 +377,7 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
             </aside>
           </div>
 
-          @if (canContact() || cta() || (canRequest() && !myRequest()) || needsUnlock()) {
+          @if (canContact() || cta() || needsCommitment() || needsUnlock()) {
             <div class="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-4 border-t border-border bg-white/95 px-4 py-3 backdrop-blur lg:hidden">
               <div class="min-w-0">
                 <p class="text-sm text-muted-foreground">Prix demandé</p>
@@ -385,8 +385,8 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
               </div>
               @if (canContact()) {
                 <a [routerLink]="'/messages'" [queryParams]="{ conversation: item.ownerId }" class="flex-shrink-0 rounded bg-accent px-5 py-3 font-medium text-white">Contacter</a>
-              } @else if (canRequest() && !myRequest()) {
-                <button type="button" (click)="scrollToRequest()" class="flex-shrink-0 rounded bg-accent px-5 py-3 font-medium text-white">Demander l'accès</button>
+              } @else if (needsCommitment()) {
+                <button type="button" (click)="scrollToRequest()" class="flex-shrink-0 rounded bg-accent px-5 py-3 font-medium text-white">Débloquer · {{ introPrice }}</button>
               } @else if (needsUnlock()) {
                 <button type="button" (click)="buyAccess()" [disabled]="buying()" class="flex-shrink-0 rounded bg-accent px-5 py-3 font-medium text-white disabled:opacity-60">{{ buying() ? 'Ouverture…' : 'Débloquer · ' + introPrice }}</button>
               } @else if (cta()) {
@@ -520,19 +520,19 @@ export class MaDetailComponent implements OnInit {
     'Les coordonnées du cédant et la messagerie',
     "L'analyse du dossier (points forts, vigilance, questions)",
   ];
-  // Mise en relation à l'unité : demande gratuite, puis paiement seulement si le cédant accepte.
+  // Mise en relation à l'unité : engagement de confidentialité puis paiement, sans accord du cédant.
   readonly introPrice = OFFER_PRICES.INTRO.label.replace(/ /g, '\u00a0');
   readonly unlockLabel = `Débloquer le dossier et le contact · ${this.introPrice}`;
-  readonly pricingNote = `Demande gratuite. Vous ne payez ${this.introPrice} que si le cédant accepte d'échanger avec vous.`;
+  readonly pricingNote = `Paiement unique de ${this.introPrice} pour cette entreprise, sans abonnement.`;
   readonly lockedMessage = computed(() => {
     const role = this.auth.currentUser()?.profileType;
 
     if (!this.isAuthenticated()) {
-      return `Créez votre compte repreneur (gratuit) et demandez l'accès au dossier. Si le cédant accepte, la mise en relation coûte ${this.introPrice}.`;
+      return `Créez votre compte repreneur (gratuit), puis débloquez le dossier complet et le contact du cédant pour ${this.introPrice}.`;
     }
 
     if (role === 'buyer') {
-      return `Demandez l'accès gratuitement. Si le cédant accepte, débloquez son dossier et son contact pour ${this.introPrice}.`;
+      return `Débloquez le dossier complet et le contact du cédant pour ${this.introPrice}.`;
     }
 
     return 'Le dossier complet est réservé aux comptes repreneur.';
@@ -549,7 +549,7 @@ export class MaDetailComponent implements OnInit {
     return null;
   });
   readonly steps = [
-    { title: 'Demandez l’accès au dossier', text: "Gratuitement : présentez-vous et acceptez l'engagement de confidentialité. Si le cédant accepte, la mise en relation (50 €) ouvre son dossier complet, ses coordonnées et la messagerie ; le nom de l'entreprise vous est communiqué s'il donne suite." },
+    { title: 'Débloquez le dossier', text: "Acceptez l'engagement de confidentialité et payez 50 € : le dossier complet, les coordonnées du cédant et la messagerie s'ouvrent aussitôt." },
     { title: 'Demandez les justificatifs', text: "Bilans des trois derniers exercices, relevés de chiffre d'affaires, accès en lecture aux outils (analytics, paiements, comptabilité)." },
     { title: 'Faites-vous accompagner', text: "Un expert-comptable et un avocat vérifient le dossier avant toute lettre d'intention. GoFounders n'intervient pas dans la négociation." },
   ];
@@ -593,7 +593,10 @@ export class MaDetailComponent implements OnInit {
   readonly ndaVersion = MA_NDA_VERSION;
   readonly canRequest = computed(() => this.isBuyer() && !this.hasDossier() && !this.isOwner() && !!this.listing());
   // Le cédant a accepté : reste à payer la mise en relation pour ouvrir le dossier et le contact.
-  readonly needsUnlock = computed(() => this.canRequest() && this.myRequest()?.status === 'approved' && !this.myRequest()?.unlocked);
+  // Engagement de confidentialité déjà accepté : il ne reste qu'à payer pour ouvrir le dossier (pas d'accord du cédant).
+  readonly needsUnlock = computed(() => this.canRequest() && !!this.myRequest() && this.myRequest()?.status !== 'refused' && !this.myRequest()?.unlocked);
+  // Pas encore d'engagement accepté (ou ancienne demande refusée) : formulaire engagement + paiement.
+  readonly needsCommitment = computed(() => this.canRequest() && (!this.myRequest() || this.myRequest()?.status === 'refused'));
   readonly ndaArticles = computed(() => {
     const listing = this.listing();
     return maNdaArticles({
@@ -601,26 +604,12 @@ export class MaDetailComponent implements OnInit {
       listingLabel: listing ? `${listing.sector}, ${listing.region}` : 'cette annonce',
     });
   });
-  readonly requestStatusText = computed(() => {
-    const request = this.myRequest();
-
-    if (!request) {
-      return 'Demandez l’accès : le cédant décide de vous ouvrir son dossier.';
-    }
-
-    if (request.status === 'refused') {
-      return 'Le cédant n’a pas donné suite à votre demande.';
-    }
-
-    if (request.status === 'approved' && !request.unlocked) {
-      return 'Le cédant accepte d’échanger avec vous. Débloquez la mise en relation pour lire son dossier complet et obtenir son contact.';
-    }
-
-    return `Demande envoyée le ${new Date(request.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })} : le cédant vous répond depuis son espace, vous serez prévenu.`;
-  });
-  readonly requestStatusCss = computed(() =>
-    !this.myRequest() ? 'text-foreground/85' : this.myRequest()!.status === 'refused' ? 'text-muted-foreground' : 'text-accent'
+  readonly requestStatusText = computed(() =>
+    this.needsUnlock()
+      ? `Engagement de confidentialité accepté. Débloquez le dossier complet et le contact du cédant pour ${this.introPrice}.`
+      : `Acceptez l’engagement de confidentialité, puis débloquez le dossier complet et le contact du cédant pour ${this.introPrice}.`
   );
+  readonly requestStatusCss = computed(() => (this.needsUnlock() ? 'text-accent' : 'text-foreground/85'));
 
   scrollToRequest(): void {
     document.getElementById('demande-acces')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -644,13 +633,9 @@ export class MaDetailComponent implements OnInit {
         return;
       }
 
-      if (result.status === 'approved') {
-        // Déjà acceptée (ou mode démo) : on recharge l'état, le déblocage reste à faire.
-        await this.loadListing();
-        return;
-      }
-
-      this.myRequest.set({ status: 'pending', created_at: new Date().toISOString(), decided_at: null, unlocked: false });
+      // Engagement enregistré : on enchaîne directement sur le paiement (50 €).
+      this.myRequest.set({ status: result.status ?? 'pending', created_at: new Date().toISOString(), decided_at: null, unlocked: false });
+      await this.buyAccess();
     } finally {
       this.requestBusy.set(false);
     }

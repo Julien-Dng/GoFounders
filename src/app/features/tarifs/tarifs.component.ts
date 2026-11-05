@@ -80,7 +80,7 @@ interface Plan {
           <div class="mx-auto max-w-[62ch] text-center">
             <h2 id="reprise-title" class="text-3xl text-primary sm:text-4xl">Reprendre ou céder une entreprise</h2>
             <p class="mt-3 text-lg leading-relaxed text-muted-foreground">
-              Publier une annonce est gratuit, sans commission sur la vente. Le repreneur ne paie que lorsqu'un cédant accepte d'échanger avec lui.
+              Publier une annonce est gratuit, sans commission sur la vente. Le repreneur paie 50 € pour débloquer le dossier complet et le contact d'une entreprise.
             </p>
           </div>
           <div class="mx-auto mt-10 grid max-w-4xl gap-6 md:grid-cols-2">
@@ -428,18 +428,18 @@ export class TarifsComponent {
     {
       id: 'repreneurs',
       title: 'Repreneurs',
-      description: 'Demandez gratuitement l’accès aux dossiers des entreprises à reprendre. Vous payez la mise en relation seulement si le cédant accepte.',
+      description: 'Débloquez le dossier complet et le contact du cédant des entreprises qui vous intéressent, une par une.',
       offers: [
         {
           title: 'Reprendre une entreprise',
-          price: `${OFFER_PRICES.INTRO.label} par mise en relation`,
-          description: 'Vous ne payez que lorsqu’un cédant accepte d’échanger avec vous.',
+          price: `${OFFER_PRICES.INTRO.label} par entreprise`,
+          description: 'Un paiement unique par dossier, sans abonnement.',
           features: [
-            'Compte repreneur et demandes d’accès aux dossiers gratuits',
+            'Compte repreneur gratuit, annonces anonymisées visibles par tous',
             'Engagement de confidentialité accepté en ligne, une fois par dossier',
-            `Si le cédant accepte : ${OFFER_PRICES.INTRO.label} pour son dossier complet, ses coordonnées et la messagerie`,
+            `${OFFER_PRICES.INTRO.label} : dossier complet, coordonnées du cédant et messagerie, ouverts tout de suite`,
             `Analyse du dossier par l'IA (jusqu'à ${FREE_AI_ANALYSES_PER_MONTH} par mois)`,
-            'Rien à payer si le cédant refuse, sans abonnement',
+            'Sans abonnement ni commission sur la vente',
           ],
           link: { href: '/ma', label: 'Voir les annonces' },
         },
@@ -468,7 +468,7 @@ export class TarifsComponent {
           title: 'Céder mon entreprise',
           price: 'Gratuit',
           description: 'Publication gratuite pendant le lancement, sans commission sur la vente.',
-          features: ["Annonce anonymisée, préparée avec l'IA et relue par notre équipe avant publication", 'Vous choisissez les repreneurs qui voient votre dossier et vos coordonnées', 'Chaque repreneur accepte un engagement de confidentialité', 'Estimation gratuite de la valeur de votre entreprise'],
+          features: ["Annonce anonymisée, préparée avec l'IA et relue par notre équipe avant publication", 'Vos coordonnées ne sont visibles que des repreneurs qui ont payé l’accès à votre dossier', 'Chaque repreneur accepte un engagement de confidentialité', 'Estimation gratuite de la valeur de votre entreprise'],
           link: { href: '/ma/deposer', label: 'Déposer mon annonce' },
         },
         {

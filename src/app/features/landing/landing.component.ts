@@ -316,7 +316,7 @@ interface LandingFaqItem {
         <div class="mx-auto max-w-[78rem]">
           <h2 id="prices-title" class="text-center text-3xl text-primary sm:text-4xl">Vendre est gratuit. Une mise en relation coûte {{ buyerPrice }}.</h2>
           <p class="mx-auto mt-3 max-w-[60ch] text-center text-lg text-muted-foreground">
-            Pas de commission sur la vente. Le repreneur ne paie que lorsqu'un cédant accepte d'échanger avec lui.
+            Pas de commission sur la vente. Le repreneur paie 50 € pour débloquer le dossier et le contact d'une entreprise.
           </p>
           <div class="mx-auto mt-12 grid max-w-4xl gap-6 md:grid-cols-2">
             @for (row of priceRows; track row.who; let first = $first) {
@@ -465,25 +465,25 @@ export class LandingComponent implements OnInit {
 
   readonly steps = [
     { title: 'Parcourez les annonces', short: 'Chiffres clés visibles par tous, entreprises anonymisées.', description: 'Secteur, chiffre d’affaires, marge, ancienneté et fourchette de prix : les annonces anonymisées sont visibles par tous.' },
-    { title: 'Demandez l’accès au dossier', short: 'Gratuit. Si le cédant accepte, 50 € ouvrent son dossier et son contact.', description: 'Gratuitement : vous vous présentez et acceptez un engagement de confidentialité. Si le cédant accepte, vous débloquez son dossier complet et son contact pour 50 €.' },
+    { title: 'Débloquez le dossier', short: '50 € ouvrent le dossier complet et le contact du cédant.', description: 'Vous acceptez un engagement de confidentialité et payez 50 € : le dossier complet et le contact du cédant s’ouvrent aussitôt.' },
     { title: 'Échangez avec le cédant', short: 'En direct, sans intermédiaire ni commission sur la vente.', description: 'Vous discutez directement avec le vendeur, sans intermédiaire. Faites-vous accompagner par un expert-comptable et un avocat pour sécuriser la suite.' },
   ];
 
   readonly protectionPoints = [
-    { title: 'Annonces anonymisées', description: 'Le public ne voit que le secteur, la région et les chiffres clés. Le nom de l’entreprise reste réservé aux repreneurs que vous acceptez.' },
+    { title: 'Annonces anonymisées', description: 'Le public ne voit que le secteur, la région et les chiffres clés. Le dossier complet et vos coordonnées sont réservés aux repreneurs qui l’ont débloqué.' },
     { title: 'Engagement de confidentialité', description: 'Chaque repreneur accepte un engagement de confidentialité avant d’ouvrir votre dossier. La preuve d’acceptation (nom, date, version du texte) est conservée.' },
-    { title: 'Accès sous votre contrôle', description: 'Vous acceptez ou refusez chaque demande et retirez un accès quand vous le souhaitez.' },
+    { title: 'Vous savez qui consulte', description: 'Vous êtes prévenu à chaque ouverture de votre dossier et voyez le nom et le profil du repreneur.' },
   ];
 
   readonly priceRows = [
     { who: 'Cédant', detail: 'Annonce anonymisée, contacts directs des repreneurs.', price: 'Gratuit', href: '/ma/deposer', cta: 'Déposer une annonce' },
-    { who: 'Repreneur', detail: 'Demande d’accès gratuite. Vous ne payez que si le cédant accepte : dossier complet, contact et messagerie.', price: `${OFFER_PRICES.INTRO.label} par mise en relation`, href: '/ma', cta: 'Voir les annonces' },
+    { who: 'Repreneur', detail: 'Par entreprise : dossier complet, coordonnées du cédant et messagerie, ouverts tout de suite.', price: `${OFFER_PRICES.INTRO.label} par entreprise`, href: '/ma', cta: 'Voir les annonces' },
   ];
 
   readonly faq: LandingFaqItem[] = [
     { question: 'Quel type d’entreprises trouve-t-on sur GoFounders ?', answer: 'Des entreprises françaises de tous secteurs : commerces, restaurants, artisans et entreprises du bâtiment, sociétés de services, PME industrielles, mais aussi entreprises en ligne (e-commerce, logiciels, sites, agences). Surtout des TPE et petites PME, de quelques dizaines de milliers d’euros à quelques millions d’euros de chiffre d’affaires.' },
-    { question: 'Mon annonce de cession est-elle confidentielle ?', answer: 'Oui. Seule une annonce anonymisée est publique, après relecture par notre équipe. Le dossier complet et vos coordonnées ne s’ouvrent qu’aux repreneurs que vous acceptez, après qu’ils ont accepté un engagement de confidentialité.' },
-    { question: 'Combien coûte la reprise pour un repreneur ?', answer: 'Créer son compte et demander l’accès à un dossier est gratuit. Si le cédant accepte votre demande, la mise en relation coûte 50 € : vous lisez son dossier complet, obtenez ses coordonnées et échangez avec lui. Aucun paiement s’il refuse, et aucune commission sur la vente.' },
+    { question: 'Mon annonce de cession est-elle confidentielle ?', answer: 'Oui. Seule une annonce anonymisée est publique, après relecture par notre équipe. Le dossier complet et vos coordonnées ne s’ouvrent qu’aux repreneurs qui acceptent un engagement de confidentialité et paient l’accès ; vous êtes prévenu à chaque ouverture.' },
+    { question: 'Combien coûte la reprise pour un repreneur ?', answer: 'Créer son compte et consulter les annonces anonymisées est gratuit. Pour 50 € par entreprise, vous débloquez son dossier complet, les coordonnées du cédant et la messagerie avec lui. Sans abonnement ni commission sur la vente.' },
     { question: 'GoFounders prend-il une commission sur la vente ?', answer: 'Non. La publication est gratuite pour les cédants et nous ne prenons aucun pourcentage sur le prix de vente.' },
     { question: 'GoFounders m’accompagne-t-il juridiquement ?', answer: 'Non, nous ne fournissons pas de conseil juridique. Nous vous mettons en relation avec des experts juridiques et comptables partenaires pour sécuriser la transaction.' },
   ];

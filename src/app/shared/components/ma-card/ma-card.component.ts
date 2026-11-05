@@ -27,7 +27,7 @@ export interface MaCardData {
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
-            <p class="text-sm font-semibold">Demande d'accès gratuite · mise en relation 50 €</p>
+            <p class="text-sm font-semibold">Dossier complet et contact : 50 €</p>
           </div>
         </div>
       }

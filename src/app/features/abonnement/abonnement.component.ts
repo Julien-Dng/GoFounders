@@ -117,11 +117,11 @@ export class AbonnementComponent {
   });
   readonly maDescription = computed(() => {
     if (this.isBuyer()) {
-      return `Demandez gratuitement l'accès au dossier des annonces qui vous intéressent. Si le cédant accepte, vous payez ${this.introPrice} pour lire son dossier complet et échanger directement avec lui ; rien s'il refuse.`;
+      return `Pour chaque entreprise qui vous intéresse, débloquez le dossier complet et le contact du cédant pour ${this.introPrice}, sans abonnement.`;
     }
 
     if (this.isSeller()) {
-      return 'Offre de lancement : la publication de votre annonce anonymisée est gratuite. Vous choisissez les repreneurs qui voient votre dossier.';
+      return 'Offre de lancement : la publication de votre annonce anonymisée est gratuite. Seuls les repreneurs qui acceptent l’engagement de confidentialité et paient l’accès voient votre dossier, et vous êtes prévenu à chaque ouverture.';
     }
 
     return 'Le M&A est réservé aux comptes acheteur et vendeur. Votre compte voit les annonces anonymisées.';

@@ -215,13 +215,13 @@ class SupabaseClient:
             raise SupabaseError(f"Essai non enregistré ({response.status_code})")
 
     async def can_unlock_listing(self, user_id: str, listing_id: str) -> bool:
-        """Demande acceptée par le cédant et pas encore débloquée (avant de faire payer la mise en relation)."""
+        """Engagement de confidentialité accepté et dossier pas encore débloqué (avant de faire payer la mise en relation)."""
         rows = await self._select(
             "ma_access_requests",
             {
                 "listing_id": f"eq.{listing_id}",
                 "buyer_id": f"eq.{user_id}",
-                "status": "eq.approved",
+                "status": "in.(pending,approved)",
                 "contact_unlocked_at": "is.null",
                 "select": "id",
             },

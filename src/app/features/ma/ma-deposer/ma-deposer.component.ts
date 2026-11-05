@@ -283,7 +283,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                         </ul>
                       </div>
                       <div class="rounded-xl bg-primary p-5 text-white">
-                        <p class="font-semibold">Réservé aux repreneurs avec un accès</p>
+                        <p class="font-semibold">Réservé aux repreneurs qui débloquent votre dossier</p>
                         <ul class="mt-2 space-y-1.5 text-base text-white/80">
                           <li>Description détaillée</li>
                           <li>Raison de la cession et pistes de croissance</li>
@@ -292,6 +292,13 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                       </div>
                     </div>
                     <p class="mt-4 text-base text-muted-foreground">Le nom de l'entreprise n'apparaît nulle part : vous le communiquez vous-même, au repreneur de votre choix.</p>
+
+                    <label for="contact-info" class="mt-6 block font-semibold text-primary">Coordonnées transmises aux repreneurs</label>
+                    <p class="mt-1 text-sm text-muted-foreground">
+                      Visibles uniquement par les repreneurs qui acceptent l'engagement de confidentialité et débloquent votre dossier (50 €).
+                      Vous êtes prévenu à chaque ouverture. Ils peuvent aussi vous écrire dans la messagerie.
+                    </p>
+                    <textarea id="contact-info" rows="3" maxlength="500" [value]="contactInfo()" (input)="contactInfo.set($any($event.target).value)" placeholder="Ex. Jean D., 06 12 34 56 78, jean@exemple.fr, disponible le soir" class="mt-2 w-full resize-y rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"></textarea>
                   </div>
                 }
                 @case (6) {
@@ -478,7 +485,8 @@ export class MaDeposerComponent {
 
   // Modification d'une annonce existante (/ma/deposer?modifier=<id>), réservée à son propriétaire.
   readonly editingId = signal<string | null>(null);
-  private editingContact = '';
+  // Coordonnées montrées aux repreneurs qui ont débloqué le dossier (par défaut : l'e-mail du compte).
+  readonly contactInfo = signal('');
 
   private async loadForEdit(listingId: string): Promise<void> {
     const row = await this.maService.getMyListingRow(listingId);
@@ -488,7 +496,7 @@ export class MaDeposerComponent {
       return;
     }
 
-    this.editingContact = row.contact_info ?? '';
+    this.contactInfo.set(row.contact_info ?? '');
     this.sector.set(row.sector);
     this.region.set(row.region);
     this.listingType.set(row.type);
@@ -563,7 +571,7 @@ export class MaDeposerComponent {
         saleReason: this.saleReason().trim() || 'Cession à qualifier avec le repreneur.',
         description: this.buildDescription(),
         publicSummary: this.teaser().trim() || undefined,
-        contactInfo: this.editingContact || user.email,
+        contactInfo: this.contactInfo().trim() || user.email,
         enrichment: {
           revenueYear: this.revenue().trim() ? this.revenueYear() : null,
           revenueHistory: this.historyPoints(),
