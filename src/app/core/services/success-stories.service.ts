@@ -143,15 +143,6 @@ export class SuccessStoriesService {
     return error ? [] : ((data ?? []) as SuccessStory[]);
   }
 
-  async countCompletedSales(): Promise<number> {
-    if (!this.supabase.isConfigured) {
-      return DEMO_STORIES.length;
-    }
-
-    const { data, error } = await this.supabase.client.rpc('count_completed_sales');
-    return error ? 0 : Number(data ?? 0);
-  }
-
   async getMine(): Promise<MySuccessStory[]> {
     if (!this.supabase.isConfigured) {
       return [];

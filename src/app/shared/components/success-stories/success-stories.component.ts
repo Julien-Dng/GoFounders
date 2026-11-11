@@ -11,13 +11,8 @@ import { SuccessStoriesService, SuccessStory } from '../../../core/services/succ
     @if (stories().length > 0) {
       <section class="overflow-hidden px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20" [class]="background()" aria-labelledby="success-stories-title">
         <div class="mx-auto max-w-[78rem]">
-          <div class="flex items-end justify-between gap-6">
-            <div>
-              <h2 id="success-stories-title" class="text-3xl text-primary sm:text-4xl">Ils ont vendu leur entreprise</h2>
-              <p class="mt-3 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
-                {{ salesCount() }} vente{{ salesCount() > 1 ? 's' : '' }} conclue{{ salesCount() > 1 ? 's' : '' }} sur GoFounders. Témoignages et prix publiés avec l'accord des vendeurs
-              </p>
-            </div>
+          <div class="flex items-center justify-between gap-6">
+            <h2 id="success-stories-title" class="text-3xl text-primary sm:text-4xl">Que disent les cédants et les repreneurs de GoFounders ?</h2>
             @if (stories().length > 1) {
               <div class="hidden flex-shrink-0 gap-2 sm:flex">
                 <button type="button" (click)="step(-1)" class="flex h-11 w-11 items-center justify-center rounded-full bg-white text-primary shadow ring-1 ring-border transition-colors hover:bg-primary hover:text-white" aria-label="Avis précédent">
@@ -74,7 +69,6 @@ export class SuccessStoriesComponent implements OnInit, OnDestroy {
   readonly limit = input(6);
   readonly background = input('bg-white');
   readonly stories = signal<SuccessStory[]>([]);
-  readonly salesCount = signal(0);
   private readonly track = viewChild<ElementRef<HTMLElement>>('track');
   private timer: ReturnType<typeof setInterval> | undefined;
   private paused = false;
@@ -129,9 +123,7 @@ export class SuccessStoriesComponent implements OnInit, OnDestroy {
   }
 
   private async load(): Promise<void> {
-    const [stories, count] = await Promise.all([this.service.list(this.limit()), this.service.countCompletedSales()]);
-    this.stories.set(stories);
-    this.salesCount.set(Math.max(count, stories.length));
+    this.stories.set(await this.service.list(this.limit()));
     this.startAutoplay();
   }
 
