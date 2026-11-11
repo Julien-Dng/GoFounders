@@ -59,7 +59,7 @@ function toTeamCard(entry: ShowcaseEntry): TeamCard {
       badge: 'Projet',
       initial: sector.charAt(0).toUpperCase(),
       name: sector,
-      subtitle: 'Projet en recherche d’associés',
+      subtitle: '',
       summary: entry.skills.length ? `Compétences recherchées : ${entry.skills.slice(0, 3).join(', ')}.` : '',
       meta,
       chipsLabel: 'Recherche',
@@ -75,7 +75,7 @@ function toTeamCard(entry: ShowcaseEntry): TeamCard {
     badge: 'Associé',
     initial: title.charAt(0).toUpperCase(),
     name: title,
-    subtitle: 'Prêt à rejoindre un projet',
+    subtitle: '',
     summary: '',
     meta: entry.availability ? [{ icon: 'time', text: entry.availability }] : [],
     chipsLabel: 'Compétences',
@@ -113,7 +113,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
   template: `
     <div class="min-h-screen bg-white">
       <!-- En-tête : titre, sous-titre court et les deux parcours ; à droite (ordinateur), l'illustration annonce + projet. -->
-      <section class="relative overflow-hidden bg-primary px-4 pb-16 pt-28 text-white sm:px-6 lg:px-8 lg:pb-24 lg:pt-36">
+      <section class="relative overflow-hidden bg-primary px-4 pb-10 pt-24 text-white sm:px-6 sm:pb-16 sm:pt-28 lg:px-8 lg:pb-24 lg:pt-36">
         <div class="pointer-events-none absolute inset-y-0 right-0 hidden w-[52%] lg:block" aria-hidden="true">
           <div class="absolute -top-10 left-[6%] h-36 w-64 rounded-3xl bg-white/[0.04]"></div>
           <div class="absolute left-[6%] top-[62%] h-72 w-64 rounded-3xl bg-white/[0.04]"></div>
@@ -131,11 +131,20 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
                 Reprenez une entreprise qui a déjà ses clients
               }
             </h1>
-            <p class="mt-5 max-w-[48ch] text-lg leading-relaxed text-white/70">
+            <p class="mt-5 hidden max-w-[48ch] text-lg leading-relaxed text-white/70 sm:block">
               Des entreprises à reprendre partout en France, et des associés pour lancer ou développer votre projet.
             </p>
 
-            <div class="mt-9 grid gap-3" [class]="showAssociates ? 'sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : ''">
+            <!-- Téléphones : deux boutons courts à la place des cartes. -->
+            <div class="mt-7 grid gap-2.5 sm:hidden">
+              <a href="#entreprises" (click)="scrollTo($event, 'entreprises')" class="rounded-lg bg-accent px-5 py-3.5 text-center font-semibold text-white">Explorer les entreprises</a>
+              @if (showAssociates) {
+                <a [routerLink]="associatesHref()" class="rounded-lg border border-white/30 px-5 py-3.5 text-center font-semibold text-white">Trouver des associés</a>
+              }
+              <a routerLink="/ma/deposer" class="mt-1 text-center font-semibold text-white/80 underline-offset-4 hover:underline">Vendre mon entreprise</a>
+            </div>
+
+            <div class="mt-9 hidden gap-3 sm:grid" [class]="showAssociates ? 'sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : ''">
               <a href="#entreprises" (click)="scrollTo($event, 'entreprises')" class="group flex flex-col rounded-xl border border-white/20 bg-white/[0.06] p-5 transition-colors hover:border-white/60 hover:bg-white/[0.1]">
                 <span class="text-lg font-bold text-white">Explorer les entreprises</span>
                 <span class="mt-1.5 flex-1 text-base leading-relaxed text-white/70">Commerces, services, industrie, activités en ligne : découvrez celles qui sont à reprendre.</span>
@@ -150,7 +159,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
               }
             </div>
 
-            <p class="mt-5 text-base text-white/60">
+            <p class="mt-5 hidden text-base text-white/60 sm:block">
               Vous vendez ? <a routerLink="/ma/deposer" class="font-semibold text-white underline-offset-4 hover:underline">Déposer une annonce gratuite</a>
               <span class="mx-1.5" aria-hidden="true">·</span>
               <a routerLink="/estimation" class="font-semibold text-white underline-offset-4 hover:underline">Estimer sa valeur</a>
@@ -240,12 +249,12 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       </section>
 
       <!-- Entreprises à reprendre : recherche et filtres, puis les annonces du moment. -->
-      <section id="entreprises" class="scroll-mt-20 px-4 py-14 sm:px-6 lg:px-8 lg:py-20" aria-labelledby="latest-title">
+      <section id="entreprises" class="scroll-mt-20 px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-20" aria-labelledby="latest-title">
         <div class="mx-auto max-w-[78rem]">
           <h2 id="latest-title" class="text-center text-3xl text-primary sm:text-4xl">Entreprises à reprendre</h2>
-          <p class="mx-auto mt-3 max-w-[60ch] text-center text-lg text-muted-foreground">{{ introSummary }}</p>
+          <p class="mx-auto mt-3 hidden max-w-[60ch] text-center text-lg text-muted-foreground sm:block">{{ introSummary }}</p>
 
-          <div class="mx-auto mt-8 max-w-3xl rounded-xl bg-white p-2 shadow-lg ring-1 ring-border" role="search">
+          <div class="mx-auto mt-6 max-w-3xl sm:mt-8 rounded-xl bg-white p-2 shadow-lg ring-1 ring-border" role="search">
             <div class="flex flex-col gap-2 sm:flex-row">
               <label for="hero-search" class="sr-only">Rechercher une entreprise</label>
               <input
@@ -258,32 +267,35 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
                 class="min-w-0 flex-1 rounded-lg px-4 py-3 text-base text-foreground outline-none placeholder:text-muted-foreground"
               >
               <label for="hero-revenue" class="sr-only">Chiffre d'affaires</label>
-              <select id="hero-revenue" [value]="heroRevenue()" (change)="heroRevenue.set($any($event.target).value)" class="rounded-lg border border-border bg-secondary px-3 py-3 text-base text-foreground outline-none sm:w-56">
+              <select id="hero-revenue" [value]="heroRevenue()" (change)="heroRevenue.set($any($event.target).value)" class="rounded-lg border border-border bg-secondary px-3 py-3 text-base text-foreground outline-none sm:block sm:w-56" [class.hidden]="!filtersOpen()">
                 <option value="">Tout chiffre d'affaires</option>
                 <option value="0-100000">Moins de 100 k€</option>
                 <option value="100000-500000">100 à 500 k€</option>
                 <option value="500000-1000000">500 k€ à 1 M€</option>
                 <option value="1000000-">Plus de 1 M€</option>
               </select>
-              <button type="button" (click)="search()" class="rounded-lg bg-accent px-6 py-3 font-semibold text-white transition-colors hover:bg-accent/90">Rechercher</button>
+              <div class="flex gap-2">
+                <button type="button" (click)="filtersOpen.set(!filtersOpen())" [attr.aria-expanded]="filtersOpen()" class="rounded-lg border border-border px-4 py-3 font-semibold text-primary sm:hidden">Filtres</button>
+                <button type="button" (click)="search()" class="flex-1 rounded-lg bg-accent px-6 py-3 font-semibold text-white transition-colors hover:bg-accent/90">Rechercher</button>
+              </div>
             </div>
           </div>
 
           @if (latestListings().length > 0) {
-            <div class="mt-10 grid gap-6 md:grid-cols-3 max-sm:[&>*:nth-child(3)]:hidden">
+            <div class="mt-6 grid gap-4 sm:mt-10 sm:gap-6 md:grid-cols-3 max-sm:[&>*:nth-child(3)]:hidden">
               @for (item of latestListings(); track item.listing.id) {
                 <a [routerLink]="['/ma/annonce', item.listing.id]" class="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border transition-shadow hover:shadow-xl">
                   <p class="bg-primary px-5 py-3 text-sm font-semibold text-white">{{ item.listing.sector }} · {{ item.listing.region }}</p>
                   <div class="flex flex-1 flex-col p-5">
-                    <h3 class="line-clamp-3 text-lg font-bold leading-snug text-primary group-hover:text-accent">{{ item.listing.summary }}</h3>
-                    <p class="tabular mt-3 text-base text-muted-foreground">CA {{ euros(item.metrics.revenue) }} · Bénéfice {{ euros(item.metrics.netProfit) }}</p>
-                    <div class="mt-auto pt-5">
+                    <h3 class="line-clamp-2 text-lg font-bold leading-snug text-primary group-hover:text-accent sm:line-clamp-3">{{ item.listing.summary }}</h3>
+                    <p class="tabular mt-2 truncate text-base text-muted-foreground sm:mt-3">CA {{ euros(item.metrics.revenue) }} · Bénéfice {{ euros(item.metrics.netProfit) }}</p>
+                    <div class="mt-auto pt-4 sm:pt-5">
                       <div class="rounded-xl bg-secondary px-4 py-3">
                         <p class="text-sm text-muted-foreground">Prix demandé</p>
                         <p class="tabular font-bold text-amber-600">
                           <span class="whitespace-nowrap">{{ item.listing.priceMin }}</span> à <span class="whitespace-nowrap">{{ item.listing.priceMax }}</span>
                           @if (item.metrics.multiple !== null) {
-                            <span class="font-semibold text-muted-foreground"> ({{ multiple(item.metrics.multiple) }} le bénéfice)</span>
+                            <span class="hidden font-semibold text-muted-foreground sm:inline"> ({{ multiple(item.metrics.multiple) }} le bénéfice)</span>
                           }
                         </p>
                       </div>
@@ -293,23 +305,23 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
               }
             </div>
           }
-          <div class="mt-10 text-center">
-            <a routerLink="/ma" class="inline-block rounded-lg bg-primary px-7 py-3.5 font-semibold text-white transition-colors hover:bg-primary/90">Voir toutes les annonces</a>
+          <div class="mt-6 text-center sm:mt-10">
+            <a routerLink="/ma" class="inline-block rounded-lg bg-primary px-7 py-3.5 font-semibold text-white transition-colors hover:bg-primary/90"><span class="sm:hidden">Toutes les entreprises</span><span class="hidden sm:inline">Voir toutes les annonces</span></a>
           </div>
         </div>
       </section>
 
       @if (showAssociates) {
         <!-- Projets et associés : vrais profils de la vitrine publique (anonymisés), sinon exemples fictifs signalés. -->
-        <section class="bg-secondary px-4 py-14 sm:px-6 lg:px-8 lg:py-20" aria-labelledby="team-title">
+        <section class="bg-secondary px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-20" aria-labelledby="team-title">
           <div class="mx-auto max-w-[78rem]">
             <h2 id="team-title" class="text-center text-3xl text-primary sm:text-4xl">Projets et associés</h2>
-            <p class="mx-auto mt-3 max-w-[56ch] text-center text-lg text-muted-foreground">Trouvez les compétences pour avancer, ou un projet à rejoindre.</p>
-            <div class="mt-10 grid gap-6 md:grid-cols-3 max-sm:[&>*:nth-child(3)]:hidden">
+            <p class="mx-auto mt-3 hidden max-w-[56ch] text-center text-lg text-muted-foreground sm:block">Trouvez les compétences pour avancer, ou un projet à rejoindre.</p>
+            <div class="mt-6 grid gap-4 sm:mt-10 sm:gap-6 md:grid-cols-3 max-sm:[&>*:nth-child(3)]:hidden">
               @for (card of teamCards(); track card.key) {
-                <article class="flex flex-col rounded-2xl bg-white p-6 shadow-lg ring-1 ring-border">
+                <article class="flex flex-col rounded-2xl bg-white p-4 shadow-lg ring-1 ring-border sm:p-6">
                   <div class="flex items-start gap-4">
-                    <span class="flex h-14 w-14 flex-shrink-0 items-center justify-center text-xl font-extrabold text-white"
+                    <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center text-lg font-extrabold text-white sm:h-14 sm:w-14 sm:text-xl"
                           [class]="card.kind === 'project' ? 'rounded-xl bg-accent' : 'rounded-full bg-primary'" aria-hidden="true">{{ card.initial }}</span>
                     <div class="min-w-0">
                       <span class="inline-block rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide"
@@ -322,11 +334,11 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
                   </div>
 
                   @if (card.summary) {
-                    <p class="mt-4 text-base leading-relaxed text-foreground/85">{{ card.summary }}</p>
+                    <p class="mt-4 hidden text-base leading-relaxed text-foreground/85 sm:block">{{ card.summary }}</p>
                   }
 
                   @if (card.meta.length > 0) {
-                    <ul class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
+                    <ul class="mt-4 hidden flex-wrap items-center sm:flex gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
                       @for (item of card.meta; track item.text) {
                         <li class="flex items-center gap-1.5">
                           @switch (item.icon) {
@@ -353,7 +365,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
                   }
 
                   @if (card.chips.length > 0) {
-                    <p class="mt-5 text-sm font-bold text-primary">{{ card.chipsLabel }}</p>
+                    <p class="mt-3 text-sm font-bold text-primary sm:mt-5">{{ card.chipsLabel }}</p>
                     <ul class="mt-2 flex flex-wrap gap-2">
                       @for (chip of card.chips; track chip) {
                         <li class="rounded-full bg-accent/10 px-3 py-1 text-sm font-semibold text-accent">{{ chip }}</li>
@@ -361,14 +373,14 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
                     </ul>
                   }
 
-                  <div class="mt-auto pt-5">
-                    <a [routerLink]="associatesHref()" class="block border-t border-border pt-4 font-semibold text-accent hover:underline underline-offset-4">{{ card.linkLabel }}&nbsp;→</a>
+                  <div class="mt-auto pt-3 sm:pt-5">
+                    <a [routerLink]="associatesHref()" class="block border-t border-border pt-3 sm:pt-4 font-semibold text-accent hover:underline underline-offset-4">{{ card.linkLabel }}&nbsp;→</a>
                   </div>
                 </article>
               }
             </div>
-            <div class="mt-10 text-center">
-              <a [routerLink]="associatesHref()" class="inline-block rounded-lg bg-accent px-7 py-3.5 font-semibold text-white transition-colors hover:bg-accent/90">Explorer les projets et associés&nbsp;→</a>
+            <div class="mt-6 text-center sm:mt-10">
+              <a [routerLink]="associatesHref()" class="inline-block rounded-lg bg-accent px-7 py-3.5 font-semibold text-white transition-colors hover:bg-accent/90"><span class="sm:hidden">Tout explorer&nbsp;→</span><span class="hidden sm:inline">Explorer les projets et associés&nbsp;→</span></a>
               @if (teamCardsAreExamples()) {
                 <p class="mt-3 text-sm italic text-muted-foreground">Exemples fictifs</p>
               }
@@ -377,7 +389,37 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
         </section>
       }
 
-      <section class="px-4 py-14 sm:px-6 lg:px-8 lg:py-20" aria-labelledby="steps-title">
+      <!-- Téléphones : fonctionnement et prix réunis dans un bloc court (étapes dépliables). -->
+      <section class="px-4 py-10 sm:hidden" aria-labelledby="how-mobile-title">
+        <h2 id="how-mobile-title" class="text-center text-2xl text-primary">Comment ça marche</h2>
+        <ol class="mt-5 divide-y divide-border rounded-2xl bg-white shadow-sm ring-1 ring-border">
+          @for (step of steps; track step.title; let index = $index) {
+            <li>
+              <details class="group px-4 py-3">
+                <summary class="flex cursor-pointer list-none items-center gap-3 font-semibold text-primary">
+                  <span class="tabular flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-accent/10 text-sm font-extrabold text-accent">{{ index + 1 }}</span>
+                  <span class="flex-1">{{ step.title }}</span>
+                  <span class="text-lg leading-none text-accent transition-transform group-open:rotate-45" aria-hidden="true">+</span>
+                </summary>
+                <p class="mt-2 pl-10 text-base leading-relaxed text-muted-foreground">{{ step.description }}</p>
+              </details>
+            </li>
+          }
+        </ol>
+        <dl class="mt-4 grid grid-cols-2 gap-2 text-center">
+          <div class="rounded-xl bg-secondary px-3 py-3">
+            <dt class="text-sm text-muted-foreground">Vendre</dt>
+            <dd class="mt-0.5 font-extrabold text-primary">Gratuit</dd>
+          </div>
+          <div class="rounded-xl bg-secondary px-3 py-3">
+            <dt class="text-sm text-muted-foreground">Reprendre</dt>
+            <dd class="mt-0.5 font-extrabold text-primary">{{ buyerPrice }} / entreprise</dd>
+          </div>
+        </dl>
+        <p class="mt-3 text-center text-sm text-muted-foreground">Aucune commission sur la vente, aucun abonnement. <a routerLink="/tarifs" class="font-semibold text-accent">Tarifs</a></p>
+      </section>
+
+      <section class="hidden px-4 py-14 sm:block sm:px-6 lg:px-8 lg:py-20" aria-labelledby="steps-title">
         <div class="mx-auto max-w-[78rem]">
           <h2 id="steps-title" class="text-center text-3xl text-primary sm:text-4xl">Comment se passe une reprise</h2>
           <ol class="mt-8 grid gap-3 sm:mt-12 sm:gap-6 md:grid-cols-3">
@@ -395,7 +437,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       </section>
 
       <!-- Un seul bloc de réassurance : commission, gratuité, prix et confidentialité. -->
-      <section class="bg-[#16243B] px-4 py-9 text-white sm:px-6 lg:px-8" aria-label="Les engagements de GoFounders">
+      <section class="hidden bg-[#16243B] px-4 py-9 text-white sm:block sm:px-6 lg:px-8" aria-label="Les engagements de GoFounders">
         <dl class="mx-auto grid max-w-[78rem] grid-cols-2 gap-y-8 text-center lg:grid-cols-4">
           @for (fact of facts; track fact.label; let last = $last) {
             <div class="px-4 lg:border-dashed lg:border-white/25" [class.lg:border-r]="!last">
@@ -426,9 +468,11 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
         </div>
       </section>
 
-      <app-success-stories />
+      <div class="hidden sm:block">
+        <app-success-stories />
+      </div>
 
-      <section class="bg-secondary px-4 py-16 sm:px-6 lg:px-8 lg:py-24" aria-labelledby="prices-title">
+      <section class="hidden bg-secondary px-4 py-16 sm:block sm:px-6 lg:px-8 lg:py-24" aria-labelledby="prices-title">
         <div class="mx-auto max-w-[78rem]">
           <h2 id="prices-title" class="text-center text-3xl text-primary sm:text-4xl">Vendre est gratuit. Une mise en relation coûte {{ buyerPrice }}.</h2>
           <p class="mx-auto mt-3 max-w-[60ch] text-center text-lg text-muted-foreground">
@@ -450,12 +494,12 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
         </div>
       </section>
 
-      <section class="px-4 py-16 sm:px-6 lg:px-8 lg:py-24" aria-labelledby="faq-title">
+      <section class="bg-secondary px-4 py-10 sm:bg-transparent sm:px-6 sm:py-16 lg:px-8 lg:py-24" aria-labelledby="faq-title">
         <div class="mx-auto max-w-3xl">
-          <h2 id="faq-title" class="text-center text-3xl text-primary sm:text-4xl">Questions fréquentes</h2>
-          <div class="mt-10 space-y-3">
+          <h2 id="faq-title" class="text-center text-2xl text-primary sm:text-4xl">Questions fréquentes</h2>
+          <div class="mt-5 space-y-2 sm:mt-10 sm:space-y-3 max-sm:[&>*:nth-child(n+4)]:hidden">
             @for (item of faq; track item.question) {
-              <details class="group rounded-2xl bg-white px-6 py-5 shadow-sm ring-1 ring-border">
+              <details class="group rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-border sm:rounded-2xl sm:px-6 sm:py-5">
                 <summary class="flex cursor-pointer list-none items-start justify-between gap-6 font-bold text-primary">
                   {{ item.question }}
                   <span class="mt-0.5 text-xl leading-none text-accent transition-transform group-open:rotate-45" aria-hidden="true">+</span>
@@ -466,13 +510,21 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
           </div>
           <p class="mt-8 text-center">
             <a routerLink="/faq" class="font-semibold text-accent underline-offset-4 hover:underline">Toutes les questions</a>
-            <span class="mx-2 text-muted-foreground" aria-hidden="true">·</span>
-            <a routerLink="/contact" class="font-semibold text-accent underline-offset-4 hover:underline">Nous contacter</a>
+            <span class="mx-2 text-muted-foreground max-sm:hidden" aria-hidden="true">·</span>
+            <a routerLink="/contact" class="font-semibold text-accent underline-offset-4 hover:underline max-sm:hidden">Nous contacter</a>
           </p>
         </div>
       </section>
 
-      <section class="px-4 pb-16 sm:px-6 lg:px-8 lg:pb-24" aria-labelledby="sell-title">
+      <!-- Téléphones : petit encart vendeur. -->
+      <section class="px-4 py-8 sm:hidden" aria-label="Vendre son entreprise">
+        <div class="flex items-center justify-between gap-4 rounded-2xl bg-primary px-5 py-4 text-white">
+          <p class="font-semibold">Vous vendez ? Publiez gratuitement.</p>
+          <a routerLink="/ma/deposer" class="flex-shrink-0 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white">Déposer</a>
+        </div>
+      </section>
+
+      <section class="hidden px-4 pb-16 sm:block sm:px-6 lg:px-8 lg:pb-24" aria-labelledby="sell-title">
         <div class="relative mx-auto max-w-[78rem] overflow-hidden rounded-3xl bg-primary px-6 py-14 text-white sm:px-12 lg:py-16">
           <img src="/assets/images/provisoire/bureau-vue-dessus.jpg" alt="" aria-hidden="true" width="1400" height="933" loading="lazy" class="absolute inset-0 h-full w-full object-cover">
           <div class="absolute inset-0" style="background: rgba(15, 27, 45, 0.86)" aria-hidden="true"></div>
@@ -480,7 +532,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
             <div>
               <h2 id="sell-title" class="text-3xl sm:text-4xl">Vous pensez à passer la main ?</h2>
               <p class="mt-3 max-w-[60ch] text-lg leading-relaxed text-white/75">
-                Déposez votre annonce gratuitement. Elle reste anonyme jusqu'à ce que vous acceptiez un repreneur.
+                Déposez votre annonce gratuitement. Elle reste anonyme : seuls les repreneurs qui acceptent l'engagement de confidentialité et débloquent votre dossier voient le détail et vos coordonnées.
               </p>
             </div>
             <div class="flex flex-shrink-0 flex-col gap-3 sm:flex-row sm:items-center">
@@ -512,6 +564,8 @@ export class LandingComponent implements OnInit {
 
   readonly heroQuery = signal('');
   readonly heroRevenue = signal('');
+  // Téléphones : filtre de chiffre d'affaires replié derrière « Filtres ».
+  readonly filtersOpen = signal(false);
 
   // Uniquement des faits vérifiables : pas de volume ni de nombre de ventes inventés.
   readonly facts = [

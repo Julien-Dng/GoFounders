@@ -25,8 +25,8 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
             type="button"
             (click)="toggleDrawer($event)"
             [class]="auth.isAuthenticated()
-              ? 'absolute left-4 top-0 z-10 flex h-16 items-center px-1 transition-colors sm:left-6 ' + (onDark() ? 'text-white/70 hover:text-white' : 'text-muted-foreground hover:text-foreground')
-              : 'absolute left-4 top-0 z-10 flex h-16 items-center px-1 transition-colors lg:hidden ' + (onDark() ? 'text-white/70 hover:text-white' : 'text-muted-foreground hover:text-foreground')"
+              ? 'absolute left-4 top-0 z-10 flex h-14 items-center sm:h-16 px-1 transition-colors sm:left-6 ' + (onDark() ? 'text-white/70 hover:text-white' : 'text-muted-foreground hover:text-foreground')
+              : 'absolute left-4 top-0 z-10 flex h-14 items-center sm:h-16 px-1 transition-colors lg:hidden ' + (onDark() ? 'text-white/70 hover:text-white' : 'text-muted-foreground hover:text-foreground')"
             aria-label="Menu de navigation"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -36,7 +36,7 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
             </svg>
           </button>
 
-        <div class="mx-auto flex h-16 max-w-[78rem] items-center overflow-visible pl-12 pr-4 sm:pl-16 md:pr-6 xl:px-0">
+        <div class="mx-auto flex h-14 max-w-[78rem] sm:h-16 items-center overflow-visible pl-12 pr-4 sm:pl-16 md:pr-6 xl:px-0">
 
           <!-- Logo -->
           <a [routerLink]="logoLink()" class="group flex flex-shrink-0 items-center gap-2.5 px-2 sm:px-4 xl:px-0">
