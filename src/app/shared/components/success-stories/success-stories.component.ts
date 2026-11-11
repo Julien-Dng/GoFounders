@@ -12,7 +12,7 @@ import { SuccessStoriesService, SuccessStory } from '../../../core/services/succ
       <section class="overflow-hidden px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20" [class]="background()" aria-labelledby="success-stories-title">
         <div class="mx-auto max-w-[78rem]">
           <div class="flex items-center justify-between gap-6">
-            <h2 id="success-stories-title" class="text-3xl text-primary sm:text-4xl">Ce qu'en disent nos membres</h2>
+            <h2 id="success-stories-title" class="text-3xl text-primary sm:text-4xl">Ce que pensent nos membres</h2>
             @if (stories().length > 1) {
               <div class="hidden flex-shrink-0 gap-2 sm:flex">
                 <button type="button" (click)="step(-1)" class="flex h-11 w-11 items-center justify-center rounded-full bg-white text-primary shadow ring-1 ring-border transition-colors hover:bg-primary hover:text-white" aria-label="Avis précédent">
