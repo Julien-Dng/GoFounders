@@ -93,7 +93,7 @@ interface Plan {
                   <p class="tabular mt-3 text-[2rem] font-extrabold leading-tight tracking-tight text-primary">{{ offer.price }}</p>
                   <p class="mt-2 text-base text-muted-foreground">{{ offer.description }}</p>
                   @if (offer.benefit) {
-                    <p class="mt-4 rounded-lg bg-emerald-50 px-4 py-3 text-base leading-relaxed text-emerald-900">{{ offer.benefit }}</p>
+                    <p class="mt-2 text-base font-semibold text-primary">{{ offer.benefit }}</p>
                   }
                   <ul class="mt-5 flex-1 space-y-2.5 border-t border-border pt-5 text-base text-foreground/85">
                     @for (feature of offer.features; track feature) {
@@ -136,7 +136,7 @@ interface Plan {
                     </div>
                     <p class="mt-2 text-base text-muted-foreground">{{ offer.description }}</p>
                     @if (offer.benefit) {
-                      <p class="mt-3 rounded-lg bg-emerald-50 px-4 py-3 text-base leading-relaxed text-emerald-900">{{ offer.benefit }}</p>
+                      <p class="mt-2 text-base font-semibold text-primary">{{ offer.benefit }}</p>
                     }
                     <span class="flex-1" aria-hidden="true"></span>
                     @if (offer.product) {
@@ -341,7 +341,7 @@ interface Plan {
                   <p class="tabular mt-3 text-[2rem] font-extrabold leading-tight tracking-tight text-primary">{{ offer.price }}</p>
                   <p class="mt-2 text-base text-muted-foreground">{{ offer.description }}</p>
                   @if (offer.benefit) {
-                    <p class="mt-4 rounded-lg bg-emerald-50 px-4 py-3 text-base leading-relaxed text-emerald-900">{{ offer.benefit }}</p>
+                    <p class="mt-2 text-base font-semibold text-primary">{{ offer.benefit }}</p>
                   }
                   <ul class="mt-5 flex-1 space-y-2.5 border-t border-border pt-5 text-base text-foreground/85">
                     @for (feature of offer.features; track feature) {
@@ -495,7 +495,7 @@ export class TarifsComponent {
           title: 'Dossier vérifié',
           price: OFFER_PRICES.VERIFICATION.label,
           description: "Nous comparons les chiffres de votre annonce à vos justificatifs.",
-          benefit: "Un dossier vérifié attire plus de repreneurs : des chiffres contrôlés les rassurent, ils vous contactent plus volontiers et discutent sur une base solide. C'est un vrai atout pour vendre mieux et plus sereinement.",
+          benefit: "Des chiffres vérifiés rassurent les repreneurs. Plus de contacts, une négociation plus solide.",
           features: [
             "Chiffre d'affaires et bénéfice annoncés rapprochés de vos justificatifs : derniers bilans ou liasses fiscales, tableau de bord Stripe ou Shopify sur 12 mois",
             'Badge « Dossier vérifié » sur l’annonce',
