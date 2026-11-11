@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AccountProduct, FREE_AI_ANALYSES_PER_MONTH, FREE_CONTACTS_PER_MONTH, OFFER_PRICES, PRO_TRIAL_LABEL } from '../../core/config/offers';
+import { AccountProduct, INTRO_SUMMARY, FREE_AI_ANALYSES_PER_MONTH, FREE_CONTACTS_PER_MONTH, OFFER_PRICES, PRO_TRIAL_LABEL } from '../../core/config/offers';
 import { FEATURES } from '../../core/config/features';
 import { hasBuyerPlus, isActiveUntil } from '../../core/models/user.model';
 import { PaymentService, PremiumTopic } from '../../core/services/payment.service';
@@ -80,7 +80,7 @@ interface Plan {
           <div class="mx-auto max-w-[62ch] text-center">
             <h2 id="reprise-title" class="text-3xl text-primary sm:text-4xl">Reprendre ou céder une entreprise</h2>
             <p class="mt-3 text-lg leading-relaxed text-muted-foreground">
-              Publier une annonce est gratuit, sans commission sur la vente. Le repreneur paie 50 € pour débloquer le dossier complet et le contact d'une entreprise.
+              Publier une annonce est gratuit, sans commission sur la vente. {{ introSummary }}
             </p>
           </div>
           <div class="mx-auto mt-10 grid max-w-4xl gap-6 md:grid-cols-2">
@@ -366,6 +366,7 @@ export class TarifsComponent {
   private readonly route = inject(ActivatedRoute);
 
   readonly features = FEATURES;
+  readonly introSummary = INTRO_SUMMARY;
   // Deux univers d'offres, un seul compte : l'onglet ne fait que filtrer ce qui est présenté.
   readonly tabs = [
     { id: 'reprise' as const, label: 'Reprendre ou céder une entreprise' },
@@ -437,7 +438,7 @@ export class TarifsComponent {
           features: [
             'Compte repreneur gratuit, annonces anonymisées visibles par tous',
             'Engagement de confidentialité accepté en ligne, une fois par dossier',
-            `${OFFER_PRICES.INTRO.label} : dossier complet, coordonnées du cédant et messagerie, ouverts tout de suite`,
+            `${OFFER_PRICES.INTRO.label} : dossier complet, coordonnées du cédant et messagerie, ouverts aussitôt, sans attendre son accord`,
             `Analyse du dossier par l'IA (jusqu'à ${FREE_AI_ANALYSES_PER_MONTH} par mois)`,
             'Sans abonnement ni commission sur la vente',
           ],

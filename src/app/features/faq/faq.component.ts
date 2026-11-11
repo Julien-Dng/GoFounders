@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { FREE_AI_ANALYSES_PER_MONTH, FREE_CONTACTS_PER_MONTH, OFFER_PRICES } from '../../core/config/offers';
+import { INTRO_SUMMARY, FREE_AI_ANALYSES_PER_MONTH, FREE_CONTACTS_PER_MONTH, OFFER_PRICES } from '../../core/config/offers';
 import { FEATURES, FeatureName } from '../../core/config/features';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
 
@@ -41,7 +41,7 @@ const CATEGORIES: FaqCategory[] = [
     id: 'repreneurs',
     title: 'Reprendre une entreprise',
     entries: [
-      { question: 'Combien coûte une mise en relation ?', answer: `${price('INTRO')} par entreprise, une seule fois : son dossier complet, les coordonnées du cédant, la messagerie avec lui et l’analyse du dossier par l’IA (jusqu’à ${FREE_AI_ANALYSES_PER_MONTH} analyses par mois). Vous acceptez d’abord un engagement de confidentialité envers le cédant.` },
+      { question: 'Combien coûte une mise en relation ?', answer: `${INTRO_SUMMARY} Le paiement est unique pour cette entreprise et inclut l’analyse du dossier par l’IA (jusqu’à ${FREE_AI_ANALYSES_PER_MONTH} analyses par mois).` },
       { question: 'Comment ouvrir le dossier d’une annonce ?', answer: 'Sur la fiche de l’annonce, cliquez sur « Demander l’accès au dossier » : présentez-vous en quelques phrases et acceptez l’engagement de confidentialité. Le cédant reçoit votre demande et vous êtes prévenu de sa réponse. S’il accepte, le dossier complet et ses coordonnées s’affichent.' },
       { question: 'Quelle différence avec l’accès Plus ?', answer: `L’accès Plus (${price('MA_PLUS')}) ajoute les analyses de dossier illimitées et les alertes sur les nouvelles annonces qui correspondent à votre recherche.`, feature: 'buyerPlus' },
       { question: 'Puis-je voir les annonces sans payer ?', answer: 'Oui. Toutes les annonces sont visibles gratuitement dans leur version anonymisée : secteur, région, chiffre d’affaires, marge, bénéfice, ancienneté et prix demandé.' },

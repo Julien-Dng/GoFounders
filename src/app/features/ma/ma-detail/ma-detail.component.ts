@@ -207,8 +207,8 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
                   <section id="demande-acces" class="mt-8 scroll-mt-24 rounded-xl bg-secondary p-6" aria-labelledby="request-title">
                     <h2 id="request-title" class="text-2xl text-primary">Débloquer le dossier et le contact</h2>
                     <p class="mt-2 text-base text-muted-foreground">
-                      Pour {{ introPrice }}, vous accédez tout de suite au dossier complet de cette entreprise, aux coordonnées du cédant
-                      et à la messagerie avec lui. Acceptez d'abord l'engagement de confidentialité envers le cédant.
+                      Acceptez l'engagement de confidentialité envers le cédant, puis payez {{ introPrice }} : le dossier complet,
+                      ses coordonnées et la messagerie avec lui s'ouvrent aussitôt, sans attendre son accord.
                     </p>
                     <label for="request-message" class="mb-1.5 mt-5 block font-semibold text-primary">Un mot pour le cédant <span class="font-normal text-muted-foreground">(facultatif)</span></label>
                     <textarea id="request-message" rows="5" maxlength="1500" [value]="requestMessage()" (input)="requestMessage.set($any($event.target).value)" class="w-full resize-y rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" placeholder="Parcours, budget et financement envisagés, pourquoi cette entreprise vous intéresse, délai souhaité."></textarea>
@@ -549,7 +549,7 @@ export class MaDetailComponent implements OnInit {
     return null;
   });
   readonly steps = [
-    { title: 'Débloquez le dossier', text: "Acceptez l'engagement de confidentialité et payez 50 € : le dossier complet, les coordonnées du cédant et la messagerie s'ouvrent aussitôt." },
+    { title: 'Débloquez le dossier', text: "Acceptez l'engagement de confidentialité et payez 50 € : le dossier complet, les coordonnées du cédant et la messagerie s'ouvrent aussitôt, sans attendre son accord." },
     { title: 'Demandez les justificatifs', text: "Bilans des trois derniers exercices, relevés de chiffre d'affaires, accès en lecture aux outils (analytics, paiements, comptabilité)." },
     { title: 'Faites-vous accompagner', text: "Un expert-comptable et un avocat vérifient le dossier avant toute lettre d'intention. GoFounders n'intervient pas dans la négociation." },
   ];

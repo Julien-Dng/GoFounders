@@ -1,8 +1,8 @@
-import { NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MaListingData } from '../../core/data/mock-platform.data';
-import { OFFER_PRICES } from '../../core/config/offers';
+import { INTRO_SUMMARY, OFFER_PRICES } from '../../core/config/offers';
+import { ShowcaseEntry, ShowcaseService } from '../../core/services/showcase.service';
 import { FEATURES } from '../../core/config/features';
 import { MaService } from '../../core/services/ma.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -20,208 +20,81 @@ interface LandingFaqItem {
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [NgClass, RouterLink, FooterComponent, SuccessStoriesComponent],
+  imports: [RouterLink, FooterComponent, SuccessStoriesComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-white">
-      <!-- En-tête sombre : titre, recherche, et maquettes d'interface sur un fond de panneaux arrondis. -->
-      <section class="relative overflow-hidden bg-primary px-4 pb-20 pt-28 text-white sm:px-6 lg:px-8 lg:pb-24 lg:pt-36">
-        <div class="pointer-events-none absolute inset-y-0 right-0 hidden w-[52%] lg:block" aria-hidden="true">
-          <div class="absolute -top-10 left-[6%] h-36 w-64 rounded-3xl bg-white/[0.04]"></div>
-          <div class="absolute left-[6%] top-[62%] h-72 w-64 rounded-3xl bg-white/[0.04]"></div>
-          <div class="absolute -top-10 left-[52%] h-56 w-72 rounded-3xl bg-white/[0.04]"></div>
-          <div class="absolute bottom-[-3rem] left-[52%] h-40 w-72 rounded-3xl bg-white/[0.04]"></div>
-          <div class="absolute right-[-3rem] top-[10%] h-80 w-24 rounded-3xl bg-white/[0.04]"></div>
-        </div>
-
-        <div class="relative mx-auto grid max-w-[78rem] gap-14 lg:grid-cols-12 lg:items-center">
-          <div class="lg:col-span-6">
-            <h1 class="max-w-[16ch] text-[2.2rem] leading-[1.08] text-white sm:text-[3.5rem] lg:text-[3.75rem]">
-              @if (showAssociates) {
-                Reprenez une entreprise. Trouvez vos associés.
-              } @else {
-                Reprenez une entreprise qui a déjà ses clients
-              }
-            </h1>
-            <p class="mt-6 max-w-[52ch] text-lg leading-relaxed text-white/70">
-              @if (showAssociates) {
-                Découvrez des entreprises à reprendre partout en France, trouvez un associé ou réunissez les compétences pour lancer et développer votre projet.
-              } @else {
-                Commerces, restaurants, artisans, sociétés de services, PME industrielles ou entreprises en ligne : des entreprises françaises rentables dont les dirigeants veulent passer la main.
-              }
-            </p>
-
-            <div class="mt-9 rounded-xl bg-white p-2 shadow-2xl" role="search">
-              <div class="flex flex-col gap-2 sm:flex-row">
-                <label for="hero-search" class="sr-only">Rechercher une entreprise</label>
-                <input
-                  id="hero-search"
-                  type="search"
-                  [value]="heroQuery()"
-                  (input)="heroQuery.set($any($event.target).value)"
-                  (keydown.enter)="search()"
-                  placeholder="Secteur, ville, mot-clé"
-                  class="min-w-0 flex-1 rounded-lg px-4 py-3 text-base text-foreground outline-none placeholder:text-muted-foreground"
-                >
-                <label for="hero-revenue" class="sr-only">Chiffre d'affaires</label>
-                <select id="hero-revenue" [value]="heroRevenue()" (change)="heroRevenue.set($any($event.target).value)" class="rounded-lg border border-border bg-secondary px-3 py-3 text-base text-foreground outline-none sm:w-40">
-                  <option value="">Tout CA</option>
-                  <option value="0-100000">Moins de 100 k€</option>
-                  <option value="100000-500000">100 à 500 k€</option>
-                  <option value="500000-1000000">500 k€ à 1 M€</option>
-                  <option value="1000000-">Plus de 1 M€</option>
-                </select>
-                <button type="button" (click)="search()" class="rounded-lg bg-accent px-6 py-3 font-semibold text-white transition-colors hover:bg-accent/90">Rechercher</button>
-              </div>
-            </div>
-
+      <!-- En-tête : titre, sous-titre court et les deux parcours (pas de recherche ni d'illustration ici). -->
+      <section class="relative overflow-hidden bg-primary px-4 pb-16 pt-28 text-white sm:px-6 lg:px-8 lg:pb-20 lg:pt-36">
+        <div class="relative mx-auto max-w-[62rem] text-center">
+          <h1 class="mx-auto max-w-[20ch] text-[2.2rem] leading-[1.08] text-white sm:text-[3.5rem] lg:text-[3.75rem]">
             @if (showAssociates) {
-              <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                <a routerLink="/ma" class="group flex flex-col rounded-xl border border-white/20 bg-white/[0.06] p-5 transition-colors hover:border-white/60 hover:bg-white/[0.1]">
-                  <span class="text-lg font-bold text-white">Reprendre ou céder une entreprise</span>
-                  <span class="mt-1.5 flex-1 text-base leading-relaxed text-white/70">Découvrez une activité à reprendre ou trouvez votre repreneur.</span>
-                  <span class="mt-4 whitespace-nowrap font-semibold text-[#9DB8FF] group-hover:text-white">Voir les entreprises&nbsp;→</span>
-                </a>
-                <a [routerLink]="associatesHref()" class="group flex flex-col rounded-xl border border-white/20 bg-white/[0.06] p-5 transition-colors hover:border-white/60 hover:bg-white/[0.1]">
-                  <span class="text-lg font-bold text-white">Trouver un associé et créer son équipe</span>
-                  <span class="mt-1.5 flex-1 text-base leading-relaxed text-white/70">Présentez votre projet ou rejoignez une équipe qui cherche vos compétences.</span>
-                  <span class="mt-4 whitespace-nowrap font-semibold text-[#9DB8FF] group-hover:text-white">Voir les projets et associés&nbsp;→</span>
-                </a>
-              </div>
-              <p class="mt-4 text-base text-white/60">
-                Vous pensez à vendre ? <a routerLink="/estimation" class="font-semibold text-white underline-offset-4 hover:underline">Estimez votre entreprise gratuitement</a>
-              </p>
+              Reprenez une entreprise. Trouvez vos associés.
             } @else {
-              <div class="mt-6 flex flex-col gap-3 sm:flex-row">
-                <a routerLink="/ma" class="rounded-lg border border-white/30 px-6 py-3.5 text-center font-semibold text-white transition-colors hover:border-white/70">Voir toutes les annonces</a>
-                <a routerLink="/estimation" class="rounded-lg border border-white/30 px-6 py-3.5 text-center font-semibold text-white transition-colors hover:border-white/70">Estimer mon entreprise gratuitement</a>
-              </div>
+              Reprenez une entreprise qui a déjà ses clients
+            }
+          </h1>
+          <p class="mx-auto mt-5 max-w-[48ch] text-lg leading-relaxed text-white/70">
+            Des entreprises à reprendre partout en France, et des associés pour lancer ou développer votre projet.
+          </p>
+
+          <div class="mx-auto mt-10 grid max-w-[52rem] gap-4 text-left" [class.sm:grid-cols-2]="showAssociates">
+            <a href="#entreprises" (click)="scrollTo($event, 'entreprises')" class="group flex flex-col rounded-2xl border border-white/20 bg-white/[0.06] p-6 transition-colors hover:border-white/60 hover:bg-white/[0.1]">
+              <span class="text-xl font-bold text-white">Explorer les entreprises</span>
+              <span class="mt-2 flex-1 text-base leading-relaxed text-white/70">Commerces, services, industrie, activités en ligne : découvrez celles qui sont à reprendre.</span>
+              <span class="mt-5 whitespace-nowrap font-semibold text-[#9DB8FF] group-hover:text-white">Voir les entreprises&nbsp;→</span>
+            </a>
+            @if (showAssociates) {
+              <a [routerLink]="associatesHref()" class="group flex flex-col rounded-2xl border border-white/20 bg-white/[0.06] p-6 transition-colors hover:border-white/60 hover:bg-white/[0.1]">
+                <span class="text-xl font-bold text-white">Trouver des associés et une équipe</span>
+                <span class="mt-2 flex-1 text-base leading-relaxed text-white/70">Présentez votre projet ou rejoignez une équipe qui cherche vos compétences.</span>
+                <span class="mt-5 whitespace-nowrap font-semibold text-[#9DB8FF] group-hover:text-white">Voir les projets et associés&nbsp;→</span>
+              </a>
             }
           </div>
 
-          @if (featuredListing(); as item) {
-            <figure class="relative hidden lg:col-span-6 lg:block lg:min-h-[30rem]">
-              <article class="relative mx-auto max-w-[27rem] rounded-2xl bg-[#DCE5F7] p-6 text-primary shadow-2xl sm:p-7 lg:absolute lg:left-0 lg:top-0 lg:w-[25rem]" aria-label="Annonce en ligne">
-                <div class="flex items-start justify-between gap-4">
-                  <div class="min-w-0">
-                    <p class="text-sm font-semibold text-primary/60">{{ item.listing.type }} · {{ item.listing.region }}</p>
-                    <h2 class="mt-1 text-xl leading-snug text-primary">{{ item.listing.sector }}</h2>
-                  </div>
-                  <span class="flex-shrink-0 rounded-full bg-white/70 px-2.5 py-1 text-sm font-semibold text-[#A3341C]">Confidentiel</span>
-                </div>
-                <p class="mt-3 line-clamp-2 text-base text-primary/75">{{ item.listing.summary }}</p>
-                <dl class="tabular mt-5 grid grid-cols-3 gap-2">
-                  <div class="rounded-lg bg-white/70 p-3">
-                    <dt class="text-sm text-primary/60">CA</dt>
-                    <dd class="mt-0.5 font-bold">{{ euros(item.metrics.revenue) }}</dd>
-                  </div>
-                  <div class="rounded-lg bg-white/70 p-3">
-                    <dt class="text-sm text-primary/60">Bénéfice</dt>
-                    <dd class="mt-0.5 font-bold">{{ euros(item.metrics.netProfit) }}</dd>
-                  </div>
-                  <div class="rounded-lg bg-white/70 p-3">
-                    <dt class="text-sm text-primary/60">Marge</dt>
-                    <dd class="mt-0.5 font-bold">{{ item.listing.margin }}</dd>
-                  </div>
-                </dl>
-                <div class="mt-4 space-y-2" aria-hidden="true">
-                  <div class="h-2.5 w-11/12 rounded bg-primary/10"></div>
-                  <div class="h-2.5 w-3/4 rounded bg-primary/10"></div>
-                </div>
-                <div class="mt-5 rounded-xl bg-primary p-4 text-white">
-                  <p class="text-sm text-white/65">Prix demandé</p>
-                  <p class="tabular mt-0.5 text-2xl font-bold"><span class="whitespace-nowrap">{{ item.listing.priceMin }}</span> à <span class="whitespace-nowrap">{{ item.listing.priceMax }}</span></p>
-                  @if (item.metrics.multiple !== null) {
-                    <p class="tabular text-sm text-white/65">{{ multiple(item.metrics.multiple) }} le bénéfice annuel</p>
-                  }
-                </div>
-              </article>
-
-              @if (showAssociates) {
-                <aside class="relative z-10 mx-auto -mt-4 w-[20rem] max-w-full rounded-2xl bg-[#DCE5F7] p-5 text-primary shadow-2xl lg:absolute lg:bottom-0 lg:right-0 lg:mt-0" aria-label="Exemple de projet qui constitue son équipe">
-                  <p class="text-sm font-semibold text-primary/60">Exemple de projet · Lyon</p>
-                  <div class="mt-3 flex items-center gap-3">
-                    <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-accent font-bold text-white" aria-hidden="true">P</span>
-                    <div class="min-w-0">
-                      <p class="font-bold leading-snug">Logiciel de planning santé</p>
-                      <p class="text-sm text-primary/70">Cherche à compléter son équipe</p>
-                    </div>
-                  </div>
-                  <div class="mt-4 flex flex-wrap gap-2 text-sm font-semibold">
-                    <span class="rounded-lg bg-white/70 px-2.5 py-1.5">Associé technique</span>
-                    <span class="rounded-lg bg-white/70 px-2.5 py-1.5">Profil commercial</span>
-                  </div>
-                  <div class="mt-4 grid grid-cols-2 gap-2 text-sm font-semibold" aria-hidden="true">
-                    <span class="rounded-lg border border-primary/25 py-2 text-center text-primary/70">Plus tard</span>
-                    <span class="rounded-lg bg-accent py-2 text-center text-white">Rejoindre</span>
-                  </div>
-                </aside>
-              } @else {
-                <aside class="relative z-10 mx-auto -mt-4 w-[20rem] max-w-full rounded-2xl bg-[#DCE5F7] p-5 text-primary shadow-2xl lg:absolute lg:bottom-0 lg:right-0 lg:mt-0" aria-label="Exemple de profil repreneur">
-                  <p class="text-sm font-semibold text-primary/60">Exemple de profil repreneur</p>
-                  <div class="mt-3 flex items-center gap-3">
-                    <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-primary font-bold text-white" aria-hidden="true">R</span>
-                    <div class="min-w-0">
-                      <p class="font-bold leading-snug">Ancien directeur commercial</p>
-                      <p class="text-sm text-primary/70">Budget 300 à 600 k€ · E-commerce</p>
-                    </div>
-                  </div>
-                  <div class="mt-4 space-y-2" aria-hidden="true">
-                    <div class="h-2.5 w-full rounded bg-primary/10"></div>
-                    <div class="h-2.5 w-2/3 rounded bg-primary/10"></div>
-                  </div>
-                  <div class="mt-4 grid grid-cols-2 gap-2 text-sm font-semibold" aria-hidden="true">
-                    <span class="rounded-lg border border-primary/25 py-2 text-center text-primary/70">Refuser</span>
-                    <span class="rounded-lg bg-accent py-2 text-center text-white">Accepter</span>
-                  </div>
-                </aside>
-              }
-            </figure>
-          }
+          <p class="mt-6 text-base text-white/60">
+            Vous vendez ? <a routerLink="/ma/deposer" class="font-semibold text-white underline-offset-4 hover:underline">Déposer une annonce gratuite</a>
+            <span class="mx-1.5" aria-hidden="true">·</span>
+            <a routerLink="/estimation" class="font-semibold text-white underline-offset-4 hover:underline">Estimer sa valeur</a>
+          </p>
         </div>
       </section>
 
-      <!-- Téléphones : les annonces en cours passent avant le bandeau et les étapes (ordre visuel seulement). -->
-      <div class="flex flex-col">
-      <section class="bg-[#16243B] px-4 py-9 text-white sm:px-6 lg:px-8" aria-label="Les engagements de GoFounders">
-        <dl class="mx-auto grid max-w-[78rem] grid-cols-2 gap-y-8 text-center lg:grid-cols-4">
-          @for (fact of facts; track fact.label; let last = $last) {
-            <div class="px-4 lg:border-dashed lg:border-white/25" [class.lg:border-r]="!last">
-              <dt class="sr-only">{{ fact.label }}</dt>
-              <dd class="tabular text-3xl font-extrabold tracking-tight">{{ fact.value }}</dd>
-              <dd class="mx-auto mt-1 max-w-[22ch] text-base text-white/70">{{ fact.label }}</dd>
-            </div>
-          }
-        </dl>
-      </section>
-
-      <section class="bg-secondary px-4 py-12 sm:py-16 sm:px-6 lg:px-8 lg:py-24" aria-labelledby="steps-title">
+      <!-- Entreprises à reprendre : recherche et filtres, puis les annonces du moment. -->
+      <section id="entreprises" class="scroll-mt-20 px-4 py-14 sm:px-6 lg:px-8 lg:py-20" aria-labelledby="latest-title">
         <div class="mx-auto max-w-[78rem]">
-          <h2 id="steps-title" class="text-center text-3xl text-primary sm:text-4xl">Comment se passe une reprise</h2>
-          <p class="mx-auto mt-3 max-w-[56ch] text-center text-lg text-muted-foreground">Trois étapes, sans intermédiaire ni commission.</p>
-          <ol class="mt-8 grid gap-3 sm:mt-12 sm:gap-6 md:grid-cols-3">
-            @for (step of steps; track step.title; let index = $index) {
-              <li class="flex gap-4 rounded-2xl bg-white p-4 shadow-lg sm:block sm:p-7">
-                <span class="tabular flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-accent/10 font-extrabold text-accent sm:h-11 sm:w-11 sm:text-lg">{{ index + 1 }}</span>
-                <div>
-                  <h3 class="text-lg font-bold text-primary sm:mt-5 sm:text-xl">{{ step.title }}</h3>
-                  <p class="mt-1 text-base leading-relaxed text-muted-foreground sm:hidden">{{ step.short }}</p>
-                  <p class="mt-2 hidden text-base leading-relaxed text-muted-foreground sm:block">{{ step.description }}</p>
-                </div>
-              </li>
-            }
-          </ol>
-        </div>
-      </section>
+          <h2 id="latest-title" class="text-center text-3xl text-primary sm:text-4xl">Entreprises à reprendre</h2>
+          <p class="mx-auto mt-3 max-w-[60ch] text-center text-lg text-muted-foreground">{{ introSummary }}</p>
 
-      @if (latestListings().length > 0) {
-        <section class="max-sm:order-first px-4 py-12 sm:py-16 sm:px-6 lg:px-8 lg:py-24" aria-labelledby="latest-title">
-          <div class="mx-auto max-w-[78rem]">
-            <h2 id="latest-title" class="text-center text-3xl text-primary sm:text-4xl">En ce moment sur GoFounders</h2>
-            <p class="mx-auto mt-3 max-w-[56ch] text-center text-lg text-muted-foreground">Quelques entreprises actuellement à reprendre.</p>
-            <div class="mt-12 grid gap-6 md:grid-cols-3">
-              @for (item of latestListings(); track item.listing.id; let index = $index) {
-                <a [routerLink]="['/ma/annonce', item.listing.id]" [ngClass]="{ 'max-sm:hidden': index > 1 }" class="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border transition-shadow hover:shadow-xl">
+          <div class="mx-auto mt-8 max-w-3xl rounded-xl bg-white p-2 shadow-lg ring-1 ring-border" role="search">
+            <div class="flex flex-col gap-2 sm:flex-row">
+              <label for="hero-search" class="sr-only">Rechercher une entreprise</label>
+              <input
+                id="hero-search"
+                type="search"
+                [value]="heroQuery()"
+                (input)="heroQuery.set($any($event.target).value)"
+                (keydown.enter)="search()"
+                placeholder="Secteur, ville, mot-clé"
+                class="min-w-0 flex-1 rounded-lg px-4 py-3 text-base text-foreground outline-none placeholder:text-muted-foreground"
+              >
+              <label for="hero-revenue" class="sr-only">Chiffre d'affaires</label>
+              <select id="hero-revenue" [value]="heroRevenue()" (change)="heroRevenue.set($any($event.target).value)" class="rounded-lg border border-border bg-secondary px-3 py-3 text-base text-foreground outline-none sm:w-56">
+                <option value="">Tout chiffre d'affaires</option>
+                <option value="0-100000">Moins de 100 k€</option>
+                <option value="100000-500000">100 à 500 k€</option>
+                <option value="500000-1000000">500 k€ à 1 M€</option>
+                <option value="1000000-">Plus de 1 M€</option>
+              </select>
+              <button type="button" (click)="search()" class="rounded-lg bg-accent px-6 py-3 font-semibold text-white transition-colors hover:bg-accent/90">Rechercher</button>
+            </div>
+          </div>
+
+          @if (latestListings().length > 0) {
+            <div class="mt-10 grid gap-6 md:grid-cols-3 max-sm:[&>*:nth-child(3)]:hidden">
+              @for (item of latestListings(); track item.listing.id) {
+                <a [routerLink]="['/ma/annonce', item.listing.id]" class="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border transition-shadow hover:shadow-xl">
                   <p class="bg-primary px-5 py-3 text-sm font-semibold text-white">{{ item.listing.sector }} · {{ item.listing.region }}</p>
                   <div class="flex flex-1 flex-col p-5">
                     <h3 class="line-clamp-3 text-lg font-bold leading-snug text-primary group-hover:text-accent">{{ item.listing.summary }}</h3>
@@ -241,13 +114,81 @@ interface LandingFaqItem {
                 </a>
               }
             </div>
+          }
+          <div class="mt-10 text-center">
+            <a routerLink="/ma" class="inline-block rounded-lg bg-primary px-7 py-3.5 font-semibold text-white transition-colors hover:bg-primary/90">Voir toutes les annonces</a>
+          </div>
+        </div>
+      </section>
+
+      @if (showAssociates && showcase().length > 0) {
+        <!-- Projets et associés : aperçu anonymisé (membres ayant accepté d'apparaître sur la vitrine publique). -->
+        <section class="bg-secondary px-4 py-14 sm:px-6 lg:px-8 lg:py-20" aria-labelledby="team-title">
+          <div class="mx-auto max-w-[78rem]">
+            <h2 id="team-title" class="text-center text-3xl text-primary sm:text-4xl">Projets et associés</h2>
+            <p class="mx-auto mt-3 max-w-[60ch] text-center text-lg text-muted-foreground">
+              Des porteurs de projet qui cherchent des compétences, et des associés prêts à rejoindre une équipe.
+            </p>
+            <div class="mt-10 grid gap-6 md:grid-cols-3 max-sm:[&>*:nth-child(3)]:hidden">
+              @for (entry of showcase(); track entry.profile_id) {
+                <div class="flex flex-col rounded-2xl bg-white p-6 shadow-lg ring-1 ring-border">
+                  <p class="text-sm font-semibold uppercase tracking-wide" [class]="entry.kind === 'project' ? 'text-accent' : 'text-emerald-700'">
+                    {{ entry.kind === 'project' ? 'Projet' : 'Associé' }}
+                  </p>
+                  <h3 class="mt-2 text-lg font-bold leading-snug text-primary">
+                    {{ entry.kind === 'project' ? (entry.sector || 'Projet en recherche d’associés') : (entry.title || 'Associé disponible') }}
+                  </h3>
+                  @if (entry.kind === 'project' && entry.looking_for?.length) {
+                    <p class="mt-2 text-base text-foreground/85"><span class="font-semibold text-primary">Cherche :</span> {{ entry.looking_for!.slice(0, 3).join(', ') }}</p>
+                  } @else if (entry.availability) {
+                    <p class="mt-2 text-base text-foreground/85">{{ entry.availability }}</p>
+                  }
+                  @if (entry.skills.length > 0) {
+                    <ul class="mt-4 flex flex-wrap gap-2">
+                      @for (skill of entry.skills.slice(0, 4); track skill) {
+                        <li class="rounded-full bg-secondary px-3 py-1 text-sm font-medium text-foreground">{{ skill }}</li>
+                      }
+                    </ul>
+                  }
+                </div>
+              }
+            </div>
             <div class="mt-10 text-center">
-              <a routerLink="/ma" class="inline-block rounded-lg bg-primary px-7 py-3.5 font-semibold text-white transition-colors hover:bg-primary/90">Voir toutes les annonces</a>
+              <a [routerLink]="associatesHref()" class="inline-block rounded-lg bg-primary px-7 py-3.5 font-semibold text-white transition-colors hover:bg-primary/90">Voir les projets et associés</a>
             </div>
           </div>
         </section>
       }
-      </div>
+
+      <section class="px-4 py-14 sm:px-6 lg:px-8 lg:py-20" aria-labelledby="steps-title">
+        <div class="mx-auto max-w-[78rem]">
+          <h2 id="steps-title" class="text-center text-3xl text-primary sm:text-4xl">Comment se passe une reprise</h2>
+          <ol class="mt-8 grid gap-3 sm:mt-12 sm:gap-6 md:grid-cols-3">
+            @for (step of steps; track step.title; let index = $index) {
+              <li class="flex gap-4 rounded-2xl bg-white p-4 shadow-lg ring-1 ring-border sm:block sm:p-7">
+                <span class="tabular flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-accent/10 font-extrabold text-accent sm:h-11 sm:w-11 sm:text-lg">{{ index + 1 }}</span>
+                <div>
+                  <h3 class="text-lg font-bold text-primary sm:mt-5 sm:text-xl">{{ step.title }}</h3>
+                  <p class="mt-1 text-base leading-relaxed text-muted-foreground sm:mt-2">{{ step.description }}</p>
+                </div>
+              </li>
+            }
+          </ol>
+        </div>
+      </section>
+
+      <!-- Un seul bloc de réassurance : commission, gratuité, prix et confidentialité. -->
+      <section class="bg-[#16243B] px-4 py-9 text-white sm:px-6 lg:px-8" aria-label="Les engagements de GoFounders">
+        <dl class="mx-auto grid max-w-[78rem] grid-cols-2 gap-y-8 text-center lg:grid-cols-4">
+          @for (fact of facts; track fact.label; let last = $last) {
+            <div class="px-4 lg:border-dashed lg:border-white/25" [class.lg:border-r]="!last">
+              <dt class="sr-only">{{ fact.label }}</dt>
+              <dd class="tabular text-3xl font-extrabold tracking-tight">{{ fact.value }}</dd>
+              <dd class="mx-auto mt-1 max-w-[22ch] text-base text-white/70">{{ fact.label }}</dd>
+            </div>
+          }
+        </dl>
+      </section>
 
       <section class="hidden bg-secondary px-4 py-16 sm:block sm:px-6 lg:px-8 lg:py-24" aria-label="Notre conviction">
         <div class="mx-auto grid max-w-[78rem] items-center gap-10 overflow-hidden rounded-3xl bg-white shadow-lg lg:grid-cols-12 lg:gap-0">
@@ -268,55 +209,13 @@ interface LandingFaqItem {
         </div>
       </section>
 
-      <section class="hidden px-4 py-16 sm:block sm:px-6 lg:px-8 lg:py-24" aria-labelledby="audiences-title">
-        <div class="mx-auto max-w-[78rem]">
-          <h2 id="audiences-title" class="text-center text-3xl text-primary sm:text-4xl">{{ visibleAudiences.length === 3 ? 'Une place de marché, trois façons de l’utiliser' : 'Une place de marché pour vendre ou reprendre' }}</h2>
-          <div class="mt-12 grid gap-6" [class]="visibleAudiences.length === 3 ? 'md:grid-cols-3' : 'mx-auto max-w-4xl md:grid-cols-2'">
-            @for (audience of visibleAudiences; track audience.title) {
-              <div class="flex flex-col overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border">
-                <img [src]="audience.image" [alt]="audience.imageAlt" width="1400" height="933" loading="lazy" class="aspect-[3/2] w-full object-cover">
-                <div class="flex flex-1 flex-col p-6">
-                  <h3 class="text-xl font-bold text-primary">{{ audience.title }}</h3>
-                  <p class="mt-2 flex-1 text-base leading-relaxed text-muted-foreground">{{ audience.description }}</p>
-                  <a [routerLink]="audience.href" class="mt-5 inline-block font-semibold text-accent underline-offset-4 hover:underline">{{ audience.cta }}</a>
-                </div>
-              </div>
-            }
-          </div>
-        </div>
-      </section>
-
-      <section id="protection" class="hidden bg-secondary px-4 py-16 sm:block sm:px-6 lg:px-8 lg:py-24" aria-labelledby="protection-title">
-        <div class="mx-auto max-w-[78rem]">
-          <h2 id="protection-title" class="text-center text-3xl text-primary sm:text-4xl">La discrétion par défaut</h2>
-          <p class="mx-auto mt-3 max-w-[60ch] text-center text-lg text-muted-foreground">
-            Vous décidez de ce qui est montré, à qui, et sous quel engagement.
-          </p>
-          <div class="mt-12 grid gap-6 md:grid-cols-3">
-            @for (item of protectionPoints; track item.title) {
-              <div class="rounded-2xl bg-white p-7 shadow-lg">
-                <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 text-accent" aria-hidden="true">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                </span>
-                <h3 class="mt-5 text-xl font-bold text-primary">{{ item.title }}</h3>
-                <p class="mt-2 text-base leading-relaxed text-muted-foreground">{{ item.description }}</p>
-              </div>
-            }
-          </div>
-          <p class="mx-auto mt-8 max-w-[70ch] text-center text-sm leading-relaxed text-muted-foreground">
-            L'engagement de confidentialité est un modèle mis à disposition par GoFounders, qui n'assure pas de conseil juridique.
-            Pour un accord sur mesure, nos experts juridiques partenaires peuvent vous accompagner.
-          </p>
-        </div>
-      </section>
-
       <app-success-stories />
 
       <section class="bg-secondary px-4 py-16 sm:px-6 lg:px-8 lg:py-24" aria-labelledby="prices-title">
         <div class="mx-auto max-w-[78rem]">
           <h2 id="prices-title" class="text-center text-3xl text-primary sm:text-4xl">Vendre est gratuit. Une mise en relation coûte {{ buyerPrice }}.</h2>
           <p class="mx-auto mt-3 max-w-[60ch] text-center text-lg text-muted-foreground">
-            Pas de commission sur la vente. Le repreneur paie 50 € pour débloquer le dossier et le contact d'une entreprise.
+            Aucune commission sur la vente, aucun abonnement.
           </p>
           <div class="mx-auto mt-12 grid max-w-4xl gap-6 md:grid-cols-2">
             @for (row of priceRows; track row.who; let first = $first) {
@@ -383,6 +282,10 @@ export class LandingComponent implements OnInit {
   private readonly maService = inject(MaService);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
+  private readonly showcaseService = inject(ShowcaseService);
+  readonly introSummary = INTRO_SUMMARY;
+  // Aperçu « Projets et associés » : deux projets et un associé de la vitrine publique (profils anonymisés).
+  readonly showcase = signal<ShowcaseEntry[]>([]);
   private readonly listings = signal<MaListingData[]>([]);
 
   readonly heroQuery = signal('');
@@ -392,8 +295,8 @@ export class LandingComponent implements OnInit {
   readonly facts = [
     { value: '0 %', label: 'de commission sur la vente' },
     { value: 'Gratuit', label: 'pour publier une annonce' },
-    { value: OFFER_PRICES.INTRO.label, label: 'par mise en relation acceptée par le cédant' },
-    { value: 'NDA', label: 'accepté par chaque repreneur avant votre dossier' },
+    { value: OFFER_PRICES.INTRO.label, label: 'par entreprise pour le dossier et le contact' },
+    { value: 'NDA', label: 'accepté par chaque repreneur avant d’ouvrir un dossier' },
   ];
 
   readonly buyerPrice = OFFER_PRICES.INTRO.label;
@@ -402,17 +305,15 @@ export class LandingComponent implements OnInit {
   readonly multiple = formatMultiple;
   private readonly items = computed(() => this.listings().map(listing => ({ listing, metrics: listingMetrics(listing) })));
 
-  // Annonce réelle mise en avant dans l'en-tête (en vedette d'abord, sinon la plus récente).
-  readonly featuredListing = computed(() => {
-    const items = this.items();
-    return items.find(item => item.listing.featured) ?? items[0] ?? null;
-  });
+  // Trois annonces sous les filtres : en vedette d'abord, puis les plus récentes.
+  readonly latestListings = computed(() =>
+    [...this.items()].sort((a, b) => Number(b.listing.featured ?? false) - Number(a.listing.featured ?? false)).slice(0, 3)
+  );
 
-  // Trois annonces sous l'en-tête, hors celle déjà montrée en haut.
-  readonly latestListings = computed(() => {
-    const featured = this.featuredListing();
-    return this.items().filter(item => item.listing.id !== featured?.listing.id).slice(0, 3);
-  });
+  scrollTo(event: Event, id: string): void {
+    event.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
   search(): void {
     const queryParams: Record<string, string> = {};
@@ -428,68 +329,45 @@ export class LandingComponent implements OnInit {
     void this.router.navigate(['/ma'], { queryParams, fragment: 'ma-listings' });
   }
 
-  readonly allOffersLabel = FEATURES.buyerPlus || FEATURES.pros ? "Toutes les offres, dont l'accès Plus et les comptes professionnels" : 'Toutes les offres et l’accompagnement sur devis';
+  readonly allOffersLabel = FEATURES.pros ? 'Toutes les offres, dont celles des professionnels et l’accompagnement sur devis' : 'Toutes les offres et l’accompagnement sur devis';
 
-  readonly audiences = [
-    {
-      title: 'Repreneurs',
-      description: 'Rachetez une activité qui a déjà des clients et un historique, au lieu de repartir de zéro.',
-      href: '/ma',
-      cta: 'Voir les annonces',
-      image: '/assets/images/provisoire/repreneur-tableau-de-bord.jpg',
-      imageAlt: 'Un repreneur étudie les indicateurs d’une activité en ligne sur son ordinateur',
-    },
-    {
-      title: 'Cédants',
-      description: 'Passez la main discrètement, à un repreneur qui a pris un accès payant et montré son sérieux.',
-      href: '/ma/deposer',
-      cta: 'Déposer une annonce',
-      image: '/assets/images/provisoire/cedant-echange.jpg',
-      imageAlt: 'Un échange de travail autour d’un ordinateur portable',
-    },
-    {
-      title: 'Associés',
-      feature: 'associates' as const,
-      description: 'Trouvez un associé pour votre projet, ou rejoignez un projet qui a besoin de vos compétences.',
-      href: '/associes',
-      cta: 'Trouver un associé',
-      image: '/assets/images/provisoire/equipe-ordinateurs.jpg',
-      imageAlt: 'Une petite équipe travaille sur ses ordinateurs',
-    },
-  ];
 
   readonly showAssociates = FEATURES.associates;
   // Porteurs de projet et associés connectés : recherche complète ; les autres : vitrine publique.
   readonly associatesHref = computed(() => (isTalentMarketplaceRole(this.auth.currentUser()?.profileType) ? '/recherche' : '/associes'));
-  readonly visibleAudiences = this.audiences.filter(audience => !('feature' in audience) || FEATURES.associates);
 
   readonly steps = [
-    { title: 'Parcourez les annonces', short: 'Chiffres clés visibles par tous, entreprises anonymisées.', description: 'Secteur, chiffre d’affaires, marge, ancienneté et fourchette de prix : les annonces anonymisées sont visibles par tous.' },
-    { title: 'Débloquez le dossier', short: '50 € ouvrent le dossier complet et le contact du cédant.', description: 'Vous acceptez un engagement de confidentialité et payez 50 € : le dossier complet et le contact du cédant s’ouvrent aussitôt.' },
-    { title: 'Échangez avec le cédant', short: 'En direct, sans intermédiaire ni commission sur la vente.', description: 'Vous discutez directement avec le vendeur, sans intermédiaire. Faites-vous accompagner par un expert-comptable et un avocat pour sécuriser la suite.' },
+    { title: 'Parcourez les annonces', description: 'Secteur, région, chiffres clés et fourchette de prix : les annonces anonymisées sont visibles par tous.' },
+    { title: 'Débloquez le dossier', description: `Après un engagement de confidentialité, ${OFFER_PRICES.INTRO.label} ouvrent aussitôt le dossier complet et les coordonnées du cédant, sans attendre son accord.` },
+    { title: 'Échangez avec le cédant', description: 'En direct dans la messagerie, sans intermédiaire. Faites-vous accompagner par un expert-comptable et un avocat pour la suite.' },
   ];
 
-  readonly protectionPoints = [
-    { title: 'Annonces anonymisées', description: 'Le public ne voit que le secteur, la région et les chiffres clés. Le dossier complet et vos coordonnées sont réservés aux repreneurs qui l’ont débloqué.' },
-    { title: 'Engagement de confidentialité', description: 'Chaque repreneur accepte un engagement de confidentialité avant d’ouvrir votre dossier. La preuve d’acceptation (nom, date, version du texte) est conservée.' },
-    { title: 'Vous savez qui consulte', description: 'Vous êtes prévenu à chaque ouverture de votre dossier et voyez le nom et le profil du repreneur.' },
-  ];
 
   readonly priceRows = [
-    { who: 'Cédant', detail: 'Annonce anonymisée, contacts directs des repreneurs.', price: 'Gratuit', href: '/ma/deposer', cta: 'Déposer une annonce' },
-    { who: 'Repreneur', detail: 'Par entreprise : dossier complet, coordonnées du cédant et messagerie, ouverts tout de suite.', price: `${OFFER_PRICES.INTRO.label} par entreprise`, href: '/ma', cta: 'Voir les annonces' },
+    { who: 'Cédant', detail: 'Annonce anonymisée, relue avant publication. Vous êtes prévenu à chaque ouverture de votre dossier.', price: 'Gratuit', href: '/ma/deposer', cta: 'Déposer une annonce' },
+    { who: 'Repreneur', detail: 'Dossier complet, coordonnées du cédant et messagerie, ouverts aussitôt après l’engagement de confidentialité.', price: `${OFFER_PRICES.INTRO.label} par entreprise`, href: '/ma', cta: 'Voir les annonces' },
   ];
 
   readonly faq: LandingFaqItem[] = [
     { question: 'Quel type d’entreprises trouve-t-on sur GoFounders ?', answer: 'Des entreprises françaises de tous secteurs : commerces, restaurants, artisans et entreprises du bâtiment, sociétés de services, PME industrielles, mais aussi entreprises en ligne (e-commerce, logiciels, sites, agences). Surtout des TPE et petites PME, de quelques dizaines de milliers d’euros à quelques millions d’euros de chiffre d’affaires.' },
     { question: 'Mon annonce de cession est-elle confidentielle ?', answer: 'Oui. Seule une annonce anonymisée est publique, après relecture par notre équipe. Le dossier complet et vos coordonnées ne s’ouvrent qu’aux repreneurs qui acceptent un engagement de confidentialité et paient l’accès ; vous êtes prévenu à chaque ouverture.' },
-    { question: 'Combien coûte la reprise pour un repreneur ?', answer: 'Créer son compte et consulter les annonces anonymisées est gratuit. Pour 50 € par entreprise, vous débloquez son dossier complet, les coordonnées du cédant et la messagerie avec lui. Sans abonnement ni commission sur la vente.' },
+    { question: 'Combien coûte la reprise pour un repreneur ?', answer: INTRO_SUMMARY + ' Sans abonnement ni commission sur la vente.' },
     { question: 'GoFounders prend-il une commission sur la vente ?', answer: 'Non. La publication est gratuite pour les cédants et nous ne prenons aucun pourcentage sur le prix de vente.' },
     { question: 'GoFounders m’accompagne-t-il juridiquement ?', answer: 'Non, nous ne fournissons pas de conseil juridique. Nous vous mettons en relation avec des experts juridiques et comptables partenaires pour sécuriser la transaction.' },
   ];
 
   ngOnInit(): void {
     void this.loadListings();
+    if (FEATURES.associates) {
+      void this.loadShowcase();
+    }
+  }
+
+  private async loadShowcase(): Promise<void> {
+    const entries = await this.showcaseService.list();
+    const projects = entries.filter(entry => entry.kind === 'project').slice(0, 2);
+    const talents = entries.filter(entry => entry.kind === 'talent').slice(0, 3 - projects.length);
+    this.showcase.set([...projects, ...talents]);
   }
 
   private async loadListings(): Promise<void> {

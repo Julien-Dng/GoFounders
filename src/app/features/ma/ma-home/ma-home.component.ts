@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MaListingData } from '../../../core/data/mock-platform.data';
-import { OFFER_PRICES } from '../../../core/config/offers';
+import { INTRO_SUMMARY, OFFER_PRICES } from '../../../core/config/offers';
 import { canAccessMaDetails, canPublishMaListing, hasBuyerPlus } from '../../../core/models/user.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { MaService } from '../../../core/services/ma.service';
@@ -45,7 +45,7 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
                 <p class="font-semibold text-primary">Le dossier complet est réservé aux repreneurs qui l'ont débloqué.</p>
               }
               <p>
-                Pour {{ introPrice }} par entreprise, débloquez le dossier complet d'une annonce, les coordonnées du cédant et la messagerie avec lui, après avoir accepté un engagement de confidentialité.
+                {{ introSummary }}
               </p>
               @if (showEarlyAccessHint()) {
                 <p class="mt-1 hidden text-muted-foreground sm:block">Avec l'accès Plus, analyses de dossier illimitées et alertes sur les nouvelles annonces.</p>
@@ -293,6 +293,7 @@ export class MaHomeComponent implements OnInit {
   );
 
   readonly introPrice = OFFER_PRICES.INTRO.label;
+  readonly introSummary = INTRO_SUMMARY;
   readonly revenueRanges = [
     { value: '', label: 'Tous les montants' },
     { value: '0-100000', label: 'Moins de 100 k€' },

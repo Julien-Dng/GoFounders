@@ -29,6 +29,11 @@ export const OFFER_PRICES: Record<AccountProduct | ListingProduct, OfferPrice> =
 // Analyses de dossier par l'IA incluses chaque mois avec l'accès repreneur 149 € (illimitées avec Plus).
 export const FREE_AI_ANALYSES_PER_MONTH = 3;
 
+// Explication unique de la mise en relation (accueil, /ma, tarifs, fiche d'annonce, FAQ) : à garder identique partout.
+export const INTRO_SUMMARY =
+  `Les annonces anonymisées sont visibles par tous. Pour ${OFFER_PRICES.INTRO.label} par entreprise, après un engagement de confidentialité, ` +
+  'le dossier complet et les coordonnées du cédant s’ouvrent aussitôt, sans attendre son accord.';
+
 // Nouveaux contacts par mois d'un porteur de projet en formule gratuite (à garder identique à
 // free_quota_limits dans supabase/2026-11-05-associes-offres.sql).
 export const FREE_CONTACTS_PER_MONTH = 5;
