@@ -331,18 +331,85 @@ select optgroup {
   }
 }
 
+/* Animations de l'interface : apparition au défilement (RevealDirective), entrée de l'accueil,
+   cartes qui flottent, survol des cartes et défilement des avis. Toutes coupées si l'utilisateur limite les animations. */
+.reveal.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 700ms cubic-bezier(0.2, 0.7, 0.2, 1), transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.reveal.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+.hero-enter {
+  animation: fadeInUp 800ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.hero-float {
+  animation: fadeInUp 900ms cubic-bezier(0.2, 0.7, 0.2, 1) both, hero-float 7s ease-in-out 900ms infinite;
+}
+
+.hero-float-late {
+  animation: fadeInUp 900ms cubic-bezier(0.2, 0.7, 0.2, 1) 250ms both, hero-float 8s ease-in-out 1.6s infinite reverse;
+}
+
+@keyframes hero-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.lift {
+  transition: transform 250ms ease, box-shadow 250ms ease, background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+
+.lift:hover {
+  transform: translateY(-4px);
+}
+
+.arrow-nudge {
+  display: inline-block;
+  transition: transform 200ms ease;
+}
+
+.group:hover .arrow-nudge {
+  transform: translateX(4px);
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in-up,
   .animate-fade-in-scale,
   .animate-fade-in,
   .animate-scale-in,
   .bell-ring,
-  .dossier-stamp {
+  .dossier-stamp,
+  .hero-enter,
+  .hero-float,
+  .hero-float-late,
+  .lift,
+  .arrow-nudge {
     animation: none !important;
   }
 
   .search-card-reveal {
     opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .lift,
+  .lift:hover,
+  .group:hover .arrow-nudge {
     transform: none;
     transition: none;
   }

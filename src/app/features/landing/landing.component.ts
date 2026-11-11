@@ -11,6 +11,7 @@ import { formatEuros, formatMultiple, listingMetrics } from '../../core/ma/listi
 import { FooterComponent } from '../../shared/components/footer/footer.component';
 import { SuccessStoriesComponent } from '../../shared/components/success-stories/success-stories.component';
 import { VerifiedBadgeComponent } from '../../shared/components/verified-badge/verified-badge.component';
+import { RevealDirective } from '../../shared/directives/reveal.directive';
 
 interface LandingFaqItem {
   question: string;
@@ -110,7 +111,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [RouterLink, FooterComponent, SuccessStoriesComponent, VerifiedBadgeComponent],
+  imports: [RouterLink, FooterComponent, SuccessStoriesComponent, VerifiedBadgeComponent, RevealDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-white">
@@ -126,19 +127,19 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
 
         <div class="relative mx-auto grid max-w-[78rem] gap-14 lg:grid-cols-12 lg:items-center">
           <div class="lg:col-span-6">
-            <h1 class="max-w-[16ch] text-[2.2rem] leading-[1.08] text-white sm:text-[3.5rem] lg:text-[3.75rem]">
+            <h1 class="hero-enter max-w-[16ch] text-[2.2rem] leading-[1.08] text-white sm:text-[3.5rem] lg:text-[3.75rem]">
               @if (showAssociates) {
                 Reprenez une entreprise. Trouvez vos associés
               } @else {
                 Reprenez une entreprise qui a déjà ses clients
               }
             </h1>
-            <p class="mt-5 hidden max-w-[48ch] text-lg leading-relaxed text-white/70 sm:block">
+            <p class="hero-enter mt-5 hidden max-w-[48ch] text-lg leading-relaxed text-white/70 sm:block" style="animation-delay: 120ms">
               Des entreprises à reprendre partout en France, et des associés pour lancer ou développer votre projet
             </p>
 
             <!-- Téléphones : deux boutons courts à la place des cartes. -->
-            <div class="mt-7 grid gap-2.5 sm:hidden">
+            <div class="hero-enter mt-7 grid gap-2.5 sm:hidden" style="animation-delay: 160ms">
               <a href="#entreprises" (click)="scrollTo($event, 'entreprises')" class="rounded-lg bg-accent px-5 py-3.5 text-center font-semibold text-white">Explorer les entreprises</a>
               @if (showAssociates) {
                 <a [routerLink]="associatesHref()" class="rounded-lg border border-white/30 px-5 py-3.5 text-center font-semibold text-white">Trouver des associés</a>
@@ -146,22 +147,22 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
               <a routerLink="/ma/deposer" class="mt-1 text-center font-semibold text-white/80 underline-offset-4 hover:underline">Vendre mon entreprise</a>
             </div>
 
-            <div class="mt-9 hidden gap-3 sm:grid" [class]="showAssociates ? 'sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : ''">
-              <a href="#entreprises" (click)="scrollTo($event, 'entreprises')" class="group flex flex-col rounded-xl border border-white/20 bg-white/[0.06] p-5 transition-colors hover:border-white/60 hover:bg-white/[0.1]">
+            <div class="hero-enter mt-9 hidden gap-3 sm:grid" style="animation-delay: 220ms" [class]="showAssociates ? 'sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : ''">
+              <a href="#entreprises" (click)="scrollTo($event, 'entreprises')" class="group flex flex-col rounded-xl border border-white/20 bg-white/[0.06] p-5 transition-colors hover:border-white/60 hover:bg-white/[0.1] lift">
                 <span class="text-lg font-bold text-white">Explorer les entreprises</span>
                 <span class="mt-1.5 flex-1 text-base leading-relaxed text-white/70">Commerces, services, industrie, activités en ligne : découvrez celles qui sont à reprendre</span>
-                <span class="mt-4 whitespace-nowrap font-semibold text-[#9DB8FF] group-hover:text-white">Voir les entreprises&nbsp;→</span>
+                <span class="mt-4 whitespace-nowrap font-semibold text-[#9DB8FF] group-hover:text-white">Voir les entreprises&nbsp;<span class="arrow-nudge">→</span></span>
               </a>
               @if (showAssociates) {
-                <a [routerLink]="associatesHref()" class="group flex flex-col rounded-xl border border-white/20 bg-white/[0.06] p-5 transition-colors hover:border-white/60 hover:bg-white/[0.1]">
+                <a [routerLink]="associatesHref()" class="group flex flex-col rounded-xl border border-white/20 bg-white/[0.06] p-5 transition-colors hover:border-white/60 hover:bg-white/[0.1] lift">
                   <span class="text-lg font-bold text-white">Trouver des associés et une équipe</span>
                   <span class="mt-1.5 flex-1 text-base leading-relaxed text-white/70">Présentez votre projet ou rejoignez une équipe qui cherche vos compétences</span>
-                  <span class="mt-4 whitespace-nowrap font-semibold text-[#9DB8FF] group-hover:text-white">Voir les projets et associés&nbsp;→</span>
+                  <span class="mt-4 whitespace-nowrap font-semibold text-[#9DB8FF] group-hover:text-white">Voir les projets et associés&nbsp;<span class="arrow-nudge">→</span></span>
                 </a>
               }
             </div>
 
-            <p class="mt-5 hidden text-base text-white/60 sm:block">
+            <p class="hero-enter mt-5 hidden text-base text-white/60 sm:block" style="animation-delay: 320ms">
               Vous vendez ? <a routerLink="/ma/deposer" class="font-semibold text-white underline-offset-4 hover:underline">Déposer une annonce gratuite</a>
               <span class="mx-1.5" aria-hidden="true">·</span>
               <a routerLink="/estimation" class="font-semibold text-white underline-offset-4 hover:underline">Estimer sa valeur</a>
@@ -170,7 +171,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
 
           @if (featuredListing(); as item) {
             <figure class="relative hidden lg:col-span-6 lg:block lg:min-h-[30rem]">
-              <article class="relative mx-auto max-w-[27rem] rounded-2xl bg-[#DCE5F7] p-6 text-primary shadow-2xl sm:p-7 lg:absolute lg:left-0 lg:top-0 lg:w-[25rem]" aria-label="Annonce en ligne">
+              <article class="hero-float relative mx-auto max-w-[27rem] rounded-2xl bg-[#DCE5F7] p-6 text-primary shadow-2xl sm:p-7 lg:absolute lg:left-0 lg:top-0 lg:w-[25rem]" aria-label="Annonce en ligne">
                 <div class="flex items-start justify-between gap-4">
                   <div class="min-w-0">
                     <p class="text-sm font-semibold text-primary/60">{{ item.listing.type }} · {{ item.listing.region }}</p>
@@ -207,7 +208,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
               </article>
 
               @if (showAssociates) {
-                <aside class="relative z-10 mx-auto -mt-4 w-[20rem] max-w-full rounded-2xl bg-[#DCE5F7] p-5 text-primary shadow-2xl lg:absolute lg:bottom-0 lg:right-0 lg:mt-0" aria-label="Exemple de projet qui constitue son équipe">
+                <aside class="hero-float-late relative z-10 mx-auto -mt-4 w-[20rem] max-w-full rounded-2xl bg-[#DCE5F7] p-5 text-primary shadow-2xl lg:absolute lg:bottom-0 lg:right-0 lg:mt-0" aria-label="Exemple de projet qui constitue son équipe">
                   <p class="text-sm font-semibold text-primary/60">Exemple de projet · Lyon</p>
                   <div class="mt-3 flex items-center gap-3">
                     <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-accent font-bold text-white" aria-hidden="true">P</span>
@@ -226,7 +227,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
                   </div>
                 </aside>
               } @else {
-                <aside class="relative z-10 mx-auto -mt-4 w-[20rem] max-w-full rounded-2xl bg-[#DCE5F7] p-5 text-primary shadow-2xl lg:absolute lg:bottom-0 lg:right-0 lg:mt-0" aria-label="Exemple de profil repreneur">
+                <aside class="hero-float-late relative z-10 mx-auto -mt-4 w-[20rem] max-w-full rounded-2xl bg-[#DCE5F7] p-5 text-primary shadow-2xl lg:absolute lg:bottom-0 lg:right-0 lg:mt-0" aria-label="Exemple de profil repreneur">
                   <p class="text-sm font-semibold text-primary/60">Exemple de profil repreneur</p>
                   <div class="mt-3 flex items-center gap-3">
                     <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-primary font-bold text-white" aria-hidden="true">R</span>
@@ -253,7 +254,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       <!-- Entreprises à reprendre : recherche et filtres, puis les annonces du moment. -->
       <section id="entreprises" class="scroll-mt-20 px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-20" aria-labelledby="latest-title">
         <div class="mx-auto max-w-[78rem]">
-          <h2 id="latest-title" class="text-center text-3xl text-primary sm:text-4xl">Entreprises à reprendre</h2>
+          <h2 appReveal id="latest-title" class="text-center text-3xl text-primary sm:text-4xl">Entreprises à reprendre</h2>
           <p class="mx-auto mt-3 hidden max-w-[60ch] text-center text-lg text-muted-foreground sm:block">{{ introSummary }}</p>
 
           <div class="mx-auto mt-8 hidden max-w-3xl rounded-xl bg-white p-2 shadow-lg ring-1 ring-border sm:block" role="search">
@@ -282,8 +283,8 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
 
           @if (latestListings().length > 0) {
             <div class="mt-6 grid gap-4 sm:mt-10 sm:gap-6 md:grid-cols-3 max-sm:[&>*:nth-child(3)]:hidden">
-              @for (item of latestListings(); track item.listing.id) {
-                <a [routerLink]="['/ma/annonce', item.listing.id]" class="group flex flex-col overflow-hidden rounded-xl border border-border bg-white transition-shadow hover:shadow-md sm:rounded-2xl sm:border-0 sm:shadow-lg sm:ring-1 sm:ring-border sm:hover:shadow-xl">
+              @for (item of latestListings(); track item.listing.id; let i = $index) {
+                <a appReveal [revealDelay]="i * 110" [routerLink]="['/ma/annonce', item.listing.id]" class="lift group flex flex-col overflow-hidden rounded-xl border border-border bg-white transition-shadow hover:shadow-md sm:rounded-2xl sm:border-0 sm:shadow-lg sm:ring-1 sm:ring-border sm:hover:shadow-xl">
                   <p class="hidden bg-primary px-5 py-3 text-sm font-semibold text-white sm:block">{{ item.listing.sector }} · {{ item.listing.region }}</p>
                   <div class="flex flex-1 flex-col p-4 sm:p-5">
                     <p class="text-sm text-muted-foreground sm:hidden">{{ item.listing.sector }} · {{ item.listing.region }}</p>
@@ -318,11 +319,11 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
         <!-- Projets et associés : vrais profils de la vitrine publique (anonymisés), sinon exemples fictifs signalés. -->
         <section class="bg-secondary px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-20" aria-labelledby="team-title">
           <div class="mx-auto max-w-[78rem]">
-            <h2 id="team-title" class="text-center text-3xl text-primary sm:text-4xl">Projets et associés</h2>
+            <h2 appReveal id="team-title" class="text-center text-3xl text-primary sm:text-4xl">Projets et associés</h2>
             <p class="mx-auto mt-3 hidden max-w-[56ch] text-center text-lg text-muted-foreground sm:block">Trouvez les compétences pour avancer, ou un projet à rejoindre</p>
             <div class="mt-6 grid gap-4 sm:mt-10 sm:gap-6 md:grid-cols-3 max-sm:[&>*:nth-child(3)]:hidden">
-              @for (card of teamCards(); track card.key) {
-                <article class="flex flex-col rounded-2xl bg-white p-4 shadow-lg ring-1 ring-border sm:p-6">
+              @for (card of teamCards(); track card.key; let i = $index) {
+                <article appReveal [revealDelay]="i * 110" class="lift flex flex-col rounded-2xl bg-white p-4 shadow-lg ring-1 ring-border hover:shadow-xl sm:p-6">
                   <div class="flex items-start gap-4">
                     <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center text-lg font-extrabold text-white sm:h-14 sm:w-14 sm:text-xl"
                           [class]="card.kind === 'project' ? 'rounded-xl bg-accent' : 'rounded-full bg-primary'" aria-hidden="true">{{ card.initial }}</span>
@@ -394,7 +395,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
 
       <!-- Téléphones : fonctionnement et prix réunis dans un bloc court (étapes dépliables). -->
       <section class="px-4 py-10 sm:hidden" aria-labelledby="how-mobile-title">
-        <h2 id="how-mobile-title" class="text-center text-2xl text-primary">Comment ça marche</h2>
+        <h2 appReveal id="how-mobile-title" class="text-center text-2xl text-primary">Comment ça marche</h2>
         <ol class="mt-5 divide-y divide-border rounded-2xl bg-white shadow-sm ring-1 ring-border">
           @for (step of steps; track step.title; let index = $index) {
             <li>
@@ -424,10 +425,10 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
 
       <section class="hidden px-4 py-14 sm:block sm:px-6 lg:px-8 lg:py-20" aria-labelledby="steps-title">
         <div class="mx-auto max-w-[78rem]">
-          <h2 id="steps-title" class="text-center text-3xl text-primary sm:text-4xl">Comment se passe une reprise</h2>
+          <h2 appReveal id="steps-title" class="text-center text-3xl text-primary sm:text-4xl">Comment se passe une reprise</h2>
           <ol class="mt-8 grid gap-3 sm:mt-12 sm:gap-6 md:grid-cols-3">
             @for (step of steps; track step.title; let index = $index) {
-              <li class="flex gap-4 rounded-2xl bg-white p-4 shadow-lg ring-1 ring-border sm:block sm:p-7">
+              <li appReveal [revealDelay]="index * 120" class="lift flex gap-4 rounded-2xl bg-white p-4 shadow-lg ring-1 ring-border sm:block sm:p-7">
                 <span class="tabular flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-accent/10 font-extrabold text-accent sm:h-11 sm:w-11 sm:text-lg">{{ index + 1 }}</span>
                 <div>
                   <h3 class="text-lg font-bold text-primary sm:mt-5 sm:text-xl">{{ step.title }}</h3>
@@ -442,8 +443,8 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       <!-- Un seul bloc de réassurance : commission, gratuité, prix et confidentialité. -->
       <section class="hidden bg-[#16243B] px-4 py-9 text-white sm:block sm:px-6 lg:px-8" aria-label="Les engagements de GoFounders">
         <dl class="mx-auto grid max-w-[78rem] grid-cols-2 gap-y-8 text-center lg:grid-cols-4">
-          @for (fact of facts; track fact.label; let last = $last) {
-            <div class="px-4 lg:border-dashed lg:border-white/25" [class.lg:border-r]="!last">
+          @for (fact of facts; track fact.label; let last = $last; let i = $index) {
+            <div appReveal [revealDelay]="i * 100" class="px-4 lg:border-dashed lg:border-white/25" [class.lg:border-r]="!last">
               <dt class="sr-only">{{ fact.label }}</dt>
               <dd class="tabular text-3xl font-extrabold tracking-tight">{{ fact.value }}</dd>
               <dd class="mx-auto mt-1 max-w-[22ch] text-base text-white/70">{{ fact.label }}</dd>
@@ -453,7 +454,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       </section>
 
       <section class="hidden bg-secondary px-4 py-16 sm:block sm:px-6 lg:px-8 lg:py-24" aria-label="Notre conviction">
-        <div class="mx-auto grid max-w-[78rem] items-center gap-10 overflow-hidden rounded-3xl bg-white shadow-lg lg:grid-cols-12 lg:gap-0">
+        <div appReveal class="mx-auto grid max-w-[78rem] items-center gap-10 overflow-hidden rounded-3xl bg-white shadow-lg lg:grid-cols-12 lg:gap-0">
           <div class="p-8 sm:p-12 lg:col-span-7">
             <p class="text-[1.75rem] font-bold leading-snug tracking-tight text-primary sm:text-[2.1rem]">
               Une entreprise, ce sont des années de travail, des clients qui vous font confiance, parfois une équipe.
@@ -471,19 +472,19 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
         </div>
       </section>
 
-      <div class="hidden sm:block">
+      <div>
         <app-success-stories />
       </div>
 
       <section class="hidden bg-secondary px-4 py-16 sm:block sm:px-6 lg:px-8 lg:py-24" aria-labelledby="prices-title">
         <div class="mx-auto max-w-[78rem]">
-          <h2 id="prices-title" class="text-center text-3xl text-primary sm:text-4xl">Vendre est gratuit. Une mise en relation coûte {{ buyerPrice }}</h2>
+          <h2 appReveal id="prices-title" class="text-center text-3xl text-primary sm:text-4xl">Vendre est gratuit. Une mise en relation coûte {{ buyerPrice }}</h2>
           <p class="mx-auto mt-3 max-w-[60ch] text-center text-lg text-muted-foreground">
             Aucune commission sur la vente, aucun abonnement
           </p>
           <div class="mx-auto mt-12 grid max-w-4xl gap-6 md:grid-cols-2">
-            @for (row of priceRows; track row.who; let first = $first) {
-              <div class="flex flex-col rounded-2xl p-8 shadow-lg" [class]="first ? 'bg-white ring-1 ring-border' : 'bg-primary text-white'">
+            @for (row of priceRows; track row.who; let first = $first; let i = $index) {
+              <div appReveal [revealDelay]="i * 120" class="lift flex flex-col rounded-2xl p-8 shadow-lg" [class]="first ? 'bg-white ring-1 ring-border' : 'bg-primary text-white'">
                 <h3 class="text-lg font-bold" [class]="first ? 'text-primary' : 'text-white'">{{ row.who }}</h3>
                 <p class="tabular mt-3 text-4xl font-extrabold tracking-tight">{{ row.price }}</p>
                 <p class="mt-3 flex-1 text-base" [class]="first ? 'text-muted-foreground' : 'text-white/70'">{{ row.detail }}</p>
@@ -499,7 +500,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
 
       <section class="bg-secondary px-4 py-10 sm:bg-transparent sm:px-6 sm:py-16 lg:px-8 lg:py-24" aria-labelledby="faq-title">
         <div class="mx-auto max-w-3xl">
-          <h2 id="faq-title" class="text-center text-2xl text-primary sm:text-4xl">Questions fréquentes</h2>
+          <h2 appReveal id="faq-title" class="text-center text-2xl text-primary sm:text-4xl">Questions fréquentes</h2>
           <div class="mt-5 space-y-2 sm:mt-10 sm:space-y-3 max-sm:[&>*:nth-child(n+4)]:hidden">
             @for (item of faq; track item.question) {
               <details class="group rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-border sm:rounded-2xl sm:px-6 sm:py-5">
@@ -528,7 +529,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       </section>
 
       <section class="hidden px-4 pb-16 sm:block sm:px-6 lg:px-8 lg:pb-24" aria-labelledby="sell-title">
-        <div class="relative mx-auto max-w-[78rem] overflow-hidden rounded-3xl bg-primary px-6 py-14 text-white sm:px-12 lg:py-16">
+        <div appReveal class="relative mx-auto max-w-[78rem] overflow-hidden rounded-3xl bg-primary px-6 py-14 text-white sm:px-12 lg:py-16">
           <img src="/assets/images/provisoire/bureau-vue-dessus.jpg" alt="" aria-hidden="true" width="1400" height="933" loading="lazy" class="absolute inset-0 h-full w-full object-cover">
           <div class="absolute inset-0" style="background: rgba(15, 27, 45, 0.86)" aria-hidden="true"></div>
           <div class="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">

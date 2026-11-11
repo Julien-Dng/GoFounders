@@ -12,12 +12,13 @@ import { lastGrowth, revenueSeries } from '../../../core/ma/listing-options';
 type SortKey = 'pertinence' | 'recent' | 'prix-asc' | 'prix-desc' | 'ca-desc' | 'benefice-desc' | 'multiple-asc';
 import { SuccessStoriesComponent } from '../../../shared/components/success-stories/success-stories.component';
 import { VerifiedBadgeComponent } from '../../../shared/components/verified-badge/verified-badge.component';
+import { RevealDirective } from '../../../shared/directives/reveal.directive';
 
 
 @Component({
   selector: 'app-ma-home',
   standalone: true,
-  imports: [RouterLink, SuccessStoriesComponent, VerifiedBadgeComponent],
+  imports: [RouterLink, SuccessStoriesComponent, VerifiedBadgeComponent, RevealDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-secondary">
@@ -145,9 +146,9 @@ import { VerifiedBadgeComponent } from '../../../shared/components/verified-badg
                 </div>
               } @else {
                 <ul class="mt-5 space-y-4">
-                  @for (item of filteredListings(); track item.listing.id) {
+                  @for (item of filteredListings(); track item.listing.id; let i = $index) {
                     <li>
-                      <article class="group relative grid rounded-2xl bg-white shadow-lg ring-1 transition-shadow hover:shadow-xl md:grid-cols-[1fr,15rem]" [class]="item.listing.featured ? 'ring-amber-500/60' : 'ring-border'" [attr.aria-labelledby]="'listing-' + item.listing.id">
+                      <article appReveal [revealDelay]="(i % 4) * 80" class="lift group relative grid rounded-2xl bg-white shadow-lg ring-1 hover:shadow-xl md:grid-cols-[1fr,15rem]" [class]="item.listing.featured ? 'ring-amber-500/60' : 'ring-border'" [attr.aria-labelledby]="'listing-' + item.listing.id">
                         <div class="p-5 sm:p-6">
                           <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
                             <span>{{ item.listing.type }}</span>

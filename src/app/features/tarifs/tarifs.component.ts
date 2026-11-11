@@ -7,6 +7,7 @@ import { hasBuyerPlus, isActiveUntil } from '../../core/models/user.model';
 import { PaymentService, PremiumTopic } from '../../core/services/payment.service';
 import { PricingFeature } from '../../shared/components/pricing-card/pricing-card.component';
 import { AuthService } from '../../core/services/auth.service';
+import { RevealDirective } from '../../shared/directives/reveal.directive';
 
 // Offres « reprise » (refonte) : action = achat (paiement simulé tant que Stripe n'est pas branché) ou lien.
 interface RepriseOffer {
@@ -38,7 +39,7 @@ interface Plan {
 @Component({
   selector: 'app-tarifs',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, RevealDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-secondary px-4 pb-20 pt-24 sm:px-6 lg:px-8 lg:pt-32">
@@ -86,9 +87,9 @@ interface Plan {
             </p>
           </div>
           <div class="mx-auto mt-10 grid max-w-4xl gap-6 md:grid-cols-2">
-            @for (offer of mainOffers(); track offer.title; let first = $first) {
+            @for (offer of mainOffers(); track offer.title; let first = $first; let i = $index) {
               <div [id]="first ? 'cedants' : null" class="flex scroll-mt-24">
-                <div class="flex flex-col rounded-2xl bg-white p-7 shadow-lg" [class]="first ? 'w-full ring-1 ring-border' : 'w-full ring-2 ring-accent'">
+                <div appReveal [revealDelay]="i * 120" class="lift flex flex-col rounded-2xl bg-white p-7 shadow-lg" [class]="first ? 'w-full ring-1 ring-border' : 'w-full ring-2 ring-accent'">
                   <h3 class="text-lg font-bold text-primary">{{ offer.title }}</h3>
                   <p class="tabular mt-3 text-[2rem] font-extrabold leading-tight tracking-tight text-primary">{{ offer.price }}</p>
                   <p class="mt-2 text-base text-muted-foreground">{{ offer.description }}</p>
@@ -128,8 +129,8 @@ interface Plan {
             <div class="mx-auto mt-12 max-w-4xl">
               <h3 class="text-center text-xl font-bold text-primary">Options pour donner plus de visibilité à votre annonce</h3>
               <div class="mt-6 grid gap-4 md:grid-cols-2">
-                @for (offer of extraOffers(); track offer.title) {
-                  <div class="flex flex-col rounded-2xl bg-white p-6 ring-1 ring-border">
+                @for (offer of extraOffers(); track offer.title; let i = $index) {
+                  <div appReveal [revealDelay]="i * 120" class="lift flex flex-col rounded-2xl bg-white p-6 ring-1 ring-border">
                     <div class="flex items-baseline justify-between gap-3">
                       <h4 class="text-lg font-bold text-primary">{{ offer.title }}</h4>
                       <p class="tabular flex-shrink-0 font-extrabold text-primary">{{ offer.price }}</p>
@@ -168,8 +169,8 @@ interface Plan {
             </p>
 
             <div class="mt-10 grid gap-6 md:grid-cols-3">
-              @for (plan of plans; track plan.name) {
-                <div class="flex flex-col rounded-2xl bg-white p-7 shadow-lg" [class]="plan.variant === 'pro' ? 'ring-2 ring-accent' : 'ring-1 ring-border'">
+              @for (plan of plans; track plan.name; let i = $index) {
+                <div appReveal [revealDelay]="i * 120" class="lift flex flex-col rounded-2xl bg-white p-7 shadow-lg" [class]="plan.variant === 'pro' ? 'ring-2 ring-accent' : 'ring-1 ring-border'">
                   <h3 class="text-lg font-bold text-primary">{{ plan.name }}</h3>
                   <p class="tabular mt-3 text-[2rem] font-extrabold leading-tight tracking-tight text-primary">{{ plan.price }}<span class="text-base font-normal text-muted-foreground">{{ plan.period === '/mois' ? ' par mois' : '' }}</span></p>
                   <p class="mt-2 text-base text-muted-foreground">{{ plan.description }}</p>
@@ -335,8 +336,8 @@ interface Plan {
               <p class="mt-3 text-lg leading-relaxed text-muted-foreground">{{ group.description }}</p>
             </div>
             <div class="mx-auto mt-10 grid gap-6" [class]="group.offers.length > 1 ? 'max-w-4xl md:grid-cols-2' : 'max-w-md'">
-              @for (offer of group.offers; track offer.title) {
-                <div class="flex flex-col rounded-2xl bg-white p-7 shadow-lg ring-1 ring-border">
+              @for (offer of group.offers; track offer.title; let i = $index) {
+                <div appReveal [revealDelay]="i * 120" class="lift flex flex-col rounded-2xl bg-white p-7 shadow-lg ring-1 ring-border">
                   <h3 class="text-lg font-bold text-primary">{{ offer.title }}</h3>
                   <p class="tabular mt-3 text-[2rem] font-extrabold leading-tight tracking-tight text-primary">{{ offer.price }}</p>
                   <p class="mt-2 text-base text-muted-foreground">{{ offer.description }}</p>

@@ -30,6 +30,9 @@
 --   associe.finance@gofounders.test     Bruno, directeur financier : invité sur Kinéo, engagement à accepter
 --   associe.design@gofounders.test      Camille, product designer : demande refusée sur Kinéo
 --
+-- AVIS : 6 ventes conclues avec témoignage publié (carrousel « Ils ont vendu leur entreprise » sur l'accueil et /ma).
+--   Ce sont des avis FICTIFS : à supprimer avant le lancement avec supprimer-demo-complete.sql.
+--
 -- Pour voir l'annonce en attente de relecture comme un admin : supabase/seed/promouvoir-admin.sql puis /admin/annonces.
 
 create or replace function pg_temp.create_demo_user(user_id uuid, user_email text, metadata jsonb, user_plan text)
@@ -374,6 +377,48 @@ begin
   values
     (nadia, 'Nouvelle demande d''accès à votre projet', 'Antoine Dubois demande à lire la partie confidentielle de Kinéo.', '/profil/modifier', now() - interval '6 hours'),
     (bruno, 'Un porteur de projet vous ouvre son projet', 'Nadia Kacem vous donne accès à la partie confidentielle de son projet, après acceptation de l''engagement de confidentialité.', '/profil/' || kineo::text, now() - interval '1 day');
+
+  -- 4. Ventes conclues et avis (section « Ils ont vendu leur entreprise ») ------------------------------------------
+  -- AVIS FICTIFS pour visualiser le carrousel : à supprimer avant le lancement (supprimer-demo-complete.sql),
+  -- seuls de vrais témoignages, avec l'accord des vendeurs, peuvent être publiés.
+  insert into public.ma_listings (
+    id, owner_id, sector, region, type, revenue, margin, age, price_min, price_max,
+    public_title, public_summary, sale_reason, confidential_description, contact_info, status, created_at, reviewed_at
+  )
+  values
+    ('c1000000-0000-4000-8000-000000000008', restaurant, 'Restauration', 'Provence-Alpes-Côte d''Azur', 'fonds_commerce', 520000, 12, 12, 400000, 520000,
+      'Brasserie de quartier à Marseille', 'Brasserie de 60 couverts avec terrasse, clientèle d''habitués.', 'Retraite.', 'Brasserie vendue.', 'Karim Rahmani', 'sold', now() - interval '6 months', now() - interval '6 months'),
+    ('c1000000-0000-4000-8000-000000000009', boulangerie, 'Boulangerie', 'Auvergne-Rhône-Alpes', 'fonds_commerce', 430000, 13, 20, 360000, 420000,
+      'Boulangerie de village près de Lyon', 'Boulangerie-pâtisserie de village, seule du bourg, deux salariés.', 'Retraite.', 'Boulangerie vendue.', 'Martine Bernard', 'sold', now() - interval '9 months', now() - interval '9 months'),
+    ('c1000000-0000-4000-8000-000000000010', artisan, 'Artisanat', 'Pays de la Loire', 'parts_sociales', 690000, 15, 22, 520000, 640000,
+      'Atelier d''ébénisterie avec huit salariés', 'Atelier d''agencement sur mesure, clientèle de particuliers et d''architectes.', 'Retraite.', 'Atelier vendu.', 'Philippe Morel', 'sold', now() - interval '11 months', now() - interval '11 months'),
+    ('c1000000-0000-4000-8000-000000000011', artisan, 'Services', 'Pays de la Loire', 'fonds_commerce', 160000, 20, 9, 100000, 130000,
+      'Institut de beauté en centre-ville', 'Institut de quatre cabines, réservation en ligne, clientèle fidèle.', 'Déménagement.', 'Institut vendu.', 'Philippe Morel', 'sold', now() - interval '4 months', now() - interval '4 months'),
+    ('c1000000-0000-4000-8000-000000000012', boulangerie, 'E-commerce', 'Auvergne-Rhône-Alpes', 'cession', 240000, 24, 6, 220000, 300000,
+      'Épicerie fine en ligne', 'Boutique en ligne de produits régionaux, 6 000 clients, 35 % de commandes répétées.', 'Nouveau projet.', 'Boutique vendue.', 'Martine Bernard', 'sold', now() - interval '7 months', now() - interval '7 months'),
+    ('c1000000-0000-4000-8000-000000000013', restaurant, 'Commerce', 'Provence-Alpes-Côte d''Azur', 'fonds_commerce', 380000, 10, 15, 180000, 240000,
+      'Cave à vins et épicerie à Aix', 'Cave à vins avec épicerie fine et dégustations, emplacement passant.', 'Changement de région.', 'Cave vendue.', 'Karim Rahmani', 'sold', now() - interval '3 months', now() - interval '3 months');
+
+  insert into public.ma_success_stories (listing_id, owner_id, sale_price, price_display, months_to_sell, quote, author_label, consent_at, status, created_at, decided_at)
+  values
+    ('c1000000-0000-4000-8000-000000000008', restaurant, 465000, 'range', 4,
+      'Plusieurs repreneurs ont ouvert le dossier dès la première semaine. J''ai pu choisir quelqu''un qui garde mon chef et toute l''équipe.',
+      'Karim, restaurateur à Marseille', now() - interval '2 months', 'approved', now() - interval '2 months', now() - interval '2 months'),
+    ('c1000000-0000-4000-8000-000000000009', boulangerie, 390000, 'exact', 6,
+      'Je craignais que mes clients l''apprennent trop tôt. L''annonce est restée anonyme jusqu''au bout, et la transmission s''est faite en douceur.',
+      'Martine, boulangère près de Lyon', now() - interval '3 months', 'approved', now() - interval '3 months', now() - interval '3 months'),
+    ('c1000000-0000-4000-8000-000000000010', artisan, 610000, 'range', 8,
+      'Les chiffres vérifiés ont rassuré les repreneurs dès le premier échange. Mon successeur a repris l''atelier et mes huit salariés.',
+      'Philippe, ébéniste à Nantes', now() - interval '3 months 10 days', 'approved', now() - interval '3 months 10 days', now() - interval '3 months 10 days'),
+    ('c1000000-0000-4000-8000-000000000011', artisan, 118000, 'hidden', 2,
+      'Un dossier clair, des repreneurs déjà décidés : la vente de mon institut s''est conclue en deux mois.',
+      'Sophie, gérante d''un institut de beauté', now() - interval '1 month', 'approved', now() - interval '1 month', now() - interval '1 month'),
+    ('c1000000-0000-4000-8000-000000000012', boulangerie, 265000, 'exact', 3,
+      'Annonce prête en une soirée avec l''aide de l''IA, trois repreneurs sérieux en un mois. Signature chez le notaire dix semaines plus tard.',
+      'Julie, fondatrice d''une épicerie en ligne', now() - interval '4 months', 'approved', now() - interval '4 months', now() - interval '4 months'),
+    ('c1000000-0000-4000-8000-000000000013', restaurant, 205000, 'range', 5,
+      'Je voulais rester discret vis-à-vis de mes fournisseurs. Seuls les repreneurs engagés par la confidentialité ont vu le détail de ma cave.',
+      'Marc, caviste à Aix-en-Provence', now() - interval '2 weeks', 'approved', now() - interval '2 weeks', now() - interval '2 weeks');
 end;
 $$;
 
