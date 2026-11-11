@@ -68,6 +68,8 @@ export interface MaListingData {
   priceMin: string;
   priceMax: string;
   summary: string;
+  // Titre court affiché dans les aperçus ; à défaut, le résumé.
+  title?: string;
   description: string;
   highlights: string[];
   // Offres « reprise » : annonce en vedette, dossier vérifié, publiée depuis moins de 48 h (accès anticipé).
@@ -546,6 +548,7 @@ export const MA_LISTINGS: MaListingData[] = [
     reason: 'Retraite du dirigeant',
     priceMin: '350 k€',
     priceMax: '420 k€',
+    title: 'Boutique en ligne de produits bio',
     summary: 'Boutique en ligne de produits bio avec une base clients fidèle et une marque bien installée.',
     description:
       "L'activité repose sur une marque reconnue sur sa niche, une acquisition maîtrisée et une logistique déjà structurée. Le repreneur récupère une base clients récurrente, des process documentés et une activité rentable immédiatement exploitable.",
@@ -568,6 +571,7 @@ export const MA_LISTINGS: MaListingData[] = [
     reason: 'Pivot vers un nouveau projet',
     priceMin: '800 k€',
     priceMax: '1,2 M€',
+    title: 'Logiciel B2B avec 120 clients récurrents',
     summary: 'Plateforme B2B SaaS avec 120 clients récurrents et une croissance stable.',
     description:
       "L'entreprise commercialise un produit B2B SaaS sur abonnement avec une base clients récurrente, un churn contenu et une équipe compacte. Le repreneur bénéficie d'un produit mûr, de revenus récurrents et de leviers de croissance déjà identifiés.",
@@ -592,6 +596,7 @@ export const MA_LISTINGS: MaListingData[] = [
     reason: 'Reconversion professionnelle',
     priceMin: '280 k€',
     priceMax: '350 k€',
+    title: 'Restaurant avec emplacement premium',
     summary: 'Restaurant établi avec emplacement premium et clientèle régulière.',
     description:
       "L'établissement bénéficie d'une excellente visibilité locale, d'une clientèle régulière et d'une équipe autonome. Le positionnement est clair et la reprise peut se faire avec une continuité d'exploitation rapide.",
@@ -608,6 +613,7 @@ export const MA_LISTINGS: MaListingData[] = [
     reason: "Déménagement à l'étranger",
     priceMin: '200 k€',
     priceMax: '280 k€',
+    title: 'Cabinet de conseil RH',
     summary: 'Agence de consulting RH avec contrats récurrents et très bonne réputation.',
     description:
       "L'activité s'appuie sur un portefeuille récurrent et une forte recommandation client. Le positionnement est bien identifié et l'entreprise peut intéresser un repreneur opérateur ou un acteur qui veut compléter son offre.",
@@ -624,6 +630,7 @@ export const MA_LISTINGS: MaListingData[] = [
     reason: 'Focus sur activité principale',
     priceMin: '650 k€',
     priceMax: '780 k€',
+    title: 'Place de marché de niche',
     summary: 'Marketplace niche avec forte notoriété et automatisation avancée.',
     description:
       "La société a construit une belle notoriété sur un segment spécialisé et opère avec un niveau d'automatisation élevé. Les fondamentaux sont sains et l'acquéreur peut accélérer via développement commercial ou extension d'offre.",
@@ -640,6 +647,7 @@ export const MA_LISTINGS: MaListingData[] = [
     reason: 'Retraite anticipée',
     priceMin: '420 k€',
     priceMax: '520 k€',
+    title: 'Boutique avec local en propriété',
     summary: 'Boutique physique avec local commercial en propriété et équipe déjà formée.',
     description:
       "Le commerce profite d'un ancrage local fort, d'une activité stable et d'un local bien situé. La reprise est facilitée par une organisation rodée et une équipe qui connaît bien le fonctionnement quotidien.",

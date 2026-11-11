@@ -10,9 +10,9 @@ import { SupabaseService } from './supabase.service';
 
 // Colonnes anonymisées lisibles par tous ; le dossier complet passe par get_ma_listing_detail (Supabase).
 const BASE_LISTING_COLUMNS =
-  'id, sector, region, type, revenue, margin, age, price_min, price_max, public_summary, status, featured_until, verified, created_at, updated_at';
+  'id, sector, region, type, revenue, margin, age, price_min, price_max, public_summary, public_title, status, featured_until, verified, created_at, updated_at';
 const PUBLIC_LISTING_COLUMNS =
-  'id, sector, region, type, revenue, margin, age, price_min, price_max, public_summary, status, featured_until, verified, created_at, updated_at, revenue_year, revenue_history, included_assets, monthly_visitors, acquisition_channels, team_size, owner_hours_per_week';
+  'id, sector, region, type, revenue, margin, age, price_min, price_max, public_summary, public_title, status, featured_until, verified, created_at, updated_at, revenue_year, revenue_history, included_assets, monthly_visitors, acquisition_channels, team_size, owner_hours_per_week';
 
 const EARLY_ACCESS_MS = 48 * 3600 * 1000;
 
@@ -269,7 +269,7 @@ export class MaService {
   }
 
   // Modification par le propriétaire : l'annonce repasse en relecture (trigger enforce_ma_listing_moderation).
-  async updateListing(listingId: string, data: Omit<MaListing, 'id' | 'createdAt' | 'ownerId' | 'status'> & { publicSummary?: string; enrichment?: ListingEnrichment }): Promise<boolean> {
+  async updateListing(listingId: string, data: Omit<MaListing, 'id' | 'createdAt' | 'ownerId' | 'status'> & { publicSummary?: string; publicTitle?: string; enrichment?: ListingEnrichment }): Promise<boolean> {
     if (!this.supabase.isConfigured) {
       return true;
     }
@@ -286,6 +286,7 @@ export class MaService {
         price_min: data.priceMin,
         price_max: data.priceMax,
         public_summary: (data.publicSummary ?? data.description).slice(0, 220),
+        public_title: data.publicTitle?.trim().slice(0, 80) || null,
         sale_reason: data.saleReason,
         confidential_description: data.description,
         contact_info: data.contactInfo,
@@ -304,7 +305,7 @@ export class MaService {
     return !error;
   }
 
-  async createListing(data: Omit<MaListing, 'id' | 'createdAt'> & { publicSummary?: string; enrichment?: ListingEnrichment }): Promise<string> {
+  async createListing(data: Omit<MaListing, 'id' | 'createdAt'> & { publicSummary?: string; publicTitle?: string; enrichment?: ListingEnrichment }): Promise<string> {
     if (!this.supabase.isConfigured) {
       return '';
     }
@@ -323,6 +324,7 @@ export class MaService {
       price_min: data.priceMin,
       price_max: data.priceMax,
       public_summary: (data.publicSummary ?? data.description).slice(0, 220),
+      public_title: data.publicTitle?.trim().slice(0, 80) || null,
       sale_reason: data.saleReason,
       confidential_description: data.description,
       contact_info: data.contactInfo,
@@ -379,6 +381,7 @@ export class MaService {
       priceMin: this.formatMoney(row.price_min ?? null),
       priceMax: this.formatMoney(row.price_max ?? null),
       summary: row.public_summary,
+      title: row.public_title || undefined,
       description: row.public_summary,
       highlights: [],
       featured: !!row.featured_until && new Date(row.featured_until).getTime() > Date.now(),

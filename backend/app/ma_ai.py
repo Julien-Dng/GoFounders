@@ -43,6 +43,7 @@ ACQUISITION_CHANNELS = ("seo", "publicite", "reseaux", "email", "marketplaces", 
 DRAFT_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
+        "title": {"type": "string"},
         "teaser": {"type": "string"},
         "description": {"type": "string"},
         "sector": {"type": "string"},
@@ -79,7 +80,7 @@ DRAFT_SCHEMA: dict[str, Any] = {
         },
     },
     "required": [
-        "teaser", "description", "sector", "region", "revenue", "margin", "age",
+        "title", "teaser", "description", "sector", "region", "revenue", "margin", "age",
         "price_min", "price_max", "sale_reason", "revenue_year", "revenue_history", "included_assets",
         "acquisition_channels", "monthly_visitors", "team_size", "owner_hours_per_week", "identifying_details",
     ],
@@ -114,6 +115,8 @@ activités en ligne). L'annonce doit être attractive pour un
 repreneur ET ne jamais permettre d'identifier l'entreprise.
 
 À partir de sa description libre, produis :
+- title : un titre court pour l'aperçu de l'annonce (60 caractères au plus), qui dit précisément l'activité,
+  sans nom ni lieu identifiant (ex. « Logiciel de signature pour agences immobilières », « Boulangerie artisanale avec laboratoire »).
 - teaser : 2 phrases maximum (220 caractères au plus), visibles par tous, sans aucun détail identifiant.
 - description : le dossier complet (900 caractères au plus) réservé aux repreneurs ayant un accès, structuré :
   activité, clients, modèle économique, équipe, raison de la cession. Anonymisé lui aussi : pas de nom
@@ -177,6 +180,7 @@ class RevenuePoint(BaseModel):
 
 
 class ListingDraft(BaseModel):
+    title: str = Field(default="", max_length=120)
     teaser: str = Field(max_length=400)
     description: str = Field(max_length=1500)
     sector: str = Field(max_length=80)

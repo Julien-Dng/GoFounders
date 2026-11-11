@@ -175,3 +175,20 @@ select sector, region, revenue, price_min, price_max, featured_until is not null
 from public.ma_listings
 where id::text like 'c0000000-0000-4000-8000-%'
 order by created_at;
+
+-- Titres courts des annonces de démonstration (colonne de 2026-11-11-titre-annonce.sql, à exécuter avant).
+update public.ma_listings as listing
+set public_title = titles.title
+from (values
+  ('c0000000-0000-4000-8000-000000000001'::uuid, 'Logiciel de planning pour cabinets paramédicaux'),
+  ('c0000000-0000-4000-8000-000000000002'::uuid, 'Boutique en ligne de cosmétiques bio'),
+  ('c0000000-0000-4000-8000-000000000003'::uuid, 'Agence de sites web pour artisans'),
+  ('c0000000-0000-4000-8000-000000000004'::uuid, 'Site de comparatifs sur le vélo électrique'),
+  ('c0000000-0000-4000-8000-000000000005'::uuid, 'Application de course à pied'),
+  ('c0000000-0000-4000-8000-000000000006'::uuid, 'Restaurant provençal avec terrasse'),
+  ('c0000000-0000-4000-8000-000000000007'::uuid, 'Logiciel de signature pour agences immobilières'),
+  ('c0000000-0000-4000-8000-000000000008'::uuid, 'Pièces détachées d''électroménager en ligne'),
+  ('c0000000-0000-4000-8000-000000000009'::uuid, 'Formations en comptabilité pour indépendants'),
+  ('c0000000-0000-4000-8000-000000000010'::uuid, 'Logiciel de facturation pour photographes')
+) as titles(id, title)
+where listing.id = titles.id;

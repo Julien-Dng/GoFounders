@@ -31,6 +31,7 @@ export interface AiContext {
 
 // Outils IA de la marketplace M&A (refonte « reprise ») : voir backend/app/ma_ai.py.
 export interface MaListingDraft {
+  title?: string;
   teaser: string;
   description: string;
   sector: string;

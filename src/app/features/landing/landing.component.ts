@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { MaListingData } from '../../core/data/mock-platform.data';
-import { INTRO_SUMMARY, OFFER_PRICES } from '../../core/config/offers';
+import { FREE_CONTACTS_PER_MONTH, INTRO_SUMMARY, OFFER_PRICES } from '../../core/config/offers';
 import { ShowcaseEntry, ShowcaseService } from '../../core/services/showcase.service';
 import { FEATURES } from '../../core/config/features';
 import { MaService } from '../../core/services/ma.service';
@@ -42,11 +42,12 @@ const STAGE_LABELS: Record<string, string> = {
 // Vraies fiches de la vitrine : seulement les champs publics (jamais de nom, photo, localisation ni description).
 function toTeamCard(entry: ShowcaseEntry): TeamCard {
   if (entry.kind === 'project') {
-    const sector = entry.sector || 'Projet';
+    // Le titre dit la compétence réellement recherchée ; le sous-titre, l'activité et le stade.
+    const needs = [...(entry.looking_for ?? []), ...entry.skills].filter((value, index, all) => value && all.indexOf(value) === index);
+    const need = needs[0] ?? 'Associé';
+    const stage = entry.stage ? STAGE_LABELS[entry.stage] ?? entry.stage : '';
+    const activity = entry.sector ? `Projet ${entry.sector.toLowerCase()}` : 'Projet';
     const meta: TeamCard['meta'] = [];
-    if (entry.stage) {
-      meta.push({ icon: 'stage', text: STAGE_LABELS[entry.stage] ?? entry.stage });
-    }
     if (entry.open_to_equity) {
       meta.push({ icon: 'equity', text: 'Ouvert au capital' });
     }
@@ -57,27 +58,27 @@ function toTeamCard(entry: ShowcaseEntry): TeamCard {
       key: entry.profile_id,
       kind: 'project',
       badge: 'Projet',
-      initial: sector.charAt(0).toUpperCase(),
-      name: sector,
-      subtitle: '',
-      summary: entry.skills.length ? `Compétences recherchées : ${entry.skills.slice(0, 3).join(', ')}.` : '',
+      initial: (entry.sector || need).charAt(0).toUpperCase(),
+      name: `Recherche : ${need}`,
+      subtitle: [activity, stage].filter(Boolean).join(' · '),
+      summary: '',
       meta,
-      chipsLabel: 'Recherche',
-      chips: (entry.looking_for ?? []).slice(0, 3),
+      chipsLabel: 'Aussi recherché',
+      chips: needs.slice(1, 4),
       linkLabel: 'Découvrir le projet',
     };
   }
 
-  const title = entry.title || 'Associé';
+  const title = entry.title || (entry.skills[0] ? `Associé ${entry.skills[0]}` : 'Associé');
   return {
     key: entry.profile_id,
     kind: 'talent',
     badge: 'Associé',
     initial: title.charAt(0).toUpperCase(),
     name: title,
-    subtitle: '',
+    subtitle: entry.availability ?? '',
     summary: '',
-    meta: entry.availability ? [{ icon: 'time', text: entry.availability }] : [],
+    meta: [],
     chipsLabel: 'Compétences',
     chips: entry.skills.slice(0, 4),
     linkLabel: 'Voir le profil',
@@ -287,7 +288,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
                 <a [routerLink]="['/ma/annonce', item.listing.id]" class="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border transition-shadow hover:shadow-xl">
                   <p class="bg-primary px-5 py-3 text-sm font-semibold text-white">{{ item.listing.sector }} · {{ item.listing.region }}</p>
                   <div class="flex flex-1 flex-col p-5">
-                    <h3 class="line-clamp-2 text-lg font-bold leading-snug text-primary group-hover:text-accent sm:line-clamp-3">{{ item.listing.summary }}</h3>
+                    <h3 class="line-clamp-2 text-lg font-bold leading-snug text-primary group-hover:text-accent sm:line-clamp-3">{{ item.listing.title || item.listing.summary }}</h3>
                     <p class="tabular mt-2 truncate text-base text-muted-foreground sm:mt-3">CA {{ euros(item.metrics.revenue) }} · Bénéfice {{ euros(item.metrics.netProfit) }}</p>
                     <div class="mt-auto pt-4 sm:pt-5">
                       <div class="rounded-xl bg-secondary px-4 py-3">
@@ -412,7 +413,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
             <dd class="mt-0.5 font-extrabold text-primary">Gratuit</dd>
           </div>
           <div class="rounded-xl bg-secondary px-3 py-3">
-            <dt class="text-sm text-muted-foreground">Reprendre</dt>
+            <dt class="text-sm text-muted-foreground">Dossier + contact</dt>
             <dd class="mt-0.5 font-extrabold text-primary">{{ buyerPrice }} / entreprise</dd>
           </div>
         </dl>
@@ -630,12 +631,16 @@ export class LandingComponent implements OnInit {
     { who: 'Repreneur', detail: 'Dossier complet, coordonnées du cédant et messagerie, ouverts aussitôt après l’engagement de confidentialité.', price: `${OFFER_PRICES.INTRO.label} par entreprise`, href: '/ma', cta: 'Voir les annonces' },
   ];
 
+  // Questions courtes ; sur téléphone, seules les trois premières s'affichent.
   readonly faq: LandingFaqItem[] = [
-    { question: 'Quel type d’entreprises trouve-t-on sur GoFounders ?', answer: 'Des entreprises françaises de tous secteurs : commerces, restaurants, artisans et entreprises du bâtiment, sociétés de services, PME industrielles, mais aussi entreprises en ligne (e-commerce, logiciels, sites, agences). Surtout des TPE et petites PME, de quelques dizaines de milliers d’euros à quelques millions d’euros de chiffre d’affaires.' },
-    { question: 'Mon annonce de cession est-elle confidentielle ?', answer: 'Oui. Seule une annonce anonymisée est publique, après relecture par notre équipe. Le dossier complet et vos coordonnées ne s’ouvrent qu’aux repreneurs qui acceptent un engagement de confidentialité et paient l’accès ; vous êtes prévenu à chaque ouverture.' },
-    { question: 'Combien coûte la reprise pour un repreneur ?', answer: INTRO_SUMMARY + ' Sans abonnement ni commission sur la vente.' },
-    { question: 'GoFounders prend-il une commission sur la vente ?', answer: 'Non. La publication est gratuite pour les cédants et nous ne prenons aucun pourcentage sur le prix de vente.' },
-    { question: 'GoFounders m’accompagne-t-il juridiquement ?', answer: 'Non, nous ne fournissons pas de conseil juridique. Nous vous mettons en relation avec des experts juridiques et comptables partenaires pour sécuriser la transaction.' },
+    { question: 'Mon annonce est-elle confidentielle ?', answer: 'Oui. Seule une annonce anonymisée est publique, après relecture par notre équipe. Le dossier complet et vos coordonnées ne s’ouvrent qu’aux repreneurs qui acceptent un engagement de confidentialité et paient l’accès ; vous êtes prévenu à chaque ouverture.' },
+    { question: 'Que comprennent les 50 € ?', answer: INTRO_SUMMARY + ' Le paiement est unique pour cette entreprise, sans abonnement ni commission sur la vente.' },
+    ...(FEATURES.associates
+      ? [{ question: 'Comment trouver un associé ?', answer: `Créez votre profil gratuitement et présentez votre projet, ou indiquez vos compétences si vous voulez rejoindre une équipe. Vous voyez les profils compatibles et écrivez directement aux associés : ${FREE_CONTACTS_PER_MONTH} nouveaux contacts par mois sont gratuits pour un porteur de projet, sans limite pour un associé.` }]
+      : []),
+    { question: 'Quelles entreprises ?', answer: 'Des entreprises françaises de tous secteurs : commerces, restaurants, artisans et entreprises du bâtiment, sociétés de services, PME industrielles, mais aussi entreprises en ligne (e-commerce, logiciels, sites, agences). Surtout des TPE et petites PME, de quelques dizaines de milliers d’euros à quelques millions d’euros de chiffre d’affaires.' },
+    { question: 'Une commission sur la vente ?', answer: 'Non. La publication est gratuite pour les cédants et nous ne prenons aucun pourcentage sur le prix de vente.' },
+    { question: 'Un accompagnement juridique ?', answer: 'Non, nous ne fournissons pas de conseil juridique. Nous vous mettons en relation avec des experts juridiques et comptables partenaires pour sécuriser la transaction.' },
   ];
 
   ngOnInit(): void {

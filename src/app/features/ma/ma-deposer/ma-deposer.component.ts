@@ -139,6 +139,11 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                         </div>
                       </fieldset>
                       <label class="space-y-2 sm:col-span-2">
+                        <span class="font-semibold">Titre de l'annonce <span class="font-normal text-muted-foreground">(court, visible par tous)</span></span>
+                        <input type="text" maxlength="80" [value]="listingTitle()" (input)="listingTitle.set($any($event.target).value)" placeholder="Ex. Logiciel de signature pour agences immobilières" class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20">
+                        <span class="block text-sm text-muted-foreground">Dites précisément l'activité, sans nom d'entreprise ni ville.</span>
+                      </label>
+                      <label class="space-y-2 sm:col-span-2">
                         <span class="font-semibold">Accroche publique <span class="font-normal text-muted-foreground">(visible par tous, sans détail identifiant)</span></span>
                         <textarea rows="2" maxlength="220" [value]="teaser()" (input)="teaser.set($any($event.target).value)" placeholder="Boutique en ligne de décoration rentable, clientèle fidèle." class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 resize-none"></textarea>
                       </label>
@@ -307,7 +312,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                     <p class="mb-6 text-muted-foreground">Relisez votre annonce avant de la publier.</p>
                     <div class="rounded-2xl bg-secondary p-6">
                       <p class="text-sm font-semibold text-muted-foreground">{{ listingTypeLabel() }} · {{ region() || 'Région à préciser' }}</p>
-                      <p class="mt-1 text-xl font-bold text-primary">{{ sector() || 'Secteur à préciser' }}</p>
+                      <p class="mt-1 text-xl font-bold text-primary">{{ listingTitle() || sector() || 'Titre à préciser' }}</p>
                       <p class="mt-2 text-base text-foreground/80">{{ teaser() || 'Accroche à compléter' }}</p>
                       <dl class="tabular mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
                         <div><dt class="text-sm text-muted-foreground">CA {{ revenueYear() }}</dt><dd class="font-bold text-primary">{{ revenue() || '–' }}</dd></div>
@@ -410,6 +415,8 @@ export class MaDeposerComponent {
   readonly sector = signal('');
   readonly region = signal('');
   readonly teaser = signal('');
+  // Titre court de l'aperçu (2026-11-11-titre-annonce.sql).
+  readonly listingTitle = signal('');
   readonly details = signal('');
   readonly saleReason = signal('');
   readonly revenue = signal('');
@@ -501,6 +508,7 @@ export class MaDeposerComponent {
     this.region.set(row.region);
     this.listingType.set(row.type);
     this.teaser.set(row.public_summary ?? '');
+    this.listingTitle.set(row.public_title ?? '');
     this.details.set(row.confidential_description ?? '');
     this.saleReason.set(row.sale_reason ?? '');
     this.revenue.set(this.formatEuros(row.revenue));
@@ -571,6 +579,7 @@ export class MaDeposerComponent {
         saleReason: this.saleReason().trim() || 'Cession à qualifier avec le repreneur.',
         description: this.buildDescription(),
         publicSummary: this.teaser().trim() || undefined,
+        publicTitle: this.listingTitle().trim() || undefined,
         contactInfo: this.contactInfo().trim() || user.email,
         enrichment: {
           revenueYear: this.revenue().trim() ? this.revenueYear() : null,
@@ -615,6 +624,9 @@ export class MaDeposerComponent {
       this.sector.set(draft.sector);
       this.region.set(draft.region);
       this.teaser.set(draft.teaser);
+      if (draft.title) {
+        this.listingTitle.set(draft.title);
+      }
       this.details.set(draft.description);
       this.saleReason.set(draft.sale_reason ?? '');
       this.revenue.set(this.formatEuros(draft.revenue));

@@ -43,7 +43,10 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
                 <span class="rounded-full border border-amber-500/40 px-2.5 py-0.5 text-sm font-medium text-amber-700">En vedette</span>
               }
             </div>
-            <h1 class="mt-3 text-[2rem] leading-tight text-primary sm:text-[2.75rem]">{{ item.sector }}, {{ item.region }}</h1>
+            <h1 class="mt-3 text-[2rem] leading-tight text-primary sm:text-[2.75rem]">{{ item.title || item.sector + ', ' + item.region }}</h1>
+            @if (item.title) {
+              <p class="mt-2 text-base font-medium text-muted-foreground">{{ item.sector }} · {{ item.region }}</p>
+            }
             <p class="mt-4 text-lg leading-relaxed text-foreground/80">{{ item.summary }}</p>
           </header>
 

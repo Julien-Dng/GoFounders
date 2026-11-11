@@ -223,6 +223,8 @@ export interface SupabaseMaListingRow {
   price_min: number | null;
   price_max: number | null;
   public_summary: string;
+  // Titre court de l'aperçu (2026-11-11-titre-annonce.sql), facultatif.
+  public_title?: string | null;
   sale_reason: string | null;
   confidential_description: string | null;
   contact_info: string | null;
@@ -255,6 +257,8 @@ export interface SupabaseMaListingInsert {
   price_min?: number | null;
   price_max?: number | null;
   public_summary: string;
+  // Titre court de l'aperçu (2026-11-11-titre-annonce.sql), facultatif.
+  public_title?: string | null;
   sale_reason?: string | null;
   confidential_description?: string | null;
   contact_info?: string | null;
@@ -281,6 +285,7 @@ export interface SupabaseMaListingUpdate {
   price_min?: number | null;
   price_max?: number | null;
   public_summary?: string;
+  public_title?: string | null;
   sale_reason?: string | null;
   confidential_description?: string | null;
   contact_info?: string | null;

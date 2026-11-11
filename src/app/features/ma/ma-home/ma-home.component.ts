@@ -190,8 +190,11 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
                             }
                           </div>
                           <h2 [id]="'listing-' + item.listing.id" class="mt-2 text-xl font-bold leading-snug text-primary group-hover:text-accent sm:text-2xl">
-                            <a [routerLink]="['/ma/annonce', item.listing.id]" class="after:absolute after:inset-0 after:rounded-2xl focus:outline-none focus-visible:underline">{{ item.listing.sector }}, {{ item.listing.region }}</a>
+                            <a [routerLink]="['/ma/annonce', item.listing.id]" class="after:absolute after:inset-0 after:rounded-2xl focus:outline-none focus-visible:underline">{{ item.listing.title || item.listing.sector + ', ' + item.listing.region }}</a>
                           </h2>
+                          @if (item.listing.title) {
+                            <p class="mt-1 text-sm font-medium text-muted-foreground">{{ item.listing.sector }} · {{ item.listing.region }}</p>
+                          }
                           <p class="mt-2 line-clamp-2 text-base leading-relaxed text-foreground/80">{{ item.listing.summary }}</p>
 
                           <dl class="tabular mt-4 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
@@ -366,7 +369,7 @@ export class MaHomeComponent implements OnInit {
         && (!minMargin || (metrics.margin ?? -Infinity) >= minMargin)
         && (!this.verifiedOnly() || !!listing.verified)
         && (!region || this.normalize(listing.region).includes(region))
-        && words.every(word => this.normalize(`${listing.sector} ${listing.region} ${listing.type} ${listing.summary}`).includes(word))
+        && words.every(word => this.normalize(`${listing.sector} ${listing.region} ${listing.type} ${listing.title ?? ''} ${listing.summary}`).includes(word))
       );
 
     // Les valeurs inconnues vont en fin de liste quel que soit le sens du tri.
