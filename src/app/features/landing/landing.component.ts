@@ -255,7 +255,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
           <h2 id="latest-title" class="text-center text-3xl text-primary sm:text-4xl">Entreprises à reprendre</h2>
           <p class="mx-auto mt-3 hidden max-w-[60ch] text-center text-lg text-muted-foreground sm:block">{{ introSummary }}</p>
 
-          <div class="mx-auto mt-6 max-w-3xl sm:mt-8 rounded-xl bg-white p-2 shadow-lg ring-1 ring-border" role="search">
+          <div class="mx-auto mt-8 hidden max-w-3xl rounded-xl bg-white p-2 shadow-lg ring-1 ring-border sm:block" role="search">
             <div class="flex flex-col gap-2 sm:flex-row">
               <label for="hero-search" class="sr-only">Rechercher une entreprise</label>
               <input
@@ -268,29 +268,30 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
                 class="min-w-0 flex-1 rounded-lg px-4 py-3 text-base text-foreground outline-none placeholder:text-muted-foreground"
               >
               <label for="hero-revenue" class="sr-only">Chiffre d'affaires</label>
-              <select id="hero-revenue" [value]="heroRevenue()" (change)="heroRevenue.set($any($event.target).value)" class="rounded-lg border border-border bg-secondary px-3 py-3 text-base text-foreground outline-none sm:block sm:w-56" [class.hidden]="!filtersOpen()">
+              <select id="hero-revenue" [value]="heroRevenue()" (change)="heroRevenue.set($any($event.target).value)" class="rounded-lg border border-border bg-secondary px-3 py-3 text-base text-foreground outline-none sm:w-56">
                 <option value="">Tout chiffre d'affaires</option>
                 <option value="0-100000">Moins de 100 k€</option>
                 <option value="100000-500000">100 à 500 k€</option>
                 <option value="500000-1000000">500 k€ à 1 M€</option>
                 <option value="1000000-">Plus de 1 M€</option>
               </select>
-              <div class="flex gap-2">
-                <button type="button" (click)="filtersOpen.set(!filtersOpen())" [attr.aria-expanded]="filtersOpen()" class="rounded-lg border border-border px-4 py-3 font-semibold text-primary sm:hidden">Filtres</button>
-                <button type="button" (click)="search()" class="flex-1 rounded-lg bg-accent px-6 py-3 font-semibold text-white transition-colors hover:bg-accent/90">Rechercher</button>
-              </div>
+              <button type="button" (click)="search()" class="rounded-lg bg-accent px-6 py-3 font-semibold text-white transition-colors hover:bg-accent/90">Rechercher</button>
             </div>
           </div>
 
           @if (latestListings().length > 0) {
             <div class="mt-6 grid gap-4 sm:mt-10 sm:gap-6 md:grid-cols-3 max-sm:[&>*:nth-child(3)]:hidden">
               @for (item of latestListings(); track item.listing.id) {
-                <a [routerLink]="['/ma/annonce', item.listing.id]" class="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border transition-shadow hover:shadow-xl">
-                  <p class="bg-primary px-5 py-3 text-sm font-semibold text-white">{{ item.listing.sector }} · {{ item.listing.region }}</p>
-                  <div class="flex flex-1 flex-col p-5">
-                    <h3 class="line-clamp-2 text-lg font-bold leading-snug text-primary group-hover:text-accent sm:line-clamp-3">{{ item.listing.title || item.listing.summary }}</h3>
+                <a [routerLink]="['/ma/annonce', item.listing.id]" class="group flex flex-col overflow-hidden rounded-xl border border-border bg-white transition-shadow hover:shadow-md sm:rounded-2xl sm:border-0 sm:shadow-lg sm:ring-1 sm:ring-border sm:hover:shadow-xl">
+                  <p class="hidden bg-primary px-5 py-3 text-sm font-semibold text-white sm:block">{{ item.listing.sector }} · {{ item.listing.region }}</p>
+                  <div class="flex flex-1 flex-col p-4 sm:p-5">
+                    <p class="text-sm text-muted-foreground sm:hidden">{{ item.listing.sector }} · {{ item.listing.region }}</p>
+                    <h3 class="mt-1 line-clamp-2 text-lg font-bold leading-snug sm:mt-0 text-primary group-hover:text-accent sm:line-clamp-3">{{ item.listing.title || item.listing.summary }}</h3>
                     <p class="tabular mt-2 truncate text-base text-muted-foreground sm:mt-3">CA {{ euros(item.metrics.revenue) }} · Bénéfice {{ euros(item.metrics.netProfit) }}</p>
-                    <div class="mt-auto pt-4 sm:pt-5">
+                    <p class="tabular mt-2 font-bold text-amber-600 sm:hidden">
+                      <span class="whitespace-nowrap">{{ item.listing.priceMin }}</span> à <span class="whitespace-nowrap">{{ item.listing.priceMax }}</span>
+                    </p>
+                    <div class="mt-auto hidden pt-5 sm:block">
                       <div class="rounded-xl bg-secondary px-4 py-3">
                         <p class="text-sm text-muted-foreground">Prix demandé</p>
                         <p class="tabular font-bold text-amber-600">
@@ -307,7 +308,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
             </div>
           }
           <div class="mt-6 text-center sm:mt-10">
-            <a routerLink="/ma" class="inline-block rounded-lg bg-primary px-7 py-3.5 font-semibold text-white transition-colors hover:bg-primary/90"><span class="sm:hidden">Toutes les entreprises</span><span class="hidden sm:inline">Voir toutes les annonces</span></a>
+            <a routerLink="/ma" class="inline-block rounded-lg bg-primary px-7 py-3.5 font-semibold text-white transition-colors hover:bg-primary/90"><span class="sm:hidden">Explorer les entreprises</span><span class="hidden sm:inline">Voir toutes les annonces</span></a>
           </div>
         </div>
       </section>
@@ -565,8 +566,6 @@ export class LandingComponent implements OnInit {
 
   readonly heroQuery = signal('');
   readonly heroRevenue = signal('');
-  // Téléphones : filtre de chiffre d'affaires replié derrière « Filtres ».
-  readonly filtersOpen = signal(false);
 
   // Uniquement des faits vérifiables : pas de volume ni de nombre de ventes inventés.
   readonly facts = [
