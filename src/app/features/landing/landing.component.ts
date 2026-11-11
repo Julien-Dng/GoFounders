@@ -17,6 +17,94 @@ interface LandingFaqItem {
 }
 
 // Accueil de la refonte « reprise ». Système de design : docs/DESIGN.md (fiche de cession, chiffres en avant).
+// Cartes de la section « Projets et associés » de l'accueil.
+interface TeamCard {
+  key: string;
+  kind: 'project' | 'talent';
+  badge: string;
+  initial: string;
+  name: string;
+  subtitle: string;
+  summary: string;
+  meta: Array<{ icon: 'stage' | 'place' | 'time' | 'lock' | 'equity'; text: string }>;
+  chipsLabel: string;
+  chips: string[];
+  linkLabel: string;
+}
+
+const STAGE_LABELS: Record<string, string> = {
+  idea: 'Idée',
+  mvp: 'Premier produit',
+  growth: 'En croissance',
+  established: 'Établi',
+};
+
+// Vraies fiches de la vitrine : seulement les champs publics (jamais de nom, photo, localisation ni description).
+function toTeamCard(entry: ShowcaseEntry): TeamCard {
+  if (entry.kind === 'project') {
+    const sector = entry.sector || 'Projet';
+    const meta: TeamCard['meta'] = [];
+    if (entry.stage) {
+      meta.push({ icon: 'stage', text: STAGE_LABELS[entry.stage] ?? entry.stage });
+    }
+    if (entry.open_to_equity) {
+      meta.push({ icon: 'equity', text: 'Ouvert au capital' });
+    }
+    if (entry.nda_required) {
+      meta.push({ icon: 'lock', text: 'Détails sous NDA' });
+    }
+    return {
+      key: entry.profile_id,
+      kind: 'project',
+      badge: 'Projet',
+      initial: sector.charAt(0).toUpperCase(),
+      name: sector,
+      subtitle: 'Projet en recherche d’associés',
+      summary: entry.skills.length ? `Compétences recherchées : ${entry.skills.slice(0, 3).join(', ')}.` : '',
+      meta,
+      chipsLabel: 'Recherche',
+      chips: (entry.looking_for ?? []).slice(0, 3),
+      linkLabel: 'Découvrir le projet',
+    };
+  }
+
+  const title = entry.title || 'Associé';
+  return {
+    key: entry.profile_id,
+    kind: 'talent',
+    badge: 'Associé',
+    initial: title.charAt(0).toUpperCase(),
+    name: title,
+    subtitle: 'Prêt à rejoindre un projet',
+    summary: '',
+    meta: entry.availability ? [{ icon: 'time', text: entry.availability }] : [],
+    chipsLabel: 'Compétences',
+    chips: entry.skills.slice(0, 4),
+    linkLabel: 'Voir le profil',
+  };
+}
+
+const EXAMPLE_TEAM_CARDS: TeamCard[] = [
+  {
+    key: 'exemple-1', kind: 'project', badge: 'Projet', initial: 'L', name: 'Loop Market', subtitle: 'E-commerce responsable',
+    summary: 'Une boutique de produits reconditionnés cherche son associé pour accélérer ses ventes.',
+    meta: [{ icon: 'stage', text: 'Premières ventes' }, { icon: 'place', text: 'Lyon' }],
+    chipsLabel: 'Recherche', chips: ['Associé commercial', 'Acquisition'], linkLabel: 'Découvrir le projet',
+  },
+  {
+    key: 'exemple-2', kind: 'project', badge: 'Projet', initial: 'P', name: 'Planéo', subtitle: 'Logiciel pour les professionnels de santé',
+    summary: 'Un outil de planning pour les cabinets médicaux, prêt à accueillir ses premiers utilisateurs.',
+    meta: [{ icon: 'stage', text: 'Prototype prêt' }, { icon: 'place', text: 'À distance' }],
+    chipsLabel: 'Recherche', chips: ['Associé technique', 'Développement'], linkLabel: 'Découvrir le projet',
+  },
+  {
+    key: 'exemple-3', kind: 'talent', badge: 'Associée', initial: 'S', name: 'Sarah M.', subtitle: 'Growth marketer',
+    summary: '5 ans en acquisition. Souhaite rejoindre un projet en phase de lancement.',
+    meta: [{ icon: 'place', text: 'Paris' }, { icon: 'time', text: '2 jours / semaine' }],
+    chipsLabel: 'Compétences', chips: ['SEO', 'Acquisition', 'Stratégie'], linkLabel: 'Voir le profil',
+  },
+];
+
 @Component({
   selector: 'app-landing',
   standalone: true,
@@ -211,40 +299,79 @@ interface LandingFaqItem {
         </div>
       </section>
 
-      @if (showAssociates && showcase().length > 0) {
-        <!-- Projets et associés : aperçu anonymisé (membres ayant accepté d'apparaître sur la vitrine publique). -->
+      @if (showAssociates) {
+        <!-- Projets et associés : vrais profils de la vitrine publique (anonymisés), sinon exemples fictifs signalés. -->
         <section class="bg-secondary px-4 py-14 sm:px-6 lg:px-8 lg:py-20" aria-labelledby="team-title">
           <div class="mx-auto max-w-[78rem]">
             <h2 id="team-title" class="text-center text-3xl text-primary sm:text-4xl">Projets et associés</h2>
-            <p class="mx-auto mt-3 max-w-[60ch] text-center text-lg text-muted-foreground">
-              Des porteurs de projet qui cherchent des compétences, et des associés prêts à rejoindre une équipe.
-            </p>
+            <p class="mx-auto mt-3 max-w-[56ch] text-center text-lg text-muted-foreground">Trouvez les compétences pour avancer, ou un projet à rejoindre.</p>
             <div class="mt-10 grid gap-6 md:grid-cols-3 max-sm:[&>*:nth-child(3)]:hidden">
-              @for (entry of showcase(); track entry.profile_id) {
-                <div class="flex flex-col rounded-2xl bg-white p-6 shadow-lg ring-1 ring-border">
-                  <p class="text-sm font-semibold uppercase tracking-wide" [class]="entry.kind === 'project' ? 'text-accent' : 'text-emerald-700'">
-                    {{ entry.kind === 'project' ? 'Projet' : 'Associé' }}
-                  </p>
-                  <h3 class="mt-2 text-lg font-bold leading-snug text-primary">
-                    {{ entry.kind === 'project' ? (entry.sector || 'Projet en recherche d’associés') : (entry.title || 'Associé disponible') }}
-                  </h3>
-                  @if (entry.kind === 'project' && entry.looking_for?.length) {
-                    <p class="mt-2 text-base text-foreground/85"><span class="font-semibold text-primary">Cherche :</span> {{ entry.looking_for!.slice(0, 3).join(', ') }}</p>
-                  } @else if (entry.availability) {
-                    <p class="mt-2 text-base text-foreground/85">{{ entry.availability }}</p>
+              @for (card of teamCards(); track card.key) {
+                <article class="flex flex-col rounded-2xl bg-white p-6 shadow-lg ring-1 ring-border">
+                  <div class="flex items-start gap-4">
+                    <span class="flex h-14 w-14 flex-shrink-0 items-center justify-center text-xl font-extrabold text-white"
+                          [class]="card.kind === 'project' ? 'rounded-xl bg-accent' : 'rounded-full bg-primary'" aria-hidden="true">{{ card.initial }}</span>
+                    <div class="min-w-0">
+                      <span class="inline-block rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide"
+                            [class]="card.kind === 'project' ? 'bg-accent/10 text-accent' : 'bg-emerald-50 text-emerald-700'">{{ card.badge }}</span>
+                      <h3 class="mt-1.5 text-xl font-bold leading-tight text-primary">{{ card.name }}</h3>
+                      @if (card.subtitle) {
+                        <p class="mt-0.5 text-sm text-muted-foreground">{{ card.subtitle }}</p>
+                      }
+                    </div>
+                  </div>
+
+                  @if (card.summary) {
+                    <p class="mt-4 text-base leading-relaxed text-foreground/85">{{ card.summary }}</p>
                   }
-                  @if (entry.skills.length > 0) {
-                    <ul class="mt-4 flex flex-wrap gap-2">
-                      @for (skill of entry.skills.slice(0, 4); track skill) {
-                        <li class="rounded-full bg-secondary px-3 py-1 text-sm font-medium text-foreground">{{ skill }}</li>
+
+                  @if (card.meta.length > 0) {
+                    <ul class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
+                      @for (item of card.meta; track item.text) {
+                        <li class="flex items-center gap-1.5">
+                          @switch (item.icon) {
+                            @case ('stage') {
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V14"/><path d="M10 20V10"/><path d="M16 20V6"/><path d="M22 20V3"/></svg>
+                            }
+                            @case ('place') {
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>
+                            }
+                            @case ('time') {
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                            }
+                            @case ('lock') {
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            }
+                            @default {
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9 10h4.5a1.5 1.5 0 0 1 0 3h-3a1.5 1.5 0 0 0 0 3H15"/></svg>
+                            }
+                          }
+                          {{ item.text }}
+                        </li>
                       }
                     </ul>
                   }
-                </div>
+
+                  @if (card.chips.length > 0) {
+                    <p class="mt-5 text-sm font-bold text-primary">{{ card.chipsLabel }}</p>
+                    <ul class="mt-2 flex flex-wrap gap-2">
+                      @for (chip of card.chips; track chip) {
+                        <li class="rounded-full bg-accent/10 px-3 py-1 text-sm font-semibold text-accent">{{ chip }}</li>
+                      }
+                    </ul>
+                  }
+
+                  <div class="mt-auto pt-5">
+                    <a [routerLink]="associatesHref()" class="block border-t border-border pt-4 font-semibold text-accent hover:underline underline-offset-4">{{ card.linkLabel }}&nbsp;→</a>
+                  </div>
+                </article>
               }
             </div>
             <div class="mt-10 text-center">
-              <a [routerLink]="associatesHref()" class="inline-block rounded-lg bg-primary px-7 py-3.5 font-semibold text-white transition-colors hover:bg-primary/90">Voir les projets et associés</a>
+              <a [routerLink]="associatesHref()" class="inline-block rounded-lg bg-accent px-7 py-3.5 font-semibold text-white transition-colors hover:bg-accent/90">Explorer les projets et associés&nbsp;→</a>
+              @if (teamCardsAreExamples()) {
+                <p class="mt-3 text-sm italic text-muted-foreground">Exemples fictifs</p>
+              }
             </div>
           </div>
         </section>
@@ -376,6 +503,11 @@ export class LandingComponent implements OnInit {
   readonly introSummary = INTRO_SUMMARY;
   // Aperçu « Projets et associés » : deux projets et un associé de la vitrine publique (profils anonymisés).
   readonly showcase = signal<ShowcaseEntry[]>([]);
+  // Tant qu'aucun membre n'est sur la vitrine, des exemples fictifs (signalés comme tels) illustrent la section.
+  readonly teamCardsAreExamples = computed(() => this.showcase().length === 0);
+  readonly teamCards = computed<TeamCard[]>(() =>
+    this.teamCardsAreExamples() ? EXAMPLE_TEAM_CARDS : this.showcase().map(entry => toTeamCard(entry))
+  );
   private readonly listings = signal<MaListingData[]>([]);
 
   readonly heroQuery = signal('');
