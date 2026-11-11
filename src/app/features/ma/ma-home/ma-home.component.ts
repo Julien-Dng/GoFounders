@@ -36,30 +36,6 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
           }
         </div>
       </section>
-
-      @if (!canViewSensitiveDetails() || accessRequiredNotice()) {
-        <section class="px-4 pt-6 sm:px-6 sm:pt-8 lg:px-8">
-          <div class="mx-auto max-w-[78rem] rounded-2xl bg-white p-4 shadow-lg ring-1 ring-border sm:flex sm:p-5 sm:items-center sm:justify-between sm:gap-8">
-            <div class="text-base leading-relaxed text-foreground/85">
-              @if (accessRequiredNotice()) {
-                <p class="font-semibold text-primary">Le dossier complet est réservé aux repreneurs qui l'ont débloqué.</p>
-              }
-              <p>
-                {{ introSummary }}
-              </p>
-              @if (showEarlyAccessHint()) {
-                <p class="mt-1 hidden text-muted-foreground sm:block">Avec l'accès Plus, analyses de dossier illimitées et alertes sur les nouvelles annonces.</p>
-              }
-            </div>
-            @if (showAccessCta()) {
-              <button type="button" (click)="continueToMaAccess()" class="mt-3 w-full flex-shrink-0 rounded-lg bg-accent px-5 py-2.5 text-sm sm:mt-0 sm:py-3 font-semibold text-white transition-colors hover:bg-accent/90 sm:w-auto">
-                {{ accessCtaLabel() }}
-              </button>
-            }
-          </div>
-        </section>
-      }
-
       <section id="ma-listings" class="scroll-mt-20 px-4 pb-16 pt-5 sm:pt-8 sm:px-6 lg:px-8">
         <div class="mx-auto max-w-[78rem]">
           <label for="ma-search" class="sr-only">Rechercher une entreprise</label>
