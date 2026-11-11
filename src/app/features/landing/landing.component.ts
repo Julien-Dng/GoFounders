@@ -24,40 +24,130 @@ interface LandingFaqItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-white">
-      <!-- En-tête : titre, sous-titre court et les deux parcours (pas de recherche ni d'illustration ici). -->
-      <section class="relative overflow-hidden bg-primary px-4 pb-16 pt-28 text-white sm:px-6 lg:px-8 lg:pb-20 lg:pt-36">
-        <div class="relative mx-auto max-w-[62rem] text-center">
-          <h1 class="mx-auto max-w-[20ch] text-[2.2rem] leading-[1.08] text-white sm:text-[3.5rem] lg:text-[3.75rem]">
-            @if (showAssociates) {
-              Reprenez une entreprise. Trouvez vos associés.
-            } @else {
-              Reprenez une entreprise qui a déjà ses clients
-            }
-          </h1>
-          <p class="mx-auto mt-5 max-w-[48ch] text-lg leading-relaxed text-white/70">
-            Des entreprises à reprendre partout en France, et des associés pour lancer ou développer votre projet.
-          </p>
+      <!-- En-tête : titre, sous-titre court et les deux parcours ; à droite (ordinateur), l'illustration annonce + projet. -->
+      <section class="relative overflow-hidden bg-primary px-4 pb-16 pt-28 text-white sm:px-6 lg:px-8 lg:pb-24 lg:pt-36">
+        <div class="pointer-events-none absolute inset-y-0 right-0 hidden w-[52%] lg:block" aria-hidden="true">
+          <div class="absolute -top-10 left-[6%] h-36 w-64 rounded-3xl bg-white/[0.04]"></div>
+          <div class="absolute left-[6%] top-[62%] h-72 w-64 rounded-3xl bg-white/[0.04]"></div>
+          <div class="absolute -top-10 left-[52%] h-56 w-72 rounded-3xl bg-white/[0.04]"></div>
+          <div class="absolute bottom-[-3rem] left-[52%] h-40 w-72 rounded-3xl bg-white/[0.04]"></div>
+          <div class="absolute right-[-3rem] top-[10%] h-80 w-24 rounded-3xl bg-white/[0.04]"></div>
+        </div>
 
-          <div class="mx-auto mt-10 grid max-w-[52rem] gap-4 text-left" [class.sm:grid-cols-2]="showAssociates">
-            <a href="#entreprises" (click)="scrollTo($event, 'entreprises')" class="group flex flex-col rounded-2xl border border-white/20 bg-white/[0.06] p-6 transition-colors hover:border-white/60 hover:bg-white/[0.1]">
-              <span class="text-xl font-bold text-white">Explorer les entreprises</span>
-              <span class="mt-2 flex-1 text-base leading-relaxed text-white/70">Commerces, services, industrie, activités en ligne : découvrez celles qui sont à reprendre.</span>
-              <span class="mt-5 whitespace-nowrap font-semibold text-[#9DB8FF] group-hover:text-white">Voir les entreprises&nbsp;→</span>
-            </a>
-            @if (showAssociates) {
-              <a [routerLink]="associatesHref()" class="group flex flex-col rounded-2xl border border-white/20 bg-white/[0.06] p-6 transition-colors hover:border-white/60 hover:bg-white/[0.1]">
-                <span class="text-xl font-bold text-white">Trouver des associés et une équipe</span>
-                <span class="mt-2 flex-1 text-base leading-relaxed text-white/70">Présentez votre projet ou rejoignez une équipe qui cherche vos compétences.</span>
-                <span class="mt-5 whitespace-nowrap font-semibold text-[#9DB8FF] group-hover:text-white">Voir les projets et associés&nbsp;→</span>
+        <div class="relative mx-auto grid max-w-[78rem] gap-14 lg:grid-cols-12 lg:items-center">
+          <div class="lg:col-span-6">
+            <h1 class="max-w-[16ch] text-[2.2rem] leading-[1.08] text-white sm:text-[3.5rem] lg:text-[3.75rem]">
+              @if (showAssociates) {
+                Reprenez une entreprise. Trouvez vos associés.
+              } @else {
+                Reprenez une entreprise qui a déjà ses clients
+              }
+            </h1>
+            <p class="mt-5 max-w-[48ch] text-lg leading-relaxed text-white/70">
+              Des entreprises à reprendre partout en France, et des associés pour lancer ou développer votre projet.
+            </p>
+
+            <div class="mt-9 grid gap-3" [class]="showAssociates ? 'sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : ''">
+              <a href="#entreprises" (click)="scrollTo($event, 'entreprises')" class="group flex flex-col rounded-xl border border-white/20 bg-white/[0.06] p-5 transition-colors hover:border-white/60 hover:bg-white/[0.1]">
+                <span class="text-lg font-bold text-white">Explorer les entreprises</span>
+                <span class="mt-1.5 flex-1 text-base leading-relaxed text-white/70">Commerces, services, industrie, activités en ligne : découvrez celles qui sont à reprendre.</span>
+                <span class="mt-4 whitespace-nowrap font-semibold text-[#9DB8FF] group-hover:text-white">Voir les entreprises&nbsp;→</span>
               </a>
-            }
+              @if (showAssociates) {
+                <a [routerLink]="associatesHref()" class="group flex flex-col rounded-xl border border-white/20 bg-white/[0.06] p-5 transition-colors hover:border-white/60 hover:bg-white/[0.1]">
+                  <span class="text-lg font-bold text-white">Trouver des associés et une équipe</span>
+                  <span class="mt-1.5 flex-1 text-base leading-relaxed text-white/70">Présentez votre projet ou rejoignez une équipe qui cherche vos compétences.</span>
+                  <span class="mt-4 whitespace-nowrap font-semibold text-[#9DB8FF] group-hover:text-white">Voir les projets et associés&nbsp;→</span>
+                </a>
+              }
+            </div>
+
+            <p class="mt-5 text-base text-white/60">
+              Vous vendez ? <a routerLink="/ma/deposer" class="font-semibold text-white underline-offset-4 hover:underline">Déposer une annonce gratuite</a>
+              <span class="mx-1.5" aria-hidden="true">·</span>
+              <a routerLink="/estimation" class="font-semibold text-white underline-offset-4 hover:underline">Estimer sa valeur</a>
+            </p>
           </div>
 
-          <p class="mt-6 text-base text-white/60">
-            Vous vendez ? <a routerLink="/ma/deposer" class="font-semibold text-white underline-offset-4 hover:underline">Déposer une annonce gratuite</a>
-            <span class="mx-1.5" aria-hidden="true">·</span>
-            <a routerLink="/estimation" class="font-semibold text-white underline-offset-4 hover:underline">Estimer sa valeur</a>
-          </p>
+          @if (featuredListing(); as item) {
+            <figure class="relative hidden lg:col-span-6 lg:block lg:min-h-[30rem]">
+              <article class="relative mx-auto max-w-[27rem] rounded-2xl bg-[#DCE5F7] p-6 text-primary shadow-2xl sm:p-7 lg:absolute lg:left-0 lg:top-0 lg:w-[25rem]" aria-label="Annonce en ligne">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="min-w-0">
+                    <p class="text-sm font-semibold text-primary/60">{{ item.listing.type }} · {{ item.listing.region }}</p>
+                    <h2 class="mt-1 text-xl leading-snug text-primary">{{ item.listing.sector }}</h2>
+                  </div>
+                  <span class="flex-shrink-0 rounded-full bg-white/70 px-2.5 py-1 text-sm font-semibold text-[#A3341C]">Confidentiel</span>
+                </div>
+                <p class="mt-3 line-clamp-2 text-base text-primary/75">{{ item.listing.summary }}</p>
+                <dl class="tabular mt-5 grid grid-cols-3 gap-2">
+                  <div class="rounded-lg bg-white/70 p-3">
+                    <dt class="text-sm text-primary/60">CA</dt>
+                    <dd class="mt-0.5 font-bold">{{ euros(item.metrics.revenue) }}</dd>
+                  </div>
+                  <div class="rounded-lg bg-white/70 p-3">
+                    <dt class="text-sm text-primary/60">Bénéfice</dt>
+                    <dd class="mt-0.5 font-bold">{{ euros(item.metrics.netProfit) }}</dd>
+                  </div>
+                  <div class="rounded-lg bg-white/70 p-3">
+                    <dt class="text-sm text-primary/60">Marge</dt>
+                    <dd class="mt-0.5 font-bold">{{ item.listing.margin }}</dd>
+                  </div>
+                </dl>
+                <div class="mt-4 space-y-2" aria-hidden="true">
+                  <div class="h-2.5 w-11/12 rounded bg-primary/10"></div>
+                  <div class="h-2.5 w-3/4 rounded bg-primary/10"></div>
+                </div>
+                <div class="mt-5 rounded-xl bg-primary p-4 text-white">
+                  <p class="text-sm text-white/65">Prix demandé</p>
+                  <p class="tabular mt-0.5 text-2xl font-bold"><span class="whitespace-nowrap">{{ item.listing.priceMin }}</span> à <span class="whitespace-nowrap">{{ item.listing.priceMax }}</span></p>
+                  @if (item.metrics.multiple !== null) {
+                    <p class="tabular text-sm text-white/65">{{ multiple(item.metrics.multiple) }} le bénéfice annuel</p>
+                  }
+                </div>
+              </article>
+
+              @if (showAssociates) {
+                <aside class="relative z-10 mx-auto -mt-4 w-[20rem] max-w-full rounded-2xl bg-[#DCE5F7] p-5 text-primary shadow-2xl lg:absolute lg:bottom-0 lg:right-0 lg:mt-0" aria-label="Exemple de projet qui constitue son équipe">
+                  <p class="text-sm font-semibold text-primary/60">Exemple de projet · Lyon</p>
+                  <div class="mt-3 flex items-center gap-3">
+                    <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-accent font-bold text-white" aria-hidden="true">P</span>
+                    <div class="min-w-0">
+                      <p class="font-bold leading-snug">Logiciel de planning santé</p>
+                      <p class="text-sm text-primary/70">Cherche à compléter son équipe</p>
+                    </div>
+                  </div>
+                  <div class="mt-4 flex flex-wrap gap-2 text-sm font-semibold">
+                    <span class="rounded-lg bg-white/70 px-2.5 py-1.5">Associé technique</span>
+                    <span class="rounded-lg bg-white/70 px-2.5 py-1.5">Profil commercial</span>
+                  </div>
+                  <div class="mt-4 grid grid-cols-2 gap-2 text-sm font-semibold" aria-hidden="true">
+                    <span class="rounded-lg border border-primary/25 py-2 text-center text-primary/70">Plus tard</span>
+                    <span class="rounded-lg bg-accent py-2 text-center text-white">Rejoindre</span>
+                  </div>
+                </aside>
+              } @else {
+                <aside class="relative z-10 mx-auto -mt-4 w-[20rem] max-w-full rounded-2xl bg-[#DCE5F7] p-5 text-primary shadow-2xl lg:absolute lg:bottom-0 lg:right-0 lg:mt-0" aria-label="Exemple de profil repreneur">
+                  <p class="text-sm font-semibold text-primary/60">Exemple de profil repreneur</p>
+                  <div class="mt-3 flex items-center gap-3">
+                    <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-primary font-bold text-white" aria-hidden="true">R</span>
+                    <div class="min-w-0">
+                      <p class="font-bold leading-snug">Ancien directeur commercial</p>
+                      <p class="text-sm text-primary/70">Budget 300 à 600 k€ · E-commerce</p>
+                    </div>
+                  </div>
+                  <div class="mt-4 space-y-2" aria-hidden="true">
+                    <div class="h-2.5 w-full rounded bg-primary/10"></div>
+                    <div class="h-2.5 w-2/3 rounded bg-primary/10"></div>
+                  </div>
+                  <div class="mt-4 grid grid-cols-2 gap-2 text-sm font-semibold" aria-hidden="true">
+                    <span class="rounded-lg border border-primary/25 py-2 text-center text-primary/70">Refuser</span>
+                    <span class="rounded-lg bg-accent py-2 text-center text-white">Accepter</span>
+                  </div>
+                </aside>
+              }
+            </figure>
+          }
         </div>
       </section>
 
@@ -304,6 +394,12 @@ export class LandingComponent implements OnInit {
   readonly euros = formatEuros;
   readonly multiple = formatMultiple;
   private readonly items = computed(() => this.listings().map(listing => ({ listing, metrics: listingMetrics(listing) })));
+
+  // Annonce réelle montrée dans l'illustration de l'en-tête (en vedette d'abord, sinon la plus récente).
+  readonly featuredListing = computed(() => {
+    const items = this.items();
+    return items.find(item => item.listing.featured) ?? items[0] ?? null;
+  });
 
   // Trois annonces sous les filtres : en vedette d'abord, puis les plus récentes.
   readonly latestListings = computed(() =>
