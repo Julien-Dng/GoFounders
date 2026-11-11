@@ -17,7 +17,7 @@ import { PendingProfileVerification, VerificationService } from '../../core/serv
         <h1 class="text-3xl font-semibold text-primary">Profils à vérifier</h1>
 
         @if (!isAdmin()) {
-          <p class="mt-4 text-muted-foreground">Page réservée aux administrateurs.</p>
+          <p class="mt-4 text-muted-foreground">Page réservée aux administrateurs</p>
         } @else {
           <p class="mt-2 text-sm text-muted-foreground">
             Vérifiez que la personne existe et correspond à ce qu'elle annonce : profil LinkedIn cohérent avec le nom et le titre,

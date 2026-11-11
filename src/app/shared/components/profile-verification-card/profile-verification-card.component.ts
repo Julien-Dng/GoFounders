@@ -19,9 +19,9 @@ import { ProfileVerificationRequest, VerificationService } from '../../../core/s
           <h2 id="verification-title" class="text-xl font-semibold text-primary">Profil vérifié</h2>
 
           @if (verifiedAt()) {
-            <p class="mt-1 text-sm text-emerald-700">Votre profil affiche le badge « Profil vérifié » depuis le {{ formatDate(verifiedAt()!) }}.</p>
+            <p class="mt-1 text-sm text-emerald-700">Votre profil affiche le badge « Profil vérifié » depuis le {{ formatDate(verifiedAt()!) }}</p>
           } @else if (request()?.status === 'pending') {
-            <p class="mt-1 text-sm text-foreground/80">Demande envoyée le {{ formatDate(request()!.created_at) }}, en cours d'examen par l'équipe.</p>
+            <p class="mt-1 text-sm text-foreground/80">Demande envoyée le {{ formatDate(request()!.created_at) }}, en cours d'examen par l'équipe</p>
           } @else {
             <p class="mt-1 text-sm text-muted-foreground">
               Le badge rassure les personnes qui découvrent votre profil. L'équipe vérifie que vous êtes bien la personne

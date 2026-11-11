@@ -14,7 +14,7 @@ import { AuthService } from '../../core/services/auth.service';
       <div class="mx-auto max-w-[40rem] rounded-xl bg-white shadow-lg ring-1 ring-border p-8 text-center">
         @if (checking()) {
           <h1 class="text-3xl text-primary">Paiement reçu, activation en cours…</h1>
-          <p class="mt-3 text-base text-muted-foreground">Nous attendons la confirmation de Stripe. Cela prend en général quelques secondes.</p>
+          <p class="mt-3 text-base text-muted-foreground">Nous attendons la confirmation de Stripe. Cela prend en général quelques secondes</p>
         } @else {
           <h1 class="text-3xl text-primary">Merci, votre paiement est confirmé</h1>
           <p class="mt-3 text-base text-muted-foreground">
@@ -24,7 +24,7 @@ import { AuthService } from '../../core/services/auth.service';
             <a routerLink="/dashboard" class="rounded-lg bg-primary px-5 py-3 font-medium text-white transition-colors hover:bg-primary/90">Aller au tableau de bord</a>
             <a routerLink="/ma" class="rounded-lg border border-primary px-5 py-3 font-medium text-primary transition-colors hover:bg-primary hover:text-white">Voir les annonces</a>
           </div>
-          <p class="mt-6 text-sm text-muted-foreground">Votre offre n'apparaît pas encore ? Rechargez la page dans une minute ou écrivez-nous.</p>
+          <p class="mt-6 text-sm text-muted-foreground">Votre offre n'apparaît pas encore ? Rechargez la page dans une minute ou écrivez-nous</p>
         }
       </div>
     </div>

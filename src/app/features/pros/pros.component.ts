@@ -17,7 +17,7 @@ import { StatsService } from '../../core/services/stats.service';
         <div class="mb-8">
           <h1 class="text-3xl font-semibold text-primary sm:text-4xl">Annuaire des professionnels</h1>
           <p class="mt-2 max-w-3xl text-muted-foreground">
-            Experts-comptables, avocats, notaires et cabinets de cession qui accompagnent les cessions et les reprises.
+            Experts-comptables, avocats, notaires et cabinets de cession qui accompagnent les cessions et les reprises
           </p>
         </div>
 
@@ -85,7 +85,7 @@ import { StatsService } from '../../core/services/stats.service';
         </div>
 
         <p class="mt-6 text-center text-sm text-muted-foreground">
-          GoFounders met en relation avec ces professionnels mais n'assure pas de conseil juridique ou comptable.
+          GoFounders met en relation avec ces professionnels mais n'assure pas de conseil juridique ou comptable
         </p>
       </div>
     </div>

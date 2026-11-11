@@ -96,7 +96,7 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
               <div>
                 <div class="text-sm font-medium" id="visibilite-label">Profil visible dans la recherche</div>
                 <p class="mt-1 text-sm text-muted-foreground">
-                  Masqué, votre profil n'apparaît plus dans la recherche. Vos conversations en cours continuent normalement.
+                  Masqué, votre profil n'apparaît plus dans la recherche. Vos conversations en cours continuent normalement
                 </p>
               </div>
               @if (isVisible() !== null) {
@@ -125,7 +125,7 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
               <div>
                 <div class="text-sm font-medium" id="emails-label">E-mail à chaque nouveau message</div>
                 <p class="mt-1 text-sm text-muted-foreground">
-                  Au plus un e-mail par conversation toutes les 3 heures, sans le contenu du message. Les e-mails sur vos annonces et vos demandes d'accès restent envoyés.
+                  Au plus un e-mail par conversation toutes les 3 heures, sans le contenu du message. Les e-mails sur vos annonces et vos demandes d'accès restent envoyés
                 </p>
               </div>
               @if (emailNotifications() !== null) {
@@ -146,9 +146,9 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
                   <div class="text-sm font-medium" id="vitrine-label">Apparaître de façon anonyme sur la page « Trouver un associé »</div>
                   <p class="mt-1 text-sm text-muted-foreground">
                     @if (isTalent()) {
-                      Les visiteurs voient votre titre, vos compétences et votre disponibilité, jamais votre nom, votre photo ni votre ville.
+                      Les visiteurs voient votre titre, vos compétences et votre disponibilité, jamais votre nom, votre photo ni votre ville
                     } @else {
-                      Les visiteurs voient le secteur, le stade et les profils recherchés de votre projet, jamais votre nom, celui du projet ni sa description.
+                      Les visiteurs voient le secteur, le stade et les profils recherchés de votre projet, jamais votre nom, celui du projet ni sa description
                     }
                     <a routerLink="/associes" class="font-semibold text-accent hover:underline">Voir la page</a>
                   </p>
@@ -181,7 +181,7 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
           <section class="rounded-2xl border border-destructive/20 bg-white p-6" aria-labelledby="danger-titre">
             <h2 id="danger-titre" class="mb-2 text-lg font-semibold text-destructive">Zone de danger</h2>
             <p class="mb-4 text-sm text-muted-foreground">
-              La suppression est définitive : profil, photo, projet, annonces M&A, conversations et messages sont effacés.
+              La suppression est définitive : profil, photo, projet, annonces M&A, conversations et messages sont effacés
             </p>
             @if (!confirmingDelete()) {
               <button type="button" (click)="confirmingDelete.set(true)"

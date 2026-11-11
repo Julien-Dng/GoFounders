@@ -212,11 +212,11 @@ import { VerifiedBadgeComponent } from '../../../shared/components/verified-badg
                     <h2 id="request-title" class="text-2xl text-primary">Débloquer le dossier et le contact</h2>
                     <p class="mt-2 text-base text-muted-foreground">
                       Acceptez l'engagement de confidentialité envers le cédant, puis payez {{ introPrice }} : le dossier complet,
-                      ses coordonnées et la messagerie avec lui s'ouvrent aussitôt, sans attendre son accord.
+                      ses coordonnées et la messagerie avec lui s'ouvrent aussitôt, sans attendre son accord
                     </p>
                     <label for="request-message" class="mb-1.5 mt-5 block font-semibold text-primary">Un mot pour le cédant <span class="font-normal text-muted-foreground">(facultatif)</span></label>
                     <textarea id="request-message" rows="5" maxlength="1500" [value]="requestMessage()" (input)="requestMessage.set($any($event.target).value)" class="w-full resize-y rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" placeholder="Parcours, budget et financement envisagés, pourquoi cette entreprise vous intéresse, délai souhaité."></textarea>
-                    <p class="mt-1 text-sm text-muted-foreground">Le cédant est prévenu de votre accès et voit votre nom, votre profil repreneur et ce message.</p>
+                    <p class="mt-1 text-sm text-muted-foreground">Le cédant est prévenu de votre accès et voit votre nom, votre profil repreneur et ce message</p>
 
                     <details class="mt-5 rounded-lg bg-white p-4 ring-1 ring-border" [open]="ndaOpen()" (toggle)="ndaOpen.set($any($event.target).open)">
                       <summary class="cursor-pointer font-semibold text-primary">Lire l'engagement de confidentialité</summary>
@@ -229,12 +229,12 @@ import { VerifiedBadgeComponent } from '../../../shared/components/verified-badg
                             }
                           </div>
                         }
-                        <p class="text-muted-foreground">Version {{ ndaVersion }}. GoFounders n'est pas partie à cet engagement et n'assure pas de conseil juridique.</p>
+                        <p class="text-muted-foreground">Version {{ ndaVersion }}. GoFounders n'est pas partie à cet engagement et n'assure pas de conseil juridique</p>
                       </div>
                     </details>
                     <label class="mt-4 flex cursor-pointer items-start gap-3">
                       <input type="checkbox" [checked]="ndaAccepted()" (change)="ndaAccepted.set($any($event.target).checked)" class="mt-1 h-5 w-5 flex-shrink-0 accent-[#1D4ED8]">
-                      <span class="text-base text-foreground/85">J'ai lu et j'accepte l'engagement de confidentialité envers le cédant de cette entreprise.</span>
+                      <span class="text-base text-foreground/85">J'ai lu et j'accepte l'engagement de confidentialité envers le cédant de cette entreprise</span>
                     </label>
 
                     @if (requestError()) {
@@ -271,7 +271,7 @@ import { VerifiedBadgeComponent } from '../../../shared/components/verified-badg
                     <div>
                       <h2 id="analyse-title" class="text-2xl text-primary">Analyse du dossier</h2>
                       <p class="mt-2 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
-                        Points forts, points de vigilance et questions à poser au cédant, préparés par l'IA à partir des informations de l'annonce.
+                        Points forts, points de vigilance et questions à poser au cédant, préparés par l'IA à partir des informations de l'annonce
                       </p>
                     </div>
                     @if (!analysis()) {
@@ -321,7 +321,7 @@ import { VerifiedBadgeComponent } from '../../../shared/components/verified-badg
                 }
 
                 @if (isOwner()) {
-                  <p class="mt-5 border-t border-border pt-5 text-base text-foreground/85">C'est votre annonce. Les repreneurs la voient telle qu'affichée ici.</p>
+                  <p class="mt-5 border-t border-border pt-5 text-base text-foreground/85">C'est votre annonce. Les repreneurs la voient telle qu'affichée ici</p>
                   <a routerLink="/ma/statistiques" class="mt-4 block rounded bg-primary px-5 py-3 text-center font-medium text-white transition-colors hover:bg-primary/90">Voir les statistiques</a>
                   <a routerLink="/ma/mes-annonces" class="mt-3 block text-center font-medium text-accent underline-offset-4 hover:underline">Gérer mes annonces</a>
                 } @else if (canContact()) {
@@ -404,7 +404,7 @@ import { VerifiedBadgeComponent } from '../../../shared/components/verified-badg
           }
         } @else if (loaded()) {
           <div class="mt-10 rounded-2xl bg-white p-10 text-center shadow-lg">
-            <p class="text-lg text-muted-foreground">Cette annonce n'existe pas ou n'est plus disponible.</p>
+            <p class="text-lg text-muted-foreground">Cette annonce n'existe pas ou n'est plus disponible</p>
             <a routerLink="/ma" class="mt-4 inline-block font-medium text-accent underline-offset-4 hover:underline">Voir les annonces en cours</a>
           </div>
         }
@@ -553,9 +553,9 @@ export class MaDetailComponent implements OnInit {
     return null;
   });
   readonly steps = [
-    { title: 'Débloquez le dossier', text: "Acceptez l'engagement de confidentialité et payez 50 € : le dossier complet, les coordonnées du cédant et la messagerie s'ouvrent aussitôt, sans attendre son accord." },
-    { title: 'Demandez les justificatifs', text: "Bilans des trois derniers exercices, relevés de chiffre d'affaires, accès en lecture aux outils (analytics, paiements, comptabilité)." },
-    { title: 'Faites-vous accompagner', text: "Un expert-comptable et un avocat vérifient le dossier avant toute lettre d'intention. GoFounders n'intervient pas dans la négociation." },
+    { title: 'Débloquez le dossier', text: "Acceptez l'engagement de confidentialité et payez 50 € : le dossier complet, les coordonnées du cédant et la messagerie s'ouvrent aussitôt, sans attendre son accord" },
+    { title: 'Demandez les justificatifs', text: "Bilans des trois derniers exercices, relevés de chiffre d'affaires, accès en lecture aux outils (analytics, paiements, comptabilité)" },
+    { title: 'Faites-vous accompagner', text: "Un expert-comptable et un avocat vérifient le dossier avant toute lettre d'intention. GoFounders n'intervient pas dans la négociation" },
   ];
 
   // Analyse de dossier par l'IA : réservée aux repreneurs (contrôle d'accès refait côté back).

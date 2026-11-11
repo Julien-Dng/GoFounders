@@ -111,7 +111,7 @@ type SearchProfileType = ProfileType;
                       </div>
                     </label>
                     <p id="equity-filter-help" class="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      Projets dont le porteur accepte un associé qui entrerait au capital. Les conditions se négocient en privé ; GoFounders ne propose pas d'investissement.
+                      Projets dont le porteur accepte un associé qui entrerait au capital. Les conditions se négocient en privé ; GoFounders ne propose pas d'investissement
                     </p>
                   </div>
                 }
@@ -172,7 +172,7 @@ type SearchProfileType = ProfileType;
                     </div>
                   } @else {
                     <p class="text-sm leading-relaxed text-muted-foreground">
-                      Mots-clés, compétences précises et compatibilité minimale pour aller droit aux profils qui comptent.
+                      Mots-clés, compétences précises et compatibilité minimale pour aller droit aux profils qui comptent
                     </p>
                     <a routerLink="/tarifs" fragment="associes" class="mt-3 inline-block text-sm font-semibold text-accent hover:underline">Passer en PRO</a>
                   }
@@ -340,7 +340,7 @@ type SearchProfileType = ProfileType;
                 </div>
               } @empty {
                 <div class="rounded-2xl bg-white p-12 text-center shadow-lg text-muted-foreground md:col-span-2 xl:col-span-3">
-                  Aucun résultat avec ces filtres pour le moment.
+                  Aucun résultat avec ces filtres pour le moment
                 </div>
               }
 

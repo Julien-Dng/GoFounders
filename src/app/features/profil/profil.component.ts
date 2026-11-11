@@ -24,7 +24,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
           <h1 class="mb-3 text-2xl font-semibold text-primary">Ce profil n'est pas accessible</h1>
           <p class="mb-6 text-sm leading-relaxed text-muted-foreground">
             Il n'existe pas, ou il ne correspond pas à votre type de compte : les porteurs de projet voient les associés,
-            les associés voient les projets.
+            les associés voient les projets
           </p>
           <a routerLink="/dashboard" class="inline-block rounded-lg bg-primary px-6 py-3 font-semibold text-white hover:bg-primary/90">Retour au tableau de bord</a>
         </div>
@@ -192,7 +192,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                               @if (isOwnProfile()) {
                                 Pas encore précisé. <a routerLink="/profil/modifier" class="font-semibold text-accent hover:underline">Indiquez ce que vous recherchez</a> pour être mieux mis en relation.
                               } @else {
-                                Pas encore précisé.
+                                Pas encore précisé
                               }
                             </p>
                           }
@@ -209,7 +209,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                               @if (isOwnProfile()) {
                                 Aucune compétence renseignée. <a routerLink="/profil/modifier" class="font-semibold text-accent hover:underline">Ajoutez-les</a> pour améliorer vos scores de compatibilité.
                               } @else {
-                                Aucune compétence renseignée pour le moment.
+                                Aucune compétence renseignée pour le moment
                               }
                             </p>
                           }
@@ -265,7 +265,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
 
                   @if (activeTab() === 'avis') {
                     <div class="rounded-2xl border border-border bg-secondary/50 p-8 text-center text-muted-foreground">
-                      Les recommandations et retours d'expérience seront ajoutés ici dans une prochaine itération.
+                      Les recommandations et retours d'expérience seront ajoutés ici dans une prochaine itération
                     </div>
                   }
                 </div>
@@ -289,11 +289,11 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                 <div class="rounded-2xl border border-accent/20 bg-accent/[0.04] p-6">
                   <h3 class="mb-2 text-lg font-semibold">Ouvert à un associé avec apport</h3>
                   <p class="text-sm leading-relaxed text-foreground/80">
-                    Le porteur de ce projet accepte d'accueillir un associé qui entrerait au capital en apportant aussi de l'argent.
+                    Le porteur de ce projet accepte d'accueillir un associé qui entrerait au capital en apportant aussi de l'argent
                   </p>
                   <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
                     GoFounders ne propose pas d'investissement. Les conditions d'entrée au capital se négocient directement entre les parties,
-                    avec l'aide d'un professionnel (avocat, expert-comptable).
+                    avec l'aide d'un professionnel (avocat, expert-comptable)
                   </p>
                 </div>
               }
@@ -337,7 +337,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                     @case ('approved') {
                       @if (publicProfile()?.ndaRequired && !myRequest()?.ndaAcceptedAt) {
                         <p class="mb-4 text-sm leading-relaxed text-foreground/80">
-                          Le porteur de ce projet vous ouvre sa partie confidentielle. Acceptez d’abord son engagement de confidentialité pour la lire.
+                          Le porteur de ce projet vous ouvre sa partie confidentielle. Acceptez d’abord son engagement de confidentialité pour la lire
                         </p>
                         <button type="button" (click)="startAccessRequest()" [disabled]="isRequestingAccess()" class="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-wait disabled:opacity-70">
                           Lire l'engagement et accéder au projet
@@ -345,7 +345,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                       } @else if (confidentialDetails()) {
                         <p class="whitespace-pre-line text-sm leading-relaxed text-foreground/85">{{ confidentialDetails() }}</p>
                       } @else {
-                        <p class="text-sm text-muted-foreground">Le porteur n'a pas encore rempli cette partie.</p>
+                        <p class="text-sm text-muted-foreground">Le porteur n'a pas encore rempli cette partie</p>
                       }
                       @if (myRequest()?.ndaAcceptedAt) {
                         <button type="button" (click)="downloadMyNda()" class="mt-4 text-sm font-semibold text-accent hover:underline">
@@ -355,20 +355,20 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                     }
                     @case ('pending') {
                       <p class="text-sm leading-relaxed text-foreground/80">
-                        Demande envoyée le {{ formatDate(myRequest()!.createdAt) }}. Le porteur de projet vous répondra depuis son espace.
+                        Demande envoyée le {{ formatDate(myRequest()!.createdAt) }}. Le porteur de projet vous répondra depuis son espace
                       </p>
                     }
                     @default {
                       @if (!publicProfile()?.hasConfidential) {
-                        <p class="text-sm text-muted-foreground">Le porteur n'a pas encore ajouté de partie confidentielle à ce projet.</p>
+                        <p class="text-sm text-muted-foreground">Le porteur n'a pas encore ajouté de partie confidentielle à ce projet</p>
                       } @else {
                         <p class="mb-4 text-sm leading-relaxed text-foreground/80">
                           @if (accessState() === 'refused') {
-                            Le porteur n'a pas donné suite à votre précédente demande. Vous pouvez la renouveler.
+                            Le porteur n'a pas donné suite à votre précédente demande. Vous pouvez la renouveler
                           } @else if (publicProfile()?.ndaRequired) {
-                            Le porteur partage les détails sensibles de son projet aux associés qui acceptent un engagement de confidentialité, puis valide chaque demande.
+                            Le porteur partage les détails sensibles de son projet aux associés qui acceptent un engagement de confidentialité, puis valide chaque demande
                           } @else {
-                            Le porteur partage les détails sensibles de son projet après avoir validé votre demande.
+                            Le porteur partage les détails sensibles de son projet après avoir validé votre demande
                           }
                         </p>
                         <button type="button" (click)="startAccessRequest()" [disabled]="isRequestingAccess()" class="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-wait disabled:opacity-70">
@@ -392,7 +392,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                   </div>
                   @if (invited()) {
                     <p class="text-sm leading-relaxed text-emerald-800">
-                      La partie confidentielle de votre projet est ouverte à cet associé{{ myProjectNda() ? ', après acceptation de l’engagement de confidentialité' : '' }}.
+                      La partie confidentielle de votre projet est ouverte à cet associé{{ myProjectNda() ? ', après acceptation de l’engagement de confidentialité' : '' }}
                     </p>
                     <a routerLink="/profil/modifier" class="mt-3 inline-block text-sm font-semibold text-accent hover:underline">Gérer les accès à mon projet</a>
                   } @else {
@@ -419,7 +419,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                       <h3 class="text-lg font-semibold dark:text-amber-50">Détails confidentiels</h3>
                     </div>
                     <p class="mb-4 text-sm leading-relaxed text-foreground/80 dark:text-amber-100/85">
-                      Accédez aux informations complètes en passant par un échange sécurisé et, si besoin, un cadre de confidentialité.
+                      Accédez aux informations complètes en passant par un échange sécurisé et, si besoin, un cadre de confidentialité
                     </p>
                     <a routerLink="/messages" [queryParams]="{ conversation: profileId() }" class="flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 font-semibold text-white transition-colors hover:bg-accent/90">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -463,7 +463,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
           <div class="border-b border-border px-6 py-5">
             <h2 id="nda-title" class="text-xl font-semibold text-primary">Engagement de confidentialité</h2>
             <p class="mt-1 text-sm text-muted-foreground">
-              Le porteur de « {{ publicProfile()?.displayName }} » demande cet engagement avant de partager les détails de son projet.
+              Le porteur de « {{ publicProfile()?.displayName }} » demande cet engagement avant de partager les détails de son projet
             </p>
           </div>
           <div class="flex-1 space-y-4 overflow-y-auto px-6 py-5 text-sm leading-relaxed text-foreground/85">
@@ -479,10 +479,10 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
           <div class="border-t border-border px-6 py-5">
             <label class="flex cursor-pointer items-start gap-3 text-sm">
               <input type="checkbox" [checked]="ndaChecked()" (change)="ndaChecked.set(!ndaChecked())" class="mt-0.5 h-4 w-4 flex-shrink-0 accent-accent">
-              <span>J'ai lu et j'accepte cet engagement de confidentialité (version {{ ndaVersion }}).</span>
+              <span>J'ai lu et j'accepte cet engagement de confidentialité (version {{ ndaVersion }})</span>
             </label>
             <p class="mt-2 text-sm text-muted-foreground">
-              Votre acceptation est enregistrée comme preuve (nom, date, version du texte, adresse IP). GoFounders n'est pas partie à cet engagement et n'assure pas de conseil juridique.
+              Votre acceptation est enregistrée comme preuve (nom, date, version du texte, adresse IP). GoFounders n'est pas partie à cet engagement et n'assure pas de conseil juridique
             </p>
             <div class="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button type="button" (click)="closeNdaModal()" class="rounded-lg border border-border px-5 py-2.5 text-sm font-semibold transition-colors hover:border-accent">

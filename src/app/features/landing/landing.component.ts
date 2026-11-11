@@ -89,19 +89,19 @@ function toTeamCard(entry: ShowcaseEntry): TeamCard {
 const EXAMPLE_TEAM_CARDS: TeamCard[] = [
   {
     key: 'exemple-1', kind: 'project', badge: 'Projet', initial: 'L', name: 'Loop Market', subtitle: 'E-commerce responsable',
-    summary: 'Une boutique de produits reconditionnés cherche son associé pour accélérer ses ventes.',
+    summary: 'Une boutique de produits reconditionnés cherche son associé pour accélérer ses ventes',
     meta: [{ icon: 'stage', text: 'Premières ventes' }, { icon: 'place', text: 'Lyon' }],
     chipsLabel: 'Recherche', chips: ['Associé commercial', 'Acquisition'], linkLabel: 'Découvrir le projet',
   },
   {
     key: 'exemple-2', kind: 'project', badge: 'Projet', initial: 'P', name: 'Planéo', subtitle: 'Logiciel pour les professionnels de santé',
-    summary: 'Un outil de planning pour les cabinets médicaux, prêt à accueillir ses premiers utilisateurs.',
+    summary: 'Un outil de planning pour les cabinets médicaux, prêt à accueillir ses premiers utilisateurs',
     meta: [{ icon: 'stage', text: 'Prototype prêt' }, { icon: 'place', text: 'À distance' }],
     chipsLabel: 'Recherche', chips: ['Associé technique', 'Développement'], linkLabel: 'Découvrir le projet',
   },
   {
     key: 'exemple-3', kind: 'talent', badge: 'Associée', initial: 'S', name: 'Sarah M.', subtitle: 'Growth marketer',
-    summary: '5 ans en acquisition. Souhaite rejoindre un projet en phase de lancement.',
+    summary: '5 ans en acquisition. Souhaite rejoindre un projet en phase de lancement',
     meta: [{ icon: 'place', text: 'Paris' }, { icon: 'time', text: '2 jours / semaine' }],
     chipsLabel: 'Compétences', chips: ['SEO', 'Acquisition', 'Stratégie'], linkLabel: 'Voir le profil',
   },
@@ -128,13 +128,13 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
           <div class="lg:col-span-6">
             <h1 class="max-w-[16ch] text-[2.2rem] leading-[1.08] text-white sm:text-[3.5rem] lg:text-[3.75rem]">
               @if (showAssociates) {
-                Reprenez une entreprise. Trouvez vos associés.
+                Reprenez une entreprise. Trouvez vos associés
               } @else {
                 Reprenez une entreprise qui a déjà ses clients
               }
             </h1>
             <p class="mt-5 hidden max-w-[48ch] text-lg leading-relaxed text-white/70 sm:block">
-              Des entreprises à reprendre partout en France, et des associés pour lancer ou développer votre projet.
+              Des entreprises à reprendre partout en France, et des associés pour lancer ou développer votre projet
             </p>
 
             <!-- Téléphones : deux boutons courts à la place des cartes. -->
@@ -149,13 +149,13 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
             <div class="mt-9 hidden gap-3 sm:grid" [class]="showAssociates ? 'sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : ''">
               <a href="#entreprises" (click)="scrollTo($event, 'entreprises')" class="group flex flex-col rounded-xl border border-white/20 bg-white/[0.06] p-5 transition-colors hover:border-white/60 hover:bg-white/[0.1]">
                 <span class="text-lg font-bold text-white">Explorer les entreprises</span>
-                <span class="mt-1.5 flex-1 text-base leading-relaxed text-white/70">Commerces, services, industrie, activités en ligne : découvrez celles qui sont à reprendre.</span>
+                <span class="mt-1.5 flex-1 text-base leading-relaxed text-white/70">Commerces, services, industrie, activités en ligne : découvrez celles qui sont à reprendre</span>
                 <span class="mt-4 whitespace-nowrap font-semibold text-[#9DB8FF] group-hover:text-white">Voir les entreprises&nbsp;→</span>
               </a>
               @if (showAssociates) {
                 <a [routerLink]="associatesHref()" class="group flex flex-col rounded-xl border border-white/20 bg-white/[0.06] p-5 transition-colors hover:border-white/60 hover:bg-white/[0.1]">
                   <span class="text-lg font-bold text-white">Trouver des associés et une équipe</span>
-                  <span class="mt-1.5 flex-1 text-base leading-relaxed text-white/70">Présentez votre projet ou rejoignez une équipe qui cherche vos compétences.</span>
+                  <span class="mt-1.5 flex-1 text-base leading-relaxed text-white/70">Présentez votre projet ou rejoignez une équipe qui cherche vos compétences</span>
                   <span class="mt-4 whitespace-nowrap font-semibold text-[#9DB8FF] group-hover:text-white">Voir les projets et associés&nbsp;→</span>
                 </a>
               }
@@ -319,7 +319,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
         <section class="bg-secondary px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-20" aria-labelledby="team-title">
           <div class="mx-auto max-w-[78rem]">
             <h2 id="team-title" class="text-center text-3xl text-primary sm:text-4xl">Projets et associés</h2>
-            <p class="mx-auto mt-3 hidden max-w-[56ch] text-center text-lg text-muted-foreground sm:block">Trouvez les compétences pour avancer, ou un projet à rejoindre.</p>
+            <p class="mx-auto mt-3 hidden max-w-[56ch] text-center text-lg text-muted-foreground sm:block">Trouvez les compétences pour avancer, ou un projet à rejoindre</p>
             <div class="mt-6 grid gap-4 sm:mt-10 sm:gap-6 md:grid-cols-3 max-sm:[&>*:nth-child(3)]:hidden">
               @for (card of teamCards(); track card.key) {
                 <article class="flex flex-col rounded-2xl bg-white p-4 shadow-lg ring-1 ring-border sm:p-6">
@@ -457,11 +457,11 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
           <div class="p-8 sm:p-12 lg:col-span-7">
             <p class="text-[1.75rem] font-bold leading-snug tracking-tight text-primary sm:text-[2.1rem]">
               Une entreprise, ce sont des années de travail, des clients qui vous font confiance, parfois une équipe.
-              La transmettre mérite mieux qu'une petite annonce.
+              La transmettre mérite mieux qu'une petite annonce
             </p>
             <p class="mt-6 max-w-[56ch] text-base leading-relaxed text-muted-foreground">
               Chaque année, des entreprises rentables ferment faute de repreneur, pendant que d'autres cherchent
-              à racheter une activité qui tourne déjà. GoFounders les rapproche, discrètement et sans commission.
+              à racheter une activité qui tourne déjà. GoFounders les rapproche, discrètement et sans commission
             </p>
             <p class="mt-5 font-bold text-primary">L'équipe GoFounders</p>
           </div>
@@ -477,9 +477,9 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
 
       <section class="hidden bg-secondary px-4 py-16 sm:block sm:px-6 lg:px-8 lg:py-24" aria-labelledby="prices-title">
         <div class="mx-auto max-w-[78rem]">
-          <h2 id="prices-title" class="text-center text-3xl text-primary sm:text-4xl">Vendre est gratuit. Une mise en relation coûte {{ buyerPrice }}.</h2>
+          <h2 id="prices-title" class="text-center text-3xl text-primary sm:text-4xl">Vendre est gratuit. Une mise en relation coûte {{ buyerPrice }}</h2>
           <p class="mx-auto mt-3 max-w-[60ch] text-center text-lg text-muted-foreground">
-            Aucune commission sur la vente, aucun abonnement.
+            Aucune commission sur la vente, aucun abonnement
           </p>
           <div class="mx-auto mt-12 grid max-w-4xl gap-6 md:grid-cols-2">
             @for (row of priceRows; track row.who; let first = $first) {
@@ -522,7 +522,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       <!-- Téléphones : petit encart vendeur. -->
       <section class="px-4 py-8 sm:hidden" aria-label="Vendre son entreprise">
         <div class="flex items-center justify-between gap-4 rounded-2xl bg-primary px-5 py-4 text-white">
-          <p class="font-semibold">Vous vendez ? Publiez gratuitement.</p>
+          <p class="font-semibold">Vous vendez ? Publiez gratuitement</p>
           <a routerLink="/ma/deposer" class="flex-shrink-0 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white">Déposer</a>
         </div>
       </section>
@@ -535,7 +535,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
             <div>
               <h2 id="sell-title" class="text-3xl sm:text-4xl">Vous pensez à passer la main ?</h2>
               <p class="mt-3 max-w-[60ch] text-lg leading-relaxed text-white/75">
-                Déposez votre annonce gratuitement. Elle reste anonyme : seuls les repreneurs qui acceptent l'engagement de confidentialité et débloquent votre dossier voient le détail et vos coordonnées.
+                Déposez votre annonce gratuitement. Elle reste anonyme : seuls les repreneurs qui acceptent l'engagement de confidentialité et débloquent votre dossier voient le détail et vos coordonnées
               </p>
             </div>
             <div class="flex flex-shrink-0 flex-col gap-3 sm:flex-row sm:items-center">
@@ -555,7 +555,7 @@ export class LandingComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
   private readonly showcaseService = inject(ShowcaseService);
-  readonly introSummary = INTRO_SUMMARY;
+  readonly introSummary = INTRO_SUMMARY.replace(/\.$/, '');
   // Aperçu « Projets et associés » : deux projets et un associé de la vitrine publique (profils anonymisés).
   readonly showcase = signal<ShowcaseEntry[]>([]);
   // Tant qu'aucun membre n'est sur la vitrine, des exemples fictifs (signalés comme tels) illustrent la section.
@@ -620,9 +620,9 @@ export class LandingComponent implements OnInit {
   readonly associatesHref = computed(() => (isTalentMarketplaceRole(this.auth.currentUser()?.profileType) ? '/recherche' : '/associes'));
 
   readonly steps = [
-    { title: 'Parcourez les annonces', description: 'Secteur, région, chiffres clés et fourchette de prix : les annonces anonymisées sont visibles par tous.' },
-    { title: 'Débloquez le dossier', description: `Après un engagement de confidentialité, ${OFFER_PRICES.INTRO.label} ouvrent aussitôt le dossier complet et les coordonnées du cédant, sans attendre son accord.` },
-    { title: 'Échangez avec le cédant', description: 'En direct dans la messagerie, sans intermédiaire. Faites-vous accompagner par un expert-comptable et un avocat pour la suite.' },
+    { title: 'Parcourez les annonces', description: 'Secteur, région, chiffres clés et fourchette de prix : les annonces anonymisées sont visibles par tous' },
+    { title: 'Débloquez le dossier', description: `Après un engagement de confidentialité, ${OFFER_PRICES.INTRO.label} ouvrent aussitôt le dossier complet et les coordonnées du cédant, sans attendre son accord` },
+    { title: 'Échangez avec le cédant', description: 'En direct dans la messagerie, sans intermédiaire. Faites-vous accompagner par un expert-comptable et un avocat pour la suite' },
   ];
 
 

@@ -149,7 +149,7 @@ import { AuthService } from '../../../core/services/auth.service';
             </div>
             <div>
               <h3 class="text-xl font-semibold text-primary">Se déconnecter ?</h3>
-              <p class="text-sm text-muted-foreground">Votre session actuelle sera fermée.</p>
+              <p class="text-sm text-muted-foreground">Votre session actuelle sera fermée</p>
             </div>
           </div>
 

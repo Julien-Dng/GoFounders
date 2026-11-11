@@ -192,7 +192,7 @@ interface QuickActionItem {
                     <div class="h-full rounded-full bg-primary" [style.width.%]="profileComplete()"></div>
                   </div>
                 </div>
-                <p class="mb-4 text-sm text-muted-foreground">Complétez votre profil pour augmenter vos chances de match.</p>
+                <p class="mb-4 text-sm text-muted-foreground">Complétez votre profil pour augmenter vos chances de match</p>
                 <a routerLink="/profil/modifier" class="block w-full rounded-lg border border-border py-2 text-center text-sm font-semibold transition-colors hover:border-accent">
                   Compléter mon profil
                 </a>
@@ -207,7 +207,7 @@ interface QuickActionItem {
                     </svg>
                   </div>
                   <h3 class="mb-2 text-lg font-semibold">Passez en PRO</h3>
-                  <p class="mb-4 text-sm leading-relaxed opacity-90">Contacts illimités, raisons détaillées de chaque score et assistant IA personnel.</p>
+                  <p class="mb-4 text-sm leading-relaxed opacity-90">Contacts illimités, raisons détaillées de chaque score et assistant IA personnel</p>
                   <a routerLink="/tarifs" fragment="associes" class="block w-full rounded-lg bg-white py-2.5 text-center font-semibold text-accent transition-colors hover:bg-white/95">Découvrir PRO</a>
                 </div>
               }
@@ -234,7 +234,7 @@ interface QuickActionItem {
                       </a>
                     </div>
                   } @else if (matches().length === 0) {
-                    <p class="rounded-xl bg-secondary p-4 text-sm text-muted-foreground">Aucun profil à vous proposer pour le moment. Complétez votre profil pour améliorer vos suggestions.</p>
+                    <p class="rounded-xl bg-secondary p-4 text-sm text-muted-foreground">Aucun profil à vous proposer pour le moment. Complétez votre profil pour améliorer vos suggestions</p>
                   }
                   @for (match of matches(); track match.id) {
                     <a [routerLink]="['/profil', match.id]" class="flex items-center gap-4 rounded-xl border border-border p-4 transition-colors hover:border-primary/30 hover:bg-secondary">
@@ -269,7 +269,7 @@ interface QuickActionItem {
                       </svg>
                     </a>
                   } @empty {
-                    <p class="text-sm text-muted-foreground">Aucune activité récente pour le moment.</p>
+                    <p class="text-sm text-muted-foreground">Aucune activité récente pour le moment</p>
                   }
                 </div>
               </div>

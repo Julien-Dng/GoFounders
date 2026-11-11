@@ -16,7 +16,7 @@ import { ModeratedListing, ModerationAction, ModerationFilter, ModerationService
         <h1 class="text-3xl font-semibold text-primary">Modération des annonces</h1>
 
         @if (!isAdmin()) {
-          <p class="mt-4 text-muted-foreground">Page réservée aux administrateurs.</p>
+          <p class="mt-4 text-muted-foreground">Page réservée aux administrateurs</p>
         } @else {
           <p class="mt-2 max-w-3xl text-sm text-muted-foreground">
             Une nouvelle annonce (ou une annonce modifiée) reste invisible jusqu'à votre relecture : délai annoncé aux vendeurs,

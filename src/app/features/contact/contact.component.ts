@@ -19,7 +19,7 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
           <header class="mx-auto max-w-[60ch] text-center">
             <h1 class="text-[2.25rem] leading-tight text-primary sm:text-5xl">Contactez-nous</h1>
             <p class="mt-4 text-lg leading-relaxed text-muted-foreground">
-              Une question sur une annonce, un paiement ou la vente de votre entreprise ? Écrivez-nous, nous vous répondons par email.
+              Une question sur une annonce, un paiement ou la vente de votre entreprise ? Écrivez-nous, nous vous répondons par email
             </p>
           </header>
 
@@ -41,14 +41,14 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
                       <label for="contact-name" class="mb-1.5 block font-semibold text-primary">Nom</label>
                       <input id="contact-name" type="text" formControlName="name" autocomplete="name" maxlength="120" class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" [attr.aria-invalid]="showError('name')">
                       @if (showError('name')) {
-                        <p class="mt-1 text-sm text-destructive">Indiquez votre nom.</p>
+                        <p class="mt-1 text-sm text-destructive">Indiquez votre nom</p>
                       }
                     </div>
                     <div>
                       <label for="contact-email" class="mb-1.5 block font-semibold text-primary">Email</label>
                       <input id="contact-email" type="email" formControlName="email" autocomplete="email" maxlength="200" class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" [attr.aria-invalid]="showError('email')">
                       @if (showError('email')) {
-                        <p class="mt-1 text-sm text-destructive">Indiquez une adresse email valide, nous vous répondrons à cette adresse.</p>
+                        <p class="mt-1 text-sm text-destructive">Indiquez une adresse email valide, nous vous répondrons à cette adresse</p>
                       }
                     </div>
                   </div>
@@ -66,7 +66,7 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
                     <label for="contact-message" class="mb-1.5 block font-semibold text-primary">Message</label>
                     <textarea id="contact-message" formControlName="message" rows="6" maxlength="3000" class="w-full resize-y rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20" placeholder="Décrivez votre demande. Pour une annonce, indiquez son secteur et sa région." [attr.aria-invalid]="showError('message')"></textarea>
                     <div class="mt-1 flex justify-between gap-4 text-sm">
-                      <span [class]="showError('message') ? 'text-destructive' : 'text-muted-foreground'">20 caractères minimum.</span>
+                      <span [class]="showError('message') ? 'text-destructive' : 'text-muted-foreground'">20 caractères minimum</span>
                       <span class="tabular text-muted-foreground">{{ form.controls.message.value.length }} / 3000</span>
                     </div>
                   </div>
@@ -106,14 +106,14 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
               <div class="rounded-2xl bg-white p-6 shadow-lg ring-1 ring-border">
                 <h2 class="text-lg font-bold text-primary">Être accompagné</h2>
                 <p class="mt-2 text-base leading-relaxed text-muted-foreground">
-                  Pour préparer une cession ou une reprise avec nos experts partenaires, demandez un devis gratuit.
+                  Pour préparer une cession ou une reprise avec nos experts partenaires, demandez un devis gratuit
                 </p>
                 <a routerLink="/tarifs" fragment="premium" class="mt-4 inline-block rounded-lg bg-primary px-5 py-3 font-semibold text-white transition-colors hover:bg-primary/90">Demander un devis</a>
               </div>
               <div class="rounded-2xl bg-primary p-6 text-white shadow-lg">
                 <h2 class="text-lg font-bold">Par email</h2>
                 <a [href]="'mailto:' + supportEmail" class="mt-2 inline-block break-all text-lg font-semibold underline decoration-white/40 underline-offset-4 hover:decoration-white">{{ supportEmail }}</a>
-                <p class="mt-3 text-sm text-white/65">GoFounders met en relation et n'assure pas de conseil juridique ou financier.</p>
+                <p class="mt-3 text-sm text-white/65">GoFounders met en relation et n'assure pas de conseil juridique ou financier</p>
               </div>
             </aside>
           </div>

@@ -24,7 +24,7 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
           <header class="max-w-[60ch]">
             <h1 class="text-[2.25rem] leading-tight text-primary sm:text-5xl">Combien vaut votre entreprise ?</h1>
             <p class="mt-4 text-lg leading-relaxed text-muted-foreground">
-              Une première fourchette en deux minutes, gratuite et sans inscription. Le calcul est expliqué ligne par ligne.
+              Une première fourchette en deux minutes, gratuite et sans inscription. Le calcul est expliqué ligne par ligne
             </p>
           </header>
 
@@ -47,7 +47,7 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
                 <div>
                   <label for="est-margin" class="mb-1.5 block font-medium text-primary">Marge nette (%)</label>
                   <input id="est-margin" type="number" min="-100" max="100" step="1" inputmode="decimal" [value]="margin() || ''" (input)="margin.set(toNumber($event))" placeholder="Ex. 22" class="tabular w-full rounded border border-input bg-white px-3 py-3 text-base outline-none focus:border-accent">
-                  <p class="mt-1 text-sm text-muted-foreground">Bénéfice net divisé par le chiffre d'affaires.</p>
+                  <p class="mt-1 text-sm text-muted-foreground">Bénéfice net divisé par le chiffre d'affaires</p>
                 </div>
               </div>
 
@@ -92,7 +92,7 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
                 @if (result(); as estimate) {
                   <p class="text-muted-foreground">Valeur estimée de votre entreprise</p>
                   <p class="tabular mt-2 text-[2.5rem] font-semibold leading-tight tracking-tight text-amber-600">{{ euros(estimate.valueLow) }} à {{ euros(estimate.valueHigh) }}</p>
-                  <p class="mt-2 text-sm text-muted-foreground">Estimation indicative, non contractuelle.</p>
+                  <p class="mt-2 text-sm text-muted-foreground">Estimation indicative, non contractuelle</p>
 
                   <dl class="tabular mt-6 space-y-2 border-t border-border pt-5 text-base">
                     <div class="flex justify-between gap-4"><dt class="text-muted-foreground">Bénéfice net annuel</dt><dd class="font-semibold text-primary">{{ euros(estimate.netProfit) }}</dd></div>
@@ -114,7 +114,7 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
                   <a [routerLink]="'/ma/deposer'" [queryParams]="depositParams()" class="mt-6 block rounded bg-accent px-5 py-3.5 text-center font-medium text-white transition-colors hover:bg-accent/90">
                     Déposer mon annonce avec ces chiffres
                   </a>
-                  <p class="mt-2 text-center text-sm text-muted-foreground">Gratuit, anonyme, sans commission sur la vente.</p>
+                  <p class="mt-2 text-center text-sm text-muted-foreground">Gratuit, anonyme, sans commission sur la vente</p>
                   <a routerLink="/tarifs" fragment="premium" class="mt-4 block text-center font-medium text-accent underline-offset-4 hover:underline">Être accompagné par un professionnel</a>
                 } @else {
                   <p class="font-medium text-primary">Votre estimation s'affiche ici</p>

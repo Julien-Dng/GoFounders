@@ -15,7 +15,7 @@ import { PendingSuccessStory, PriceDisplay, SuccessStoriesService } from '../../
         <h1 class="text-3xl font-semibold text-primary">Ventes à valider</h1>
 
         @if (!isAdmin()) {
-          <p class="mt-4 text-muted-foreground">Page réservée aux administrateurs.</p>
+          <p class="mt-4 text-muted-foreground">Page réservée aux administrateurs</p>
         } @else {
           <p class="mt-2 text-sm text-muted-foreground">
             Vérifiez que la vente est plausible (prix cohérent avec la fourchette de l'annonce, idéalement confirmée par le vendeur

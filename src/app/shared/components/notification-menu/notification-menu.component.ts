@@ -117,7 +117,7 @@ import { NotificationService } from '../../../core/services/notification.service
                   </svg>
                 </div>
                 <p class="text-sm font-semibold text-primary">Aucune notification</p>
-                <p class="mt-1 text-sm leading-relaxed text-muted-foreground">Les nouvelles alertes apparaîtront ici.</p>
+                <p class="mt-1 text-sm leading-relaxed text-muted-foreground">Les nouvelles alertes apparaîtront ici</p>
               </div>
             }
           </div>

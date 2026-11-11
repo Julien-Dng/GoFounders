@@ -26,7 +26,7 @@ import { VerifiedBadgeComponent } from '../../../shared/components/verified-badg
           <div>
             <h1 class="text-[2.25rem] leading-tight text-white sm:text-5xl">Entreprises à reprendre</h1>
             <p class="mt-3 max-w-[62ch] text-lg leading-relaxed text-white/70 sm:mt-4">
-              Des entreprises rentables de tous secteurs, partout en France : commerces, restaurants, artisans, services, industrie et entreprises en ligne.
+              Des entreprises rentables de tous secteurs, partout en France : commerces, restaurants, artisans, services, industrie et entreprises en ligne
             </p>
           </div>
           @if (canDepositListing()) {
@@ -138,7 +138,7 @@ import { VerifiedBadgeComponent } from '../../../shared/components/verified-badg
 
               @if (filteredListings().length === 0) {
                 <div class="py-16 text-center">
-                  <p class="text-base text-muted-foreground">Aucune annonce ne correspond à ces critères.</p>
+                  <p class="text-base text-muted-foreground">Aucune annonce ne correspond à ces critères</p>
                   @if (activeFilterCount() > 0) {
                     <button type="button" (click)="resetFilters()" class="mt-3 font-medium text-accent underline-offset-4 hover:underline">Effacer les filtres</button>
                   }
@@ -216,7 +216,7 @@ import { VerifiedBadgeComponent } from '../../../shared/components/verified-badg
                   }
                 </ul>
                 <p class="mt-6 text-sm text-muted-foreground">
-                  Chiffres déclarés par les cédants. Prix indicatifs, non contractuels ; le bénéfice et le multiple sont calculés à partir du chiffre d'affaires et de la marge annoncés.
+                  Chiffres déclarés par les cédants. Prix indicatifs, non contractuels ; le bénéfice et le multiple sont calculés à partir du chiffre d'affaires et de la marge annoncés
                 </p>
               }
             </div>
@@ -233,7 +233,7 @@ import { VerifiedBadgeComponent } from '../../../shared/components/verified-badg
           <div>
             <h2 id="ma-sell-title" class="text-3xl sm:text-4xl">Vous souhaitez vendre votre entreprise ?</h2>
             <p class="mt-3 max-w-[60ch] text-base leading-relaxed text-primary-foreground/75">
-              Publication gratuite pendant le lancement. Votre annonce reste anonyme et les détails sont réservés aux repreneurs vérifiés.
+              Publication gratuite pendant le lancement. Votre annonce reste anonyme et les détails sont réservés aux repreneurs vérifiés
             </p>
           </div>
           @if (canDepositListing()) {
@@ -242,7 +242,7 @@ import { VerifiedBadgeComponent } from '../../../shared/components/verified-badg
               <a routerLink="/ma/deposer" class="rounded bg-white px-6 py-3.5 text-center font-medium text-primary transition-colors hover:bg-white/90">Déposer mon annonce</a>
             </div>
           } @else {
-            <p class="text-base text-primary-foreground/75">Le dépôt d'annonce est réservé aux comptes vendeur et professionnels.</p>
+            <p class="text-base text-primary-foreground/75">Le dépôt d'annonce est réservé aux comptes vendeur et professionnels</p>
           }
         </div>
       </section>
@@ -273,7 +273,7 @@ export class MaHomeComponent implements OnInit {
   );
 
   readonly introPrice = OFFER_PRICES.INTRO.label;
-  readonly introSummary = INTRO_SUMMARY;
+  readonly introSummary = INTRO_SUMMARY.replace(/\.$/, '');
   readonly revenueRanges = [
     { value: '', label: 'Tous les montants' },
     { value: '0-100000', label: 'Moins de 100 k€' },

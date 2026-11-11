@@ -40,7 +40,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
             </a>
             <h1 class="text-3xl font-semibold text-primary sm:text-4xl">Modifier mon profil</h1>
             <p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Ajoutez une bio, une photo et vos liens professionnels pour rendre votre profil plus crédible.
+              Ajoutez une bio, une photo et vos liens professionnels pour rendre votre profil plus crédible
             </p>
           </div>
 
@@ -53,7 +53,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
         <div class="mb-6 rounded-lg bg-white shadow-lg ring-1 ring-border p-5 sm:p-6">
           <h2 class="text-2xl text-primary">Un profil complet inspire plus vite confiance</h2>
           <p class="mt-2 max-w-2xl text-base leading-relaxed text-muted-foreground">
-            Ajoutez une photo nette, une bio concrète et quelques liens utiles. L'objectif n'est pas de faire long, mais de donner assez de signaux pour déclencher une conversation qualifiée.
+            Ajoutez une photo nette, une bio concrète et quelques liens utiles. L'objectif n'est pas de faire long, mais de donner assez de signaux pour déclencher une conversation qualifiée
           </p>
         </div>
 
@@ -112,7 +112,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
             <div [formGroup]="profileForm" class="space-y-8">
               <div>
                 <h2 class="text-xl font-semibold text-primary">Informations principales</h2>
-                <p class="mt-1 text-sm text-muted-foreground">Ce sont les premières informations vues sur votre profil.</p>
+                <p class="mt-1 text-sm text-muted-foreground">Ce sont les premières informations vues sur votre profil</p>
 
                 <div class="mt-5 grid gap-5 md:grid-cols-2">
                   <div>
@@ -172,7 +172,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                   placeholder="Présentez votre parcours, ce que vous construisez ou ce que vous pouvez apporter à un projet..."
                 ></textarea>
                 <div class="mt-2 flex items-center justify-between text-sm text-muted-foreground">
-                  <span>Un texte court, concret et humain fonctionne mieux qu'un CV complet.</span>
+                  <span>Un texte court, concret et humain fonctionne mieux qu'un CV complet</span>
                   <span>{{ profileForm.controls.bio.getRawValue().length }}/700</span>
                 </div>
               </div>
@@ -187,7 +187,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                     class="w-full resize-none rounded-xl border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
                     placeholder="Angular, Firebase, Sales B2B, Growth..."
                   ></textarea>
-                  <p class="mt-2 text-sm text-muted-foreground">Séparez les compétences par des virgules.</p>
+                  <p class="mt-2 text-sm text-muted-foreground">Séparez les compétences par des virgules</p>
                 </div>
 
                 <div>
@@ -199,7 +199,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                     class="w-full resize-none rounded-xl border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
                     placeholder="Co-fondateur technique, projet SaaS, associé sales..."
                   ></textarea>
-                  <p class="mt-2 text-sm text-muted-foreground">Ces tags aident à comprendre rapidement votre objectif.</p>
+                  <p class="mt-2 text-sm text-muted-foreground">Ces tags aident à comprendre rapidement votre objectif</p>
                 </div>
               </div>
 
@@ -208,7 +208,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                   <h2 class="text-xl font-semibold text-primary">Votre fiche professionnelle</h2>
                   <p class="mt-1 text-sm text-muted-foreground">
                     Votre métier, votre intitulé, votre localisation, votre présentation et votre site apparaissent dans l'annuaire
-                    quand votre fiche est active.
+                    quand votre fiche est active
                   </p>
                   <label for="pro-category" class="mb-2 mt-4 block text-sm font-semibold">Métier</label>
                   <select id="pro-category" [value]="proCategory()" (change)="proCategory.set($any($event.target).value)" class="w-full rounded-xl border border-border bg-white px-4 py-3 outline-none focus:border-accent sm:max-w-sm">
@@ -271,15 +271,15 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                       <div class="text-sm font-semibold text-accent">Annonce visible par les associés</div>
                       <h2 class="mt-1 text-xl font-semibold text-primary">Mon annonce de projet</h2>
                       <p class="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                        Modifiez ici le projet créé lors de votre inscription. Les informations publiées alimentent directement les résultats de recherche des associés.
+                        Modifiez ici le projet créé lors de votre inscription. Les informations publiées alimentent directement les résultats de recherche des associés
                       </p>
                       <p class="mt-3 flex max-w-2xl items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm leading-relaxed text-foreground/80">
                         <svg class="mt-0.5 flex-shrink-0 text-emerald-600" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                         </svg>
                         <span>
-                          <strong>Votre idée reste protégée.</strong> Votre projet n'est visible que par les associés, jamais par les autres porteurs de projet.
-                          Les détails sensibles vont dans la partie confidentielle : vous choisissez qui y accède, et pouvez exiger un engagement de confidentialité (NDA).
+                          <strong>Votre idée reste protégée</strong> Votre projet n'est visible que par les associés, jamais par les autres porteurs de projet.
+                          Les détails sensibles vont dans la partie confidentielle : vous choisissez qui y accède, et pouvez exiger un engagement de confidentialité (NDA)
                         </span>
                       </p>
                     </div>
@@ -367,7 +367,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                           class="w-full resize-none rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
                           placeholder="CTO, développeur frontend, commercial..."
                         ></textarea>
-                        <p class="mt-2 text-sm text-muted-foreground">Séparez les profils par des virgules.</p>
+                        <p class="mt-2 text-sm text-muted-foreground">Séparez les profils par des virgules</p>
                       </div>
 
                       <div>
@@ -379,7 +379,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                           class="w-full resize-none rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
                           placeholder="Angular, UX/UI, vente B2B..."
                         ></textarea>
-                        <p class="mt-2 text-sm text-muted-foreground">Séparez les compétences par des virgules.</p>
+                        <p class="mt-2 text-sm text-muted-foreground">Séparez les compétences par des virgules</p>
                       </div>
 
                       <div class="md:col-span-2">
@@ -411,7 +411,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                           <h3 class="text-base font-semibold text-primary">Partie confidentielle</h3>
                         </div>
                         <p class="mt-1 text-sm leading-relaxed text-muted-foreground">
-                          Invisible dans la recherche. Un associé doit vous demander l'accès, et vous acceptez ou refusez chaque demande.
+                          Invisible dans la recherche. Un associé doit vous demander l'accès, et vous acceptez ou refusez chaque demande
                         </p>
 
                         <div class="mt-4 rounded-xl bg-secondary/70 px-4 py-3 text-sm leading-relaxed text-foreground/80">
@@ -419,7 +419,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                           <ul class="list-disc space-y-0.5 pl-4">
                             <li>le fonctionnement détaillé du produit, l'algorithme, le code ;</li>
                             <li>les noms de clients, partenaires et pilotes, et les prix négociés ;</li>
-                            <li>les chiffres financiers et la stratégie de lancement.</li>
+                            <li>les chiffres financiers et la stratégie de lancement</li>
                           </ul>
                           <div class="mt-1">Dans la partie publique, décrivez le problème, le stade du projet et les profils recherchés.</div>
                         </div>
@@ -465,10 +465,10 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                 @if (projectId()) {
                   <div id="demandes-acces" class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-5 sm:p-6">
                     <h2 class="text-xl font-semibold text-primary">Demandes d'accès à la partie confidentielle</h2>
-                    <p class="mt-1 text-sm text-muted-foreground">Acceptez les associés avec qui vous voulez aller plus loin. Vous pouvez retirer un accès à tout moment.</p>
+                    <p class="mt-1 text-sm text-muted-foreground">Acceptez les associés avec qui vous voulez aller plus loin. Vous pouvez retirer un accès à tout moment</p>
 
                     @if (accessRequests().length === 0) {
-                      <p class="mt-4 rounded-xl bg-secondary/60 px-4 py-3 text-sm text-muted-foreground">Aucune demande pour l'instant.</p>
+                      <p class="mt-4 rounded-xl bg-secondary/60 px-4 py-3 text-sm text-muted-foreground">Aucune demande pour l'instant</p>
                     } @else {
                       <ul class="mt-4 divide-y divide-border">
                         @for (request of accessRequests(); track request.id) {
@@ -519,7 +519,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
 
               <div>
                 <h2 class="text-xl font-semibold text-primary">Liens professionnels</h2>
-                <p class="mt-1 text-sm text-muted-foreground">Ajoutez seulement les liens utiles pour inspirer confiance.</p>
+                <p class="mt-1 text-sm text-muted-foreground">Ajoutez seulement les liens utiles pour inspirer confiance</p>
 
                 <div class="mt-5 grid gap-5 md:grid-cols-3">
                   <div>
@@ -630,7 +630,7 @@ export class ModifierComponent implements OnInit {
     this.currentUser()?.profileType === 'seller'
       ? {
           title: 'Mon entreprise à céder',
-          description: 'Ces informations résument votre projet de cession. Le détail de votre annonce se gère depuis le dépôt M&A.',
+          description: 'Ces informations résument votre projet de cession. Le détail de votre annonce se gère depuis le dépôt M&A',
           sector: "Secteur de l'entreprise",
           budget: 'Ordre de grandeur',
           budgetPlaceholder: "CA, prix cible ou taille de l'activité",
@@ -638,7 +638,7 @@ export class ModifierComponent implements OnInit {
         }
       : {
           title: 'Ma recherche de reprise',
-          description: "Précisez le type d'entreprise que vous souhaitez reprendre pour être identifié par les vendeurs.",
+          description: "Précisez le type d'entreprise que vous souhaitez reprendre pour être identifié par les vendeurs",
           sector: "Type d'entreprise recherchée",
           budget: 'Budget indicatif',
           budgetPlaceholder: 'Ex. 150 k€ - 500 k€',

@@ -41,7 +41,7 @@ interface WaitlistEntry {
         <!-- Body -->
         <p class="text-muted-foreground leading-relaxed mb-6">
           Nous construisons actuellement notre réseau de Business Angels et VCs partenaires.
-          Rejoignez la liste d'attente pour être notifié en priorité dès l'ouverture.
+          Rejoignez la liste d'attente pour être notifié en priorité dès l'ouverture
         </p>
 
         @if (!success()) {
@@ -82,7 +82,7 @@ interface WaitlistEntry {
               </svg>
             </div>
             <p class="font-semibold text-lg text-primary mb-2">✓ Vous êtes sur la liste !</p>
-            <p class="text-muted-foreground text-sm">Nous vous contacterons en priorité.</p>
+            <p class="text-muted-foreground text-sm">Nous vous contacterons en priorité</p>
             <button (click)="close.emit()" class="mt-6 px-6 py-2.5 bg-secondary rounded-lg text-sm font-semibold hover:bg-border transition-colors">
               Fermer
             </button>

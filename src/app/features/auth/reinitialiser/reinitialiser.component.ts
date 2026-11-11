@@ -17,7 +17,7 @@ import { PasswordCriteriaComponent } from '../../../shared/components/password-c
       <div class="w-full max-w-md">
         <div class="mb-10 text-center">
           <h1 class="mb-2 text-3xl font-semibold text-primary sm:text-4xl">Nouveau mot de passe</h1>
-          <p class="text-muted-foreground">Choisissez le mot de passe de votre compte GoFounders.</p>
+          <p class="text-muted-foreground">Choisissez le mot de passe de votre compte GoFounders</p>
         </div>
 
         <div class="rounded-2xl border border-border bg-white p-6 sm:p-10">
@@ -27,7 +27,7 @@ import { PasswordCriteriaComponent } from '../../../shared/components/password-c
             }
             @case ('invalid') {
               <p class="mb-6 rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive" role="alert">
-                Ce lien a expiré ou a déjà été utilisé. Refaites une demande depuis la page de connexion.
+                Ce lien a expiré ou a déjà été utilisé. Refaites une demande depuis la page de connexion
               </p>
               <a routerLink="/connexion" class="block w-full rounded-lg bg-primary py-3 text-center font-semibold text-white hover:bg-primary/90">
                 Retour à la connexion

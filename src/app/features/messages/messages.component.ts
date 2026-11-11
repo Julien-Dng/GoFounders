@@ -220,7 +220,7 @@ interface ConversationPreview {
                 @if (selectedProfile()?.bio) {
                   <p class="line-clamp-5 whitespace-pre-line text-sm leading-relaxed text-foreground/85">{{ selectedProfile()!.bio }}</p>
                 } @else {
-                  <p class="text-sm leading-relaxed text-muted-foreground">Ce membre n'a pas encore rédigé sa présentation.</p>
+                  <p class="text-sm leading-relaxed text-muted-foreground">Ce membre n'a pas encore rédigé sa présentation</p>
                 }
               </div>
 
@@ -245,7 +245,7 @@ interface ConversationPreview {
                 </svg>
               </div>
               <h3 class="text-sm font-semibold">Profil du contact</h3>
-              <p class="mt-1 text-sm leading-relaxed text-muted-foreground">Sélectionnez une conversation pour afficher le contexte du profil.</p>
+              <p class="mt-1 text-sm leading-relaxed text-muted-foreground">Sélectionnez une conversation pour afficher le contexte du profil</p>
             </div>
           }
         </aside>

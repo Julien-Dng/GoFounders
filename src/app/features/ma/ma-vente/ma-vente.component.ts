@@ -65,7 +65,7 @@ const RANGES: Array<[number, string]> = [
 
             <label class="mt-5 block text-sm font-semibold" for="story-quote">Votre témoignage</label>
             <textarea id="story-quote" rows="4" maxlength="600" [value]="quote()" (input)="quote.set($any($event.target).value)" class="mt-1 w-full resize-y rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-accent" placeholder="Comment s'est passée la vente ? Combien de repreneurs, en combien de temps, ce qui vous a aidé…"></textarea>
-            <p class="mt-1 text-sm text-muted-foreground">{{ quote().trim().length }} / 600 caractères (20 minimum). Ne citez ni le nom de l'entreprise ni celui du repreneur.</p>
+            <p class="mt-1 text-sm text-muted-foreground">{{ quote().trim().length }} / 600 caractères (20 minimum). Ne citez ni le nom de l'entreprise ni celui du repreneur</p>
 
             <label class="mt-5 block text-sm font-semibold" for="story-author">Signature</label>
             <input id="story-author" type="text" maxlength="60" [value]="authorLabel()" (input)="authorLabel.set($any($event.target).value)" class="mt-1 w-full rounded-lg border border-border px-3 py-2.5 text-sm outline-none focus:border-accent" placeholder="Ex. Julie, fondatrice d'une boutique en ligne">
@@ -80,7 +80,7 @@ const RANGES: Array<[number, string]> = [
 
             <label class="mt-5 flex cursor-pointer items-start gap-3 text-sm">
               <input type="checkbox" class="mt-0.5" [checked]="consent()" (change)="consent.set(!consent())">
-              <span>J'accepte que GoFounders publie ce témoignage, avec le prix selon mon choix, le secteur et la région de l'annonce. Je peux le retirer à tout moment.</span>
+              <span>J'accepte que GoFounders publie ce témoignage, avec le prix selon mon choix, le secteur et la région de l'annonce. Je peux le retirer à tout moment</span>
             </label>
 
             @if (message() && !done()) {

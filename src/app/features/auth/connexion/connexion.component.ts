@@ -82,7 +82,7 @@ import { AuthService } from '../../../core/services/auth.service';
           @if (isResetFormOpen()) {
             <div class="mb-6 rounded-xl border border-accent/20 bg-accent/5 p-4 text-sm">
               <p class="mb-3 text-foreground/80">
-                Indiquez votre email ci-dessus : nous vous envoyons un lien pour choisir un nouveau mot de passe.
+                Indiquez votre email ci-dessus : nous vous envoyons un lien pour choisir un nouveau mot de passe
               </p>
               <button
                 type="button"

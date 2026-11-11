@@ -53,7 +53,7 @@ import { ConversationMessage, findConversationById, findMarketplaceProfileById }
                   </svg>
                 </div>
                 <h3 class="mb-1 text-base font-semibold text-foreground/70">Commencez la conversation</h3>
-                <p class="max-w-md text-sm">Aucun message n'a encore été échangé avec ce profil. Envoyez le premier message pour lancer le contact.</p>
+                <p class="max-w-md text-sm">Aucun message n'a encore été échangé avec ce profil. Envoyez le premier message pour lancer le contact</p>
               </div>
             }
           </div>

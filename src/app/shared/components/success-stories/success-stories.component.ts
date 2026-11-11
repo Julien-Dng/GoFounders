@@ -12,7 +12,7 @@ import { SuccessStoriesService, SuccessStory } from '../../../core/services/succ
         <div class="mx-auto max-w-[78rem]">
           <h2 id="success-stories-title" class="text-3xl text-primary sm:text-4xl">Ils ont vendu leur entreprise</h2>
           <p class="mt-3 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
-            {{ salesCount() }} vente{{ salesCount() > 1 ? 's' : '' }} conclue{{ salesCount() > 1 ? 's' : '' }} sur GoFounders. Témoignages et prix publiés avec l'accord des vendeurs.
+            {{ salesCount() }} vente{{ salesCount() > 1 ? 's' : '' }} conclue{{ salesCount() > 1 ? 's' : '' }} sur GoFounders. Témoignages et prix publiés avec l'accord des vendeurs
           </p>
           <div class="mt-10 grid gap-10 md:grid-cols-2 lg:grid-cols-3">
             @for (story of stories(); track story.id) {

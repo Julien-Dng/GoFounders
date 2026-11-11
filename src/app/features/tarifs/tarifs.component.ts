@@ -47,9 +47,9 @@ interface Plan {
           <h1 class="text-[2.25rem] leading-tight text-primary sm:text-5xl">Des offres adaptées à votre projet</h1>
           <p class="mt-4 text-lg leading-relaxed text-muted-foreground">
             @if (features.associates) {
-              Vous cherchez une entreprise à reprendre ou des personnes avec qui entreprendre ? Un seul compte, et les offres qui correspondent à votre objectif.
+              Vous cherchez une entreprise à reprendre ou des personnes avec qui entreprendre ? Un seul compte, et les offres qui correspondent à votre objectif
             } @else {
-              Publier une annonce est gratuit et nous ne prenons aucune commission sur la vente. Les repreneurs paient chaque mise en relation acceptée par un cédant.
+              Publier une annonce est gratuit et nous ne prenons aucune commission sur la vente. Les repreneurs ne paient que les dossiers qu'ils ouvrent
             }
           </p>
           @if (features.associates) {
@@ -160,11 +160,11 @@ interface Plan {
             <div class="mx-auto max-w-[62ch] text-center">
               <h2 id="associes-title" class="text-3xl text-primary sm:text-4xl">Trouver un associé, créer une équipe</h2>
               <p class="mt-3 text-lg leading-relaxed text-muted-foreground">
-                Présentez votre projet et trouvez les compétences qui vous manquent, ou rejoignez un projet qui vous correspond.
+                Présentez votre projet et trouvez les compétences qui vous manquent, ou rejoignez un projet qui vous correspond
               </p>
             </div>
             <p class="mx-auto mt-8 max-w-3xl rounded-xl bg-emerald-50 px-5 py-4 text-center text-base font-medium text-emerald-900 ring-1 ring-emerald-200">
-              Vous souhaitez rejoindre un projet ? Créez votre profil et échangez gratuitement, sans limite.
+              Vous souhaitez rejoindre un projet ? Créez votre profil et échangez gratuitement, sans limite
             </p>
 
             <div class="mt-10 grid gap-6 md:grid-cols-3">
@@ -283,17 +283,17 @@ interface Plan {
             <p class="mt-3 max-w-[40ch] text-base leading-relaxed text-muted-foreground">
               @if (tab() === 'associes') {
                 Recherche menée avec vous, présentation de profils qualifiés, mise en relation avec des investisseurs et nos experts partenaires.
-                Forfait sur devis.
+                Forfait sur devis
               } @else {
                 Préparation du dossier de cession, présentation de repreneurs ou de cédants qualifiés, mise en relation avec nos experts partenaires.
-                Forfait sur devis, sans commission sur la vente.
+                Forfait sur devis, sans commission sur la vente
               }
             </p>
             <ul class="mt-4 space-y-1.5 text-base text-foreground/85">
-              <li>Premier échange gratuit, devis sous 48 h ouvrées.</li>
-              <li>Un interlocuteur dédié jusqu'à la signature.</li>
+              <li>Premier échange gratuit, devis sous 48 h ouvrées</li>
+              <li>Un interlocuteur dédié jusqu'à la signature</li>
             </ul>
-            <p class="mt-4 text-sm leading-relaxed text-muted-foreground">GoFounders n'assure pas de conseil juridique : les actes sont réalisés par nos experts partenaires.</p>
+            <p class="mt-4 text-sm leading-relaxed text-muted-foreground">GoFounders n'assure pas de conseil juridique : les actes sont réalisés par nos experts partenaires</p>
             <img src="/assets/images/provisoire/accord-conclu.jpg" alt="Deux personnes se félicitent après un rendez-vous de travail" width="1400" height="933" loading="lazy" class="mt-6 hidden aspect-[3/2] w-full rounded-2xl object-cover lg:block">
           </div>
           <div class="rounded-2xl bg-secondary p-6 lg:col-span-8">
@@ -317,7 +317,7 @@ interface Plan {
             <label for="premium-message" class="mb-1.5 mt-4 block text-sm font-medium text-foreground/85">Votre situation en quelques phrases</label>
             <textarea id="premium-message" rows="4" maxlength="3000" [value]="premiumMessage()" (input)="premiumMessage.set($any($event.target).value)" class="w-full resize-y rounded border border-input bg-white px-3 py-2.5 text-base outline-none focus:border-primary" placeholder="Activité, taille, calendrier souhaité"></textarea>
             <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p class="text-sm text-muted-foreground">20 caractères minimum.</p>
+              <p class="text-sm text-muted-foreground">20 caractères minimum</p>
               <button type="button" (click)="sendPremium()" [disabled]="premiumSending() || premiumMessage().trim().length < 20" class="rounded-lg bg-accent px-5 py-3 font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-50">
                 {{ premiumSending() ? 'Envoi…' : 'Demander un devis' }}
               </button>
@@ -378,7 +378,7 @@ export class TarifsComponent {
   private readonly route = inject(ActivatedRoute);
 
   readonly features = FEATURES;
-  readonly introSummary = INTRO_SUMMARY;
+  readonly introSummary = INTRO_SUMMARY.replace(/\.$/, '');
   // Deux univers d'offres, un seul compte : l'onglet ne fait que filtrer ce qui est présenté.
   readonly tabs = [
     { id: 'reprise' as const, label: 'Reprendre ou céder une entreprise' },
@@ -441,12 +441,12 @@ export class TarifsComponent {
     {
       id: 'repreneurs',
       title: 'Repreneurs',
-      description: 'Débloquez le dossier complet et le contact du cédant des entreprises qui vous intéressent, une par une.',
+      description: 'Débloquez le dossier complet et le contact du cédant des entreprises qui vous intéressent, une par une',
       offers: [
         {
           title: 'Reprendre une entreprise',
           price: `${OFFER_PRICES.INTRO.label} par entreprise`,
-          description: 'Un paiement unique par dossier, sans abonnement.',
+          description: 'Un paiement unique par dossier, sans abonnement',
           features: [
             'Compte repreneur gratuit, annonces anonymisées visibles par tous',
             'Engagement de confidentialité accepté en ligne, une fois par dossier',
@@ -459,7 +459,7 @@ export class TarifsComponent {
         {
           title: 'Accès repreneur Plus',
           price: OFFER_PRICES.MA_PLUS.label,
-          description: 'Pour les repreneurs actifs qui ne veulent rater aucune opportunité.',
+          description: 'Pour les repreneurs actifs qui ne veulent rater aucune opportunité',
           features: [
             "Tout l'accès repreneur, plus :",
             "Analyses de dossier par l'IA illimitées",
@@ -480,22 +480,22 @@ export class TarifsComponent {
         {
           title: 'Céder mon entreprise',
           price: 'Gratuit',
-          description: 'Publication gratuite pendant le lancement, sans commission sur la vente.',
+          description: 'Publication gratuite pendant le lancement, sans commission sur la vente',
           features: ["Annonce anonymisée, préparée avec l'IA et relue par notre équipe avant publication", 'Vos coordonnées ne sont visibles que des repreneurs qui ont payé l’accès à votre dossier', 'Chaque repreneur accepte un engagement de confidentialité', 'Estimation gratuite de la valeur de votre entreprise'],
           link: { href: '/ma/deposer', label: 'Déposer mon annonce' },
         },
         {
           title: 'Mise en avant',
           price: `${OFFER_PRICES.FEATURE_7D.amount} € ou ${OFFER_PRICES.FEATURE_30D.amount} €`,
-          description: 'Votre annonce en tête de liste pendant 7 ou 30 jours, avec le badge « En vedette ».',
+          description: 'Votre annonce en tête de liste pendant 7 ou 30 jours, avec le badge « En vedette »',
           features: ['Affichée avant les autres annonces', 'Badge « En vedette »', 'Sans engagement'],
           link: { href: '/ma/mes-annonces', label: 'Mettre une annonce en avant' },
         },
         {
           title: 'Dossier vérifié',
           price: OFFER_PRICES.VERIFICATION.label,
-          description: "Nous comparons les chiffres de votre annonce à vos justificatifs.",
-          benefit: "Des chiffres vérifiés rassurent les repreneurs. Plus de contacts, une négociation plus solide.",
+          description: "Nous comparons les chiffres de votre annonce à vos justificatifs",
+          benefit: "Des chiffres vérifiés rassurent les repreneurs. Plus de contacts, une négociation plus solide",
           features: [
             "Chiffre d'affaires et bénéfice annoncés rapprochés de vos justificatifs : derniers bilans ou liasses fiscales, tableau de bord Stripe ou Shopify sur 12 mois",
             'Badge « Dossier vérifié » sur l’annonce',
@@ -508,19 +508,19 @@ export class TarifsComponent {
     {
       id: 'pros',
       title: 'Professionnels',
-      description: `Experts-comptables, avocats, notaires et cabinets de cession : soyez visibles auprès des cédants et des repreneurs. ${PRO_TRIAL_LABEL}, sans engagement.`,
+      description: `Experts-comptables, avocats, notaires et cabinets de cession : soyez visibles auprès des cédants et des repreneurs. ${PRO_TRIAL_LABEL}, sans engagement`,
       offers: [
         {
           title: 'Annuaire des professionnels',
           price: OFFER_PRICES.PRO_DIRECTORY.label,
-          description: `Votre fiche dans l’annuaire GoFounders. ${PRO_TRIAL_LABEL}.`,
+          description: `Votre fiche dans l’annuaire GoFounders. ${PRO_TRIAL_LABEL}`,
           features: ['Fiche avec votre métier, votre zone et votre site', 'Contactable par tous les membres', `${PRO_TRIAL_LABEL}, puis ${OFFER_PRICES.PRO_DIRECTORY.label}`, 'Sans engagement : résiliable à tout moment, même pendant l’essai'],
           ...(this.isPro() ? { product: 'PRO_DIRECTORY' as const, cta: 'Essayer gratuitement 1 mois' } : { link: { href: '/inscription', label: 'Créer un compte professionnel' } }),
         },
         {
           title: 'Compte pro',
           price: OFFER_PRICES.PRO_ACCOUNT.label,
-          description: `Pour les cabinets qui accompagnent plusieurs cessions sur GoFounders. ${PRO_TRIAL_LABEL}.`,
+          description: `Pour les cabinets qui accompagnent plusieurs cessions sur GoFounders. ${PRO_TRIAL_LABEL}`,
           features: ["Fiche dans l'annuaire, mise en avant", 'Publication de plusieurs annonces pour vos clients', 'Contact direct des repreneurs', `${PRO_TRIAL_LABEL}, puis ${OFFER_PRICES.PRO_ACCOUNT.label}, sans engagement`],
           ...(this.isPro() ? { product: 'PRO_ACCOUNT' as const, cta: 'Essayer gratuitement 1 mois' } : { link: { href: '/inscription', label: 'Créer un compte professionnel' } }),
         },

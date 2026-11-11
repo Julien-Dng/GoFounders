@@ -17,10 +17,10 @@ import { MaService, VerificationRequest } from '../../core/services/ma.service';
         <h1 class="text-3xl font-semibold text-primary">Dossiers à vérifier</h1>
 
         @if (!isAdmin()) {
-          <p class="mt-4 text-muted-foreground">Page réservée aux administrateurs.</p>
+          <p class="mt-4 text-muted-foreground">Page réservée aux administrateurs</p>
         } @else {
           <p class="mt-2 text-sm text-muted-foreground">
-            Contrôlez la cohérence des justificatifs (chiffre d'affaires, marge, ancienneté) avec l'annonce avant de poser le badge.
+            Contrôlez la cohérence des justificatifs (chiffre d'affaires, marge, ancienneté) avec l'annonce avant de poser le badge
           </p>
 
           @if (requests().length === 0) {

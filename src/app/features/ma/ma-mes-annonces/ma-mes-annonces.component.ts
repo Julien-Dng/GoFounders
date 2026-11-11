@@ -23,7 +23,7 @@ import { VerifiedBadgeComponent } from '../../../shared/components/verified-badg
         <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 class="text-3xl font-semibold text-primary sm:text-4xl">Mes annonces</h1>
-            <p class="mt-2 text-muted-foreground">Suivez la relecture de vos annonces et choisissez les repreneurs qui voient votre dossier.</p>
+            <p class="mt-2 text-muted-foreground">Suivez la relecture de vos annonces et choisissez les repreneurs qui voient votre dossier</p>
           </div>
           <div class="flex flex-wrap gap-2">
             <a routerLink="/ma/statistiques" class="rounded-lg border border-border bg-white px-5 py-3 text-center text-sm font-semibold transition-colors hover:border-primary">Mes statistiques</a>
@@ -47,7 +47,7 @@ import { VerifiedBadgeComponent } from '../../../shared/components/verified-badg
           <p class="text-muted-foreground">Chargement…</p>
         } @else if (listings().length === 0) {
           <div class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-10 text-center">
-            <p class="text-muted-foreground">Vous n'avez pas encore d'annonce.</p>
+            <p class="text-muted-foreground">Vous n'avez pas encore d'annonce</p>
           </div>
         } @else {
           <ul class="space-y-6">
@@ -68,7 +68,7 @@ import { VerifiedBadgeComponent } from '../../../shared/components/verified-badg
                     @if (reviewState(listing).note) {
                       <p class="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">Motif : {{ reviewState(listing).note }}</p>
                     } @else if (reviewState(listing).key === 'pending') {
-                      <p class="mt-2 text-sm text-muted-foreground">Notre équipe relit votre annonce avant sa publication, en général sous 24 h ouvrées. Vous serez prévenu dès qu'elle sera en ligne.</p>
+                      <p class="mt-2 text-sm text-muted-foreground">Notre équipe relit votre annonce avant sa publication, en général sous 24 h ouvrées. Vous serez prévenu dès qu'elle sera en ligne</p>
                     }
                     <p class="mt-2 line-clamp-2 text-sm text-muted-foreground">{{ listing.description }}</p>
                   </div>
@@ -90,7 +90,7 @@ import { VerifiedBadgeComponent } from '../../../shared/components/verified-badg
                     }
                   </h3>
                   @if (requestsFor(listing.id).length === 0) {
-                    <p class="mt-1 text-sm text-muted-foreground">Personne pour le moment. Chaque repreneur accepte un engagement de confidentialité avant d'ouvrir votre dossier ; vous êtes prévenu à chaque ouverture.</p>
+                    <p class="mt-1 text-sm text-muted-foreground">Personne pour le moment. Chaque repreneur accepte un engagement de confidentialité avant d'ouvrir votre dossier ; vous êtes prévenu à chaque ouverture</p>
                   } @else {
                     <ul class="mt-3 space-y-3">
                       @for (request of requestsFor(listing.id); track request.id) {
@@ -112,7 +112,7 @@ import { VerifiedBadgeComponent } from '../../../shared/components/verified-badg
                           @if (request.message) {
                             <p class="mt-2 whitespace-pre-line text-sm text-foreground/85">« {{ request.message }} »</p>
                           }
-                          <p class="mt-2 text-sm text-muted-foreground">Engagement de confidentialité accepté le {{ formatDate(request.nda_accepted_at) }}.</p>
+                          <p class="mt-2 text-sm text-muted-foreground">Engagement de confidentialité accepté le {{ formatDate(request.nda_accepted_at) }}</p>
                         </li>
                       }
                     </ul>
@@ -123,7 +123,7 @@ import { VerifiedBadgeComponent } from '../../../shared/components/verified-badg
                 <div class="mt-5 grid gap-4 border-t border-border pt-5 md:grid-cols-2">
                   <div class="rounded-xl bg-secondary/60 p-4">
                     <h3 class="font-semibold">Mise en avant</h3>
-                    <p class="mt-1 text-sm text-muted-foreground">Votre annonce en tête de liste avec le badge « En vedette ».</p>
+                    <p class="mt-1 text-sm text-muted-foreground">Votre annonce en tête de liste avec le badge « En vedette »</p>
                     <div class="mt-3 flex flex-wrap gap-2">
                       <button type="button" (click)="buy('FEATURE_7D', listing)" [disabled]="busy()" class="rounded-lg border border-border bg-white px-3 py-2 text-sm font-semibold transition-colors hover:border-primary disabled:opacity-50">7 jours · {{ prices.FEATURE_7D.amount }} €</button>
                       <button type="button" (click)="buy('FEATURE_30D', listing)" [disabled]="busy()" class="rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-accent/90 disabled:opacity-50">30 jours · {{ prices.FEATURE_30D.amount }} €</button>
@@ -133,9 +133,9 @@ import { VerifiedBadgeComponent } from '../../../shared/components/verified-badg
                   <div class="rounded-xl bg-secondary/60 p-4">
                     <h3 class="font-semibold">Dossier vérifié · {{ prices.VERIFICATION.amount }} €</h3>
                     @if (listing.verified) {
-                      <p class="mt-1 text-sm text-emerald-700">Votre annonce affiche le badge « Dossier vérifié ».</p>
+                      <p class="mt-1 text-sm text-emerald-700">Votre annonce affiche le badge « Dossier vérifié »</p>
                     } @else if (pendingRequest(listing.id)) {
-                      <p class="mt-1 text-sm text-foreground/80">Demande envoyée le {{ formatDate(pendingRequest(listing.id)!.created_at) }}, en cours d'examen par l'équipe.</p>
+                      <p class="mt-1 text-sm text-foreground/80">Demande envoyée le {{ formatDate(pendingRequest(listing.id)!.created_at) }}, en cours d'examen par l'équipe</p>
                     } @else {
                       @if (lastRejected(listing.id); as rejected) {
                         <p class="mt-1 text-sm text-destructive">Précédente demande non validée{{ rejected.admin_note ? ' : ' + rejected.admin_note : '.' }}</p>

@@ -16,7 +16,7 @@ import { OFFER_PRICES } from '../../core/config/offers';
       <div class="mx-auto max-w-[62rem] px-4 py-8 sm:px-6 lg:px-8">
         <div class="mb-8">
           <h1 class="mb-2 text-4xl font-semibold">Mon abonnement</h1>
-          <p class="text-muted-foreground">Gérez votre abonnement GoFounders et l'accès M&A.</p>
+          <p class="text-muted-foreground">Gérez votre abonnement GoFounders et l'accès M&A</p>
         </div>
 
         @if (statusMessage()) {
@@ -32,7 +32,7 @@ import { OFFER_PRICES } from '../../core/config/offers';
               <p class="text-sm text-muted-foreground">Votre plan actuel</p>
               <h2 id="abo-plan" class="mt-1 text-2xl text-primary">{{ currentPlan() }}</h2>
               <p class="mt-2 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
-                PRO : contacts illimités, raisons détaillées de chaque score de compatibilité, recherche avancée et projet mis en avant. {{ proPrice }}, sans engagement.
+                PRO : contacts illimités, raisons détaillées de chaque score de compatibilité, recherche avancée et projet mis en avant. {{ proPrice }}, sans engagement
               </p>
             </div>
             <button type="button" (click)="activatePlan('PRO')" class="w-full rounded-lg bg-primary px-5 py-3 font-medium text-white transition-colors hover:bg-primary/90">
@@ -81,7 +81,7 @@ import { OFFER_PRICES } from '../../core/config/offers';
 
         @if (!isSimulation) {
           <div class="mt-6 flex flex-col gap-3 rounded-lg bg-white shadow-lg ring-1 ring-border p-5 sm:flex-row sm:items-center sm:justify-between">
-            <p class="text-base text-muted-foreground">Moyens de paiement, factures, résiliation : tout se gère dans l'espace sécurisé de Stripe.</p>
+            <p class="text-base text-muted-foreground">Moyens de paiement, factures, résiliation : tout se gère dans l'espace sécurisé de Stripe</p>
             <button type="button" (click)="openPortal()" class="flex-shrink-0 rounded-lg border border-primary px-5 py-2.5 font-medium text-primary transition-colors hover:bg-primary hover:text-white">Gérer mes abonnements et factures</button>
           </div>
         }

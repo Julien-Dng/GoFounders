@@ -44,7 +44,7 @@ const ACTION_LINKS: Record<AiAction, ChatAction> = {
                 </svg>
                 Mon Assistant GoFounders
               </h1>
-              <p class="text-base text-muted-foreground sm:text-lg">Votre assistant personnel connaît votre profil, vos matches et vos signaux d'activité.</p>
+              <p class="text-base text-muted-foreground sm:text-lg">Votre assistant personnel connaît votre profil, vos matches et vos signaux d'activité</p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
               <a routerLink="/dashboard" class="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:text-accent">
@@ -123,7 +123,7 @@ const ACTION_LINKS: Record<AiAction, ChatAction> = {
                 <div class="space-y-6">
                   @if (chatHistory().length === 0) {
                     <div class="rounded-2xl bg-secondary p-4 leading-relaxed text-foreground">
-                      Bonjour {{ firstName() }}, je connais votre profil et votre activité sur GoFounders. Posez-moi une question ou choisissez une question suggérée.
+                      Bonjour {{ firstName() }}, je connais votre profil et votre activité sur GoFounders. Posez-moi une question ou choisissez une question suggérée
                     </div>
                   }
                   @for (msg of chatHistory(); track $index) {

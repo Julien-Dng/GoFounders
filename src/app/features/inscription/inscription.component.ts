@@ -40,7 +40,7 @@ interface ProfileOption {
               <div class="mb-8 text-center sm:mb-10">
                 <h1 class="mb-3 text-3xl font-semibold text-primary sm:text-4xl">Vous êtes plutôt…</h1>
                 <p class="mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-                  Un seul rôle par compte pour garder une recherche claire et pertinente des deux côtés.
+                  Un seul rôle par compte pour garder une recherche claire et pertinente des deux côtés
                 </p>
               </div>
 
@@ -122,7 +122,7 @@ interface ProfileOption {
               <div class="mb-8 text-center sm:mb-10">
                 <h2 class="mb-3 text-3xl font-semibold text-primary sm:text-4xl">Créez votre accès</h2>
                 <p class="text-sm text-muted-foreground sm:text-base">
-                  Quelques informations pour ouvrir votre compte {{ selectedTypeLabel() }}.
+                  Quelques informations pour ouvrir votre compte {{ selectedTypeLabel() }}
                 </p>
               </div>
 
@@ -203,7 +203,7 @@ interface ProfileOption {
 
               @if (basicsForm.invalid && basicsForm.touched) {
                 <p class="mt-5 text-sm text-destructive">
-                  Renseignez un nom, une localisation, un email valide et un mot de passe qui respecte les critères ci-dessus.
+                  Renseignez un nom, une localisation, un email valide et un mot de passe qui respecte les critères ci-dessus
                 </p>
               }
 
@@ -299,7 +299,7 @@ interface ProfileOption {
                   <label class="flex items-center justify-between gap-4 rounded-xl border border-border bg-secondary px-4 py-4 md:col-span-2">
                     <span>
                       <span class="block font-semibold text-primary">Disponible rapidement</span>
-                      <span class="text-sm text-muted-foreground">Les entrepreneurs verront si vous êtes joignable tout de suite.</span>
+                      <span class="text-sm text-muted-foreground">Les entrepreneurs verront si vous êtes joignable tout de suite</span>
                     </span>
                     <input type="checkbox" formControlName="talentAvailability" class="h-5 w-5 accent-accent">
                   </label>
@@ -371,7 +371,7 @@ interface ProfileOption {
                   </div>
 
                   <p class="text-sm text-muted-foreground md:col-span-2">
-                    Après l'inscription, activez votre fiche dans l'annuaire des professionnels depuis la page Tarifs : le premier mois est offert.
+                    Après l'inscription, activez votre fiche dans l'annuaire des professionnels depuis la page Tarifs : le premier mois est offert
                   </p>
                 </div>
               }
@@ -420,11 +420,11 @@ interface ProfileOption {
                     <span class="block font-semibold text-primary">Apparaître de façon anonyme sur la page « Trouver un associé »</span>
                     <span class="text-sm text-muted-foreground">
                       @if (selectedType() === 'talent') {
-                        Les visiteurs voient votre titre, vos compétences et votre disponibilité, jamais votre nom, votre photo ni votre ville.
+                        Les visiteurs voient votre titre, vos compétences et votre disponibilité, jamais votre nom, votre photo ni votre ville
                       } @else {
-                        Les visiteurs voient le secteur, le stade et les profils recherchés de votre projet, jamais votre nom, celui du projet ni sa description.
+                        Les visiteurs voient le secteur, le stade et les profils recherchés de votre projet, jamais votre nom, celui du projet ni sa description
                       }
-                      Modifiable à tout moment dans les paramètres.
+                      Modifiable à tout moment dans les paramètres
                     </span>
                   </span>
                 </label>
@@ -432,7 +432,7 @@ interface ProfileOption {
 
               @if (detailsForm.invalid && detailsForm.touched) {
                 <p class="mt-5 text-sm text-destructive">
-                  Complétez les informations demandées pour terminer l'inscription.
+                  Complétez les informations demandées pour terminer l'inscription
                 </p>
               }
 
@@ -444,7 +444,7 @@ interface ProfileOption {
 
               @if (returnUrl()) {
                 <div class="mt-5 rounded-xl border border-accent/20 bg-accent/5 px-4 py-3 text-sm text-accent">
-                  Une fois créé, votre compte sera redirigé vers la page demandée.
+                  Une fois créé, votre compte sera redirigé vers la page demandée
                 </div>
               }
 
@@ -583,31 +583,31 @@ export class InscriptionComponent {
       id: 'entrepreneur',
       icon: 'project',
       title: 'Je dépose un projet',
-      description: 'Je construis un projet et je veux trouver les bons associés pour le faire avancer.',
+      description: 'Je construis un projet et je veux trouver les bons associés pour le faire avancer',
     },
     {
       id: 'talent',
       icon: 'talent',
       title: 'Je veux devenir associé',
-      description: 'Je veux découvrir des projets et rejoindre une équipe entrepreneuriale.',
+      description: 'Je veux découvrir des projets et rejoindre une équipe entrepreneuriale',
     },
     {
       id: 'buyer',
       icon: 'buyer',
       title: 'Je veux reprendre une entreprise',
-      description: 'Je cherche une opportunité M&A à analyser ou acquérir avec un accès dédié.',
+      description: 'Je cherche une opportunité M&A à analyser ou acquérir avec un accès dédié',
     },
     {
       id: 'seller',
       icon: 'seller',
       title: 'Je veux céder mon entreprise',
-      description: 'Je souhaite préparer une annonce confidentielle et qualifier des repreneurs.',
+      description: 'Je souhaite préparer une annonce confidentielle et qualifier des repreneurs',
     },
     {
       id: 'pro',
       icon: 'pro',
       title: 'Je suis un professionnel',
-      description: 'Expert-comptable, avocat, notaire ou cabinet de cession : je veux être visible et accompagner des cessions.',
+      description: 'Expert-comptable, avocat, notaire ou cabinet de cession : je veux être visible et accompagner des cessions',
     },
     ];
   }

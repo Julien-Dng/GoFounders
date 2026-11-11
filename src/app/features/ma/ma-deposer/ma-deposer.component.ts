@@ -46,9 +46,9 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
               <h2 class="mb-2 text-2xl font-semibold">{{ proAccountOffered ? 'Compte pro requis' : 'Bientôt pour les cabinets' }}</h2>
               <p class="mx-auto mb-6 max-w-xl text-muted-foreground">
                 @if (proAccountOffered) {
-                  Pour publier des annonces pour vos clients et contacter les repreneurs, activez un compte pro.
+                  Pour publier des annonces pour vos clients et contacter les repreneurs, activez un compte pro
                 } @else {
-                  La publication d'annonces pour le compte de vos clients sera bientôt proposée aux cabinets. Écrivez-nous si vous êtes intéressé.
+                  La publication d'annonces pour le compte de vos clients sera bientôt proposée aux cabinets. Écrivez-nous si vous êtes intéressé
                 }
               </p>
               @if (proAccountOffered) {
@@ -82,7 +82,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                     placeholder="Ex. : Boutique Shopify de décoration créée en 2021, 180 k€ de CA l'an dernier, environ 25 % de marge, 3 000 clients dont 40 % reviennent. Je vends pour me consacrer à un nouveau projet, idéalement entre 150 et 220 k€."
                   ></textarea>
                   <div class="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <p class="text-sm text-muted-foreground">Votre texte sert uniquement à préparer l'annonce, il n'est pas publié tel quel.</p>
+                    <p class="text-sm text-muted-foreground">Votre texte sert uniquement à préparer l'annonce, il n'est pas publié tel quel</p>
                     <button
                       type="button"
                       (click)="prepareWithAi()"
@@ -103,10 +103,10 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                           <li>« {{ detail.excerpt }} » : {{ detail.reason }}</li>
                         }
                       </ul>
-                      <p class="mt-2 text-sm text-amber-900/70">L'annonce proposée ci-dessous les a retirés. Vérifiez qu'il n'en reste aucun avant de publier.</p>
+                      <p class="mt-2 text-sm text-amber-900/70">L'annonce proposée ci-dessous les a retirés. Vérifiez qu'il n'en reste aucun avant de publier</p>
                     </div>
                   } @else if (aiApplied()) {
-                    <p class="mt-3 text-sm text-emerald-700" role="status">Annonce préparée : relisez les champs ci-dessous et à chaque étape.</p>
+                    <p class="mt-3 text-sm text-emerald-700" role="status">Annonce préparée : relisez les champs ci-dessous et à chaque étape</p>
                   }
                 </div>
               }
@@ -114,7 +114,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                 @case (1) {
                   <div>
                     <h2 class="mb-2 text-2xl">1. Informations générales</h2>
-                    <p class="mb-6 text-muted-foreground">Décrivez rapidement l'activité que vous souhaitez mettre en vente.</p>
+                    <p class="mb-6 text-muted-foreground">Décrivez rapidement l'activité que vous souhaitez mettre en vente</p>
                     <div class="grid gap-5 sm:grid-cols-2">
                       <label class="space-y-2">
                         <span class="font-semibold">Secteur</span>
@@ -141,7 +141,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                       <label class="space-y-2 sm:col-span-2">
                         <span class="font-semibold">Titre de l'annonce <span class="font-normal text-muted-foreground">(court, visible par tous)</span></span>
                         <input type="text" maxlength="80" [value]="listingTitle()" (input)="listingTitle.set($any($event.target).value)" placeholder="Ex. Logiciel de signature pour agences immobilières" class="w-full rounded-lg border border-input bg-white px-4 py-3 text-base outline-none focus:border-accent focus:ring-2 focus:ring-accent/20">
-                        <span class="block text-sm text-muted-foreground">Dites précisément l'activité, sans nom d'entreprise ni ville.</span>
+                        <span class="block text-sm text-muted-foreground">Dites précisément l'activité, sans nom d'entreprise ni ville</span>
                       </label>
                       <label class="space-y-2 sm:col-span-2">
                         <span class="font-semibold">Accroche publique <span class="font-normal text-muted-foreground">(visible par tous, sans détail identifiant)</span></span>
@@ -161,7 +161,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                 @case (2) {
                   <div>
                     <h2 class="mb-2 text-2xl">2. Chiffres clés</h2>
-                    <p class="mb-6 text-muted-foreground">Les repreneurs regardent d'abord le chiffre d'affaires, la marge et leur évolution. Les chiffres des années précédentes sont facultatifs mais rassurent beaucoup.</p>
+                    <p class="mb-6 text-muted-foreground">Les repreneurs regardent d'abord le chiffre d'affaires, la marge et leur évolution. Les chiffres des années précédentes sont facultatifs mais rassurent beaucoup</p>
                     <div class="grid gap-5 sm:grid-cols-2">
                       <label class="space-y-2">
                         <span class="font-semibold">Dernier exercice</span>
@@ -217,7 +217,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                 @case (3) {
                   <div>
                     <h2 class="mb-2 text-2xl">3. Activité et ce qui est vendu</h2>
-                    <p class="mb-6 text-muted-foreground">Ce qui est inclus dans la vente et d'où viennent vos clients. Tout est facultatif et reste anonyme.</p>
+                    <p class="mb-6 text-muted-foreground">Ce qui est inclus dans la vente et d'où viennent vos clients. Tout est facultatif et reste anonyme</p>
 
                     <fieldset>
                       <legend class="font-semibold">Ce qui est inclus dans la vente</legend>
@@ -270,13 +270,13 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                     @if (multiplePreview()) {
                       <p class="mt-4 text-base text-foreground/85">Soit environ <strong class="tabular">{{ multiplePreview() }}</strong> votre bénéfice annuel, l'indicateur que les repreneurs comparent en premier.</p>
                     }
-                    <p class="mt-2 text-sm text-muted-foreground">Estimation indicative, non contractuelle.</p>
+                    <p class="mt-2 text-sm text-muted-foreground">Estimation indicative, non contractuelle</p>
                   </div>
                 }
                 @case (5) {
                   <div>
                     <h2 class="mb-2 text-2xl">5. Confidentialité</h2>
-                    <p class="mb-6 text-muted-foreground">Ce que voient les visiteurs, et ce qui reste réservé.</p>
+                    <p class="mb-6 text-muted-foreground">Ce que voient les visiteurs, et ce qui reste réservé</p>
                     <div class="grid gap-4 sm:grid-cols-2">
                       <div class="rounded-xl bg-secondary p-5">
                         <p class="font-semibold text-primary">Visible par tous</p>
@@ -296,7 +296,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                         </ul>
                       </div>
                     </div>
-                    <p class="mt-4 text-base text-muted-foreground">Le nom de l'entreprise n'apparaît nulle part : vous le communiquez vous-même, au repreneur de votre choix.</p>
+                    <p class="mt-4 text-base text-muted-foreground">Le nom de l'entreprise n'apparaît nulle part : vous le communiquez vous-même, au repreneur de votre choix</p>
 
                     <label for="contact-info" class="mt-6 block font-semibold text-primary">Coordonnées transmises aux repreneurs</label>
                     <p class="mt-1 text-sm text-muted-foreground">
@@ -309,7 +309,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                 @case (6) {
                   <div>
                     <h2 class="mb-2 text-2xl">6. Aperçu et publication</h2>
-                    <p class="mb-6 text-muted-foreground">Relisez votre annonce avant de la publier.</p>
+                    <p class="mb-6 text-muted-foreground">Relisez votre annonce avant de la publier</p>
                     <div class="rounded-2xl bg-secondary p-6">
                       <p class="text-sm font-semibold text-muted-foreground">{{ listingTypeLabel() }} · {{ region() || 'Région à préciser' }}</p>
                       <p class="mt-1 text-xl font-bold text-primary">{{ listingTitle() || sector() || 'Titre à préciser' }}</p>
@@ -328,7 +328,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                       <p class="font-semibold text-primary">Publication gratuite</p>
                       <p class="mt-1 text-base leading-relaxed text-muted-foreground">
                         Offre de lancement : la publication ne coûte rien. Votre annonce apparaît anonymisée sur la marketplace ;
-                        seuls les repreneurs avec un accès voient le dossier complet et peuvent vous contacter.
+                        seuls les repreneurs avec un accès voient le dossier complet et peuvent vous contacter
                       </p>
                     </div>
                   </div>
@@ -363,7 +363,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                 <h2 class="mb-3 text-3xl font-semibold">{{ editingId() ? 'Modifications enregistrées' : 'Annonce envoyée' }}</h2>
                 <p class="mx-auto mb-8 max-w-xl leading-relaxed text-muted-foreground">
                   Notre équipe relit votre annonce avant {{ editingId() ? 'de la remettre en ligne' : 'sa mise en ligne' }}, en général sous 24 h ouvrées :
-                  nous vérifions qu'elle est sérieuse et qu'elle ne permet pas de vous reconnaître. Vous serez prévenu dès qu'elle sera visible.
+                  nous vérifions qu'elle est sérieuse et qu'elle ne permet pas de vous reconnaître. Vous serez prévenu dès qu'elle sera visible
                 </p>
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
                   <a routerLink="/dashboard" class="rounded-lg bg-accent px-6 py-3 font-semibold text-white transition-colors hover:bg-accent/90">
@@ -382,7 +382,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                 </div>
                 <h2 class="mb-3 text-3xl font-semibold">La publication a échoué</h2>
                 <p class="mx-auto mb-8 max-w-xl leading-relaxed text-muted-foreground" role="alert">
-                  Votre annonce n'a pas pu être enregistrée. Vérifiez votre connexion puis réessayez.
+                  Votre annonce n'a pas pu être enregistrée. Vérifiez votre connexion puis réessayez
                 </p>
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
                   <button type="button" (click)="checkoutRequested.set(false)" class="rounded-lg bg-accent px-6 py-3 font-semibold text-white transition-colors hover:bg-accent/90">

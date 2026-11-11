@@ -551,7 +551,7 @@ export const MA_LISTINGS: MaListingData[] = [
     title: 'Boutique en ligne de produits bio',
     verified: true,
     featured: true,
-    summary: 'Boutique en ligne de produits bio avec une base clients fidèle et une marque bien installée.',
+    summary: 'Boutique en ligne de produits bio avec une base clients fidèle et une marque bien installée',
     description:
       "L'activité repose sur une marque reconnue sur sa niche, une acquisition maîtrisée et une logistique déjà structurée. Le repreneur récupère une base clients récurrente, des process documentés et une activité rentable immédiatement exploitable.",
     highlights: ['Marque établie', 'Base clients fidèle', 'Opérations déjà structurées'],
@@ -575,7 +575,7 @@ export const MA_LISTINGS: MaListingData[] = [
     priceMax: '1,2 M€',
     title: 'Logiciel B2B avec 120 clients récurrents',
     verified: true,
-    summary: 'Plateforme B2B SaaS avec 120 clients récurrents et une croissance stable.',
+    summary: 'Plateforme B2B SaaS avec 120 clients récurrents et une croissance stable',
     description:
       "L'entreprise commercialise un produit B2B SaaS sur abonnement avec une base clients récurrente, un churn contenu et une équipe compacte. Le repreneur bénéficie d'un produit mûr, de revenus récurrents et de leviers de croissance déjà identifiés.",
     highlights: ['120 clients récurrents', 'Produit mûr', 'Croissance stable'],
@@ -600,9 +600,9 @@ export const MA_LISTINGS: MaListingData[] = [
     priceMin: '280 k€',
     priceMax: '350 k€',
     title: 'Restaurant avec emplacement premium',
-    summary: 'Restaurant établi avec emplacement premium et clientèle régulière.',
+    summary: 'Restaurant établi avec emplacement premium et clientèle régulière',
     description:
-      "L'établissement bénéficie d'une excellente visibilité locale, d'une clientèle régulière et d'une équipe autonome. Le positionnement est clair et la reprise peut se faire avec une continuité d'exploitation rapide.",
+      "L'établissement bénéficie d'une excellente visibilité locale, d'une clientèle régulière et d'une équipe autonome. Le positionnement est clair et la reprise peut se faire avec une continuité d'exploitation rapide",
     highlights: ['Emplacement premium', 'Clientèle régulière', 'Équipe autonome'],
   },
   {
@@ -617,9 +617,9 @@ export const MA_LISTINGS: MaListingData[] = [
     priceMin: '200 k€',
     priceMax: '280 k€',
     title: 'Cabinet de conseil RH',
-    summary: 'Agence de consulting RH avec contrats récurrents et très bonne réputation.',
+    summary: 'Agence de consulting RH avec contrats récurrents et très bonne réputation',
     description:
-      "L'activité s'appuie sur un portefeuille récurrent et une forte recommandation client. Le positionnement est bien identifié et l'entreprise peut intéresser un repreneur opérateur ou un acteur qui veut compléter son offre.",
+      "L'activité s'appuie sur un portefeuille récurrent et une forte recommandation client. Le positionnement est bien identifié et l'entreprise peut intéresser un repreneur opérateur ou un acteur qui veut compléter son offre",
     highlights: ['Contrats récurrents', 'Bonne réputation', 'Positionnement clair'],
   },
   {
@@ -634,7 +634,7 @@ export const MA_LISTINGS: MaListingData[] = [
     priceMin: '650 k€',
     priceMax: '780 k€',
     title: 'Place de marché de niche',
-    summary: 'Marketplace niche avec forte notoriété et automatisation avancée.',
+    summary: 'Marketplace niche avec forte notoriété et automatisation avancée',
     description:
       "La société a construit une belle notoriété sur un segment spécialisé et opère avec un niveau d'automatisation élevé. Les fondamentaux sont sains et l'acquéreur peut accélérer via développement commercial ou extension d'offre.",
     highlights: ['Notoriété forte', 'Automatisation avancée', 'Potentiel d’extension'],
@@ -651,9 +651,9 @@ export const MA_LISTINGS: MaListingData[] = [
     priceMin: '420 k€',
     priceMax: '520 k€',
     title: 'Boutique avec local en propriété',
-    summary: 'Boutique physique avec local commercial en propriété et équipe déjà formée.',
+    summary: 'Boutique physique avec local commercial en propriété et équipe déjà formée',
     description:
-      "Le commerce profite d'un ancrage local fort, d'une activité stable et d'un local bien situé. La reprise est facilitée par une organisation rodée et une équipe qui connaît bien le fonctionnement quotidien.",
+      "Le commerce profite d'un ancrage local fort, d'une activité stable et d'un local bien situé. La reprise est facilitée par une organisation rodée et une équipe qui connaît bien le fonctionnement quotidien",
     highlights: ['Local bien situé', 'Équipe formée', 'Activité stable'],
   },
 ].map((listing, index) => ({

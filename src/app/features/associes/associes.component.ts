@@ -32,7 +32,7 @@ const STAGE_LABELS: Record<string, string> = {
         <div class="relative mx-auto max-w-[78rem]">
           <h1 class="max-w-[18ch] text-[2.4rem] leading-[1.08] sm:text-[3.25rem]">Trouvez l'associé qui complète votre projet</h1>
           <p class="mt-5 max-w-[56ch] text-lg leading-relaxed text-white/70">
-            Développeurs, commerciaux, experts métier d'un côté ; porteurs de projet de l'autre. Les profils sont anonymes ici : le nom et le contact se découvrent une fois inscrit.
+            Développeurs, commerciaux, experts métier d'un côté ; porteurs de projet de l'autre. Les profils sont anonymes ici : le nom et le contact se découvrent une fois inscrit
           </p>
           <div class="mt-8 flex flex-col gap-3 sm:flex-row">
             @if (canBrowseFull()) {
@@ -40,7 +40,7 @@ const STAGE_LABELS: Record<string, string> = {
             } @else if (isAuthenticated()) {
               <p class="max-w-[60ch] rounded-xl bg-white/10 px-5 py-4 text-base leading-relaxed text-white/85">
                 Votre compte actuel sert à la reprise d'entreprise. Pour chercher un associé ou rejoindre un projet,
-                créez un second compte, porteur de projet ou associé, avec une autre adresse e-mail.
+                créez un second compte, porteur de projet ou associé, avec une autre adresse e-mail
               </p>
             } @else {
               <a routerLink="/inscription" [queryParams]="{ profil: 'entrepreneur' }" class="rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90">Je cherche un associé</a>
@@ -82,7 +82,7 @@ const STAGE_LABELS: Record<string, string> = {
                 </button>
               }
             </div>
-            <p class="text-base text-muted-foreground">Profils anonymes, affichés avec l'accord de leurs auteurs.</p>
+            <p class="text-base text-muted-foreground">Profils anonymes, affichés avec l'accord de leurs auteurs</p>
           </div>
 
           @if (!loaded()) {
@@ -91,7 +91,7 @@ const STAGE_LABELS: Record<string, string> = {
             <div class="mt-8 rounded-2xl bg-white p-10 text-center shadow-lg ring-1 ring-border">
               <h3 class="text-2xl text-primary">{{ tab() === 'talent' ? 'Les premiers associés arrivent' : 'Les premiers projets arrivent' }}</h3>
               <p class="mx-auto mt-3 max-w-[52ch] text-base leading-relaxed text-muted-foreground">
-                La communauté démarre. Inscrivez-vous pour être parmi les premiers visibles : vous serez prévenu dès qu'un profil compatible rejoint GoFounders.
+                La communauté démarre. Inscrivez-vous pour être parmi les premiers visibles : vous serez prévenu dès qu'un profil compatible rejoint GoFounders
               </p>
               <a routerLink="/inscription" [queryParams]="{ profil: tab() === 'talent' ? 'talent' : 'entrepreneur' }" class="mt-6 inline-block rounded-lg bg-accent px-6 py-3.5 font-semibold text-white transition-colors hover:bg-accent/90">
                 {{ tab() === 'talent' ? 'Rejoindre la liste des associés' : 'Présenter mon projet' }}
@@ -192,9 +192,9 @@ export class AssociesComponent implements OnInit {
     { value: 'project', label: 'Projets qui recrutent' },
   ];
   readonly steps = [
-    { title: 'Créez votre profil', text: 'Porteur de projet ou futur associé : décrivez ce que vous apportez ou ce que vous cherchez. Inscription gratuite.' },
-    { title: 'Découvrez les profils compatibles', text: 'Un score de compatibilité, calculé sur les compétences, la localisation, la disponibilité et le secteur, met en avant les meilleurs profils.' },
-    { title: 'Échangez en toute discrétion', text: 'Vous discutez dans la messagerie. Pour un projet sensible, le porteur peut demander un engagement de confidentialité avant de tout dévoiler.' },
+    { title: 'Créez votre profil', text: 'Porteur de projet ou futur associé : décrivez ce que vous apportez ou ce que vous cherchez. Inscription gratuite' },
+    { title: 'Découvrez les profils compatibles', text: 'Un score de compatibilité, calculé sur les compétences, la localisation, la disponibilité et le secteur, met en avant les meilleurs profils' },
+    { title: 'Échangez en toute discrétion', text: 'Vous discutez dans la messagerie. Pour un projet sensible, le porteur peut demander un engagement de confidentialité avant de tout dévoiler' },
   ];
 
   readonly talents = computed(() => this.entries().filter(entry => entry.kind === 'talent'));

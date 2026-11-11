@@ -15,9 +15,9 @@ type InboxFilter = 'open' | 'all' | 'contact' | 'premium';
         <h1 class="text-3xl text-primary">Messages reçus</h1>
 
         @if (!isAdmin()) {
-          <p class="mt-4 text-muted-foreground">Page réservée aux administrateurs.</p>
+          <p class="mt-4 text-muted-foreground">Page réservée aux administrateurs</p>
         } @else {
-          <p class="mt-2 text-base text-muted-foreground">Formulaire de contact et demandes de devis PREMIUM. Répondez par email, puis changez le statut.</p>
+          <p class="mt-2 text-base text-muted-foreground">Formulaire de contact et demandes de devis PREMIUM. Répondez par email, puis changez le statut</p>
 
           <div class="mt-6 flex flex-wrap gap-2" role="group" aria-label="Filtrer les messages">
             @for (option of filters; track option.value) {

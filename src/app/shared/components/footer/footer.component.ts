@@ -19,7 +19,7 @@ import { FEATURES } from '../../../core/config/features';
               <span class="font-display text-xl font-semibold">GoFounders</span>
             </div>
             <p class="mt-4 max-w-sm text-sm leading-relaxed text-primary-foreground/70">
-              Reprendre ou céder une entreprise en France, et trouver ses associés. Annonces anonymisées, sans commission sur la vente.
+              Reprendre ou céder une entreprise en France, et trouver ses associés. Annonces anonymisées, sans commission sur la vente
             </p>
           </div>
 
@@ -38,7 +38,7 @@ import { FEATURES } from '../../../core/config/features';
         </div>
 
         <div class="mt-10 border-t border-primary-foreground/15 pt-6 text-sm text-primary-foreground/60">
-          <p>© 2026 GoFounders. GoFounders met en relation et n'assure pas de conseil juridique ou financier.</p>
+          <p>© 2026 GoFounders. GoFounders met en relation et n'assure pas de conseil juridique ou financier</p>
         </div>
       </div>
     </footer>

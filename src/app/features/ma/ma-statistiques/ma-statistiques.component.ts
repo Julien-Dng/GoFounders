@@ -17,7 +17,7 @@ const EMPTY_STATS: SellerStats = { listings: [], daily: [], contacts: { contacts
         <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 class="text-3xl font-semibold text-primary sm:text-4xl">Mes statistiques</h1>
-            <p class="mt-2 text-muted-foreground">L'intérêt suscité par vos annonces auprès des repreneurs.</p>
+            <p class="mt-2 text-muted-foreground">L'intérêt suscité par vos annonces auprès des repreneurs</p>
           </div>
           <div class="flex gap-2" role="group" aria-label="Période">
             @for (option of periods; track option) {
@@ -54,9 +54,9 @@ const EMPTY_STATS: SellerStats = { listings: [], daily: [], contacts: { contacts
                   <div class="text-sm text-muted-foreground">sur {{ days() }} jours · {{ pro.website_clicks_total }} au total</div>
                 </div>
               </div>
-              <p class="mt-3 text-sm text-muted-foreground">Les messages reçus sont comptés dans « Contacts reçus ».</p>
+              <p class="mt-3 text-sm text-muted-foreground">Les messages reçus sont comptés dans « Contacts reçus »</p>
             } @else {
-              <p class="mt-2 text-sm text-muted-foreground">Votre fiche n'est pas visible dans l'annuaire. Activez l'offre Annuaire ou Compte pro pour être trouvé par les cédants et les repreneurs.</p>
+              <p class="mt-2 text-sm text-muted-foreground">Votre fiche n'est pas visible dans l'annuaire. Activez l'offre Annuaire ou Compte pro pour être trouvé par les cédants et les repreneurs</p>
             }
           </section>
         }
@@ -65,8 +65,8 @@ const EMPTY_STATS: SellerStats = { listings: [], daily: [], contacts: { contacts
           <p class="text-muted-foreground">Chargement…</p>
         } @else if (stats().listings.length === 0) {
           <div class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-10 text-center">
-            <p class="text-muted-foreground">Vous n'avez pas encore d'annonce.</p>
-            <p class="mt-1 text-sm text-muted-foreground">Contacts reçus sur {{ days() }} jours : {{ stats().contacts.contacts_period }} ({{ stats().contacts.contacts_total }} au total).</p>
+            <p class="text-muted-foreground">Vous n'avez pas encore d'annonce</p>
+            <p class="mt-1 text-sm text-muted-foreground">Contacts reçus sur {{ days() }} jours : {{ stats().contacts.contacts_period }} ({{ stats().contacts.contacts_total }} au total)</p>
             <a routerLink="/ma/deposer" class="mt-4 inline-block rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-white hover:bg-accent/90">Déposer une annonce</a>
           </div>
         } @else {
@@ -170,7 +170,7 @@ const EMPTY_STATS: SellerStats = { listings: [], daily: [], contacts: { contacts
             </div>
             <p class="mt-4 text-sm text-muted-foreground">
               Une vue est comptée au plus une fois par jour pour un membre connecté ; vos propres visites ne sont pas comptées.
-              « Dossier consulté » : un repreneur avec un accès en cours a ouvert le dossier complet.
+              « Dossier consulté » : un repreneur avec un accès en cours a ouvert le dossier complet
             </p>
           </section>
         }
