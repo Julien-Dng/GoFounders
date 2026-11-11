@@ -55,7 +55,7 @@ const CATEGORIES: FaqCategory[] = [
     title: 'Paiement et abonnements',
     entries: [
       { question: 'Comment se fait le paiement ?', answer: 'Par carte bancaire, sur la page de paiement sécurisée de Stripe. GoFounders ne voit ni ne conserve vos numéros de carte.' },
-      { question: 'Y a-t-il un abonnement pour les repreneurs ?', answer: 'Non. Vous payez seulement les dossiers que vous ouvrez, une fois par entreprise, sans abonnement ni renouvellement.' },
+      { question: 'Y a-t-il un abonnement pour les repreneurs ?', answer: 'Non. Vous payez seulement chaque mise en relation (dossier complet et contact du cédant), une fois par entreprise, sans abonnement ni renouvellement.' },
       { question: 'Comment résilier un abonnement mensuel ?', answer: `Les abonnements mensuels (PRO à ${price('PRO')}, comptes professionnels) sont sans engagement. Depuis « Mon abonnement », le bouton « Gérer mes abonnements et factures » vous permet de résilier et de télécharger vos factures.`, feature: 'associates' },
       { question: 'Où trouver mes factures ?', answer: 'Un reçu vous est envoyé par e-mail après chaque paiement. Depuis « Mon abonnement », le bouton « Gérer mes abonnements et factures » vous permet de les retrouver.' },
       { question: 'J’ai une question sur un paiement ou une facture', answer: 'Écrivez-nous depuis la page contact en choisissant le sujet « Paiement ou facture », en indiquant la date et le montant.' },

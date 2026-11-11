@@ -49,7 +49,7 @@ interface Plan {
             @if (features.associates) {
               Vous cherchez une entreprise à reprendre ou des personnes avec qui entreprendre ? Un seul compte, et les offres qui correspondent à votre objectif
             } @else {
-              Publier une annonce est gratuit et nous ne prenons aucune commission sur la vente. Les repreneurs ne paient que les dossiers qu'ils ouvrent
+              Publier une annonce est gratuit et nous ne prenons aucune commission sur la vente. Les repreneurs paient chaque mise en relation : dossier complet et contact du cédant
             }
           </p>
           @if (features.associates) {
