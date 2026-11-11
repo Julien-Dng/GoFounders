@@ -11,12 +11,13 @@ import { lastGrowth, revenueSeries } from '../../../core/ma/listing-options';
 
 type SortKey = 'pertinence' | 'recent' | 'prix-asc' | 'prix-desc' | 'ca-desc' | 'benefice-desc' | 'multiple-asc';
 import { SuccessStoriesComponent } from '../../../shared/components/success-stories/success-stories.component';
+import { VerifiedBadgeComponent } from '../../../shared/components/verified-badge/verified-badge.component';
 
 
 @Component({
   selector: 'app-ma-home',
   standalone: true,
-  imports: [RouterLink, SuccessStoriesComponent],
+  imports: [RouterLink, SuccessStoriesComponent, VerifiedBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-secondary">
@@ -183,7 +184,7 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
                               <span class="rounded-full border border-amber-500/40 px-2 py-0.5 font-medium text-amber-700">En vedette</span>
                             }
                             @if (item.listing.verified) {
-                              <span class="rounded-full border border-emerald-700/30 px-2 py-0.5 font-medium text-emerald-800">Dossier vérifié</span>
+                              <span class="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2 py-0.5 font-semibold text-sky-700"><app-verified-badge [size]="16" />Dossier vérifié</span>
                             }
                             @if (item.listing.isNew) {
                               <span class="rounded-full border border-accent/30 px-2 py-0.5 font-medium text-accent">Nouvelle</span>
@@ -191,6 +192,7 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
                           </div>
                           <h2 [id]="'listing-' + item.listing.id" class="mt-2 text-xl font-bold leading-snug text-primary group-hover:text-accent sm:text-2xl">
                             <a [routerLink]="['/ma/annonce', item.listing.id]" class="after:absolute after:inset-0 after:rounded-2xl focus:outline-none focus-visible:underline">{{ item.listing.title || item.listing.sector + ', ' + item.listing.region }}</a>
+                            @if (item.listing.verified) { <app-verified-badge [size]="24" class="ml-1.5" /> }
                           </h2>
                           @if (item.listing.title) {
                             <p class="mt-1 text-sm font-medium text-muted-foreground">{{ item.listing.sector }} · {{ item.listing.region }}</p>

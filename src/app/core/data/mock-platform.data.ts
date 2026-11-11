@@ -549,6 +549,8 @@ export const MA_LISTINGS: MaListingData[] = [
     priceMin: '350 k€',
     priceMax: '420 k€',
     title: 'Boutique en ligne de produits bio',
+    verified: true,
+    featured: true,
     summary: 'Boutique en ligne de produits bio avec une base clients fidèle et une marque bien installée.',
     description:
       "L'activité repose sur une marque reconnue sur sa niche, une acquisition maîtrisée et une logistique déjà structurée. Le repreneur récupère une base clients récurrente, des process documentés et une activité rentable immédiatement exploitable.",
@@ -572,6 +574,7 @@ export const MA_LISTINGS: MaListingData[] = [
     priceMin: '800 k€',
     priceMax: '1,2 M€',
     title: 'Logiciel B2B avec 120 clients récurrents',
+    verified: true,
     summary: 'Plateforme B2B SaaS avec 120 clients récurrents et une croissance stable.',
     description:
       "L'entreprise commercialise un produit B2B SaaS sur abonnement avec une base clients récurrente, un churn contenu et une équipe compacte. Le repreneur bénéficie d'un produit mûr, de revenus récurrents et de leviers de croissance déjà identifiés.",

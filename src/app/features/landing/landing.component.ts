@@ -10,6 +10,7 @@ import { isTalentMarketplaceRole } from '../../core/models/user.model';
 import { formatEuros, formatMultiple, listingMetrics } from '../../core/ma/listing-metrics';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
 import { SuccessStoriesComponent } from '../../shared/components/success-stories/success-stories.component';
+import { VerifiedBadgeComponent } from '../../shared/components/verified-badge/verified-badge.component';
 
 interface LandingFaqItem {
   question: string;
@@ -109,7 +110,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [RouterLink, FooterComponent, SuccessStoriesComponent],
+  imports: [RouterLink, FooterComponent, SuccessStoriesComponent, VerifiedBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-white">
@@ -286,7 +287,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
                   <p class="hidden bg-primary px-5 py-3 text-sm font-semibold text-white sm:block">{{ item.listing.sector }} · {{ item.listing.region }}</p>
                   <div class="flex flex-1 flex-col p-4 sm:p-5">
                     <p class="text-sm text-muted-foreground sm:hidden">{{ item.listing.sector }} · {{ item.listing.region }}</p>
-                    <h3 class="mt-1 line-clamp-2 text-lg font-bold leading-snug sm:mt-0 text-primary group-hover:text-accent sm:line-clamp-3">{{ item.listing.title || item.listing.summary }}</h3>
+                    <h3 class="mt-1 line-clamp-2 text-lg font-bold leading-snug sm:mt-0 text-primary group-hover:text-accent sm:line-clamp-3">{{ item.listing.title || item.listing.summary }}@if (item.listing.verified) { <app-verified-badge [size]="20" class="ml-1" /> }</h3>
                     <p class="tabular mt-2 truncate text-base text-muted-foreground sm:mt-3">CA {{ euros(item.metrics.revenue) }} · Bénéfice {{ euros(item.metrics.netProfit) }}</p>
                     <p class="tabular mt-2 font-bold text-amber-600 sm:hidden">
                       <span class="whitespace-nowrap">{{ item.listing.priceMin }}</span> à <span class="whitespace-nowrap">{{ item.listing.priceMax }}</span>

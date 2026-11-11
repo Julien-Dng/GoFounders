@@ -14,11 +14,12 @@ import { ListingAccessService, MyAccessRequest } from '../../../core/services/li
 import { FEATURES } from '../../../core/config/features';
 import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../../../core/ma/listing-metrics';
 import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsset, labelOf, lastGrowth, revenueSeries } from '../../../core/ma/listing-options';
+import { VerifiedBadgeComponent } from '../../../shared/components/verified-badge/verified-badge.component';
 
 @Component({
   selector: 'app-ma-detail',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, VerifiedBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-secondary pb-28 pt-20 lg:pb-16">
@@ -37,13 +38,13 @@ import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsse
                 <span>{{ published() }}</span>
               }
               @if (item.verified) {
-                <span class="rounded-full border border-emerald-700/30 px-2.5 py-0.5 text-sm font-medium text-emerald-800">Dossier vérifié</span>
+                <span class="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2.5 py-0.5 text-sm font-semibold text-sky-700"><app-verified-badge [size]="16" />Dossier vérifié</span>
               }
               @if (item.featured) {
                 <span class="rounded-full border border-amber-500/40 px-2.5 py-0.5 text-sm font-medium text-amber-700">En vedette</span>
               }
             </div>
-            <h1 class="mt-3 text-[2rem] leading-tight text-primary sm:text-[2.75rem]">{{ item.title || item.sector + ', ' + item.region }}</h1>
+            <h1 class="mt-3 text-[2rem] leading-tight text-primary sm:text-[2.75rem]">{{ item.title || item.sector + ', ' + item.region }}@if (item.verified) { <app-verified-badge [size]="32" class="ml-2" /> }</h1>
             @if (item.title) {
               <p class="mt-2 text-base font-medium text-muted-foreground">{{ item.sector }} · {{ item.region }}</p>
             }

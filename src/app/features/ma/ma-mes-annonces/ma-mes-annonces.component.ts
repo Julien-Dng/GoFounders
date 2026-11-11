@@ -8,13 +8,14 @@ import { MaService, VerificationRequest } from '../../../core/services/ma.servic
 import { PaymentService } from '../../../core/services/payment.service';
 import { ListingAccessService, ListingReview, ReceivedAccessRequest } from '../../../core/services/listing-access.service';
 import { FEATURES } from '../../../core/config/features';
+import { VerifiedBadgeComponent } from '../../../shared/components/verified-badge/verified-badge.component';
 
 // Annonces du vendeur (ou du cabinet avec un compte pro) : relecture, demandes d'accès, modification ;
 // mise en avant et dossier vérifié quand ces offres sont actives (core/config/features.ts).
 @Component({
   selector: 'app-ma-mes-annonces',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, VerifiedBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-secondary px-4 pb-16 pt-28 sm:px-6 lg:px-8">
@@ -61,7 +62,7 @@ import { FEATURES } from '../../../core/config/features';
                         <span class="rounded-full bg-amber-50 px-2.5 py-0.5 text-sm font-semibold text-amber-800">En vedette jusqu'au {{ formatDate(listing.featuredUntil!) }}</span>
                       }
                       @if (listing.verified) {
-                        <span class="rounded-full bg-emerald-50 px-2.5 py-0.5 text-sm font-semibold text-emerald-800">Dossier vérifié</span>
+                        <span class="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2.5 py-0.5 text-sm font-semibold text-sky-700"><app-verified-badge [size]="16" />Dossier vérifié</span>
                       }
                     </div>
                     @if (reviewState(listing).note) {
