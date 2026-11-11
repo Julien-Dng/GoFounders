@@ -25,8 +25,7 @@ import { SuccessStoriesComponent } from '../../../shared/components/success-stor
           <div>
             <h1 class="text-[2.25rem] leading-tight text-white sm:text-5xl">Entreprises à reprendre</h1>
             <p class="mt-3 max-w-[62ch] text-lg leading-relaxed text-white/70 sm:mt-4">
-              Des entreprises rentables de tous secteurs, partout en France : commerces, restaurants, artisans, services, industrie et entreprises en ligne.<span class="hidden sm:inline"> Les annonces sont anonymisées :
-              le dossier complet n'est ouvert qu'aux repreneurs qui acceptent un engagement de confidentialité.</span>
+              Des entreprises rentables de tous secteurs, partout en France : commerces, restaurants, artisans, services, industrie et entreprises en ligne.
             </p>
           </div>
           @if (canDepositListing()) {
