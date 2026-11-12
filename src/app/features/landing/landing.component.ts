@@ -462,38 +462,6 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
         <p class="mt-3 text-center text-sm text-muted-foreground sm:hidden">Aucune commission sur la vente, aucun abonnement. <a routerLink="/tarifs" class="font-semibold text-accent">Tarifs</a></p>
       </section>
 
-      <!-- Un seul bloc de réassurance : commission, gratuité, prix et confidentialité. -->
-      <section class="hidden bg-[#16243B] px-4 py-9 text-white sm:block sm:px-6 lg:px-8" aria-label="Les engagements de GoFounders">
-        <dl class="mx-auto grid max-w-[78rem] grid-cols-2 gap-y-8 text-center lg:grid-cols-4">
-          @for (fact of facts; track fact.label; let last = $last; let i = $index) {
-            <div appReveal [revealDelay]="i * 100" class="px-4 lg:border-dashed lg:border-white/25" [class.lg:border-r]="!last">
-              <dt class="sr-only">{{ fact.label }}</dt>
-              <dd class="tabular text-3xl font-extrabold tracking-tight">{{ fact.value }}</dd>
-              <dd class="mx-auto mt-1 max-w-[22ch] text-base text-white/70">{{ fact.label }}</dd>
-            </div>
-          }
-        </dl>
-      </section>
-
-      <section class="hidden bg-secondary px-4 py-16 sm:block sm:px-6 lg:px-8 lg:py-24" aria-label="Notre conviction">
-        <div appReveal class="mx-auto grid max-w-[78rem] items-center gap-10 overflow-hidden rounded-3xl bg-white shadow-lg lg:grid-cols-12 lg:gap-0">
-          <div class="p-8 sm:p-12 lg:col-span-7">
-            <p class="text-[1.75rem] font-bold leading-snug tracking-tight text-primary sm:text-[2.1rem]">
-              Une entreprise, ce sont des années de travail, des clients qui vous font confiance, parfois une équipe.
-              La transmettre mérite mieux qu'une petite annonce
-            </p>
-            <p class="mt-6 max-w-[56ch] text-base leading-relaxed text-muted-foreground">
-              Chaque année, des entreprises rentables ferment faute de repreneur, pendant que d'autres cherchent
-              à racheter une activité qui tourne déjà. GoFounders les rapproche, discrètement et sans commission
-            </p>
-            <p class="mt-5 font-bold text-primary">L'équipe GoFounders</p>
-          </div>
-          <figure class="h-full lg:col-span-5">
-            <img src="/assets/images/provisoire/fondateurs-ecran.jpg" alt="Un fondateur travaille sur le site de son entreprise, sur deux écrans" width="1400" height="933" loading="lazy" class="h-full max-h-[28rem] w-full object-cover object-[15%_center] lg:max-h-none">
-          </figure>
-        </div>
-      </section>
-
       <div>
         <app-success-stories />
       </div>
@@ -542,6 +510,25 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
         </div>
       </section>
 
+      <section class="hidden bg-secondary px-4 py-16 sm:block sm:px-6 lg:px-8 lg:py-24" aria-label="Notre conviction">
+        <div appReveal class="mx-auto grid max-w-[78rem] items-center gap-10 overflow-hidden rounded-3xl bg-white shadow-lg lg:grid-cols-12 lg:gap-0">
+          <div class="p-8 sm:p-12 lg:col-span-7">
+            <p class="text-[1.75rem] font-bold leading-snug tracking-tight text-primary sm:text-[2.1rem]">
+              Une entreprise, ce sont des années de travail, des clients qui vous font confiance, parfois une équipe.
+              La transmettre mérite mieux qu'une petite annonce
+            </p>
+            <p class="mt-6 max-w-[56ch] text-base leading-relaxed text-muted-foreground">
+              Chaque année, des entreprises rentables ferment faute de repreneur, pendant que d'autres cherchent
+              à racheter une activité qui tourne déjà. GoFounders les rapproche, discrètement et sans commission
+            </p>
+            <p class="mt-5 font-bold text-primary">L'équipe GoFounders</p>
+          </div>
+          <figure class="h-full lg:col-span-5">
+            <img src="/assets/images/provisoire/fondateurs-ecran.jpg" alt="Un fondateur travaille sur le site de son entreprise, sur deux écrans" width="1400" height="933" loading="lazy" class="h-full max-h-[28rem] w-full object-cover object-[15%_center] lg:max-h-none">
+          </figure>
+        </div>
+      </section>
+
       <!-- Téléphones : petit encart vendeur. -->
       <section class="px-4 py-8 sm:hidden" aria-label="Vendre son entreprise">
         <div class="flex items-center justify-between gap-4 rounded-2xl bg-primary px-5 py-4 text-white">
@@ -550,7 +537,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
         </div>
       </section>
 
-      <section class="hidden px-4 pb-16 sm:block sm:px-6 lg:px-8 lg:pb-24" aria-labelledby="sell-title">
+      <section class="hidden px-4 py-16 sm:block sm:px-6 lg:px-8 lg:py-24" aria-labelledby="sell-title">
         <div appReveal class="relative mx-auto max-w-[78rem] overflow-hidden rounded-3xl bg-primary px-6 py-14 text-white sm:px-12 lg:py-16">
           <img src="/assets/images/provisoire/bureau-vue-dessus.jpg" alt="" aria-hidden="true" width="1400" height="933" loading="lazy" class="absolute inset-0 h-full w-full object-cover">
           <div class="absolute inset-0" style="background: rgba(15, 27, 45, 0.86)" aria-hidden="true"></div>
@@ -590,13 +577,6 @@ export class LandingComponent implements OnInit {
   readonly heroQuery = signal('');
   readonly heroRevenue = signal('');
 
-  // Uniquement des faits vérifiables : pas de volume ni de nombre de ventes inventés.
-  readonly facts = [
-    { value: '0 %', label: 'de commission sur la vente' },
-    { value: 'Gratuit', label: 'pour publier une annonce' },
-    { value: OFFER_PRICES.INTRO.label, label: 'par entreprise pour le dossier et le contact' },
-    { value: 'NDA', label: 'accepté par chaque repreneur avant d’ouvrir un dossier' },
-  ];
 
   readonly buyerPrice = OFFER_PRICES.INTRO.label;
 
