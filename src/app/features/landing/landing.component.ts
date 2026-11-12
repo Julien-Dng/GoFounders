@@ -277,12 +277,12 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
           </div>
 
           <!-- Journal d'un dossier (illustration, aussi sur téléphone) : les étapes se cochent, puis le cadenas s'ouvre. -->
-          <figure appReveal [revealDelay]="150" class="relative mx-auto w-full max-w-md" aria-label="Exemple : le journal d'un dossier de cession">
+          <figure appReveal [revealDelay]="150" class="pointer-events-none relative mx-auto w-[88%] max-w-md select-none sm:w-full" aria-label="Exemple : le journal d'un dossier de cession">
             <div class="absolute inset-0 translate-x-3 translate-y-3 rotate-2 rounded-3xl bg-[#DCE5F7]" aria-hidden="true"></div>
-            <div class="relative rounded-3xl bg-white p-5 shadow-xl ring-1 ring-border sm:p-8">
+            <div class="relative -rotate-1 rounded-3xl bg-white p-5 shadow-xl ring-1 ring-border sm:rotate-0 sm:p-8">
               <div class="flex items-start justify-between gap-4 border-b border-border pb-5">
                 <div>
-                  <p class="text-sm font-semibold text-muted-foreground">Dossier de cession</p>
+                  <p class="inline-block rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-accent">Exemple de dossier</p>
                   <p class="mt-1 text-lg font-bold text-primary sm:text-xl">Éditeur de logiciel SaaS · Lyon</p>
                 </div>
                 <span class="dossier-lock flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white" aria-hidden="true">
@@ -300,7 +300,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
                   </li>
                 }
               </ol>
-              <p class="dossier-open mt-6 rounded-xl bg-primary px-4 py-3 text-center font-semibold text-white">Dossier et contact du cédant ouverts</p>
+              <p class="dossier-open mt-6 rounded-xl bg-accent/10 px-4 py-3 text-center font-semibold text-accent">Dossier et contact du cédant ouverts</p>
             </div>
           </figure>
         </div>
