@@ -100,9 +100,11 @@ const STAGE_LABELS: Record<string, string> = {
           } @else {
             <ul class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
               @for (entry of visible(); track entry.profile_id + entry.kind) {
-                <li class="flex flex-col rounded-2xl bg-white p-6 shadow-lg ring-1 ring-border">
+                <!-- Toute la carte est cliquable : le lien « Voir le profil ↗ » s'étend sur la carte (clavier compris). -->
+                <li class="group relative flex flex-col rounded-2xl bg-white p-5 shadow-md ring-1 ring-border transition-shadow focus-within:ring-2 focus-within:ring-accent"
+                    [class]="profileLink(entry).path ? 'hover:shadow-lg hover:ring-accent/50' : ''">
                   <div class="flex items-start gap-4">
-                    <span class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-primary/60" aria-hidden="true">
+                    <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-primary/60" aria-hidden="true">
                       @if (entry.kind === 'talent') {
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
                       } @else {
@@ -111,23 +113,23 @@ const STAGE_LABELS: Record<string, string> = {
                     </span>
                     <div class="min-w-0">
                       @if (entry.kind === 'talent') {
-                        <h3 class="text-lg font-bold leading-snug text-primary">{{ entry.title || 'Associé' }}</h3>
+                        <h3 class="text-lg font-bold leading-snug text-primary transition-colors group-hover:text-accent">{{ entry.title || 'Associé' }}</h3>
                         @if (entry.availability) {
                           <p class="mt-1 inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-sm font-semibold text-emerald-800">{{ entry.availability }}</p>
                         }
                       } @else {
-                        <h3 class="text-lg font-bold leading-snug text-primary">Projet {{ entry.sector || 'en recherche d’associé' }}</h3>
+                        <h3 class="text-lg font-bold leading-snug text-primary transition-colors group-hover:text-accent">Projet {{ entry.sector || 'en recherche d’associé' }}</h3>
                         <p class="mt-1 text-sm text-muted-foreground">{{ stageLabel(entry.stage) }}</p>
                       }
                     </div>
                   </div>
 
                   @if (entry.kind === 'project' && entry.looking_for?.length) {
-                    <p class="mt-4 text-base text-foreground/85"><span class="font-semibold text-primary">Recherche :</span> {{ entry.looking_for!.join(', ') }}</p>
+                    <p class="mt-3 text-base text-foreground/85"><span class="font-semibold text-primary">Recherche :</span> {{ entry.looking_for!.join(', ') }}</p>
                   }
 
                   @if (entry.skills.length > 0) {
-                    <ul class="mt-4 flex flex-wrap gap-2" [attr.aria-label]="entry.kind === 'talent' ? 'Compétences' : 'Compétences recherchées'">
+                    <ul class="mt-3 flex flex-wrap gap-2" [attr.aria-label]="entry.kind === 'talent' ? 'Compétences' : 'Compétences recherchées'">
                       @for (skill of entry.skills.slice(0, 6); track skill) {
                         <li class="rounded-lg bg-secondary px-3 py-1 text-sm font-medium text-foreground">{{ skill }}</li>
                       }
@@ -135,18 +137,19 @@ const STAGE_LABELS: Record<string, string> = {
                   }
 
                   @if (entry.kind === 'project' && (entry.open_to_equity || entry.nda_required)) {
-                    <p class="mt-4 text-sm text-muted-foreground">
+                    <p class="mt-3 text-sm text-muted-foreground">
                       {{ entry.open_to_equity ? 'Ouvert à un associé au capital' : '' }}{{ entry.open_to_equity && entry.nda_required ? ' · ' : '' }}{{ entry.nda_required ? 'Détails sous engagement de confidentialité' : '' }}
                     </p>
                   }
 
-                  <div class="mt-auto pt-6">
+                  <div class="mt-auto flex justify-end pt-4">
                     @if (profileLink(entry).path) {
-                      <a [routerLink]="profileLink(entry).path" [queryParams]="profileLink(entry).params" class="block rounded-lg bg-primary px-4 py-3 text-center font-semibold text-white transition-colors hover:bg-accent">
-                        {{ profileLink(entry).label }}
+                      <a [routerLink]="profileLink(entry).path" [queryParams]="profileLink(entry).params"
+                         class="text-sm font-semibold text-accent outline-none after:absolute after:inset-0 after:rounded-2xl after:content-['']">
+                        {{ profileLink(entry).label }}&nbsp;<span aria-hidden="true">↗</span>
                       </a>
                     } @else {
-                      <p class="rounded-lg bg-secondary px-4 py-3 text-center text-sm font-semibold text-muted-foreground">{{ profileLink(entry).label }}</p>
+                      <p class="text-sm text-muted-foreground">{{ profileLink(entry).label }}</p>
                     }
                   </div>
                 </li>
