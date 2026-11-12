@@ -283,7 +283,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       <section class="bg-[#F3F6FD] px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-14" aria-labelledby="trust-title">
         <div class="mx-auto grid max-w-[78rem] items-center gap-6 lg:grid-cols-2 lg:gap-16">
           <div>
-            <h2 appReveal id="trust-title" class="text-2xl text-primary sm:text-center sm:text-4xl lg:text-left"><span class="sm:hidden">Des échanges en confiance</span><span class="hidden sm:inline">Une reprise encadrée, en toute confiance</span></h2>
+            <h2 appReveal id="trust-title" class="text-2xl text-primary sm:text-center sm:text-4xl lg:text-left" style="text-align: center"><span class="sm:hidden">Des échanges en confiance</span><span class="hidden sm:inline">Une reprise encadrée, en toute confiance</span></h2>
             <!-- Téléphones : liste simple, une ligne par engagement. -->
             <ul class="mt-4 space-y-3 sm:hidden">
               @for (item of guarantees; track item.title) {
