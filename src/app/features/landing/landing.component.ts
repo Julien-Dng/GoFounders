@@ -283,8 +283,23 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       <section class="bg-[#F3F6FD] px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-14" aria-labelledby="trust-title">
         <div class="mx-auto grid max-w-[78rem] items-center gap-6 lg:grid-cols-2 lg:gap-16">
           <div>
-            <h2 appReveal id="trust-title" class="text-center text-2xl text-primary sm:text-4xl lg:text-left">Une reprise encadrée, en toute confiance</h2>
-            <ul class="mt-4 grid gap-2 sm:mt-8 sm:gap-4">
+            <h2 appReveal id="trust-title" class="text-2xl text-primary sm:text-center sm:text-4xl lg:text-left"><span class="sm:hidden">Des échanges en confiance</span><span class="hidden sm:inline">Une reprise encadrée, en toute confiance</span></h2>
+            <!-- Téléphones : liste simple, une ligne par engagement. -->
+            <ul class="mt-4 space-y-3 sm:hidden">
+              @for (item of guarantees; track item.title) {
+                <li class="flex items-center gap-3 text-base text-foreground">
+                  <span class="flex-shrink-0 text-accent" aria-hidden="true">
+                    @switch (item.icon) {
+                      @case ('shield') { <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg> }
+                      @case ('lock') { <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> }
+                      @default { <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19M6.5 15h4"/></svg> }
+                    }
+                  </span>
+                  {{ item.short }}
+                </li>
+              }
+            </ul>
+            <ul class="mt-8 hidden gap-4 sm:grid">
               @for (item of guarantees; track item.title; let i = $index) {
                 <li appReveal [revealDelay]="i * 110" class="flex items-center gap-3 rounded-xl bg-white px-3 py-2.5 shadow-sm ring-1 ring-border sm:gap-4 sm:rounded-2xl sm:p-4">
                   <span class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent sm:h-11 sm:w-11 sm:rounded-xl" aria-hidden="true">
@@ -308,9 +323,9 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
           <div appReveal [revealDelay]="150" class="hidden sm:block">
             <ng-container *ngTemplateOutlet="dossierExample" />
           </div>
-          <details class="group -mt-2 sm:hidden">
-            <summary class="flex cursor-pointer list-none items-center justify-center gap-2 py-2 text-sm font-semibold text-accent">
-              Voir comment un dossier est protégé
+          <details class="group -mt-3 sm:hidden">
+            <summary class="flex cursor-pointer list-none items-center gap-2 py-2 text-base font-semibold text-accent">
+              Comment ça marche
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-open:rotate-180" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
             </summary>
             <div class="pb-2 pt-3">
@@ -782,9 +797,9 @@ export class LandingComponent implements OnInit {
 
   // Bloc de confiance sous le haut de page : uniquement des garanties réelles de la plateforme.
   readonly guarantees = [
-    { icon: 'shield', title: 'Annonces relues', detail: 'Chaque annonce est vérifiée par notre équipe avant publication' },
-    { icon: 'lock', title: 'Confidentialité', detail: 'Un engagement est accepté avant tout accès au dossier' },
-    { icon: 'card', title: 'Paiement sécurisé', detail: 'Par Stripe, sans aucune commission sur la vente' },
+    { icon: 'shield', title: 'Annonces relues', detail: 'Chaque annonce est vérifiée par notre équipe avant publication', short: 'Annonces relues avant publication' },
+    { icon: 'lock', title: 'Confidentialité', detail: 'Un engagement est accepté avant tout accès au dossier', short: 'Dossiers protégés par confidentialité' },
+    { icon: 'card', title: 'Paiement sécurisé', detail: 'Par Stripe, sans aucune commission sur la vente', short: 'Paiement sécurisé par Stripe' },
   ];
   readonly dossierEvents = [
     { title: 'Annonce relue par GoFounders', detail: 'Publiée de façon anonyme' },
