@@ -252,6 +252,60 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       </section>
 
       <!-- Entreprises à reprendre : recherche et filtres, puis les annonces du moment. -->
+      <!-- Confiance, juste après le haut de page : trois garanties réelles et le journal d'un dossier qui s'ouvre. -->
+      <section class="bg-[#F3F6FD] px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16" aria-labelledby="trust-title">
+        <div class="mx-auto grid max-w-[78rem] items-center gap-8 lg:grid-cols-2 lg:gap-16">
+          <div>
+            <h2 appReveal id="trust-title" class="text-center text-2xl text-primary sm:text-4xl lg:text-left">Une reprise encadrée, en toute confiance</h2>
+            <ul class="mt-6 grid gap-3 sm:mt-8 sm:gap-4">
+              @for (item of guarantees; track item.title; let i = $index) {
+                <li appReveal [revealDelay]="i * 110" class="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-border">
+                  <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent" aria-hidden="true">
+                    @switch (item.icon) {
+                      @case ('shield') { <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg> }
+                      @case ('lock') { <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> }
+                      @default { <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19M6.5 15h4"/></svg> }
+                    }
+                  </span>
+                  <div>
+                    <p class="font-bold text-primary">{{ item.title }}</p>
+                    <p class="text-sm leading-relaxed text-muted-foreground sm:text-base">{{ item.detail }}</p>
+                  </div>
+                </li>
+              }
+            </ul>
+          </div>
+
+          <!-- Journal d'un dossier (illustration, aussi sur téléphone) : les étapes se cochent, puis le cadenas s'ouvre. -->
+          <figure appReveal [revealDelay]="150" class="relative mx-auto w-full max-w-md" aria-label="Exemple : le journal d'un dossier de cession">
+            <div class="absolute inset-0 translate-x-3 translate-y-3 rotate-2 rounded-3xl bg-[#DCE5F7]" aria-hidden="true"></div>
+            <div class="relative rounded-3xl bg-white p-5 shadow-xl ring-1 ring-border sm:p-8">
+              <div class="flex items-start justify-between gap-4 border-b border-border pb-5">
+                <div>
+                  <p class="text-sm font-semibold text-muted-foreground">Dossier de cession</p>
+                  <p class="mt-1 text-lg font-bold text-primary sm:text-xl">Éditeur de logiciel SaaS · Lyon</p>
+                </div>
+                <span class="dossier-lock flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white" aria-hidden="true">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path class="dossier-shackle" d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                </span>
+              </div>
+              <ol class="mt-5 space-y-4">
+                @for (event of dossierEvents; track event.title; let i = $index) {
+                  <li class="dossier-event flex gap-3" [style.animation-delay.ms]="400 + i * 700">
+                    <span class="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></span>
+                    <div>
+                      <p class="font-semibold text-primary">{{ event.title }}</p>
+                      <p class="text-sm text-muted-foreground">{{ event.detail }}</p>
+                    </div>
+                  </li>
+                }
+              </ol>
+              <p class="dossier-open mt-6 rounded-xl bg-primary px-4 py-3 text-center font-semibold text-white">Dossier et contact du cédant ouverts</p>
+            </div>
+          </figure>
+        </div>
+      </section>
+
       <section id="entreprises" class="scroll-mt-20 px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-20" aria-labelledby="latest-title">
         <div class="mx-auto max-w-[78rem]">
           <h2 appReveal id="latest-title" class="text-center text-3xl text-primary sm:text-4xl">Entreprises à reprendre</h2>
@@ -394,68 +448,9 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       }
 
       <!-- Téléphones : fonctionnement et prix réunis dans un bloc court (étapes dépliables). -->
-      <!-- Comment ça marche : trois étapes, chacune avec sa garantie, et le journal d'un dossier qui s'ouvre. -->
-      <section class="px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-24" aria-labelledby="how-title">
-        <div class="mx-auto grid max-w-[78rem] items-center gap-10 lg:grid-cols-2 lg:gap-16">
-          <div>
-            <h2 appReveal id="how-title" class="text-center text-3xl text-primary sm:text-4xl lg:text-left">Une reprise encadrée, étape par étape</h2>
-            <ol class="mt-8 space-y-4 sm:mt-10 sm:space-y-6">
-              @for (step of steps; track step.title; let i = $index) {
-                <li appReveal [revealDelay]="i * 120" class="flex gap-4">
-                  <span class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-accent/10 text-accent" aria-hidden="true">
-                    @switch (step.icon) {
-                      @case ('search') {
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-                      }
-                      @case ('lock') {
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-                      }
-                      @default {
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                      }
-                    }
-                  </span>
-                  <div>
-                    <h3 class="text-lg font-bold text-primary sm:text-xl">{{ step.title }}</h3>
-                    <p class="mt-1 text-base leading-relaxed text-muted-foreground">{{ step.description }}</p>
-                    <p class="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-accent"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></span>{{ step.guarantee }}</p>
-                  </div>
-                </li>
-              }
-            </ol>
-          </div>
-
-          <!-- Journal d'un dossier (illustration, aussi sur téléphone) : les étapes se cochent, puis le cadenas s'ouvre. -->
-          <figure appReveal [revealDelay]="150" class="relative mx-auto w-full max-w-md lg:max-w-none" aria-label="Exemple : le journal d'un dossier de cession">
-            <div class="absolute inset-0 translate-x-3 translate-y-3 rotate-2 rounded-3xl bg-[#DCE5F7]" aria-hidden="true"></div>
-            <div class="relative rounded-3xl bg-white p-5 shadow-xl ring-1 ring-border sm:p-8">
-              <div class="flex items-start justify-between gap-4 border-b border-border pb-5">
-                <div>
-                  <p class="text-sm font-semibold text-muted-foreground">Dossier de cession</p>
-                  <p class="mt-1 text-lg font-bold text-primary sm:text-xl">Éditeur de logiciel SaaS · Lyon</p>
-                </div>
-                <span class="dossier-lock flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white" aria-hidden="true">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path class="dossier-shackle" d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-                </span>
-              </div>
-              <ol class="mt-5 space-y-4">
-                @for (event of dossierEvents; track event.title; let i = $index) {
-                  <li class="dossier-event flex gap-3" [style.animation-delay.ms]="400 + i * 700">
-                    <span class="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></span>
-                    <div>
-                      <p class="font-semibold text-primary">{{ event.title }}</p>
-                      <p class="text-sm text-muted-foreground">{{ event.detail }}</p>
-                    </div>
-                  </li>
-                }
-              </ol>
-              <p class="dossier-open mt-6 rounded-xl bg-primary px-4 py-3 text-center font-semibold text-white">Dossier complet et contact du cédant ouverts</p>
-            </div>
-          </figure>
-        </div>
-
-        <!-- Téléphones : les prix en un coup d'œil. -->
-        <dl class="mt-8 grid grid-cols-2 gap-2 text-center sm:hidden">
+      <!-- Téléphones : les prix en un coup d'œil. -->
+      <section class="px-4 py-8 sm:hidden" aria-label="Prix">
+        <dl class="grid grid-cols-2 gap-2 text-center sm:hidden">
           <div class="rounded-xl bg-secondary px-3 py-3">
             <dt class="text-sm text-muted-foreground">Vendre</dt>
             <dd class="mt-0.5 font-extrabold text-primary">Gratuit</dd>
@@ -648,11 +643,11 @@ export class LandingComponent implements OnInit {
   // Porteurs de projet et associés connectés : recherche complète ; les autres : vitrine publique.
   readonly associatesHref = computed(() => (isTalentMarketplaceRole(this.auth.currentUser()?.profileType) ? '/recherche' : '/associes'));
 
-  // « Comment ça marche » : chaque étape porte une garantie réelle de la plateforme.
-  readonly steps = [
-    { icon: 'search', title: 'Parcourez les annonces', description: 'Secteur, région, chiffres clés et prix : les annonces anonymisées sont visibles par tous', guarantee: 'Chaque annonce est relue par notre équipe' },
-    { icon: 'lock', title: 'Ouvrez le dossier', description: `Après un engagement de confidentialité, ${OFFER_PRICES.INTRO.label.replace(" ", "\u00a0")} donnent accès au dossier complet et aux coordonnées du cédant`, guarantee: 'Paiement sécurisé par Stripe' },
-    { icon: 'chat', title: 'Échangez avec le cédant', description: 'En direct dans la messagerie, puis avec votre expert-comptable et votre avocat pour la suite', guarantee: 'Aucune commission sur la vente' },
+  // Bloc de confiance sous le haut de page : uniquement des garanties réelles de la plateforme.
+  readonly guarantees = [
+    { icon: 'shield', title: 'Annonces relues', detail: 'Chaque annonce est vérifiée par notre équipe avant publication' },
+    { icon: 'lock', title: 'Confidentialité', detail: 'Un engagement est accepté avant tout accès au dossier' },
+    { icon: 'card', title: 'Paiement sécurisé', detail: 'Par Stripe, sans aucune commission sur la vente' },
   ];
   readonly dossierEvents = [
     { title: 'Annonce relue par GoFounders', detail: 'Publiée de façon anonyme' },
