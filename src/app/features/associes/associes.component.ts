@@ -82,7 +82,6 @@ const STAGE_LABELS: Record<string, string> = {
                 </button>
               }
             </div>
-            <p class="text-base text-muted-foreground">Profils anonymes, affichés avec l'accord de leurs auteurs</p>
           </div>
 
           @if (!loaded()) {
