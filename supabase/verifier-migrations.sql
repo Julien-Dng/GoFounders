@@ -15,6 +15,12 @@ from (values
   (7, '2026-10-25-contact.sql',                       to_regclass('public.contact_messages') is not null),
   (8, '2026-10-26-annonces-enrichies.sql',            exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'ma_listings' and column_name = 'revenue_history')),
   (9, '2026-10-27-vitrine-associes.sql',              exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'public_listing')),
-  (10, '2026-10-28-lancement.sql',                    to_regclass('public.ma_access_requests') is not null)
+  (10, '2026-10-28-lancement.sql',                    to_regclass('public.ma_access_requests') is not null),
+  (11, '2026-11-05-associes-offres.sql',              exists (select 1 from pg_proc where proname = 'free_quota_limits')),
+  (12, '2026-11-05e-mise-en-relation-directe.sql',    exists (select 1 from pg_proc where proname = 'unlock_listing_contact')),
+  (13, '2026-11-05f-inviter-associe.sql',             exists (select 1 from pg_proc where proname = 'invite_to_project')),
+  (14, '2026-11-05g-paiements-colonnes.sql',          exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'payments' and column_name = 'listing_id')),
+  (15, '2026-11-11-titre-annonce.sql',                exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'ma_listings' and column_name = 'public_title')),
+  (16, '2026-11-13-compte-multi-usages.sql',          exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'usages'))
 ) as check_list(ordre, migration, passee)
 order by ordre;

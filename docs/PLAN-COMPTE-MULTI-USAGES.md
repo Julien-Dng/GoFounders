@@ -1,39 +1,65 @@
 # Plan : un compte, plusieurs usages
 
-> Statut : **proposition à valider**, rien n'est encore modifié dans le code ni dans Supabase.
+> Statut : **validé (novembre 2026), en cours de réalisation**. Migration : `supabase/2026-11-13-compte-multi-usages.sql`.
 
-## Objectif
+## Principe
 
-Un seul compte, un seul profil, une seule messagerie. Chaque membre peut, avec le même compte :
+Une personne possède **un seul compte** et peut cumuler plusieurs usages, sans choisir de rôle définitif.
 
-- reprendre une entreprise ;
-- céder son entreprise ;
-- présenter un projet et chercher des associés ;
-- rejoindre le projet de quelqu'un d'autre.
-
-Les **droits** viennent des offres payées (mise en relation à 50 € par entreprise, Projet PRO), plus du rôle choisi à l'inscription.
-
-## Ce qui change pour le membre
-
-| Aujourd'hui | Demain |
+| Je souhaite… | Fonctionnement avec mon compte |
 |---|---|
-| Un rôle choisi à l'inscription, non modifiable | Un ou plusieurs **usages** cochés à l'inscription, modifiables dans Paramètres |
-| `/recherche` réservé aux porteurs de projet et associés | Ouvert à tous ; il montre les associés si vous avez un projet, les projets si vous voulez rejoindre une équipe, les deux sinon |
-| `/ma/deposer` réservé au rôle vendeur | Ouvert à tous : publier une cession reste gratuit |
-| Mise en relation (50 €) réservée au rôle acheteur | Possible pour tout membre ayant l'usage « Reprendre » |
-| Un repreneur qui veut un associé crée un second compte | Il coche « Je cherche des associés » et c'est tout |
+| Vendre une entreprise | Je publie gratuitement mon annonce et je gère les demandes et échanges liés à celle-ci |
+| Reprendre une entreprise | Je consulte les aperçus anonymisés, puis je paie 50 € par entreprise pour débloquer le dossier détaillé et le contact, après engagement de confidentialité |
+| Trouver des associés ou créer une équipe | Je publie mon projet, précise les compétences recherchées et contacte des profils |
+| Rejoindre un projet | Je complète mes compétences, ma disponibilité et mes attentes, puis je contacte les porteurs de projets |
 
-Les quatre usages : **Reprendre** (`reprise`), **Céder** (`cession`), **Mon projet** (`projet`, cherche des associés),
-**Rejoindre un projet** (`associe`). Le compte professionnel (`pro`) reste un type de compte à part : il est masqué au
-lancement, et un cabinet n'a pas les mêmes besoins.
+À l'inscription, « Vous êtes plutôt… » propose plusieurs choix. Ils **personnalisent le tableau de bord** et restent
+modifiables dans Paramètres ; ils ne donnent **aucun accès** supplémentaire.
+
+**Règle essentielle : les droits dépendent de l'action et des achats, pas de l'usage déclaré.**
+
+- Un cédant qui veut consulter le dossier d'une autre entreprise paie aussi les 50 €.
+- FREE et PRO sont des niveaux d'accès, pas des rôles. La même personne peut chercher un associé pour son projet et
+  proposer ses compétences à d'autres projets.
+- La reprise reste indépendante : FREE comme PRO paient 50 € pour débloquer une entreprise. L'offre PRO « Associés et
+  projets » ne débloque pas les dossiers de cession.
+
+## Le compte rassemble
+
+- **Mon profil** : présentation, compétences et expérience.
+- **Mes entreprises** : annonces publiées, favoris (à créer) et dossiers débloqués.
+- **Mes projets et associés** : projets, recherches et demandes d'accès aux projets (« candidatures »).
+- **Messages** : une messagerie commune, chaque conversation rattachée à son entreprise ou à son projet.
+- **Paiements** : achats de dossiers et éventuelle offre PRO pour les associés.
+
+## Droits : ce qui ouvre quoi
+
+Les cases cochées ne protègent rien (n'importe qui peut les cocher). Les accès reposent sur des **actions vérifiables** :
+
+| Action | Ce qu'elle ouvre |
+|---|---|
+| Avoir **publié un projet** (actif) | Voir les profils complets des associés, leur écrire (5 nouveaux contacts par mois en FREE, illimité en PRO), les inviter à lire la partie confidentielle du projet |
+| Avoir **complété un profil d'associé** (usage « Rejoindre un projet » et au moins une compétence) | Voir les projets et leurs porteurs, leur écrire (illimité), demander l'accès à la partie confidentielle |
+| Avoir **payé 50 €** pour une entreprise (engagement de confidentialité accepté) | Le dossier complet, les coordonnées choisies par le cédant et la messagerie avec lui, pour cette entreprise seulement |
+| Être **propriétaire** d'une annonce | La gérer, voir qui a ouvert son dossier et répondre à ces repreneurs |
+
+Conséquences voulues :
+
+- Un associé qui n'a pas de projet ne voit toujours pas les autres associés ; les repreneurs ne se voient pas entre eux.
+- Publier une annonce est ouvert à tout membre (gratuit, relu avant publication).
+- Les **comptes professionnels** (avocats, experts-comptables, cabinets) restent un type de compte à part (`role = 'pro'`),
+  avec leurs règles actuelles ; ils sont masqués au lancement.
+- Les admins gardent tous les accès.
 
 ## Modèle de données (Supabase)
 
-1. Nouvelle colonne `profiles.usages text[]`, limitée à `reprise`, `cession`, `projet` et `associe`. Elle est modifiable par le membre lui-même.
-2. Fonction `has_usage(uid, usage)`, utilisée par toutes les règles à la place de `role`.
-3. Fonction `has_projet_pro(uid)` : plan PRO ou PREMIUM.
-   - Côté site, elle remplace les vérifications de plan dans `canSeeMatchReasons`, `canUseAdvancedSearch` et `isFeaturedProjectPlan`.
-4. `profiles.role` est **conservé, en lecture seule**, le temps de la transition, pour pouvoir revenir en arrière. Il sera supprimé une fois tout validé.
+1. `profiles.usages text[]` : `reprise`, `cession`, `projet`, `associe`. Modifiable par le membre (Paramètres).
+2. Fonctions d'action : `has_published_project(uid)`, `is_associate(uid)` ; les règles d'accès les utilisent à la place de `role`.
+3. `profiles.role` reste en place : il distingue les comptes **pro** et sert de retour arrière. Pour un nouveau membre,
+   il reprend son premier usage (information seulement, plus aucune règle ne s'appuie dessus hors comptes pro).
+4. `conversations.context` (`projet`, `annonce`, `pro`) et `conversations.listing_id` : rattachement de chaque conversation.
+   Si le site n'indique pas le contexte, la base le déduit des droits des deux personnes (projet, puis annonce débloquée).
+5. Quota gratuit : il ne compte que les conversations de contexte `projet` ouvertes par le porteur du projet (plan FREE).
 
 ### Reprise des comptes existants
 
@@ -43,59 +69,33 @@ lancement, et un cabinet n'a pas les mêmes besoins.
 | `talent` | `associe` |
 | `buyer` | `reprise` |
 | `seller` | `cession` |
-| `pro` | inchangé (type de compte pro) |
+| `pro` | aucun (compte pro) |
 
-## Règles d'accès à réécrire
-
-Ce sont les points sensibles : des données confidentielles en dépendent. Chaque règle garde son intention actuelle.
-
-| Règle | Aujourd'hui (rôle) | Demain (usages et droits) |
-|---|---|---|
-| Voir un profil (`viewer_can_see_profile`) | porteur de projet ↔ associé, interlocuteurs, admins | `projet` voit `associe` et inversement ; interlocuteurs ; admins. Un membre qui n'a que `associe` ne voit **toujours pas** les autres associés |
-| Voir un projet (`projects_select_selon_role`) | propriétaire et associés | propriétaire et membres ayant `associe` |
-| Partie confidentielle d'un projet | associé dont la demande est acceptée | inchangé, mais la demande exige l'usage `associe` au lieu du rôle `talent` |
-| Nouvelle conversation (`ROLE_CONTACT_INTERDIT`) | paires de rôles complémentaires | `projet` ↔ `associe` ; repreneur ↔ cédant seulement **à propos d'une annonce** dont l'accès a été accepté |
-| Quota gratuit (5 contacts par mois) | rôle porteur de projet en FREE | conversation ouverte par un membre `projet` vers un `associe`, sans Projet PRO |
-| Demander un dossier (`request_listing_access`) | rôle acheteur (gratuit) | usage `reprise` (gratuit) |
-| Lire un dossier (`get_ma_listing_detail`) | rôle acheteur + demande acceptée et débloquée (50 €) | demande acceptée et débloquée, propriétaire, admins |
-| Paiement de la mise en relation (`INTRO`, back Stripe) | rôle acheteur | membre ayant l'usage `reprise` |
-| Publier une annonce | rôle vendeur | tout membre (sauf compte pro, qui garde ses règles) |
-
-Les conversations reçoivent un **contexte** (`projet` ou `annonce`) pour appliquer le bon quota et le bon e-mail. Les conversations existantes sont reprises selon les rôles des deux participants.
+Les conversations existantes reçoivent leur contexte d'après les rôles des deux participants.
 
 ## Côté site
 
-- **Inscription** : l'étape 1 devient « Qu'est-ce qui vous amène ? » avec des cases à cocher. L'étape 3 montre les champs de chaque usage coché (budget et secteur pour reprendre, compétences et disponibilité pour rejoindre…).
-- **Paramètres** : une section « Mes usages » pour en ajouter ou en retirer.
-- **Navigation et tableau de bord** : les sections s'affichent selon les usages, mais les menus Annonces et Associés & équipe restent visibles pour tous.
-- **`/recherche`** : deux onglets (associés / projets) quand le membre a les deux usages.
-- **Profil public** : il montre seulement les blocs correspondant aux usages de la personne.
-- **Tarifs** : inchangés (mise en relation à 50 € côté reprise, Projet PRO à 29 €/mois côté associés).
-- **Modèle Angular** : `profileType` est remplacé par `usages` ; `RoleGuard` devient `UsageGuard`, utilisé seulement là où c'est nécessaire.
+- **Inscription** : « Vous êtes plutôt… » avec des choix multiples ; l'étape suivante montre les champs utiles à chaque choix.
+- **Paramètres** : section « Mes usages » pour en ajouter ou en retirer.
+- **Navigation et tableau de bord** : sections selon les usages ; Annonces et Associés & équipe restent accessibles à tous.
+- **Recherche** : associés si on a un projet publié, projets si on a un profil d'associé, deux onglets si les deux.
+- **Messagerie** : chaque conversation affiche son entreprise ou son projet.
+- **Paiements** : liste des dossiers achetés et de l'offre PRO.
+- **Modèle Angular** : `usages` remplace `profileType` dans les contrôles d'accès ; `RoleGuard` n'est plus utilisé que pour les comptes pro.
 
 ## Tests avant mise en ligne
 
-1. **Matrice de visibilité SQL** sur la base de test locale : chaque combinaison d'usages × profils, projets, partie confidentielle, dossiers, conversations et quotas. Toutes les attaques déjà testées sont rejouées (lecture directe des colonnes confidentielles, contournement du quota, etc.).
-2. **Parcours complets dans le navigateur** :
-   - un repreneur qui ajoute « Mon projet » et écrit à un associé ;
-   - un porteur de projet qui achète l'accès repreneur et demande un dossier ;
-   - un cédant qui rejoint un projet.
-3. **Migration rejouée sur une copie de la base** avant la vraie.
+1. Matrice de visibilité SQL sur la base de test locale (`/var/tmp/pgtest`) : profils, projets, partie confidentielle,
+   dossiers, conversations et quotas, pour chaque combinaison d'actions ; les attaques déjà testées sont rejouées.
+2. Parcours dans le navigateur : un repreneur qui publie un projet et écrit à un associé ; un porteur de projet qui
+   achète un dossier ; un cédant qui rejoint un projet.
+3. Migration rejouée sur une copie de la base avant la vraie, **le même jour que le déploiement du site**.
 
-## Étapes et durée estimée
+## Étapes
 
-| Étape | Contenu | Estimation |
-|---|---|---|
-| 1 | Migration SQL (usages, fonctions, règles, reprise des comptes) et tests de sécurité | 1,5 jour |
-| 2 | Modèle, gardes, inscription, Paramètres | 1,5 jour |
-| 3 | Recherche, tableau de bord, navigation, profil public | 1 jour |
-| 4 | Textes et tarifs | 0,5 jour |
-| 5 | Recette complète et corrections | 0,5 à 1 jour |
-
-Total : **environ 5 jours de travail**, livrés en une fois. La migration doit être exécutée en même temps que le déploiement du site.
-
-## Décisions à prendre avant de commencer
-
-1. **Inscription** : cocher ses usages dès l'inscription (proposé), ou commencer par un seul et ajouter les autres ensuite ?
-2. **Comptes professionnels** : on les garde à part comme proposé ?
-3. **Visibilité entre repreneurs** : ils ne se voient pas entre eux (proposé, comme aujourd'hui entre associés) ?
+| Étape | Contenu |
+|---|---|
+| 1 | Migration SQL et tests de sécurité |
+| 2 | Modèle, inscription, Paramètres |
+| 3 | Tableau de bord, navigation, recherche, messagerie, paiements |
+| 4 | Textes, tarifs, recette complète |
