@@ -378,6 +378,49 @@ select optgroup {
   transform: translateX(4px);
 }
 
+/* Accueil, « Comment ça marche » : les étapes du dossier se cochent une à une, puis le cadenas s'ouvre.
+   Rejoué en boucle, lentement. */
+.dossier-event {
+  animation: dossier-event 7s ease-out infinite both;
+}
+
+@keyframes dossier-event {
+  0% { opacity: 0.25; transform: translateX(-6px); }
+  8%, 92% { opacity: 1; transform: none; }
+  100% { opacity: 0.25; }
+}
+
+.dossier-open {
+  animation: dossier-open 7s ease-out 2.6s infinite both;
+}
+
+@keyframes dossier-open {
+  0% { opacity: 0; transform: scale(0.96); }
+  6%, 60% { opacity: 1; transform: none; }
+  70%, 100% { opacity: 0; }
+}
+
+.dossier-lock {
+  animation: dossier-lock 7s ease-out 2.6s infinite both;
+}
+
+@keyframes dossier-lock {
+  0% { background-color: #0F1F3D; }
+  6%, 60% { background-color: #059669; }
+  70%, 100% { background-color: #0F1F3D; }
+}
+
+.dossier-shackle {
+  transform-origin: 16px 11px;
+  animation: dossier-shackle 7s ease-out 2.6s infinite both;
+}
+
+@keyframes dossier-shackle {
+  0% { transform: none; }
+  6%, 60% { transform: translateY(-2px) rotate(25deg); }
+  70%, 100% { transform: none; }
+}
+
 .scrollbar-none {
   scrollbar-width: none;
 }
@@ -397,7 +440,11 @@ select optgroup {
   .hero-float,
   .hero-float-late,
   .lift,
-  .arrow-nudge {
+  .arrow-nudge,
+  .dossier-event,
+  .dossier-open,
+  .dossier-lock,
+  .dossier-shackle {
     animation: none !important;
   }
 
