@@ -425,14 +425,14 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
             </ol>
           </div>
 
-          <!-- Journal d'un dossier (illustration) : les étapes se cochent, puis le cadenas s'ouvre. -->
-          <figure appReveal [revealDelay]="150" class="relative hidden sm:block" aria-label="Exemple : le journal d'un dossier de cession">
+          <!-- Journal d'un dossier (illustration, aussi sur téléphone) : les étapes se cochent, puis le cadenas s'ouvre. -->
+          <figure appReveal [revealDelay]="150" class="relative mx-auto w-full max-w-md lg:max-w-none" aria-label="Exemple : le journal d'un dossier de cession">
             <div class="absolute inset-0 translate-x-3 translate-y-3 rotate-2 rounded-3xl bg-[#DCE5F7]" aria-hidden="true"></div>
-            <div class="relative rounded-3xl bg-white p-7 shadow-xl ring-1 ring-border sm:p-8">
+            <div class="relative rounded-3xl bg-white p-5 shadow-xl ring-1 ring-border sm:p-8">
               <div class="flex items-start justify-between gap-4 border-b border-border pb-5">
                 <div>
                   <p class="text-sm font-semibold text-muted-foreground">Dossier de cession</p>
-                  <p class="mt-1 text-xl font-bold text-primary">Éditeur de logiciel SaaS · Lyon</p>
+                  <p class="mt-1 text-lg font-bold text-primary sm:text-xl">Éditeur de logiciel SaaS · Lyon</p>
                 </div>
                 <span class="dossier-lock flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white" aria-hidden="true">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path class="dossier-shackle" d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
