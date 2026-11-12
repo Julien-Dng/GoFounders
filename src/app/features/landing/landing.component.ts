@@ -309,7 +309,6 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       <section id="entreprises" class="scroll-mt-20 px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-20" aria-labelledby="latest-title">
         <div class="mx-auto max-w-[78rem]">
           <h2 appReveal id="latest-title" class="text-center text-3xl text-primary sm:text-4xl">Entreprises à reprendre</h2>
-          <p class="mx-auto mt-3 hidden max-w-[60ch] text-center text-lg text-muted-foreground sm:block">{{ introSummary }}</p>
 
           <div class="mx-auto mt-8 hidden max-w-3xl rounded-xl bg-white p-2 shadow-lg ring-1 ring-border sm:block" role="search">
             <div class="flex flex-col gap-2 sm:flex-row">
@@ -579,7 +578,6 @@ export class LandingComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
   private readonly showcaseService = inject(ShowcaseService);
-  readonly introSummary = INTRO_SUMMARY.replace(/\.$/, '');
   // Aperçu « Projets et associés » : deux projets et un associé de la vitrine publique (profils anonymisés).
   readonly showcase = signal<ShowcaseEntry[]>([]);
   // Tant qu'aucun membre n'est sur la vitrine, des exemples fictifs (signalés comme tels) illustrent la section.
