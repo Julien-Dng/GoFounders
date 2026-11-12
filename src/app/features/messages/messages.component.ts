@@ -24,6 +24,7 @@ interface ConversationPreview {
   unread: number;
   profile?: MarketplaceProfile;
   messages: ConversationMessage[];
+  topic?: { label: string; link: string | null };
   // Brouillon : conversation pas encore créée, elle ne l'est qu'à l'envoi du premier message.
   draft?: boolean;
 }
@@ -46,6 +47,13 @@ interface ConversationPreview {
             <app-avatar class="h-9 w-9 text-sm" [photoUrl]="selectedConv()!.profile?.photoURL" [initials]="selectedConv()!.initials" [name]="selectedConv()!.name" />
             <div class="flex-1 min-w-0">
               <div class="font-semibold text-sm">{{ selectedConv()!.name }}</div>
+              @if (selectedConv()!.topic; as topic) {
+                @if (topic.link) {
+                  <a [routerLink]="topic.link" class="block truncate text-xs font-semibold text-accent hover:underline">{{ topic.label }}</a>
+                } @else {
+                  <div class="truncate text-xs font-semibold text-accent">{{ topic.label }}</div>
+                }
+              }
               @if (selectedConv()!.draft) {
                 <div class="text-sm text-muted-foreground">Nouvelle conversation : elle sera créée à l'envoi de votre premier message.</div>
               } @else if (selectedProfile()?.title) {
@@ -274,6 +282,9 @@ interface ConversationPreview {
                   <span class="font-semibold text-sm truncate">{{ conv.name }}</span>
                   <span class="text-sm text-muted-foreground flex-shrink-0 ml-2">{{ conv.time }}</span>
                 </div>
+                @if (conv.topic) {
+                  <p class="truncate text-xs font-semibold text-accent">{{ conv.topic.label }}</p>
+                }
                 <p class="text-sm text-muted-foreground truncate">{{ conv.lastMessage }}</p>
               </div>
               @if (conv.unread > 0) {
@@ -564,6 +575,7 @@ export class MessagesComponent implements OnInit {
       unread: thread.unread,
       profile: thread.profile,
       messages: thread.messages,
+      topic: thread.topic,
     };
   }
 }

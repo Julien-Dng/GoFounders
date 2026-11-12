@@ -14,6 +14,9 @@ interface SupabaseConversationRow {
   participant_a: string;
   participant_b: string;
   created_at: string;
+  // Rattachement (2026-11-13-compte-multi-usages.sql).
+  context?: 'projet' | 'annonce' | 'pro' | null;
+  listing_id?: string | null;
 }
 
 interface SupabaseMessageRow {
@@ -60,6 +63,8 @@ export interface ConversationThread {
   lastMessage: string;
   profile?: MarketplaceProfile;
   messages: ConversationMessage[];
+  // Sujet de la conversation : l'entreprise (annonce), le projet ou le professionnel concerné.
+  topic?: { label: string; link: string | null };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -147,6 +152,7 @@ export class MessagingService {
 
       const messageRows = (messagesData ?? []) as SupabaseMessageRow[];
       const profileRows = (profilesData ?? []) as SupabaseProfileRow[];
+      const listingTitles = await this.loadListingTitles(conversationRows);
 
       const threads = await Promise.all(conversationRows.map(async conversation => {
         const participantProfileId = conversation.participant_a === user.uid ? conversation.participant_b : conversation.participant_a;
@@ -173,6 +179,7 @@ export class MessagingService {
           lastMessage: lastMessage?.content ?? 'Conversation ouverte.',
           profile,
           messages,
+          topic: this.topicOf(conversation, listingTitles),
         };
       }));
 
@@ -183,6 +190,35 @@ export class MessagingService {
       this.setConversationThreadsForUser(user.uid, []);
       return [];
     }
+  }
+
+  // Titres publics des entreprises liées aux conversations « annonce ».
+  private async loadListingTitles(rows: SupabaseConversationRow[]): Promise<Map<string, string>> {
+    const ids = [...new Set(rows.map(row => row.listing_id).filter((id): id is string => !!id))];
+    if (ids.length === 0) {
+      return new Map();
+    }
+
+    const { data } = await this.supabase.client.from('ma_listings').select('id, public_title, sector, region').in('id', ids);
+    const listings = (data ?? []) as Array<{ id: string; public_title: string | null; sector: string; region: string }>;
+    return new Map(listings.map(listing => [listing.id, listing.public_title || `${listing.sector}, ${listing.region}`]));
+  }
+
+  private topicOf(row: SupabaseConversationRow, listingTitles: Map<string, string>): ConversationThread['topic'] {
+    if (row.context === 'annonce') {
+      const title = row.listing_id ? listingTitles.get(row.listing_id) : undefined;
+      return { label: title ? `Entreprise : ${title}` : 'Reprise d’entreprise', link: row.listing_id ? `/ma/annonce/${row.listing_id}` : null };
+    }
+
+    if (row.context === 'projet') {
+      return { label: 'Projet et associés', link: null };
+    }
+
+    if (row.context === 'pro') {
+      return { label: 'Professionnel', link: null };
+    }
+
+    return undefined;
   }
 
   async ensureConversationWithProfile(user: User, targetProfileId: string): Promise<string | null> {

@@ -168,11 +168,9 @@ declare
   pro_ok boolean;
   initiator_is_owner_side boolean;
 begin
-  if auth.uid() is null then
-    return new;
-  end if;
-
-  if new.participant_a is distinct from auth.uid() then
+  -- Membre connecté : il lance lui-même la conversation. Sans session (scripts, administration) : pas de contrôle,
+  -- mais le contexte et l'entreprise sont tout de même renseignés.
+  if auth.uid() is not null and new.participant_a is distinct from auth.uid() then
     raise exception 'Une conversation doit être lancée par l''utilisateur connecté';
   end if;
 
@@ -190,6 +188,19 @@ begin
 
   if new.context is null then
     new.context := case when project_ok then 'projet' when listing_ok then 'annonce' when pro_ok then 'pro' end;
+  end if;
+
+  if auth.uid() is null then
+    if new.context = 'annonce' then
+      select request.listing_id into new.listing_id
+      from public.ma_access_requests request
+      where request.contact_unlocked_at is not null
+        and ((request.buyer_id = new.participant_a and request.owner_id = new.participant_b)
+          or (request.buyer_id = new.participant_b and request.owner_id = new.participant_a))
+      order by request.contact_unlocked_at desc
+      limit 1;
+    end if;
+    return new;
   end if;
 
   if not coalesce(case new.context when 'projet' then project_ok when 'annonce' then listing_ok when 'pro' then pro_ok end, false) then
@@ -798,3 +809,22 @@ AS $function$
     false
   );
 $function$;
+
+-- 7. Dossiers débloqués par le membre (page Abonnement / Paiements), sans ouvrir la table payments.
+create or replace function public.list_my_unlocked_listings()
+returns table (listing_id uuid, title text, sector text, region text, status text, unlocked_at timestamptz)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select listing.id, coalesce(nullif(listing.public_title, ''), listing.sector || ', ' || listing.region),
+         listing.sector, listing.region, listing.status, request.contact_unlocked_at
+  from public.ma_access_requests request
+  join public.ma_listings listing on listing.id = request.listing_id
+  where request.buyer_id = auth.uid() and request.contact_unlocked_at is not null
+  order by request.contact_unlocked_at desc;
+$$;
+
+revoke all on function public.list_my_unlocked_listings() from public, anon;
+grant execute on function public.list_my_unlocked_listings() to authenticated;

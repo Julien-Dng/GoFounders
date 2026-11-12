@@ -153,6 +153,9 @@ export interface SupabaseConversationRow {
   participant_a: string;
   participant_b: string;
   created_at: string;
+  // Rattachement (2026-11-13-compte-multi-usages.sql) : projet, annonce (avec son entreprise) ou professionnel.
+  context?: 'projet' | 'annonce' | 'pro' | null;
+  listing_id?: string | null;
 }
 
 export interface SupabaseConversationInsert {

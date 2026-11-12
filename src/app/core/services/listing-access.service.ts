@@ -45,6 +45,15 @@ export interface AccessResult {
   status?: AccessRequestStatus;
 }
 
+export interface UnlockedListing {
+  listing_id: string;
+  title: string;
+  sector: string;
+  region: string;
+  status: string;
+  unlocked_at: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ListingAccessService {
   private readonly supabase = inject(SupabaseService);
@@ -124,6 +133,16 @@ export class ListingAccessService {
     const { data, error } = await this.supabase.client.rpc('get_my_access_request', { p_listing_id: listingId });
     const rows = (data ?? []) as MyAccessRequest[];
     return error || rows.length === 0 ? null : rows[0];
+  }
+
+  // Dossiers que le membre a débloqués (50 € chacun), du plus récent au plus ancien.
+  async listMyUnlocked(): Promise<UnlockedListing[]> {
+    if (!this.supabase.isConfigured) {
+      return [];
+    }
+
+    const { data, error } = await this.supabase.client.rpc('list_my_unlocked_listings');
+    return error ? [] : ((data ?? []) as UnlockedListing[]);
   }
 
   async listReceived(): Promise<ReceivedAccessRequest[]> {

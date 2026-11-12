@@ -28,22 +28,22 @@ Le produit est composé de **deux verticales** :
 
 ---
 
-## 👤 Rôles utilisateur
+## 👤 Compte multi-usages (novembre 2026)
 
-Chaque utilisateur a **un seul rôle**, choisi à l'inscription et non modifiable ensuite (pas de profil « les deux ») :
+Un seul compte par personne, qui **cumule des usages** modifiables (Paramètres > Mes usages) : `reprise`, `cession`,
+`projet` (cherche des associés), `associe` (rejoindre un projet). Plan complet : `docs/PLAN-COMPTE-MULTI-USAGES.md`,
+migration `supabase/2026-11-13-compte-multi-usages.sql`, tests `supabase/tests/`.
 
-| Rôle (`profileType`) | Libellé | Verticale | `/recherche` affiche |
-|---|---|---|---|
-| `entrepreneur` | Porteur de projet | Talents & Associés | Les talents |
-| `talent` | Associé | Talents & Associés | Les projets |
-| `buyer` | Acheteur / Repreneur | M&A | — (redirigé vers `/ma`) |
-| `seller` | Vendeur M&A | M&A | — (redirigé vers `/ma`) |
-
-- `RoleGuard` (`route.data.allowedRoles`) protège `/recherche` ; le dashboard et la navigation s'adaptent au rôle.
-- Libellés et rôles de la marketplace : `PROFILE_TYPE_LABELS` et `TALENT_MARKETPLACE_ROLES` dans `user.model.ts`.
-- Sur le site, le mot **« talent » n'est jamais affiché** : on parle d'**« associé »** (« Je veux devenir associé », « associés disponibles »). La valeur technique reste `talent` (base et code).
-
----
+- **Les usages personnalisent le site, ils n'ouvrent aucun droit.** Les droits viennent des actions et des achats :
+  projet publié → voir/contacter les associés ; profil d'associé complété (usage `associe` + compétences) → voir/contacter
+  les projets ; 50 € payés → dossier et contact de cette entreprise (tout membre, cédant compris) ; annonce possédée → la gérer.
+- `profiles.role` ne sert plus qu'à distinguer les **comptes pro** (`role = 'pro'`, type de compte à part) ; pour un membre
+  il reprend son premier usage, à titre indicatif. Côté site : `usagesOf()`, `hasUsage()`, `canPublishMa()`,
+  `canBuyMaDossier()` dans `user.model.ts` (plus de `RoleGuard`).
+- Inscription « Vous êtes plutôt… » à choix multiples (« Je suis un professionnel » exclusif).
+- Chaque conversation est rattachée (`conversations.context` : `projet`, `annonce` + `listing_id`, `pro`) ; le quota FREE
+  (5 nouveaux contacts par mois) ne compte que les contacts « projet » ouverts par le porteur.
+- Sur le site, le mot **« talent » n'est jamais affiché** : on parle d'**« associé »**. La valeur technique `talent` reste dans le code.
 
 ## 💰 Modèle tarifaire
 

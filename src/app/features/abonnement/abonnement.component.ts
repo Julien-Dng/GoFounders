@@ -5,6 +5,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { Plan } from '../../core/models/user.model';
 import { PaymentService } from '../../core/services/payment.service';
 import { OFFER_PRICES } from '../../core/config/offers';
+import { ListingAccessService, UnlockedListing } from '../../core/services/listing-access.service';
 
 @Component({
   selector: 'app-abonnement',
@@ -74,6 +75,25 @@ import { OFFER_PRICES } from '../../core/config/offers';
               }
             </div>
           </section>
+
+          @if (unlocked().length > 0) {
+            <section class="py-6" aria-labelledby="abo-dossiers">
+              <h2 id="abo-dossiers" class="text-lg font-semibold text-primary">Mes dossiers débloqués</h2>
+              <ul class="mt-3 divide-y divide-border rounded-xl ring-1 ring-border">
+                @for (item of unlocked(); track item.listing_id) {
+                  <li>
+                    <a [routerLink]="['/ma/annonce', item.listing_id]" class="flex items-center justify-between gap-4 px-4 py-3 hover:bg-secondary">
+                      <span class="min-w-0">
+                        <span class="block truncate font-medium text-primary">{{ item.title }}</span>
+                        <span class="block text-sm text-muted-foreground">Débloqué le {{ formatDate(item.unlocked_at) }}@if (item.status === 'sold') { · vendue}</span>
+                      </span>
+                      <span class="flex-shrink-0 text-sm font-semibold text-accent">Ouvrir le dossier →</span>
+                    </a>
+                  </li>
+                }
+              </ul>
+            </section>
+          }
         </div>
 
         @if (!isSimulation) {
@@ -103,6 +123,15 @@ export class AbonnementComponent {
   readonly features = FEATURES;
   private readonly auth = inject(AuthService);
   private readonly payment = inject(PaymentService);
+  private readonly access = inject(ListingAccessService);
+
+  constructor() {
+    void this.access.listMyUnlocked().then(list => this.unlocked.set(list));
+  }
+
+  formatDate(value: string): string {
+    return new Date(value).toLocaleDateString('fr-FR');
+  }
 
   readonly isSimulation = this.payment.isSimulation;
   readonly maAccessEnd = computed(() => {
@@ -111,6 +140,7 @@ export class AbonnementComponent {
   });
   // Même règle pour tous les membres : l'offre PRO ne débloque pas les dossiers de cession.
   readonly maDescription = `Publier une annonce est gratuit. Pour chaque entreprise qui vous intéresse, débloquez le dossier complet et le contact du cédant pour ${OFFER_PRICES.INTRO.label}, sans abonnement, que vous soyez en FREE ou en PRO.`;
+  readonly unlocked = signal<UnlockedListing[]>([]);
   readonly currentPlan = computed(() => this.auth.currentUser()?.plan ?? 'FREE');
   readonly hasMaAccess = computed(() => this.auth.hasMaAccess());
   readonly statusMessage = signal('');
