@@ -518,7 +518,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
         <!-- Projets et associés : vrais profils de la vitrine publique (anonymisés), sinon exemples fictifs signalés. -->
         <section class="bg-secondary px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16" aria-labelledby="team-title">
           <!-- Composition différente des annonces : texte à gauche, cartes à droite (ordinateur) ;
-               cartes qui défilent à l'horizontale sur téléphone. -->
+               deux cartes compactes empilées sur téléphone. -->
           <div class="mx-auto grid max-w-[78rem] gap-5 lg:grid-cols-12 lg:items-center lg:gap-10">
             <div class="text-center lg:col-span-4 lg:text-left">
               <h2 appReveal id="team-title" class="text-2xl text-primary sm:text-4xl">Projets et associés</h2>
@@ -531,10 +531,10 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
               }
             </div>
 
-            <div class="scrollbar-none -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0 lg:col-span-8">
+            <div class="grid gap-3 sm:grid-cols-2 sm:gap-5 lg:col-span-8 max-sm:[&>*:nth-child(n+3)]:hidden">
               @for (card of teamCards(); track card.key; let i = $index; let last = $last) {
                 <article appReveal [revealDelay]="i * 110"
-                         class="lift flex w-[88%] flex-shrink-0 snap-start snap-always flex-col rounded-2xl bg-white p-4 shadow-sm ring-1 ring-border hover:shadow-xl sm:w-auto sm:p-5 sm:shadow-lg"
+                         class="lift flex flex-col rounded-2xl bg-white p-4 shadow-sm ring-1 ring-border hover:shadow-xl sm:p-5 sm:shadow-lg"
                          [class.sm:col-span-2]="last && teamCards().length % 2 === 1">
                   <div class="flex items-start gap-3">
                     <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center text-lg font-extrabold text-white" [class]="card.kind === 'project' ? 'rounded-xl bg-accent' : 'rounded-full bg-primary'" aria-hidden="true">{{ card.initial }}</span>
