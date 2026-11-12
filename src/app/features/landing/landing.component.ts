@@ -148,9 +148,10 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
 
         <div class="relative mx-auto grid max-w-[78rem] gap-14 lg:grid-cols-12 lg:items-center">
           <div class="lg:col-span-6">
-            <h1 class="hero-enter max-w-[16ch] text-[2.2rem] leading-[1.08] text-white sm:text-[3.5rem] lg:text-[3.75rem]">
+            <h1 class="hero-enter text-[clamp(1.4rem,7.5vw,2.2rem)] leading-[1.15] text-white sm:max-w-[16ch] sm:text-[3.5rem] sm:leading-[1.08] lg:text-[3.75rem]">
               @if (showAssociates) {
-                Reprenez une entreprise. Trouvez vos associés
+                <!-- Téléphones : une phrase par ligne. -->
+                <span class="block whitespace-nowrap sm:inline sm:whitespace-normal">Reprenez une entreprise.</span> <span class="block whitespace-nowrap sm:inline sm:whitespace-normal">Trouvez vos associés</span>
               } @else {
                 Reprenez une entreprise qui a déjà ses clients
               }
@@ -165,7 +166,11 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
               @if (showAssociates) {
                 <a [routerLink]="associatesHref()" class="rounded-lg border border-white/30 px-5 py-3.5 text-center font-semibold text-white">Trouver des associés</a>
               }
-              <a routerLink="/ma/deposer" class="mt-1 text-center font-semibold text-white/80 underline-offset-4 hover:underline">Vendre mon entreprise</a>
+              <p class="mt-1 text-center font-semibold text-white/80">
+                <a routerLink="/ma/deposer" class="underline-offset-4 hover:underline">Vendre mon entreprise</a>
+                <span class="mx-1.5 text-white/40" aria-hidden="true">·</span>
+                <a routerLink="/estimation" class="underline-offset-4 hover:underline">Estimer sa valeur</a>
+              </p>
             </div>
 
             <div class="hero-enter mt-9 hidden gap-3 sm:grid" style="animation-delay: 220ms" [class]="showAssociates ? 'sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : ''">
