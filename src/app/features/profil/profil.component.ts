@@ -4,7 +4,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { MarketplaceProfile } from '../../core/data/mock-platform.data';
-import { MATCH_REASONS_UPSELL, PROFILE_TYPE_LABELS, canSeeMatchReasons } from '../../core/models/user.model';
+import { MATCH_REASONS_UPSELL, canSeeMatchReasons, hasUsage, usageSummary } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { MatchingService } from '../../core/services/matching.service';
 import { StatsService } from '../../core/services/stats.service';
@@ -598,25 +598,7 @@ export class ProfilComponent implements OnInit {
         return profileTitle;
       }
 
-      const profileType = this.currentUser()?.profileType;
-
-      if (profileType === 'talent') {
-        return 'Associé';
-      }
-
-      if (profileType === 'buyer') {
-        return 'Acheteur / Repreneur';
-      }
-
-      if (profileType === 'seller') {
-        return 'Vendeur M&A';
-      }
-
-      if (profileType === 'pro') {
-        return 'Professionnel';
-      }
-
-      return 'Porteur de projet';
+      return usageSummary(this.currentUser());
     }
 
     return this.publicProfile()?.title ?? 'Profil public';
@@ -665,7 +647,7 @@ export class ProfilComponent implements OnInit {
   // Seulement pour un porteur dont le projet a une partie confidentielle : sinon il n'y a rien à ouvrir.
   readonly canInvite = computed(() =>
     !this.isOwnProfile()
-    && this.currentUser()?.profileType === 'entrepreneur'
+    && hasUsage(this.currentUser(), 'projet')
     && this.publicProfile()?.profileType === 'talent'
     && !!this.myProject()?.confidentialDetails?.trim()
   );
@@ -681,7 +663,7 @@ export class ProfilComponent implements OnInit {
   readonly quickInfo = computed(() =>
     this.isOwnProfile()
       ? [
-          { label: 'Type de profil', value: PROFILE_TYPE_LABELS[this.currentUser()?.profileType ?? 'entrepreneur'] },
+          { label: 'Usages', value: usageSummary(this.currentUser()) },
           { label: 'Plan', value: this.currentUser()?.plan ?? 'FREE' },
           { label: 'Complétion', value: `${this.currentUser()?.profileComplete ?? 0}%` },
           { label: 'Localisation', value: this.currentUser()?.location ?? 'France' },
@@ -726,7 +708,7 @@ export class ProfilComponent implements OnInit {
     if (this.isOwnProfile()) {
       const user = this.currentUser();
       return [
-        PROFILE_TYPE_LABELS[user?.profileType ?? 'entrepreneur'],
+        usageSummary(user),
         user?.skills?.[0] ? `Expertise ${user.skills[0]}` : 'Compétences à renseigner',
         user?.availabilityLabel || user?.location || 'Disponibilité à préciser',
       ];
@@ -799,7 +781,7 @@ export class ProfilComponent implements OnInit {
       await this.loadAccess(profile.id);
     }
 
-    if (profile?.profileType === 'talent' && this.currentUser()?.profileType === 'entrepreneur') {
+    if (profile?.profileType === 'talent' && hasUsage(this.currentUser(), 'projet')) {
       await this.loadInvitation(profile.id);
     }
   }

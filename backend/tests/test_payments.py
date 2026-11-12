@@ -179,10 +179,12 @@ def test_existing_customer_is_reused(client_for):
 
 
 def test_wrong_role_is_refused(client_for):
-    stripe = FakeStripe()
-    response = client_for(FakeSupabase("seller"), stripe).post("/api/paiements/session", json={"product": "MA_ACCESS"}, headers=AUTH)
-    assert response.status_code == 403
-    assert stripe.sessions == []
+    # Les comptes pro n'achètent ni les dossiers ni l'offre PRO des associés ; les membres, pas les offres pros.
+    for role, product in (("pro", "MA_ACCESS"), ("pro", "PRO"), ("seller", "PRO_DIRECTORY")):
+        stripe = FakeStripe()
+        response = client_for(FakeSupabase(role), stripe).post("/api/paiements/session", json={"product": product}, headers=AUTH)
+        assert response.status_code == 403
+        assert stripe.sessions == []
 
 
 def test_premium_and_unknown_offers_are_refused(client_for):
@@ -215,9 +217,11 @@ def test_intro_refused_without_accepted_request(client_for):
     assert stripe.sessions == []
 
 
-def test_intro_requires_listing_and_buyer(client_for):
+def test_intro_requires_listing_and_member(client_for):
     assert client_for(FakeSupabase("buyer")).post("/api/paiements/session", json={"product": "INTRO"}, headers=AUTH).status_code == 409
-    assert client_for(FakeSupabase("seller")).post("/api/paiements/session", json={"product": "INTRO", "listing_id": LISTING_ID}, headers=AUTH).status_code == 403
+    # Un cédant paie aussi les 50 € pour ouvrir le dossier d'une autre entreprise ; un compte pro, non.
+    assert client_for(FakeSupabase("seller")).post("/api/paiements/session", json={"product": "INTRO", "listing_id": LISTING_ID}, headers=AUTH).status_code == 200
+    assert client_for(FakeSupabase("pro")).post("/api/paiements/session", json={"product": "INTRO", "listing_id": LISTING_ID}, headers=AUTH).status_code == 403
 
 
 def test_pro_offer_gets_one_month_free_trial(client_for):

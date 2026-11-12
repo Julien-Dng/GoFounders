@@ -4,6 +4,7 @@ import { MARKETPLACE_PROFILES } from '../data/mock-platform.data';
 import { ProjectAccessStatus, SupabaseProjectAccessRequestRow } from '../models/supabase-database.model';
 import { AuthService } from './auth.service';
 import { SupabaseService } from './supabase.service';
+import { hasUsage } from '../models/user.model';
 
 const LOCAL_REQUESTS_KEY = 'gofounders.mock.access-requests';
 
@@ -32,7 +33,7 @@ export interface RequestAccessResult {
 
 const ERROR_MESSAGES: Record<string, string> = {
   NDA_REQUIS: "Ce projet exige l'acceptation de l'engagement de confidentialité.",
-  ACCES_RESERVE_ASSOCIES: "Seuls les associés peuvent demander l'accès à un projet.",
+  ACCES_RESERVE_ASSOCIES: "Complétez votre profil d'associé (« Rejoindre un projet » dans Paramètres, puis vos compétences) pour demander l'accès à un projet.",
   PROJET_INDISPONIBLE: "Ce projet n'est plus disponible.",
   PROJET_REQUIS: "Publiez d'abord votre projet (Modifier mon profil) pour l'ouvrir à un associé.",
   ASSOCIE_INTROUVABLE: "Ce profil n'est pas un associé.",
@@ -184,7 +185,7 @@ export class ProjectAccessService {
   private requestLocally(projectId: string, acceptNda: boolean, names: { projectName: string; ownerName: string }): RequestAccessResult {
     const user = this.auth.currentUser();
 
-    if (!user || user.profileType !== 'talent') {
+    if (!user || !hasUsage(user, 'associe') || (user.skills?.length ?? 0) === 0) {
       return { success: false, message: ERROR_MESSAGES['ACCES_RESERVE_ASSOCIES'] };
     }
 

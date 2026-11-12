@@ -158,7 +158,7 @@ export class ListingAccessService {
 
   private readableError(message: string): string {
     const known: Record<string, string> = {
-      ACCES_REPRENEUR_REQUIS: 'La demande d’accès est réservée aux comptes repreneur.',
+      ACCES_REPRENEUR_REQUIS: 'Les comptes professionnels ne peuvent pas débloquer de dossier.',
       ANNONCE_INDISPONIBLE: 'Cette annonce n’est plus disponible.',
       NDA_REQUIS: 'Acceptez l’engagement de confidentialité pour envoyer votre demande.',
       PRESENTATION_REQUISE: 'Présentez-vous en quelques phrases (au moins 20 caractères).',

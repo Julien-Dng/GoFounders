@@ -4,7 +4,10 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FEATURES } from '../../core/config/features';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
-import { PRO_CATEGORY_LABELS, ProCategory, ProfileType } from '../../core/models/user.model';
+import { PRO_CATEGORY_LABELS, ProCategory, ProfileType, Usage, primaryProfileType } from '../../core/models/user.model';
+
+// Cartes de l'étape 1 → usages du compte (le compte pro reste un type à part).
+const TYPE_TO_USAGE: Record<Exclude<ProfileType, 'pro'>, Usage> = { entrepreneur: 'projet', talent: 'associe', buyer: 'reprise', seller: 'cession' };
 import { EMAIL_POLICY_MESSAGES, registrationEmailValidator } from '../../core/validators/email-policy.validator';
 import { passwordPolicyValidator } from '../../core/validators/password-policy.validator';
 import { PasswordCriteriaComponent } from '../../shared/components/password-criteria/password-criteria.component';
@@ -40,7 +43,7 @@ interface ProfileOption {
               <div class="mb-8 text-center sm:mb-10">
                 <h1 class="mb-3 text-3xl font-semibold text-primary sm:text-4xl">Vous êtes plutôt…</h1>
                 <p class="mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-                  Un seul rôle par compte pour garder une recherche claire et pertinente des deux côtés
+                  Plusieurs choix possibles. Ils personnalisent votre espace et restent modifiables dans les paramètres
                 </p>
               </div>
 
@@ -48,8 +51,9 @@ interface ProfileOption {
                 @for (type of profileTypes; track type.id) {
                   <button
                     type="button"
-                    (click)="selectType(type.id)"
-                    [ngClass]="selectedType() === type.id
+                    (click)="toggleType(type.id)"
+                    [attr.aria-pressed]="isSelected(type.id)"
+                    [ngClass]="isSelected(type.id)
                       ? 'rounded-2xl border border-accent bg-accent/5 p-6 text-left  transition-all hover:scale-[1.01] sm:p-8'
                       : 'rounded-2xl border border-border bg-card p-6 text-left transition-all hover:scale-[1.01]  sm:p-8'"
                   >
@@ -95,9 +99,10 @@ interface ProfileOption {
                     <h3 class="mb-2 text-xl font-semibold text-primary">{{ type.title }}</h3>
                     <p class="leading-relaxed text-muted-foreground">{{ type.description }}</p>
 
-                    @if (selectedType() === type.id) {
+                    @if (isSelected(type.id)) {
                       <div class="mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-3 py-1 text-sm font-semibold text-white animate-scale-in">
-                        Sélectionné
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>
+                        Choisi
                       </div>
                     }
                   </button>
@@ -107,8 +112,8 @@ interface ProfileOption {
               <button
                 type="button"
                 (click)="goToStep(2)"
-                [disabled]="!selectedType()"
-                [ngClass]="selectedType()
+                [disabled]="selectedTypes().length === 0"
+                [ngClass]="selectedTypes().length > 0
                   ? 'w-full rounded-lg bg-primary py-4 text-lg font-semibold text-white  transition-all hover:bg-primary/90'
                   : 'w-full cursor-not-allowed rounded-lg bg-muted py-4 text-lg font-semibold text-muted-foreground opacity-50'"
               >
@@ -233,7 +238,7 @@ interface ProfileOption {
                 <p class="mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">{{ detailStepPrompt() }}</p>
               </div>
 
-              @if (selectedType() === 'entrepreneur') {
+              @if (isSelected('entrepreneur')) {
                 <div class="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
                   <div>
                     <label class="mb-2 block text-sm font-semibold" for="project-name">Nom du projet</label>
@@ -272,7 +277,7 @@ interface ProfileOption {
                 </div>
               }
 
-              @if (selectedType() === 'talent') {
+              @if (isSelected('talent')) {
                 <div class="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
                   <div>
                     <label class="mb-2 block text-sm font-semibold" for="talent-headline">Rôle principal</label>
@@ -306,7 +311,7 @@ interface ProfileOption {
                 </div>
               }
 
-              @if (selectedType() === 'buyer') {
+              @if (isSelected('buyer')) {
                 <div class="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
                   <div>
                     <label class="mb-2 block text-sm font-semibold" for="buyer-sector">Type d'entreprise recherchée</label>
@@ -343,7 +348,7 @@ interface ProfileOption {
                 </div>
               }
 
-              @if (selectedType() === 'pro') {
+              @if (isSelected('pro')) {
                 <div class="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
                   <div>
                     <label class="mb-2 block text-sm font-semibold" for="pro-category">Votre métier</label>
@@ -376,7 +381,7 @@ interface ProfileOption {
                 </div>
               }
 
-              @if (selectedType() === 'seller') {
+              @if (isSelected('seller') && !isSelected('buyer')) {
                 <div class="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
                   <div>
                     <label class="mb-2 block text-sm font-semibold" for="seller-sector">Secteur de l'entreprise</label>
@@ -413,13 +418,13 @@ interface ProfileOption {
                 </div>
               }
 
-              @if (selectedType() === 'talent' || selectedType() === 'entrepreneur') {
+              @if (isSelected('talent') || isSelected('entrepreneur')) {
                 <label class="mt-6 flex cursor-pointer items-start gap-3 rounded-xl bg-secondary p-4">
                   <input type="checkbox" formControlName="publicListing" class="mt-1 h-5 w-5 flex-shrink-0 accent-accent">
                   <span>
                     <span class="block font-semibold text-primary">Apparaître de façon anonyme sur la page « Trouver un associé »</span>
                     <span class="text-sm text-muted-foreground">
-                      @if (selectedType() === 'talent') {
+                      @if (isSelected('talent')) {
                         Les visiteurs voient votre titre, vos compétences et votre disponibilité, jamais votre nom, votre photo ni votre ville
                       } @else {
                         Les visiteurs voient le secteur, le stade et les profils recherchés de votre projet, jamais votre nom, celui du projet ni sa description
@@ -489,16 +494,22 @@ export class InscriptionComponent {
 
   readonly totalSteps = 3;
   readonly currentStep = signal(1);
-  // ?profil=buyer (depuis une annonce) : rôle présélectionné, modifiable à l'étape 1.
-  readonly selectedType = signal<ProfileType | null>(
+  // Compte multi-usages : plusieurs choix possibles (« Je suis un professionnel » est exclusif).
+  // ?profil=buyer (depuis une annonce) : choix présélectionné, modifiable à l'étape 1.
+  readonly selectedTypes = signal<ProfileType[]>(
     (['entrepreneur', 'talent', 'buyer', 'seller', 'pro'] as const)
       .filter(type => (FEATURES.associates || (type !== 'entrepreneur' && type !== 'talent')) && (FEATURES.pros || type !== 'pro'))
-      .find(type => type === this.route.snapshot.queryParamMap.get('profil')) ?? null
+      .filter(type => type === this.route.snapshot.queryParamMap.get('profil'))
   );
   readonly returnUrl = signal<string | null>(this.route.snapshot.queryParamMap.get('returnUrl'));
   readonly isPasswordVisible = signal(false);
   readonly errorMessage = signal('');
   readonly isSubmitting = signal(false);
+
+  constructor() {
+    // Choix présélectionné par le lien (?profil=…) : mêmes règles de saisie qu'un clic.
+    queueMicrotask(() => this.updateDetailValidators(this.selectedTypes()));
+  }
 
   togglePasswordVisibility(): void {
     this.isPasswordVisible.update((isVisible) => !isVisible);
@@ -533,12 +544,13 @@ export class InscriptionComponent {
   );
 
   readonly selectedTypeLabel = computed(() => {
-    const activeType = this.selectedType();
+    const types = this.selectedTypes();
+    const activeType = types.length === 1 ? types[0] : null;
     switch (activeType) {
       case 'entrepreneur':
-        return 'entrepreneur';
+        return 'porteur de projet';
       case 'talent':
-        return 'talent';
+        return 'associé';
       case 'buyer':
         return 'acheteur / repreneur';
       case 'seller':
@@ -551,13 +563,18 @@ export class InscriptionComponent {
   });
 
   readonly detailStepDescription = computed(() => {
-    return this.selectedType() === 'entrepreneur'
+    return this.isSelected('entrepreneur')
       ? 'Présentez rapidement votre projet pour que les futurs associés sachent ce que vous construisez.'
       : 'Présentez votre expertise pour que les entrepreneurs trouvent le bon profil plus vite.';
   });
 
   readonly detailStepPrompt = computed(() => {
-    switch (this.selectedType()) {
+    const types = this.selectedTypes();
+    if (types.length > 1) {
+      return 'Complétez les informations utiles à chacun de vos choix.';
+    }
+
+    switch (types[0]) {
       case 'entrepreneur':
         return 'Présentez rapidement votre projet pour que les futurs associés sachent ce que vous construisez.';
       case 'talent':
@@ -582,7 +599,7 @@ export class InscriptionComponent {
     {
       id: 'entrepreneur',
       icon: 'project',
-      title: 'Je dépose un projet',
+      title: 'Je cherche des associés',
       description: 'Je construis un projet et je veux trouver les bons associés pour le faire avancer',
     },
     {
@@ -595,19 +612,19 @@ export class InscriptionComponent {
       id: 'buyer',
       icon: 'buyer',
       title: 'Je veux reprendre une entreprise',
-      description: 'Je cherche une opportunité M&A à analyser ou acquérir avec un accès dédié',
+      description: 'Je consulte les annonces et je débloque les dossiers qui m’intéressent, 50 € par entreprise',
     },
     {
       id: 'seller',
       icon: 'seller',
       title: 'Je veux céder mon entreprise',
-      description: 'Je souhaite préparer une annonce confidentielle et qualifier des repreneurs',
+      description: 'Je publie gratuitement une annonce anonyme et j’échange avec les repreneurs',
     },
     {
       id: 'pro',
       icon: 'pro',
       title: 'Je suis un professionnel',
-      description: 'Expert-comptable, avocat, notaire ou cabinet de cession : je veux être visible et accompagner des cessions',
+      description: 'Expert-comptable, avocat, notaire ou cabinet de cession : compte à part, pour être visible et accompagner des cessions',
     },
     ];
   }
@@ -645,14 +662,25 @@ export class InscriptionComponent {
     return '';
   }
 
-  selectType(id: ProfileType): void {
-    this.selectedType.set(id);
+  isSelected(id: ProfileType): boolean {
+    return this.selectedTypes().includes(id);
+  }
+
+  toggleType(id: ProfileType): void {
+    this.selectedTypes.update(types => {
+      if (id === 'pro') {
+        return types.includes('pro') ? [] : ['pro'];
+      }
+
+      const others = types.filter(type => type !== 'pro');
+      return others.includes(id) ? others.filter(type => type !== id) : [...others, id];
+    });
     this.errorMessage.set('');
-    this.updateDetailValidators(id);
+    this.updateDetailValidators(this.selectedTypes());
   }
 
   goToStep(step: number): void {
-    if (step === 2 && !this.selectedType()) {
+    if (step === 2 && this.selectedTypes().length === 0) {
       return;
     }
 
@@ -668,12 +696,15 @@ export class InscriptionComponent {
   }
 
   async submitRegistration(): Promise<void> {
-    const profileType = this.selectedType();
+    const types = this.selectedTypes();
 
-    if (!profileType) {
+    if (types.length === 0) {
       this.currentStep.set(1);
       return;
     }
+
+    const usages = types.filter((type): type is Exclude<ProfileType, 'pro'> => type !== 'pro').map(type => TYPE_TO_USAGE[type]);
+    const profileType: ProfileType = types.includes('pro') ? 'pro' : primaryProfileType(usages);
 
     this.errorMessage.set('');
     this.detailsForm.markAllAsTouched();
@@ -698,6 +729,7 @@ export class InscriptionComponent {
           password: this.basicsForm.controls.password.getRawValue(),
           location: this.basicsForm.controls.location.getRawValue(),
           profileType,
+          usages,
           projectName: this.detailsForm.controls.projectName.getRawValue(),
           projectSector: this.detailsForm.controls.projectSector.getRawValue(),
           projectStage: this.detailsForm.controls.projectStage.getRawValue(),
@@ -722,7 +754,7 @@ export class InscriptionComponent {
     }
   }
 
-  private updateDetailValidators(profileType: ProfileType): void {
+  private updateDetailValidators(types: ProfileType[]): void {
     const {
       projectName,
       projectSector,
@@ -743,16 +775,24 @@ export class InscriptionComponent {
     proCategory.clearValidators();
     proCompany.clearValidators();
 
-    if (profileType === 'entrepreneur') {
+    // Projet et compétences : nécessaires pour publier le projet et compléter le profil d'associé.
+    // Reprise et cession : secteur et budget demandés seulement si c'est l'unique choix (personnalisation).
+    if (types.includes('entrepreneur')) {
       projectName.setValidators([Validators.required]);
       projectSector.setValidators([Validators.required]);
-    } else if (profileType === 'talent') {
+    }
+
+    if (types.includes('talent')) {
       talentHeadline.setValidators([Validators.required]);
       talentSkill.setValidators([Validators.required]);
-    } else if (profileType === 'pro') {
+    }
+
+    if (types.includes('pro')) {
       proCategory.setValidators([Validators.required]);
       proCompany.setValidators([Validators.required]);
-    } else {
+    }
+
+    if (types.length === 1 && (types[0] === 'buyer' || types[0] === 'seller')) {
       maSector.setValidators([Validators.required]);
       maBudget.setValidators([Validators.required]);
     }

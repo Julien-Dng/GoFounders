@@ -8,7 +8,7 @@ import { ProjectService } from '../../../core/services/project.service';
 import { ProjectAccessRequest, ProjectAccessService } from '../../../core/services/project-access.service';
 import { downloadTextFile, ndaProofDocument } from '../../../core/legal/nda';
 import { ProjectAccessStatus } from '../../../core/models/supabase-database.model';
-import { PRO_CATEGORY_LABELS, ProCategory } from '../../../core/models/user.model';
+import { PRO_CATEGORY_LABELS, ProCategory, hasUsage, usagesOf } from '../../../core/models/user.model';
 import { ProfileVerificationCardComponent } from '../../../shared/components/profile-verification-card/profile-verification-card.component';
 
 @Component({
@@ -618,16 +618,14 @@ export class ModifierComponent implements OnInit {
   readonly projectId = signal<string | null>(null);
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
-  readonly isEntrepreneur = computed(() => this.currentUser()?.profileType === 'entrepreneur');
+  // Compte multi-usages : chaque bloc suit les usages choisis dans Paramètres.
+  readonly isEntrepreneur = computed(() => hasUsage(this.currentUser(), 'projet'));
   readonly isPro = computed(() => this.currentUser()?.profileType === 'pro');
   readonly proCategory = signal<ProCategory | ''>(this.auth.currentUser()?.proCategory ?? '');
   readonly proCategories = (Object.keys(PRO_CATEGORY_LABELS) as ProCategory[]).map(value => ({ value, label: PRO_CATEGORY_LABELS[value] }));
-  readonly isMaRole = computed(() => {
-    const profileType = this.currentUser()?.profileType;
-    return profileType === 'buyer' || profileType === 'seller';
-  });
+  readonly isMaRole = computed(() => hasUsage(this.currentUser(), 'reprise') || hasUsage(this.currentUser(), 'cession'));
   readonly maLabels = computed(() =>
-    this.currentUser()?.profileType === 'seller'
+    hasUsage(this.currentUser(), 'cession') && !hasUsage(this.currentUser(), 'reprise')
       ? {
           title: 'Mon entreprise à céder',
           description: 'Ces informations résument votre projet de cession. Le détail de votre annonce se gère depuis le dépôt M&A',
@@ -650,12 +648,13 @@ export class ModifierComponent implements OnInit {
     return userId ? ['/profil', userId] : ['/dashboard'];
   });
   readonly rolePlaceholder = computed(() => {
-    switch (this.currentUser()?.profileType) {
-      case 'talent':
+    const user = this.currentUser();
+    switch (user?.profileType === 'pro' ? 'pro' : usagesOf(user)[0]) {
+      case 'associe':
         return 'Développeur full-stack, CTO freelance, Growth marketer...';
-      case 'buyer':
+      case 'reprise':
         return 'Repreneur actif, entrepreneur en acquisition...';
-      case 'seller':
+      case 'cession':
         return 'Dirigeant cédant, fondateur SaaS...';
       case 'pro':
         return 'Cabinet de cession, expert-comptable spécialisé transmission...';

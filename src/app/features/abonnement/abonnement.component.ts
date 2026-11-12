@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { RouterLink } from '@angular/router';
 import { FEATURES } from '../../core/config/features';
 import { AuthService } from '../../core/services/auth.service';
-import { Plan, canAccessMaDetails, canPublishMaListing } from '../../core/models/user.model';
+import { Plan } from '../../core/models/user.model';
 import { PaymentService } from '../../core/services/payment.service';
 import { OFFER_PRICES } from '../../core/config/offers';
 
@@ -63,19 +63,16 @@ import { OFFER_PRICES } from '../../core/config/offers';
           <section class="grid gap-4 py-6 sm:grid-cols-[1fr_16rem] sm:items-center sm:gap-8" aria-labelledby="abo-ma">
             <div>
               <p class="text-sm text-muted-foreground">Reprise d'entreprise</p>
-              <h2 id="abo-ma" class="mt-1 text-2xl text-primary">{{ isSeller() ? 'Publication gratuite' : 'Mise en relation, ' + introPrice + ' par entreprise' }}</h2>
-              <p class="mt-2 max-w-[60ch] text-base leading-relaxed text-muted-foreground">{{ maDescription() }}</p>
+              <h2 id="abo-ma" class="mt-1 text-2xl text-primary">Mise en relation, {{ introPrice }} par entreprise</h2>
+              <p class="mt-2 max-w-[60ch] text-base leading-relaxed text-muted-foreground">{{ maDescription }}</p>
             </div>
-            @if (isBuyer()) {
+            <div>
               <a routerLink="/ma" class="block w-full rounded-lg bg-primary px-5 py-3 text-center font-medium text-white transition-colors hover:bg-primary/90">Voir les annonces</a>
+              <a routerLink="/ma/deposer" class="mt-2 block text-center text-sm font-semibold text-accent hover:underline">Publier une annonce gratuitement</a>
               @if (hasMaAccess()) {
                 <p class="mt-2 text-center text-sm text-muted-foreground">Ancien accès repreneur actif jusqu’au {{ maAccessEnd() }}</p>
               }
-            } @else if (isSeller()) {
-              <a routerLink="/ma/deposer" class="block w-full rounded-lg bg-primary px-5 py-3 text-center font-medium text-white transition-colors hover:bg-primary/90">Publier mon annonce</a>
-            } @else {
-              <a routerLink="/ma" class="block w-full rounded-lg border border-primary px-5 py-3 text-center font-medium text-primary transition-colors hover:bg-primary hover:text-white">Voir les annonces</a>
-            }
+            </div>
           </section>
         </div>
 
@@ -108,24 +105,12 @@ export class AbonnementComponent {
   private readonly payment = inject(PaymentService);
 
   readonly isSimulation = this.payment.isSimulation;
-  private readonly profileType = computed(() => this.auth.currentUser()?.profileType);
-  readonly isBuyer = computed(() => canAccessMaDetails(this.profileType()));
-  readonly isSeller = computed(() => canPublishMaListing(this.profileType()));
   readonly maAccessEnd = computed(() => {
     const expiresAt = this.auth.currentUser()?.maAccessExpiresAt;
     return expiresAt ? new Date(expiresAt).toLocaleDateString('fr-FR') : 'sans limite';
   });
-  readonly maDescription = computed(() => {
-    if (this.isBuyer()) {
-      return `Pour chaque entreprise qui vous intéresse, débloquez le dossier complet et le contact du cédant pour ${this.introPrice}, sans abonnement.`;
-    }
-
-    if (this.isSeller()) {
-      return 'Offre de lancement : la publication de votre annonce anonymisée est gratuite. Seuls les repreneurs qui acceptent l’engagement de confidentialité et paient l’accès voient votre dossier, et vous êtes prévenu à chaque ouverture.';
-    }
-
-    return 'Le M&A est réservé aux comptes acheteur et vendeur. Votre compte voit les annonces anonymisées.';
-  });
+  // Même règle pour tous les membres : l'offre PRO ne débloque pas les dossiers de cession.
+  readonly maDescription = `Publier une annonce est gratuit. Pour chaque entreprise qui vous intéresse, débloquez le dossier complet et le contact du cédant pour ${OFFER_PRICES.INTRO.label}, sans abonnement, que vous soyez en FREE ou en PRO.`;
   readonly currentPlan = computed(() => this.auth.currentUser()?.plan ?? 'FREE');
   readonly hasMaAccess = computed(() => this.auth.hasMaAccess());
   readonly statusMessage = signal('');

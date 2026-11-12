@@ -30,18 +30,22 @@ class Offer:
     buyer_side: bool = False
 
 
+# Compte multi-usages (novembre 2026) : tout membre, quel que soit son premier usage ; les comptes pro sont à part.
+MEMBERS = frozenset({"entrepreneur", "talent", "buyer", "seller"})
+
 OFFERS: dict[str, Offer] = {
-    "PRO": Offer("GoFounders PRO", 2900, "subscription", frozenset({"entrepreneur", "talent"})),
-    # Mise en relation : dossier complet et contact d'un cédant qui a accepté la demande (novembre 2026).
-    "INTRO": Offer("Mise en relation avec le cédant", 5000, "payment", frozenset({"buyer"}), True, True),
+    "PRO": Offer("GoFounders PRO", 2900, "subscription", MEMBERS),
+    # Mise en relation : dossier complet et contact du cédant, pour tout membre (un cédant ou un porteur de projet paie aussi).
+    "INTRO": Offer("Mise en relation avec le cédant", 5000, "payment", MEMBERS, True, True),
     # Anciennes offres repreneur (avant la mise en relation à l'unité) : plus proposées sur le site.
-    "MA_ACCESS": Offer("Accès repreneur (12 mois)", 14900, "payment", frozenset({"buyer"})),
-    "MA_PLUS": Offer("Accès repreneur Plus (12 mois)", 39000, "payment", frozenset({"buyer"})),
+    "MA_ACCESS": Offer("Accès repreneur (12 mois)", 14900, "payment", MEMBERS),
+    "MA_PLUS": Offer("Accès repreneur Plus (12 mois)", 39000, "payment", MEMBERS),
     "PRO_DIRECTORY": Offer("Annuaire des professionnels", 1900, "subscription", frozenset({"pro"})),
     "PRO_ACCOUNT": Offer("Compte pro", 19900, "subscription", frozenset({"pro"})),
-    "FEATURE_7D": Offer("Mise en avant de l'annonce (7 jours)", 1400, "payment", frozenset({"seller", "pro"}), True),
-    "FEATURE_30D": Offer("Mise en avant de l'annonce (30 jours)", 4900, "payment", frozenset({"seller", "pro"}), True),
-    "VERIFICATION": Offer("Dossier vérifié", 19900, "payment", frozenset({"seller", "pro"}), True),
+    # Options d'annonce : réservées au propriétaire de l'annonce (vérifié à la création du paiement).
+    "FEATURE_7D": Offer("Mise en avant de l'annonce (7 jours)", 1400, "payment", None, True),
+    "FEATURE_30D": Offer("Mise en avant de l'annonce (30 jours)", 4900, "payment", None, True),
+    "VERIFICATION": Offer("Dossier vérifié", 19900, "payment", None, True),
 }
 
 

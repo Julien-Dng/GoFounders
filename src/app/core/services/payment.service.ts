@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AccountProduct, ListingProduct } from '../config/offers';
-import { canAccessMaDetails, canPublishMaListing } from '../models/user.model';
+import { canBuyMaDossier } from '../models/user.model';
 import { API_URL } from './ai.service';
 import { AuthService } from './auth.service';
 import { SupabaseService } from './supabase.service';
@@ -56,13 +56,8 @@ export class PaymentService {
       return { success: false, message: 'Connectez-vous pour continuer.' };
     }
 
-    if ((product === 'MA_ACCESS' || product === 'MA_PLUS') && !canAccessMaDetails(user.profileType)) {
-      return {
-        success: false,
-        message: canPublishMaListing(user.profileType)
-          ? 'La publication est gratuite pour les vendeurs : aucun paiement nécessaire.'
-          : "L'accès M&A est réservé aux comptes acheteur.",
-      };
+    if ((product === 'MA_ACCESS' || product === 'MA_PLUS') && !canBuyMaDossier(user)) {
+      return { success: false, message: "L'accès repreneur est réservé aux membres (hors comptes professionnels)." };
     }
 
     if ((product === 'PRO_DIRECTORY' || product === 'PRO_ACCOUNT') && user.profileType !== 'pro') {

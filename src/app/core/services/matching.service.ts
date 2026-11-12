@@ -3,7 +3,7 @@ import { MARKETPLACE_PROFILES, MarketplaceProfile, findMarketplaceProfileById } 
 import { Match } from '../models/match.model';
 import { Profile } from '../models/project.model';
 import { SupabaseProfileRow, SupabaseProjectRow, PROFILE_COLUMNS, PROJECT_COLUMNS } from '../models/supabase-database.model';
-import { PROFILE_TYPE_LABELS, ProfileType, isFeaturedProjectPlan, isTalentMarketplaceRole } from '../models/user.model';
+import { PROFILE_TYPE_LABELS, ProfileType, hasUsage, isFeaturedProjectPlan, usagesOf } from '../models/user.model';
 import { ProjectSide, TalentSide, computeCompatibility } from '../matching/compatibility';
 import { AuthService } from './auth.service';
 import { ProjectService } from './project.service';
@@ -24,18 +24,15 @@ export class MatchingService {
   }
 
   // Profils proposés à l'utilisateur connecté : projets mis en avant d'abord, puis compatibilité décroissante.
-  async getMarketplaceProfilesForSearch(viewerType: ProfileType): Promise<MarketplaceProfile[]> {
-    const [profiles, viewer] = await Promise.all([this.loadMarketplaceProfiles(viewerType), this.loadViewerSide()]);
+  // Associés et projets que le membre a le droit de voir (règles Supabase fondées sur ses actions).
+  async getMarketplaceProfilesForSearch(): Promise<MarketplaceProfile[]> {
+    const [profiles, viewer] = await Promise.all([this.loadMarketplaceProfiles(), this.loadViewerSides()]);
     return profiles
       .map(profile => this.withCompatibility(profile, viewer))
       .sort((a, b) => Number(b.featured === true) - Number(a.featured === true) || b.match - a.match);
   }
 
-  private async loadMarketplaceProfiles(viewerType: ProfileType): Promise<MarketplaceProfile[]> {
-    if (!isTalentMarketplaceRole(viewerType)) {
-      return [];
-    }
-
+  private async loadMarketplaceProfiles(): Promise<MarketplaceProfile[]> {
     if (!this.supabase.isConfigured) {
       return MARKETPLACE_PROFILES;
     }
@@ -53,20 +50,18 @@ export class MatchingService {
       const profileRows = (profilesResult.data ?? []) as SupabaseProfileRow[];
       const projectRows = (projectsResult.data ?? []) as SupabaseProjectRow[];
 
-      if (viewerType === 'entrepreneur') {
-        const profiles = profileRows
-          .filter(profile => profile.role === 'talent')
-          .map(profile => this.mapProfileRowToMarketplaceProfile(profile));
+      const me = this.auth.currentUser()?.uid;
+      const associates = profileRows
+        .filter(profile => profile.id !== me && usagesOf({ profileType: profile.role, usages: profile.usages ?? undefined }).includes('associe') && (profile.skills?.length ?? 0) > 0)
+        .map(profile => ({ ...this.mapProfileRowToMarketplaceProfile(profile), profileType: 'talent' as ProfileType }));
+      const projects = projectRows
+        .filter(project => project.owner_id !== me)
+        .map(project => {
+          const owner = profileRows.find(profile => profile.id === project.owner_id);
+          return this.mapProjectRowToMarketplaceProfile(project, owner);
+        });
 
-        return this.demoProfilesForAdminIfEmpty(profiles);
-      }
-
-      const projects = projectRows.map(project => {
-        const owner = profileRows.find(profile => profile.id === project.owner_id);
-        return this.mapProjectRowToMarketplaceProfile(project, owner);
-      });
-
-      return this.demoProfilesForAdminIfEmpty(projects);
+      return this.demoProfilesForAdminIfEmpty([...associates, ...projects]);
     } catch {
       return this.demoProfilesForAdminIfEmpty([]);
     }
@@ -77,7 +72,7 @@ export class MatchingService {
       return this.loadMarketplaceProfileById(profileId);
     }
 
-    const [profile, viewer] = await Promise.all([this.loadMarketplaceProfileById(profileId), this.loadViewerSide()]);
+    const [profile, viewer] = await Promise.all([this.loadMarketplaceProfileById(profileId), this.loadViewerSides()]);
     return profile ? this.withCompatibility(profile, viewer) : undefined;
   }
 
@@ -94,7 +89,10 @@ export class MatchingService {
         .maybeSingle();
 
       if (!profileError && profileData) {
-        return this.mapProfileRowToMarketplaceProfile(profileData as SupabaseProfileRow);
+        const row = profileData as SupabaseProfileRow;
+        const mapped = this.mapProfileRowToMarketplaceProfile(row);
+        // Compte multi-usages : un membre qui veut rejoindre un projet s'affiche comme associé, quel que soit son premier usage.
+        return usagesOf({ profileType: row.role, usages: row.usages ?? undefined }).includes('associe') ? { ...mapped, profileType: 'talent' } : mapped;
       }
 
       const { data: projectData, error: projectError } = await this.supabase.client
@@ -252,13 +250,14 @@ export class MatchingService {
     return parts.length > 0 ? parts.map(part => part[0]?.toUpperCase() ?? '').join('') : 'GF';
   }
 
-  // Côté de l'utilisateur connecté dans le calcul : son projet s'il est porteur de projet, ses compétences s'il est talent.
-  private async loadViewerSide(): Promise<ViewerSide | null> {
+  // Côtés du membre connecté (compte multi-usages) : ses compétences s'il veut rejoindre un projet, son projet s'il en a un.
+  private async loadViewerSides(): Promise<ViewerSide[]> {
     await this.auth.ensureSessionReady();
     const user = this.auth.currentUser();
+    const sides: ViewerSide[] = [];
 
-    if (user?.profileType === 'talent') {
-      return {
+    if (user && hasUsage(user, 'associe')) {
+      sides.push({
         kind: 'talent',
         talent: {
           offers: [...(user.skills ?? []), user.profileTitle ?? ''],
@@ -266,26 +265,27 @@ export class MatchingService {
           location: user.location,
           availableNow: (user.availabilityLabel ?? '').toLowerCase().includes('disponible'),
         },
-      };
+      });
     }
 
-    if (user?.profileType === 'entrepreneur') {
+    if (user && hasUsage(user, 'projet')) {
       const project = await this.projects.getOwnedProject(user.uid);
-      return {
+      sides.push({
         kind: 'project',
         project: {
           needs: [...(project?.skillsNeeded ?? []), ...(project?.lookingFor ?? []), ...(user.lookingFor ?? [])],
           sector: project?.sector,
           location: project?.location || user.location,
         },
-      };
+      });
     }
 
-    return null;
+    return sides;
   }
 
   // Score calculé uniquement entre un projet et un talent ; sinon le profil n'a pas de score (matchReasons absent).
-  private withCompatibility(profile: MarketplaceProfile, viewer: ViewerSide | null): MarketplaceProfile {
+  private withCompatibility(profile: MarketplaceProfile, sides: ViewerSide[]): MarketplaceProfile {
+    const viewer = sides.find(side => (side.kind === 'project') === (profile.profileType === 'talent')) ?? null;
     if (viewer?.kind === 'project' && profile.profileType === 'talent') {
       const talent: TalentSide = {
         offers: [...profile.skills, profile.title],

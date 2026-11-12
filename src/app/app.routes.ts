@@ -2,8 +2,6 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { featureGuard } from './core/guards/feature.guard';
 import { planGuard } from './core/guards/plan.guard';
-import { roleGuard } from './core/guards/role.guard';
-import { TALENT_MARKETPLACE_ROLES } from './core/models/user.model';
 
 export const routes: Routes = [
   // Dashboard (layout propre, sans navbar publique). Déclaré avant le layout public, dont la page 404 capte tout le reste.
@@ -85,8 +83,8 @@ export const routes: Routes = [
       // Routes protégées (auth requise)
       {
         path: 'recherche',
-        canActivate: [featureGuard('associates'), authGuard, roleGuard],
-        data: { allowedRoles: TALENT_MARKETPLACE_ROLES },
+        // Ouverte à tous les membres : ce qu'on y voit dépend de ses actions (projet publié, profil d'associé).
+        canActivate: [featureGuard('associates'), authGuard],
         loadComponent: () => import('./features/recherche/recherche.component').then(m => m.RechercheComponent)
       },
       {
@@ -117,15 +115,13 @@ export const routes: Routes = [
       },
       {
         path: 'ma/deposer',
-        canActivate: [authGuard, roleGuard],
-        // Pros : compte pro en cours vérifié dans la page et par Supabase (enforce_ma_listing_owner).
-        data: { allowedRoles: ['seller', 'pro'] },
+        // Tout membre peut publier ; pros : compte pro en cours vérifié dans la page et par Supabase (enforce_ma_listing_owner).
+        canActivate: [authGuard],
         loadComponent: () => import('./features/ma/ma-deposer/ma-deposer.component').then(m => m.MaDeposerComponent)
       },
       {
         path: 'ma/mes-annonces',
-        canActivate: [authGuard, roleGuard],
-        data: { allowedRoles: ['seller', 'pro'] },
+        canActivate: [authGuard],
         loadComponent: () => import('./features/ma/ma-mes-annonces/ma-mes-annonces.component').then(m => m.MaMesAnnoncesComponent)
       },
       {
@@ -135,14 +131,12 @@ export const routes: Routes = [
       },
       {
         path: 'ma/statistiques',
-        canActivate: [authGuard, roleGuard],
-        data: { allowedRoles: ['seller', 'pro'] },
+        canActivate: [authGuard],
         loadComponent: () => import('./features/ma/ma-statistiques/ma-statistiques.component').then(m => m.MaStatistiquesComponent)
       },
       {
         path: 'ma/vendue/:id',
-        canActivate: [authGuard, roleGuard],
-        data: { allowedRoles: ['seller', 'pro'] },
+        canActivate: [authGuard],
         loadComponent: () => import('./features/ma/ma-vente/ma-vente.component').then(m => m.MaVenteComponent)
       },
       {

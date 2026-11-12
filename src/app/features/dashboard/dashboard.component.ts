@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MarketplaceProfile } from '../../core/data/mock-platform.data';
-import { isTalentMarketplaceRole } from '../../core/models/user.model';
+import { hasUsage, usesTeamMarketplace } from '../../core/models/user.model';
 import { FEATURES } from '../../core/config/features';
 import { AuthService } from '../../core/services/auth.service';
 import { MaService } from '../../core/services/ma.service';
@@ -405,9 +405,12 @@ export class DashboardComponent {
     return uid ? `/profil/${uid}` : '/dashboard';
   });
 
+  // Compte multi-usages : le tableau de bord suit les usages choisis (personnalisation, aucun droit).
   readonly profileType = computed(() => this.currentUser()?.profileType);
-  readonly usesTalentMarketplace = computed(() => isTalentMarketplaceRole(this.profileType()));
-  // PRO concerne la marketplace Talents & Associés ; acheteurs et vendeurs ont leur offre M&A.
+  readonly usesTalentMarketplace = computed(() => usesTeamMarketplace(this.currentUser()));
+  private readonly sells = computed(() => this.profileType() === 'pro' || hasUsage(this.currentUser(), 'cession'));
+  private readonly sellsOnly = computed(() => this.sells() && !hasUsage(this.currentUser(), 'reprise'));
+  // PRO concerne la marketplace Associés & projets ; la reprise reste à 50 € par entreprise.
   readonly showProUpsell = computed(() => FEATURES.associates && this.usesTalentMarketplace() && this.planLabel() === 'FREE');
   readonly showAssistant = FEATURES.assistant;
 
@@ -418,9 +421,12 @@ export class DashboardComponent {
       : []),
     { id: 'profil', label: 'Mon profil', icon: 'user', path: this.ownProfilePath(), badge: null },
     { id: 'messages', label: 'Messages', icon: 'messages', path: '/messages', badge: this.messageUnreadCount() || null },
-    { id: 'ma', label: 'M&A', icon: 'ma', path: '/ma', badge: null },
-    ...(this.profileType() === 'seller' || this.profileType() === 'pro'
-      ? [{ id: 'statistiques', label: 'Mes statistiques', icon: 'ma' as const, path: '/ma/statistiques', badge: null }]
+    { id: 'ma', label: 'Entreprises', icon: 'ma', path: '/ma', badge: null },
+    ...(this.sells()
+      ? [
+          { id: 'mes-annonces', label: 'Mes annonces', icon: 'ma' as const, path: '/ma/mes-annonces', badge: null },
+          { id: 'statistiques', label: 'Mes statistiques', icon: 'ma' as const, path: '/ma/statistiques', badge: null },
+        ]
       : []),
     ...(FEATURES.assistant ? [{ id: 'assistant', label: 'Assistant IA', icon: 'sparkles' as const, path: '/coaching-ia', badge: null }] : []),
     { id: 'abonnement', label: 'Abonnement', icon: 'credit-card', path: '/tarifs', badge: null },
@@ -437,27 +443,26 @@ export class DashboardComponent {
 
   readonly matches = signal<MarketplaceProfile[]>([]);
   readonly matchesTitle = computed(() => {
-    switch (this.profileType()) {
-      case 'talent':
-        return 'Projets du jour';
-      case 'buyer':
-        return 'Vos opportunités de reprise';
-      case 'seller':
-        return 'Votre cession';
-      case 'pro':
-        return 'Annonces de la marketplace';
-      default:
-        return 'Vos matches du jour';
+    const user = this.currentUser();
+    if (this.profileType() === 'pro') {
+      return 'Annonces de la marketplace';
     }
+    if (hasUsage(user, 'projet')) {
+      return 'Associés pour votre projet';
+    }
+    if (hasUsage(user, 'associe')) {
+      return 'Projets du jour';
+    }
+    return this.sellsOnly() ? 'Votre cession' : 'Vos opportunités de reprise';
   });
   readonly matchesLink = computed(() => (this.usesTalentMarketplace() ? '/recherche' : '/ma'));
   readonly maPrompt = computed(() =>
-    this.profileType() === 'seller'
-      ? 'Publiez votre annonce anonymisée pour être visible des repreneurs qualifiés.'
-      : 'Consultez les entreprises à reprendre sur la marketplace M&A.'
+    this.sellsOnly()
+      ? 'Publiez gratuitement votre annonce anonymisée pour être visible des repreneurs.'
+      : 'Consultez les entreprises à reprendre et débloquez les dossiers qui vous intéressent.'
   );
-  readonly maCtaLabel = computed(() => (this.profileType() === 'seller' ? 'Déposer mon annonce' : 'Voir les annonces'));
-  readonly maCtaLink = computed(() => (this.profileType() === 'seller' ? '/ma/deposer' : '/ma'));
+  readonly maCtaLabel = computed(() => (this.sellsOnly() ? 'Déposer mon annonce' : 'Voir les annonces'));
+  readonly maCtaLink = computed(() => (this.sellsOnly() ? '/ma/deposer' : '/ma'));
 
   readonly profileComplete = computed(() => this.currentUser()?.profileComplete ?? 0);
   readonly activities = computed(() => this.notifications.notifications().slice(0, 3));
@@ -468,7 +473,7 @@ export class DashboardComponent {
     const opportunityCount = this.opportunityCount();
     const opportunityLabel = this.usesTalentMarketplace()
       ? 'Profils compatibles'
-      : this.profileType() === 'seller' ? 'Mes annonces M&A' : 'Annonces M&A actives';
+      : this.sellsOnly() ? 'Mes annonces' : 'Entreprises à reprendre';
 
     return [
       { label: 'Conversations', value: String(this.messaging.conversationThreads().length), icon: 'messages' },
@@ -483,7 +488,7 @@ export class DashboardComponent {
       : { label: 'Explorer le M&A', icon: 'target', path: '/ma' },
     { label: 'Améliorer mon profil', icon: 'user', path: '/profil/modifier' },
     // Statistiques : seulement pour les vendeurs et les pros, qui ont une page dédiée ; sinon, la messagerie.
-    this.profileType() === 'seller' || this.profileType() === 'pro'
+    this.sells()
       ? { label: 'Comprendre mes statistiques', icon: 'chart', path: '/ma/statistiques' }
       : { label: 'Voir mes conversations', icon: 'chart', path: '/messages' },
   ]);
@@ -500,15 +505,17 @@ export class DashboardComponent {
       return;
     }
 
-    if (!isTalentMarketplaceRole(profileType)) {
-      const listings = profileType === 'seller' ? await this.maService.getMyListings() : await this.maService.getListings();
+    if (!this.usesTalentMarketplace()) {
+      const listings = this.sellsOnly() ? await this.maService.getMyListings() : await this.maService.getListings();
       this.opportunityCount.set(
-        profileType === 'seller' ? listings.length : listings.filter(listing => listing.status === 'active').length
+        this.sellsOnly() ? listings.length : listings.filter(listing => listing.status === 'active').length
       );
       return;
     }
 
-    const profiles = await this.matchingService.getMarketplaceProfilesForSearch(profileType);
+    // Associés pour un porteur de projet, projets pour qui veut en rejoindre un.
+    const side = hasUsage(this.currentUser(), 'projet') ? 'talent' : 'entrepreneur';
+    const profiles = (await this.matchingService.getMarketplaceProfilesForSearch()).filter(profile => profile.profileType === side);
     this.opportunityCount.set(profiles.length);
     this.matches.set([...profiles].sort((a, b) => b.match - a.match).slice(0, 2));
   }

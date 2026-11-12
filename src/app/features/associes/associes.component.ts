@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { isTalentMarketplaceRole } from '../../core/models/user.model';
+import { hasUsage, usesTeamMarketplace } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { ShowcaseEntry, ShowcaseService } from '../../core/services/showcase.service';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
@@ -202,7 +202,7 @@ export class AssociesComponent implements OnInit {
   readonly talents = computed(() => this.entries().filter(entry => entry.kind === 'talent'));
   readonly projects = computed(() => this.entries().filter(entry => entry.kind === 'project'));
   readonly visible = computed(() => (this.tab() === 'talent' ? this.talents() : this.projects()));
-  readonly canBrowseFull = computed(() => isTalentMarketplaceRole(this.auth.currentUser()?.profileType));
+  readonly canBrowseFull = computed(() => usesTeamMarketplace(this.auth.currentUser()));
   readonly isAuthenticated = this.auth.isAuthenticated;
 
   readonly topSkills = computed(() => {
@@ -226,16 +226,16 @@ export class AssociesComponent implements OnInit {
 
   // Membre du bon rôle : profil complet. Visiteur : inscription dans le rôle complémentaire, retour sur le profil.
   profileLink(entry: ShowcaseEntry): { path: string; params: Record<string, string> | null; label: string } {
-    const role = this.auth.currentUser()?.profileType;
+    // Compte multi-usages : les associés pour qui cherche des associés, les projets pour qui veut en rejoindre un.
     const wantedRole = entry.kind === 'talent' ? 'entrepreneur' : 'talent';
     const label = entry.kind === 'talent' ? 'Voir le profil' : 'Voir le projet';
 
-    if (role === wantedRole) {
+    if (hasUsage(this.auth.currentUser(), entry.kind === 'talent' ? 'projet' : 'associe')) {
       return { path: `/profil/${entry.profile_id}`, params: null, label };
     }
 
     if (this.auth.isAuthenticated()) {
-      return { path: '', params: null, label: entry.kind === 'talent' ? 'Visible par les porteurs de projet' : 'Visible par les associés' };
+      return { path: '', params: null, label: entry.kind === 'talent' ? 'Ajoutez « Trouver des associés » dans Paramètres' : 'Ajoutez « Rejoindre un projet » dans Paramètres' };
     }
 
     return { path: '/inscription', params: { profil: wantedRole, returnUrl: `/profil/${entry.profile_id}` }, label: `${label}` };

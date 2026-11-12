@@ -7,7 +7,7 @@ import { ShowcaseEntry, ShowcaseService } from '../../core/services/showcase.ser
 import { FEATURES } from '../../core/config/features';
 import { MaService } from '../../core/services/ma.service';
 import { AuthService } from '../../core/services/auth.service';
-import { isTalentMarketplaceRole } from '../../core/models/user.model';
+import { usesTeamMarketplace } from '../../core/models/user.model';
 import { formatEuros, formatMultiple, listingMetrics } from '../../core/ma/listing-metrics';
 import { INCLUDED_ASSETS, IncludedAsset, labelOf, revenueSeries } from '../../core/ma/listing-options';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
@@ -793,7 +793,7 @@ export class LandingComponent implements OnInit {
 
   readonly showAssociates = FEATURES.associates;
   // Porteurs de projet et associés connectés : recherche complète ; les autres : vitrine publique.
-  readonly associatesHref = computed(() => (isTalentMarketplaceRole(this.auth.currentUser()?.profileType) ? '/recherche' : '/associes'));
+  readonly associatesHref = computed(() => (usesTeamMarketplace(this.auth.currentUser()) ? '/recherche' : '/associes'));
 
   // Bloc de confiance sous le haut de page : uniquement des garanties réelles de la plateforme.
   readonly guarantees = [

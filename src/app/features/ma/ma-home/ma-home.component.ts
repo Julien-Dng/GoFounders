@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MaListingData } from '../../../core/data/mock-platform.data';
 import { INTRO_SUMMARY, OFFER_PRICES } from '../../../core/config/offers';
-import { canAccessMaDetails, canPublishMaListing, hasBuyerPlus } from '../../../core/models/user.model';
+import { canPublishMa, hasBuyerPlus } from '../../../core/models/user.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { MaService } from '../../../core/services/ma.service';
 import { FEATURES } from '../../../core/config/features';
@@ -312,16 +312,13 @@ export class MaHomeComponent implements OnInit {
     [this.selectedSector(), this.selectedType(), this.selectedRevenue(), this.selectedPrice(), this.minMargin(), this.verifiedOnly(), this.region().trim(), this.query().trim()].filter(Boolean).length
   );
 
-  private readonly profileType = computed(() => this.auth.currentUser()?.profileType);
-  // Dossier complet : acheteur avec accès payé. Dépôt : vendeur (ou visiteur, invité à s'inscrire).
+  // Dossier complet : 50 € par entreprise pour tout membre. Dépôt : tout membre (ou visiteur, invité à s'inscrire).
   // Visiteurs et acheteurs sans accès Plus : les annonces de moins de 48 h leur sont masquées par Supabase.
   readonly showEarlyAccessHint = computed(() => {
     const user = this.auth.currentUser();
-    return FEATURES.buyerPlus && (!user || (user.profileType === 'buyer' && !hasBuyerPlus(user)));
+    return FEATURES.buyerPlus && (!user || !hasBuyerPlus(user));
   });
-  // Bandeau d'explication : masqué pour les vendeurs et les autres rôles, montré aux visiteurs et repreneurs.
-  readonly canViewSensitiveDetails = computed(() => this.auth.isAuthenticated() && !canAccessMaDetails(this.profileType()));
-  readonly canDepositListing = computed(() => !this.auth.isAuthenticated() || canPublishMaListing(this.profileType()));
+  readonly canDepositListing = computed(() => !this.auth.isAuthenticated() || canPublishMa(this.auth.currentUser()));
   readonly showAccessCta = computed(() =>
     !this.auth.isAuthenticated()
   );

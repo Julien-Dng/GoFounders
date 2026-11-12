@@ -4,7 +4,7 @@ import { Timestamp } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { User as SupabaseAuthUser } from '@supabase/supabase-js';
 import { SupabaseProfileInsert, SupabaseProfileRow, SupabaseProjectInsert, PROFILE_COLUMNS } from '../models/supabase-database.model';
-import { Plan, ProCategory, ProfileType, User, isTalentMarketplaceRole } from '../models/user.model';
+import { Plan, ProCategory, ProfileType, Usage, User, primaryProfileType, usagesOf } from '../models/user.model';
 import { validateRegistrationEmail } from '../validators/email-policy.validator';
 import { SupabaseService } from './supabase.service';
 
@@ -19,6 +19,7 @@ interface StoredUserRecord {
   photoURL?: string;
   location: string;
   profileType: ProfileType;
+  usages?: Usage[];
   profileTitle?: string;
   bio?: string;
   skills?: string[];
@@ -55,7 +56,10 @@ export interface SignUpPayload {
   password: string;
   displayName: string;
   location: string;
+  // Compte pro (type à part) ; pour un membre, déduit du premier usage (primaryProfileType).
   profileType: ProfileType;
+  // Usages choisis à l'inscription (« Vous êtes plutôt… ») : personnalisation, aucun droit.
+  usages: Usage[];
   projectName?: string;
   projectSector?: string;
   projectStage?: string;
@@ -331,6 +335,36 @@ export class AuthService {
       : { success: true, message: isVisible ? 'Votre profil apparaît de nouveau dans la recherche.' : 'Votre profil est masqué de la recherche.' };
   }
 
+  // Usages du membre (Paramètres) : personnalisation seulement, aucun droit (2026-11-13-compte-multi-usages.sql).
+  async setUsages(usages: Usage[]): Promise<AuthResult> {
+    const user = this._currentUser();
+    const cleaned = Array.from(new Set(usages));
+    if (!user || user.profileType === 'pro') {
+      return { success: false, message: 'Les usages ne concernent pas les comptes professionnels.' };
+    }
+
+    if (cleaned.length === 0) {
+      return { success: false, message: 'Choisissez au moins un usage.' };
+    }
+
+    if (this.supabase.isConfigured) {
+      const { error } = await this.supabase.client.from('profiles').update({ usages: cleaned }).eq('id', user.uid);
+      if (error) {
+        return { success: false, message: 'Impossible d’enregistrer vos choix pour le moment.' };
+      }
+    } else {
+      const users = this.readUsers();
+      const index = users.findIndex(entry => entry.uid === user.uid);
+      if (index >= 0) {
+        users[index] = { ...users[index], usages: cleaned };
+        this.writeUsers(users);
+      }
+    }
+
+    this._currentUser.set({ ...user, usages: cleaned });
+    return { success: true, message: 'Vos choix sont enregistrés.' };
+  }
+
   // E-mails de nouveaux messages (colonne email_notifications, 2026-10-28-lancement.sql).
   async getEmailNotifications(): Promise<boolean | null> {
     const user = this._currentUser();
@@ -456,11 +490,12 @@ export class AuthService {
         data: {
           display_name: payload.displayName.trim(),
           profile_type: payload.profileType,
+          usages: payload.profileType === 'pro' ? [] : payload.usages,
           location: payload.location.trim(),
           profile_title: this.buildInitialProfileTitle(payload) ?? '',
           skills: this.buildInitialSkills(payload) ?? [],
           looking_for: this.buildInitialLookingFor(payload) ?? [],
-          availability_label: payload.profileType === 'talent' && payload.talentAvailability ? 'Disponible rapidement' : '',
+          availability_label: this.has(payload, 'associe') && payload.talentAvailability ? 'Disponible rapidement' : '',
           project_name: payload.projectName?.trim() ?? '',
           project_sector: payload.projectSector?.trim() ?? '',
           project_stage: payload.projectStage?.trim() ?? 'mvp',
@@ -468,7 +503,7 @@ export class AuthService {
           ma_budget: this.initialMaField(payload, payload.maBudget) ?? '',
           ma_region: this.initialMaField(payload, payload.maRegion) ?? '',
           pro_category: payload.profileType === 'pro' ? payload.proCategory ?? '' : '',
-          public_listing: !!payload.publicListing && isTalentMarketplaceRole(payload.profileType),
+          public_listing: !!payload.publicListing && (this.has(payload, 'projet') || this.has(payload, 'associe')),
         },
       },
     });
@@ -510,7 +545,7 @@ export class AuthService {
       };
     }
 
-    if (payload.profileType === 'entrepreneur') {
+    if (this.has(payload, 'projet') && this.cleanOptionalText(payload.projectName)) {
       await this.createInitialProject(profile.id, payload);
     }
 
@@ -540,8 +575,8 @@ export class AuthService {
           title: this.buildInitialProfileTitle(payload) ?? null,
           skills: this.buildInitialSkills(payload) ?? [],
           looking_for: this.buildInitialLookingFor(payload) ?? [],
-          availability_label: payload.profileType === 'talent' && payload.talentAvailability ? 'Disponible rapidement' : null,
-          public_listing: !!payload.publicListing && isTalentMarketplaceRole(payload.profileType),
+          availability_label: this.has(payload, 'associe') && payload.talentAvailability ? 'Disponible rapidement' : null,
+          public_listing: !!payload.publicListing && (this.has(payload, 'projet') || this.has(payload, 'associe')),
           ma_sector: this.initialMaField(payload, payload.maSector) ?? null,
           ma_budget: this.initialMaField(payload, payload.maBudget) ?? null,
           ma_region: this.initialMaField(payload, payload.maRegion) ?? null,
@@ -830,10 +865,11 @@ export class AuthService {
       displayName: payload.displayName.trim(),
       location: payload.location.trim(),
       profileType: payload.profileType,
+      usages: payload.profileType === 'pro' ? [] : payload.usages,
       profileTitle: this.buildInitialProfileTitle(payload),
       skills: this.buildInitialSkills(payload),
       lookingFor: this.buildInitialLookingFor(payload),
-      availabilityLabel: payload.profileType === 'talent' && payload.talentAvailability ? 'Disponible rapidement' : undefined,
+      availabilityLabel: this.has(payload, 'associe') && payload.talentAvailability ? 'Disponible rapidement' : undefined,
       maSector: this.initialMaField(payload, payload.maSector),
       maBudget: this.initialMaField(payload, payload.maBudget),
       maRegion: this.initialMaField(payload, payload.maRegion),
@@ -978,41 +1014,54 @@ export class AuthService {
       email,
       display_name: payload.displayName.trim(),
       role: payload.profileType,
+      usages: payload.profileType === 'pro' ? [] : payload.usages,
       plan: 'FREE',
       ma_access: false,
       location: payload.location.trim(),
       title: this.buildInitialProfileTitle(payload) ?? null,
       skills: this.buildInitialSkills(payload) ?? [],
       looking_for: this.buildInitialLookingFor(payload) ?? [],
-      availability_label: payload.profileType === 'talent' && payload.talentAvailability ? 'Disponible rapidement' : null,
+      availability_label: this.has(payload, 'associe') && payload.talentAvailability ? 'Disponible rapidement' : null,
       ma_sector: this.initialMaField(payload, payload.maSector) ?? null,
       ma_budget: this.initialMaField(payload, payload.maBudget) ?? null,
       ma_region: this.initialMaField(payload, payload.maRegion) ?? null,
     };
   }
 
+  // Usage choisi à l'inscription (jamais pour un compte pro).
+  private has(payload: SignUpPayload, usage: Usage): boolean {
+    return payload.profileType !== 'pro' && payload.usages.includes(usage);
+  }
+
+  // Intitulé de départ, selon le premier usage qui en fournit un.
   private buildInitialProfileTitle(payload: SignUpPayload): string | undefined {
-    if (payload.profileType === 'entrepreneur') {
-      return this.cleanOptionalText(payload.projectName);
-    }
-
-    if (payload.profileType === 'talent') {
-      return this.cleanOptionalText(payload.talentHeadline);
-    }
-
-    if (payload.profileType === 'buyer') {
-      return this.cleanOptionalText(payload.maSector) ? `Recherche M&A - ${payload.maSector?.trim()}` : undefined;
-    }
-
     if (payload.profileType === 'pro') {
       return this.cleanOptionalText(payload.proCompany);
     }
 
-    return this.cleanOptionalText(payload.maSector) ? `Cession M&A - ${payload.maSector?.trim()}` : undefined;
+    if (this.has(payload, 'associe') && this.cleanOptionalText(payload.talentHeadline)) {
+      return this.cleanOptionalText(payload.talentHeadline);
+    }
+
+    if (this.has(payload, 'projet') && this.cleanOptionalText(payload.projectName)) {
+      return this.cleanOptionalText(payload.projectName);
+    }
+
+    if (this.cleanOptionalText(payload.maSector)) {
+      if (this.has(payload, 'reprise')) {
+        return `Recherche M&A - ${payload.maSector?.trim()}`;
+      }
+
+      if (this.has(payload, 'cession')) {
+        return `Cession M&A - ${payload.maSector?.trim()}`;
+      }
+    }
+
+    return undefined;
   }
 
   private buildInitialSkills(payload: SignUpPayload): string[] | undefined {
-    if (payload.profileType !== 'talent') {
+    if (!this.has(payload, 'associe')) {
       return undefined;
     }
 
@@ -1020,19 +1069,16 @@ export class AuthService {
   }
 
   private buildInitialLookingFor(payload: SignUpPayload): string[] | undefined {
-    if (payload.profileType === 'entrepreneur') {
-      return this.cleanTags(['Associé', payload.projectSector ?? '']);
-    }
+    const tags = [
+      ...(this.has(payload, 'projet') ? ['Associé', payload.projectSector ?? ''] : []),
+      ...(this.has(payload, 'associe') ? ['Projet entrepreneurial'] : []),
+    ];
 
-    if (payload.profileType === 'talent') {
-      return this.cleanTags(['Projet entrepreneurial']);
-    }
-
-    return undefined;
+    return tags.length > 0 ? this.cleanTags(tags) : undefined;
   }
 
   private initialMaField(payload: SignUpPayload, value: string | undefined): string | undefined {
-    return payload.profileType === 'buyer' || payload.profileType === 'seller' ? this.cleanOptionalText(value) : undefined;
+    return this.has(payload, 'reprise') || this.has(payload, 'cession') ? this.cleanOptionalText(value) : undefined;
   }
 
   private toRuntimeUser(user: StoredUserRecord): User {
@@ -1043,6 +1089,7 @@ export class AuthService {
       photoURL: user.photoURL,
       location: user.location,
       profileType: user.profileType,
+      usages: usagesOf(user),
       profileTitle: user.profileTitle,
       bio: user.bio,
       skills: user.skills,
@@ -1079,6 +1126,7 @@ export class AuthService {
       photoURL: profile.photo_url ?? undefined,
       location: profile.location ?? '',
       profileType: profile.role,
+      usages: usagesOf({ profileType: profile.role, usages: profile.usages ?? undefined }),
       profileTitle: profile.title ?? undefined,
       bio: profile.bio ?? undefined,
       skills: profile.skills ?? undefined,

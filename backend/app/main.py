@@ -229,14 +229,15 @@ async def ma_listing_draft(
     supabase: Annotated[SupabaseClient, Depends(get_supabase)],
     ma_ai: Annotated[MaAi, Depends(get_ma_ai)],
 ) -> ListingDraft:
-    """Vendeur : teaser, description anonymisée, champs du formulaire et détails identifiants."""
+    """Membre qui prépare une annonce : teaser, description anonymisée, champs du formulaire et détails identifiants."""
     try:
         role = await supabase.get_role(user_id)
     except SupabaseError as error:
         logger.error("Rôle illisible : %s", error)
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, "Données du profil indisponibles") from error
-    if role != "seller":
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "La préparation d'annonce est réservée aux comptes vendeur")
+    # Compte multi-usages : tout membre peut publier une annonce ; seul un profil introuvable est refusé.
+    if role is None:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Profil introuvable")
 
     enforce_rate_limit(request, f"ma-draft:{user_id}", MA_AI_REQUESTS_PER_HOUR)
     try:
@@ -255,15 +256,12 @@ async def ma_listing_analysis(
     supabase: Annotated[SupabaseClient, Depends(get_supabase)],
     ma_ai: Annotated[MaAi, Depends(get_ma_ai)],
 ) -> ListingAnalysis:
-    """Repreneur dont la mise en relation est débloquée (demande acceptée et payée) : analyse du dossier."""
+    """Membre qui a débloqué ce dossier (50 €), quel que soit son usage : analyse du dossier."""
     try:
-        role = await supabase.get_role(user_id)
-        unlocked = role == "buyer" and await supabase.has_approved_listing_access(str(listing_id), user_id)
+        unlocked = await supabase.has_approved_listing_access(str(listing_id), user_id)
     except SupabaseError as error:
         logger.error("Accès M&A illisible : %s", error)
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, "Données du profil indisponibles") from error
-    if role != "buyer":
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "L'analyse de dossier est réservée aux comptes repreneur")
     if not unlocked:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Débloquez d'abord ce dossier pour l'analyser")
 

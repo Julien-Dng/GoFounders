@@ -3,7 +3,7 @@ import { Timestamp } from '@angular/fire/firestore';
 import { MA_LISTINGS, MaListingData, findMaListingById } from '../data/mock-platform.data';
 import { MaListing } from '../models/ma-listing.model';
 import { SupabaseMaListingInsert, SupabaseMaListingRow } from '../models/supabase-database.model';
-import { ProCategory, canAccessMaDetails } from '../models/user.model';
+import { ProCategory, canBuyMaDossier } from '../models/user.model';
 import { AuthService } from './auth.service';
 import { ListingAccessService } from './listing-access.service';
 import { SupabaseService } from './supabase.service';
@@ -207,8 +207,8 @@ export class MaService {
 
   async getListingDetail(listingId: string): Promise<MaListingData | undefined> {
     if (!this.supabase.isConfigured) {
-      // Mode démo : même règle que Supabase (repreneur dont la mise en relation est débloquée, ou admin).
-      const allowed = (canAccessMaDetails(this.auth.currentUser()?.profileType) && ListingAccessService.demoUnlocked(listingId)) || this.auth.isAdmin();
+      // Mode démo : même règle que Supabase (membre dont le dossier est débloqué, ou admin).
+      const allowed = (canBuyMaDossier(this.auth.currentUser()) && ListingAccessService.demoUnlocked(listingId)) || this.auth.isAdmin();
       return allowed ? findMaListingById(listingId) : undefined;
     }
 

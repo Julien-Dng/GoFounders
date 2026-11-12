@@ -104,12 +104,13 @@ def test_draft_requires_login(client_for):
     assert client.post("/api/ma/brouillon-annonce", json={"description": DESCRIPTION}).status_code == 401
 
 
-def test_draft_is_reserved_to_sellers(client_for):
+def test_draft_is_open_to_every_member(client_for):
+    # Compte multi-usages : un membre dont le premier usage est la reprise peut aussi céder une entreprise.
     backend = FakeJsonBackend(DRAFT)
     client = client_for(FakeSupabase("buyer"), backend)
     response = client.post("/api/ma/brouillon-annonce", json={"description": DESCRIPTION}, headers=AUTH)
-    assert response.status_code == 403
-    assert backend.calls == []
+    assert response.status_code == 200
+    assert len(backend.calls) == 1
 
 
 def test_seller_gets_draft_with_identifying_details(client_for):
@@ -166,13 +167,19 @@ LISTING = {
 }
 
 
-def test_analysis_requires_buyer_with_unlocked_dossier(client_for):
-    # Mise en relation non débloquée (demande en attente, refusée, ou acceptée mais non payée), ou compte non repreneur.
+def test_analysis_requires_unlocked_dossier(client_for):
+    # Dossier non débloqué : refusé, quel que soit l'usage du membre.
     backend = FakeJsonBackend(ANALYSIS)
-    for supabase in (FakeSupabase("buyer", approved=False, listing=LISTING), FakeSupabase("seller", approved=True, listing=LISTING)):
+    for supabase in (FakeSupabase("buyer", approved=False, listing=LISTING), FakeSupabase("seller", approved=False, listing=LISTING)):
         client = client_for(supabase, backend)
         assert client.post(f"/api/ma/annonces/{LISTING_ID}/analyse", headers=AUTH).status_code == 403
     assert backend.calls == []
+
+
+def test_analysis_open_to_any_member_who_paid(client_for):
+    # Un cédant qui a payé les 50 € pour une autre entreprise obtient aussi l'analyse.
+    client = client_for(FakeSupabase("seller", approved=True, listing=LISTING), FakeJsonBackend(ANALYSIS))
+    assert client.post(f"/api/ma/annonces/{LISTING_ID}/analyse", headers=AUTH).status_code == 200
 
 
 def test_analysis_unknown_listing_is_404(client_for):

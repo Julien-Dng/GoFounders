@@ -4,7 +4,7 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/ro
 import { FEATURES } from '../../../core/config/features';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs/operators';
-import { isTalentMarketplaceRole } from '../../../core/models/user.model';
+import { hasUsage, usesTeamMarketplace } from '../../../core/models/user.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserMenuComponent } from '../user-menu/user-menu.component';
 import { NotificationMenuComponent } from '../notification-menu/notification-menu.component';
@@ -284,17 +284,14 @@ export class NavbarComponent {
   // « Trouver un associé » reste visible pour tous les rôles dès que le module est actif.
   private readonly hidesRecherche = computed(() => !FEATURES.associates);
 
-  // Refonte « Reprise » : les annonces passent au premier plan. « Vendre » ne concerne que les visiteurs
-  // et les vendeurs (/ma/deposer leur est réservée) ; l'assistant IA sort de la navigation (route conservée).
-  private readonly hidesVendre = computed(() => {
-    const profileType = this.auth.currentUser()?.profileType;
-    // Pros : « Vendre » seulement quand le compte pro (publication pour leurs clients) est proposé.
-    return !!profileType && profileType !== 'seller' && !(profileType === 'pro' && FEATURES.proAccount);
-  });
+  // Compte multi-usages : tout membre peut publier une annonce. Pros : « Vendre » seulement quand le compte pro
+  // (publication pour leurs clients) est proposé. L'assistant IA sort de la navigation (route conservée).
+  private readonly hidesVendre = computed(() => this.auth.currentUser()?.profileType === 'pro' && !FEATURES.proAccount);
 
+  // « Mes annonces » et statistiques : membres qui ont choisi « Vendre une entreprise », et pros.
   private readonly ownsListings = computed(() => {
-    const profileType = this.auth.currentUser()?.profileType;
-    return profileType === 'seller' || profileType === 'pro';
+    const user = this.auth.currentUser();
+    return user?.profileType === 'pro' || hasUsage(user, 'cession');
   });
 
   private readonly allNavLinks = [
@@ -306,7 +303,7 @@ export class NavbarComponent {
 
   // Repreneurs, cédants et pros : vitrine /associes (la recherche complète est réservée aux deux rôles concernés).
   private readonly associateHref = computed(() =>
-    isTalentMarketplaceRole(this.auth.currentUser()?.profileType) ? '/recherche' : '/associes'
+    usesTeamMarketplace(this.auth.currentUser()) ? '/recherche' : '/associes'
   );
 
   readonly navLinks = computed(() =>

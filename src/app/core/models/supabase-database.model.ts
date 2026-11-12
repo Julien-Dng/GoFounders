@@ -1,4 +1,4 @@
-import { Plan, ProCategory, ProfileType } from './user.model';
+import { Plan, ProCategory, ProfileType, Usage } from './user.model';
 
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
@@ -61,7 +61,7 @@ export interface Database {
 // Colonnes de profiles lisibles depuis l'appli : toutes sauf l'email (2026-10-12-profils-par-role.sql).
 // Un select('*') sur profiles est refusé par Supabase.
 export const PROFILE_COLUMNS =
-  'id, display_name, role, plan, ma_access, ma_access_expires_at, is_admin, location, title, bio, photo_url, github_url, linkedin_url, website_url, skills, looking_for, availability_label, ma_sector, ma_budget, ma_region, buyer_plus_until, pro_directory_until, pro_account_until, pro_category, verified_at, created_at, updated_at';
+  'id, display_name, role, usages, plan, ma_access, ma_access_expires_at, is_admin, location, title, bio, photo_url, github_url, linkedin_url, website_url, skills, looking_for, availability_label, ma_sector, ma_budget, ma_region, buyer_plus_until, pro_directory_until, pro_account_until, pro_category, verified_at, created_at, updated_at';
 
 export interface SupabaseProfileRow {
   id: string;
@@ -69,6 +69,7 @@ export interface SupabaseProfileRow {
   email?: string;
   display_name: string;
   role: ProfileType;
+  usages?: Usage[] | null;
   plan: Plan;
   ma_access: boolean;
   ma_access_expires_at?: string | null;
@@ -101,6 +102,7 @@ export interface SupabaseProfileInsert {
   email: string;
   display_name: string;
   role: ProfileType;
+  usages?: Usage[];
   plan?: Plan;
   ma_access?: boolean;
   is_admin?: boolean | null;
@@ -122,6 +124,7 @@ export interface SupabaseProfileInsert {
 }
 
 export interface SupabaseProfileUpdate {
+  usages?: Usage[];
   is_visible?: boolean;
   // Accord pour la vitrine publique /associes (2026-10-27-vitrine-associes.sql).
   public_listing?: boolean;

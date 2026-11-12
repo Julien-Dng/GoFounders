@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { isTalentMarketplaceRole } from '../../core/models/user.model';
+import { USAGE_OPTIONS, Usage, hasUsage, usagesOf, usesTeamMarketplace } from '../../core/models/user.model';
 import { FEATURES } from '../../core/config/features';
 import { AuthService } from '../../core/services/auth.service';
 import { passwordPolicyValidator } from '../../core/validators/password-policy.validator';
@@ -88,6 +88,36 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
               }
             </div>
           </section>
+
+          <!-- MES USAGES : personnalisent le site, n'ouvrent aucun droit (compte multi-usages). -->
+          @if (!isPro()) {
+            <section class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-6" aria-labelledby="usages-titre">
+              <h2 id="usages-titre" class="text-lg font-semibold">Mes usages</h2>
+              <p class="mt-1 text-sm text-muted-foreground">Ils personnalisent votre tableau de bord et votre navigation. Les accès dépendent de vos actions : projet publié, profil d'associé complété, dossier débloqué</p>
+              <div class="mt-4 grid gap-2 sm:grid-cols-2">
+                @for (option of usageOptions; track option.value) {
+                  <label class="flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors"
+                         [class]="draftUsages().includes(option.value) ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/40'">
+                    <input type="checkbox" class="mt-1 h-4 w-4 flex-shrink-0 accent-accent" [checked]="draftUsages().includes(option.value)" (change)="toggleUsage(option.value)">
+                    <span>
+                      <span class="block text-sm font-semibold text-primary">{{ option.label }}</span>
+                      <span class="block text-sm text-muted-foreground">{{ option.description }}</span>
+                    </span>
+                  </label>
+                }
+              </div>
+              <div class="mt-4 flex flex-wrap items-center gap-3">
+                <button type="button" (click)="saveUsages()" [disabled]="busy() || !usagesChanged() || draftUsages().length === 0"
+                        class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:opacity-50">Enregistrer</button>
+                @if (draftUsages().length === 0) {
+                  <span class="text-sm text-destructive">Choisissez au moins un usage</span>
+                }
+              </div>
+              @if (usagesFeedback(); as feedback) {
+                <p class="mt-3 text-sm" [class.text-success]="feedback.ok" [class.text-destructive]="!feedback.ok" role="status">{{ feedback.text }}</p>
+              }
+            </section>
+          }
 
           <!-- CONFIDENTIALITÉ -->
           <section class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-6" aria-labelledby="confidentialite-titre">
@@ -228,8 +258,18 @@ export class ParametresComponent implements OnInit {
   readonly visibilityFeedback = signal<Feedback | null>(null);
 
   // Vitrine publique /associes : porteurs de projet et associés uniquement, accord explicite.
-  readonly showsPublicListing = computed(() => FEATURES.associates && isTalentMarketplaceRole(this.auth.currentUser()?.profileType));
-  readonly isTalent = computed(() => this.auth.currentUser()?.profileType === 'talent');
+  readonly showsPublicListing = computed(() => FEATURES.associates && usesTeamMarketplace(this.auth.currentUser()));
+  readonly isTalent = computed(() => hasUsage(this.auth.currentUser(), 'associe') && !hasUsage(this.auth.currentUser(), 'projet'));
+  readonly isPro = computed(() => this.auth.currentUser()?.profileType === 'pro');
+  readonly usageOptions = USAGE_OPTIONS;
+  private readonly savedUsages = computed(() => usagesOf(this.auth.currentUser()));
+  readonly draftUsages = signal<Usage[]>([]);
+  readonly usagesChanged = computed(() => {
+    const saved = this.savedUsages();
+    const draft = this.draftUsages();
+    return saved.length !== draft.length || draft.some(usage => !saved.includes(usage));
+  });
+  readonly usagesFeedback = signal<Feedback | null>(null);
   readonly publicListing = signal<boolean | null>(null);
   readonly publicListingFeedback = signal<Feedback | null>(null);
   readonly emailNotifications = signal<boolean | null>(null);
@@ -242,6 +282,7 @@ export class ParametresComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.auth.ensureSessionReady();
+    this.draftUsages.set(usagesOf(this.auth.currentUser()));
     this.isVisible.set(await this.auth.getProfileVisibility());
     if (this.showsPublicListing()) {
       this.publicListing.set(await this.auth.getPublicListing());
@@ -257,6 +298,19 @@ export class ParametresComponent implements OnInit {
       if (result.success) {
         this.emailNotifications.set(next);
       }
+    });
+  }
+
+  toggleUsage(usage: Usage): void {
+    this.usagesFeedback.set(null);
+    this.draftUsages.update(list => (list.includes(usage) ? list.filter(item => item !== usage) : [...list, usage]));
+  }
+
+  async saveUsages(): Promise<void> {
+    const ordered = USAGE_OPTIONS.map(option => option.value).filter(usage => this.draftUsages().includes(usage));
+    await this.run(async () => {
+      const result = await this.auth.setUsages(ordered);
+      this.usagesFeedback.set({ ok: result.success, text: result.message ?? '' });
     });
   }
 

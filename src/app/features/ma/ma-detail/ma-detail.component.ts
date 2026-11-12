@@ -15,6 +15,7 @@ import { FEATURES } from '../../../core/config/features';
 import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../../../core/ma/listing-metrics';
 import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsset, labelOf, lastGrowth, revenueSeries } from '../../../core/ma/listing-options';
 import { VerifiedBadgeComponent } from '../../../shared/components/verified-badge/verified-badge.component';
+import { canBuyMaDossier } from '../../../core/models/user.model';
 
 @Component({
   selector: 'app-ma-detail',
@@ -529,17 +530,15 @@ export class MaDetailComponent implements OnInit {
   readonly unlockLabel = `Débloquer le dossier et le contact · ${this.introPrice}`;
   readonly pricingNote = `Paiement unique de ${this.introPrice} pour cette entreprise, sans abonnement.`;
   readonly lockedMessage = computed(() => {
-    const role = this.auth.currentUser()?.profileType;
-
     if (!this.isAuthenticated()) {
-      return `Créez votre compte repreneur (gratuit), puis débloquez le dossier complet et le contact du cédant pour ${this.introPrice}.`;
+      return `Créez votre compte (gratuit), puis débloquez le dossier complet et le contact du cédant pour ${this.introPrice}.`;
     }
 
-    if (role === 'buyer') {
+    if (this.isBuyer()) {
       return `Débloquez le dossier complet et le contact du cédant pour ${this.introPrice}.`;
     }
 
-    return 'Le dossier complet est réservé aux comptes repreneur.';
+    return 'Le dossier complet est réservé aux membres (hors comptes professionnels).';
   });
   readonly cta = computed(() => {
     if (this.hasDossier()) {
@@ -547,7 +546,7 @@ export class MaDetailComponent implements OnInit {
     }
 
     if (!this.isAuthenticated()) {
-      return { label: 'Créer un compte repreneur', short: 'Créer un compte', link: '/inscription', params: { profil: 'buyer', returnUrl: this.currentUrl() }, fragment: undefined, buy: false };
+      return { label: 'Créer un compte gratuit', short: 'Créer un compte', link: '/inscription', params: { profil: 'buyer', returnUrl: this.currentUrl() }, fragment: undefined, buy: false };
     }
 
     return null;
@@ -558,8 +557,8 @@ export class MaDetailComponent implements OnInit {
     { title: 'Faites-vous accompagner', text: "Un expert-comptable et un avocat vérifient le dossier avant toute lettre d'intention. GoFounders n'intervient pas dans la négociation" },
   ];
 
-  // Analyse de dossier par l'IA : réservée aux repreneurs (contrôle d'accès refait côté back).
-  readonly isBuyer = computed(() => this.auth.currentUser()?.profileType === 'buyer');
+  // Tout membre (hors compte pro) peut débloquer un dossier : un cédant ou un porteur de projet paie aussi les 50 €.
+  readonly isBuyer = computed(() => canBuyMaDossier(this.auth.currentUser()));
 
   // Mise en relation (50 €) : redirection vers le paiement, ou déblocage immédiat en paiement simulé.
   async buyAccess(): Promise<void> {

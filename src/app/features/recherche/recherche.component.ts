@@ -15,7 +15,7 @@ import {
 import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { MarketplaceProfile } from '../../core/data/mock-platform.data';
-import { ProfileType, MATCH_REASONS_UPSELL, canSeeMatchReasons, canUseAdvancedSearch } from '../../core/models/user.model';
+import { ProfileType, MATCH_REASONS_UPSELL, canSeeMatchReasons, canUseAdvancedSearch, hasUsage } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { MatchingService } from '../../core/services/matching.service';
 
@@ -32,10 +32,16 @@ type SearchProfileType = ProfileType;
         <div class="flex flex-col gap-8 xl:flex-row">
           <aside class="w-full xl:w-[340px] xl:flex-shrink-0">
             <div class="sticky top-28 rounded-2xl bg-white p-6 shadow-lg ring-1 ring-border">
-              <div class="mb-6 rounded-xl bg-accent/5 px-4 py-3">
-                <p class="text-base font-semibold text-primary">{{ audiencePanelTitle() }}</p>
-                <p class="mt-1 text-sm leading-relaxed text-muted-foreground">{{ audiencePanelDescription() }}</p>
+              <!-- Compte multi-usages : on passe des associés aux projets ; ce qui s'affiche dépend de ses actions. -->
+              <div class="mb-6 grid grid-cols-2 gap-1 rounded-xl bg-secondary p-1" role="tablist" aria-label="Que cherchez-vous ?">
+                <button type="button" role="tab" [attr.aria-selected]="visibleProfileType() === 'talent'" (click)="showSide('talent')"
+                        class="rounded-lg px-3 py-2 text-sm font-semibold transition-colors"
+                        [class]="visibleProfileType() === 'talent' ? 'bg-white text-primary shadow-sm' : 'text-muted-foreground hover:text-primary'">Associés</button>
+                <button type="button" role="tab" [attr.aria-selected]="visibleProfileType() === 'entrepreneur'" (click)="showSide('entrepreneur')"
+                        class="rounded-lg px-3 py-2 text-sm font-semibold transition-colors"
+                        [class]="visibleProfileType() === 'entrepreneur' ? 'bg-white text-primary shadow-sm' : 'text-muted-foreground hover:text-primary'">Projets</button>
               </div>
+              <p class="-mt-3 mb-6 text-sm leading-relaxed text-muted-foreground">{{ audiencePanelDescription() }}</p>
 
               <div class="mb-6 flex items-center justify-between">
                 <h2 class="text-xl font-semibold">Filtres</h2>
@@ -376,10 +382,8 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly projectStages = ['Idée', 'MVP', 'En croissance', 'Établi'];
   readonly allProfiles = signal<MarketplaceProfile[]>([]);
 
-  readonly viewerType = computed<ProfileType>(() => this.auth.currentUser()?.profileType ?? 'entrepreneur');
-  readonly visibleProfileType = computed<SearchProfileType>(() =>
-    this.viewerType() === 'entrepreneur' ? 'talent' : 'entrepreneur'
-  );
+  // Onglet affiché : associés (pour un projet) ou projets (pour les rejoindre). Par défaut selon les usages du membre.
+  readonly visibleProfileType = signal<SearchProfileType>('talent');
 
   readonly filteredProfiles = computed<MarketplaceProfile[]>(() => {
     const targetType = this.visibleProfileType();
@@ -437,13 +441,10 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly sortLabel = computed(() =>
     this.visibleProfileType() === 'entrepreneur' ? 'Projets mis en avant, puis par compatibilité' : 'Triés par compatibilité'
   );
-  readonly audiencePanelTitle = computed(() =>
-    this.visibleProfileType() === 'talent' ? 'Vous voyez uniquement les associés' : 'Vous voyez uniquement les projets'
-  );
   readonly audiencePanelDescription = computed(() =>
     this.visibleProfileType() === 'talent'
-      ? "En tant que porteur de projet, la recherche affiche seulement des associés afin de garder un matching clair."
-      : 'En tant qu’associé, la recherche affiche seulement les projets publiés par des porteurs de projet.'
+      ? 'Les associés sont visibles une fois votre projet publié.'
+      : 'Les projets sont visibles une fois votre profil d’associé complété (compétences).'
   );
   readonly searchResultLabel = computed(() =>
     this.visibleProfileType() === 'talent' ? 'associés disponibles' : 'projets disponibles'
@@ -467,8 +468,8 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     return this.visibleProfileType() === 'talent'
-      ? "Aucun associé n'est encore disponible. Dès qu'un profil compatible est publié, il apparaîtra ici."
-      : "Aucun projet n'est encore publié. Dès qu'un entrepreneur ajoute une opportunité, elle apparaîtra ici.";
+      ? "Aucun associé à afficher. Publiez votre projet depuis « Modifier mon profil » pour voir les associés disponibles."
+      : "Aucun projet à afficher. Ajoutez « Rejoindre un projet » dans Paramètres et renseignez vos compétences pour voir les projets.";
   });
   readonly cardBadgeLabel = computed(() =>
     this.visibleProfileType() === 'talent' ? 'Associé' : 'Projet'
@@ -476,6 +477,11 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly cardActionLabel = computed(() =>
     this.visibleProfileType() === 'talent' ? 'Voir le profil' : 'Voir le projet'
   );
+
+  showSide(side: SearchProfileType): void {
+    this.visibleProfileType.set(side);
+    this.selectedSkills.set([]);
+  }
 
   onSectorChange(event: Event): void {
     const select = event.target as HTMLSelectElement | null;
@@ -598,7 +604,9 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private async loadProfiles(): Promise<void> {
     await this.auth.ensureSessionReady();
-    const profiles = await this.matchingService.getMarketplaceProfilesForSearch(this.viewerType());
+    const user = this.auth.currentUser();
+    this.visibleProfileType.set(hasUsage(user, 'projet') || !hasUsage(user, 'associe') ? 'talent' : 'entrepreneur');
+    const profiles = await this.matchingService.getMarketplaceProfilesForSearch();
     this.allProfiles.set(profiles);
   }
 }
