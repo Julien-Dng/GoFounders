@@ -418,7 +418,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
                   <div>
                     <h3 class="text-lg font-bold text-primary sm:text-xl">{{ step.title }}</h3>
                     <p class="mt-1 text-base leading-relaxed text-muted-foreground">{{ step.description }}</p>
-                    <p class="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></span>{{ step.guarantee }}</p>
+                    <p class="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-accent"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></span>{{ step.guarantee }}</p>
                   </div>
                 </li>
               }
@@ -432,7 +432,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
               <div class="flex items-start justify-between gap-4 border-b border-border pb-5">
                 <div>
                   <p class="text-sm font-semibold text-muted-foreground">Dossier de cession</p>
-                  <p class="mt-1 text-xl font-bold text-primary">Boulangerie-pâtisserie · Lyon</p>
+                  <p class="mt-1 text-xl font-bold text-primary">Éditeur de logiciel SaaS · Lyon</p>
                 </div>
                 <span class="dossier-lock flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white" aria-hidden="true">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path class="dossier-shackle" d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
@@ -441,7 +441,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
               <ol class="mt-5 space-y-4">
                 @for (event of dossierEvents; track event.title; let i = $index) {
                   <li class="dossier-event flex gap-3" [style.animation-delay.ms]="400 + i * 700">
-                    <span class="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></span>
+                    <span class="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></span>
                     <div>
                       <p class="font-semibold text-primary">{{ event.title }}</p>
                       <p class="text-sm text-muted-foreground">{{ event.detail }}</p>
@@ -449,7 +449,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
                   </li>
                 }
               </ol>
-              <p class="dossier-open mt-6 rounded-xl bg-emerald-50 px-4 py-3 text-center font-semibold text-emerald-800">Dossier complet et contact du cédant ouverts</p>
+              <p class="dossier-open mt-6 rounded-xl bg-primary px-4 py-3 text-center font-semibold text-white">Dossier complet et contact du cédant ouverts</p>
             </div>
           </figure>
         </div>
