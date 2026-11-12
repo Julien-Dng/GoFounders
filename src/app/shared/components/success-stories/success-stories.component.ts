@@ -11,10 +11,10 @@ import { SuccessStoriesService, SuccessStory } from '../../../core/services/succ
     @if (stories().length > 0) {
       <section class="overflow-hidden px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20" [class]="background()" aria-labelledby="success-stories-title">
         <div class="mx-auto max-w-[78rem]">
-          <div class="flex items-center justify-between gap-6">
-            <h2 id="success-stories-title" class="text-3xl text-primary sm:text-4xl">Ce que pensent nos membres</h2>
+          <div class="relative">
+            <h2 id="success-stories-title" class="text-center text-3xl text-primary sm:px-28 sm:text-4xl">Ce que pensent nos membres</h2>
             @if (stories().length > 1) {
-              <div class="hidden flex-shrink-0 gap-2 sm:flex">
+              <div class="absolute right-0 top-1/2 hidden -translate-y-1/2 gap-2 sm:flex">
                 <button type="button" (click)="step(-1)" class="flex h-11 w-11 items-center justify-center rounded-full bg-white text-primary shadow ring-1 ring-border transition-colors hover:bg-primary hover:text-white" aria-label="Avis précédent">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
                 </button>
