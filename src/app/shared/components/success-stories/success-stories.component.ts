@@ -9,7 +9,7 @@ import { SuccessStoriesService, SuccessStory } from '../../../core/services/succ
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (stories().length > 0) {
-      <section class="overflow-hidden px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20" [class]="background()" aria-labelledby="success-stories-title">
+      <section class="overflow-hidden px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16" [class]="background()" aria-labelledby="success-stories-title">
         <div class="mx-auto max-w-[78rem]">
           <div>
             <h2 id="success-stories-title" class="text-center text-2xl text-primary sm:text-4xl">Ce que pensent nos membres</h2>
@@ -19,7 +19,7 @@ import { SuccessStoriesService, SuccessStory } from '../../../core/services/succ
                Défilement à la main possible (doigt, trackpad) ; pause au survol ou au toucher. -->
           <div
             #track
-            class="scrollbar-none -mx-4 mt-6 flex gap-4 overflow-x-auto px-4 pb-6 pt-2 sm:mt-8 sm:gap-6"
+            class="scrollbar-none -mx-4 mt-6 flex gap-4 overflow-x-auto px-4 pb-4 pt-2 sm:mt-6 sm:gap-6"
             tabindex="0"
             role="region"
             aria-label="Témoignages de vendeurs, faire défiler horizontalement"
