@@ -447,24 +447,25 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       }
 
       <!-- Téléphones : fonctionnement et prix réunis dans un bloc court (étapes dépliables). -->
-      <!-- Téléphones : les prix en un coup d'œil. -->
-      <section class="px-4 py-8 sm:hidden" aria-label="Prix">
-        <dl class="grid grid-cols-2 gap-2 text-center sm:hidden">
-          <div class="rounded-xl bg-secondary px-3 py-3">
-            <dt class="text-sm text-muted-foreground">Vendre</dt>
-            <dd class="mt-0.5 font-extrabold text-primary">Gratuit</dd>
-          </div>
-          <div class="rounded-xl bg-secondary px-3 py-3">
-            <dt class="text-sm text-muted-foreground">Dossier + contact</dt>
-            <dd class="mt-0.5 font-extrabold text-primary">{{ buyerPrice }} / entreprise</dd>
-          </div>
-        </dl>
-        <p class="mt-3 text-center text-sm text-muted-foreground sm:hidden">Aucune commission sur la vente, aucun abonnement. <a routerLink="/tarifs" class="font-semibold text-accent">Tarifs</a></p>
-      </section>
-
       <div>
         <app-success-stories />
       </div>
+
+      <!-- Téléphones : les prix, après les avis (sur ordinateur, la section « Vendre est gratuit » plus bas). -->
+      <section class="px-4 pb-12 pt-4 sm:hidden" aria-labelledby="prices-mobile-title">
+        <h2 appReveal id="prices-mobile-title" class="text-center text-2xl text-primary">Combien ça coûte ?</h2>
+        <dl appReveal class="mt-5 grid grid-cols-2 gap-3 text-center">
+          <div class="rounded-2xl bg-white px-3 py-4 shadow-sm ring-1 ring-border">
+            <dt class="text-sm text-muted-foreground">Vendre</dt>
+            <dd class="mt-1 text-lg font-extrabold text-primary">Gratuit</dd>
+          </div>
+          <div class="rounded-2xl bg-white px-3 py-4 shadow-sm ring-1 ring-border">
+            <dt class="text-sm text-muted-foreground">Dossier + contact</dt>
+            <dd class="mt-1 text-lg font-extrabold text-primary">{{ buyerPrice }} <span class="text-sm font-semibold text-muted-foreground">/ entreprise</span></dd>
+          </div>
+        </dl>
+        <p class="mt-4 text-center text-sm text-muted-foreground">Aucune commission sur la vente, aucun abonnement. <a routerLink="/tarifs" class="whitespace-nowrap font-semibold text-accent">Voir les tarifs</a></p>
+      </section>
 
       <section class="hidden bg-secondary px-4 py-16 sm:block sm:px-6 lg:px-8 lg:py-24" aria-labelledby="prices-title">
         <div class="mx-auto max-w-[78rem]">
