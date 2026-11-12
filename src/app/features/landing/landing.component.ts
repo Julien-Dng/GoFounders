@@ -13,7 +13,6 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
 import { SuccessStoriesComponent } from '../../shared/components/success-stories/success-stories.component';
 import { VerifiedBadgeComponent } from '../../shared/components/verified-badge/verified-badge.component';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
-import { SectorIconComponent } from '../../shared/components/sector-icon/sector-icon.component';
 
 interface LandingFaqItem {
   question: string;
@@ -133,7 +132,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [RouterLink, FooterComponent, SuccessStoriesComponent, VerifiedBadgeComponent, RevealDirective, SectorIconComponent],
+  imports: [RouterLink, FooterComponent, SuccessStoriesComponent, VerifiedBadgeComponent, RevealDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-white">
@@ -364,8 +363,6 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
                    class="lift group flex flex-col rounded-xl border border-border bg-white p-4 transition-shadow hover:shadow-md sm:rounded-2xl sm:border-0 sm:p-6 sm:shadow-lg sm:ring-1 sm:ring-border sm:hover:shadow-xl"
                    [class]="first ? 'md:col-span-2 lg:col-span-3 lg:row-span-2' : 'lg:col-span-2'">
                   <div class="flex items-center gap-3">
-                    <app-sector-icon [sector]="item.listing.sector" [size]="32" class="sm:hidden" />
-                    <app-sector-icon [sector]="item.listing.sector" [size]="first ? 48 : 40" class="hidden sm:inline-flex" />
                     <div class="min-w-0 flex-1">
                       <p class="truncate text-sm text-muted-foreground">{{ item.listing.sector }} · {{ item.listing.region }}</p>
                       @if (item.metrics.age !== null) {
@@ -377,7 +374,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
                     }
                   </div>
 
-                  <h3 class="mt-2 line-clamp-2 text-lg font-bold leading-snug text-primary group-hover:text-accent sm:mt-4" [class.lg:text-2xl]="first">{{ item.listing.title || item.listing.summary }}@if (item.listing.verified) { <app-verified-badge [size]="first ? 24 : 20" class="ml-1" /> }</h3>
+                  <h3 class="mt-1 line-clamp-2 text-lg font-bold leading-snug text-primary group-hover:text-accent sm:mt-4" [class.lg:text-2xl]="first">{{ item.listing.title || item.listing.summary }}@if (item.listing.verified) { <app-verified-badge [size]="first ? 24 : 20" class="ml-1" /> }</h3>
                   @if (first && item.listing.title) {
                     <div class="mt-2 hidden lg:block">
                       <p class="line-clamp-2 text-base leading-relaxed text-muted-foreground">{{ item.listing.summary }}</p>
@@ -503,11 +500,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
                          class="lift flex w-[80%] flex-shrink-0 snap-start flex-col rounded-2xl bg-white p-4 shadow-sm ring-1 ring-border hover:shadow-xl sm:w-auto sm:p-5 sm:shadow-lg"
                          [class.sm:col-span-2]="last && teamCards().length % 2 === 1">
                   <div class="flex items-start gap-3">
-                    @if (card.kind === 'project') {
-                      <app-sector-icon [sector]="card.sector" [size]="44" />
-                    } @else {
-                      <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-primary text-lg font-extrabold text-white" aria-hidden="true">{{ card.initial }}</span>
-                    }
+                    <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center text-lg font-extrabold text-white" [class]="card.kind === 'project' ? 'rounded-xl bg-accent' : 'rounded-full bg-primary'" aria-hidden="true">{{ card.initial }}</span>
                     <div class="min-w-0">
                       <span class="inline-block rounded-full px-2 py-0.5 text-[0.7rem] font-bold uppercase tracking-wide"
                             [class]="card.kind === 'project' ? 'bg-accent/10 text-accent' : 'bg-primary/10 text-primary'">{{ card.badge }}</span>
