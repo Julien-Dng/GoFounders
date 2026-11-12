@@ -9,7 +9,7 @@ import { FEATURES } from '../../../core/config/features';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <footer class="bg-primary text-primary-foreground">
-      <div class="mx-auto max-w-[78rem] px-4 py-12 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-[78rem] px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
         <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
             <div class="flex items-center gap-2.5">
@@ -23,8 +23,29 @@ import { FEATURES } from '../../../core/config/features';
             </p>
           </div>
 
+          <!-- Téléphones : rubriques dépliables pour raccourcir la page. -->
+          <div class="-mt-4 divide-y divide-primary-foreground/15 border-y border-primary-foreground/15 sm:hidden">
+            @for (section of footerSections; track section.category) {
+              <details class="group">
+                <summary class="flex cursor-pointer list-none items-center justify-between py-3.5 text-sm font-semibold text-primary-foreground">
+                  {{ section.category }}
+                  <span class="text-lg leading-none text-primary-foreground/60 transition-transform group-open:rotate-45" aria-hidden="true">+</span>
+                </summary>
+                <nav [attr.aria-label]="section.category">
+                  <ul class="space-y-2.5 pb-4">
+                    @for (link of section.links; track link.label) {
+                      <li>
+                        <a [routerLink]="link.href" class="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground">{{ link.label }}</a>
+                      </li>
+                    }
+                  </ul>
+                </nav>
+              </details>
+            }
+          </div>
+
           @for (section of footerSections; track section.category) {
-            <nav [attr.aria-label]="section.category">
+            <nav class="hidden sm:block" [attr.aria-label]="section.category">
               <h2 class="font-sans text-sm font-semibold text-primary-foreground">{{ section.category }}</h2>
               <ul class="mt-3 space-y-2">
                 @for (link of section.links; track link.label) {
@@ -37,7 +58,7 @@ import { FEATURES } from '../../../core/config/features';
           }
         </div>
 
-        <div class="mt-10 border-t border-primary-foreground/15 pt-6 text-sm text-primary-foreground/60">
+        <div class="mt-6 text-sm text-primary-foreground/60 sm:mt-10 sm:border-t sm:border-primary-foreground/15 sm:pt-6">
           <p>© 2026 GoFounders. GoFounders met en relation et n'assure pas de conseil juridique ou financier</p>
         </div>
       </div>

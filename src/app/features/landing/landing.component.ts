@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { MaListingData } from '../../core/data/mock-platform.data';
 import { FREE_CONTACTS_PER_MONTH, INTRO_SUMMARY, OFFER_PRICES } from '../../core/config/offers';
@@ -132,7 +133,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [RouterLink, FooterComponent, SuccessStoriesComponent, VerifiedBadgeComponent, RevealDirective],
+  imports: [RouterLink, NgTemplateOutlet, FooterComponent, SuccessStoriesComponent, VerifiedBadgeComponent, RevealDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-white">
@@ -283,10 +284,10 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
         <div class="mx-auto grid max-w-[78rem] items-center gap-6 lg:grid-cols-2 lg:gap-16">
           <div>
             <h2 appReveal id="trust-title" class="text-center text-2xl text-primary sm:text-4xl lg:text-left">Une reprise encadrée, en toute confiance</h2>
-            <ul class="mt-6 grid gap-3 sm:mt-8 sm:gap-4">
+            <ul class="mt-4 grid gap-2 sm:mt-8 sm:gap-4">
               @for (item of guarantees; track item.title; let i = $index) {
-                <li appReveal [revealDelay]="i * 110" class="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-border">
-                  <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent" aria-hidden="true">
+                <li appReveal [revealDelay]="i * 110" class="flex items-center gap-3 rounded-xl bg-white px-3 py-2.5 shadow-sm ring-1 ring-border sm:gap-4 sm:rounded-2xl sm:p-4">
+                  <span class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-accent/10 text-accent sm:h-11 sm:w-11 sm:rounded-xl" aria-hidden="true">
                     @switch (item.icon) {
                       @case ('shield') { <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg> }
                       @case ('lock') { <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> }
@@ -295,40 +296,56 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
                   </span>
                   <div>
                     <p class="font-bold text-primary">{{ item.title }}</p>
-                    <p class="text-sm leading-relaxed text-muted-foreground sm:text-base">{{ item.detail }}</p>
+                    <p class="text-sm leading-snug text-muted-foreground sm:text-base sm:leading-relaxed">{{ item.detail }}</p>
                   </div>
                 </li>
               }
             </ul>
           </div>
 
-          <!-- Journal d'un dossier (illustration, aussi sur téléphone) : les étapes se cochent, puis le cadenas s'ouvre. -->
-          <figure appReveal [revealDelay]="150" class="pointer-events-none relative mx-auto w-[88%] max-w-md select-none sm:w-full" aria-label="Exemple : le journal d'un dossier de cession">
-            <div class="absolute inset-0 translate-x-3 translate-y-3 rotate-2 rounded-3xl bg-[#DCE5F7]" aria-hidden="true"></div>
-            <div class="relative -rotate-1 rounded-3xl bg-white p-5 shadow-xl ring-1 ring-border sm:rotate-0 sm:p-8">
-              <div class="flex items-start justify-between gap-4 border-b border-border pb-5">
-                <div>
-                  <p class="inline-block rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-accent">Exemple de dossier</p>
-                  <p class="mt-1 text-lg font-bold text-primary sm:text-xl">Éditeur de logiciel SaaS · Lyon</p>
-                </div>
-                <span class="dossier-lock flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white" aria-hidden="true">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path class="dossier-shackle" d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-                </span>
-              </div>
-              <ol class="mt-5 space-y-4">
-                @for (event of dossierEvents; track event.title; let i = $index) {
-                  <li class="dossier-event flex gap-3" [style.animation-delay.ms]="400 + i * 700">
-                    <span class="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></span>
-                    <div>
-                      <p class="font-semibold text-primary">{{ event.title }}</p>
-                      <p class="text-sm text-muted-foreground">{{ event.detail }}</p>
-                    </div>
-                  </li>
-                }
-              </ol>
-              <p class="dossier-open mt-6 rounded-xl bg-accent/10 px-4 py-3 text-center font-semibold text-accent">Dossier et contact du cédant ouverts</p>
+          <!-- Journal d'un dossier (illustration) : les étapes se cochent, puis le cadenas s'ouvre.
+               Ordinateur et tablette : affiché ; téléphone : replié derrière un bouton, pour atteindre vite les annonces. -->
+          <div appReveal [revealDelay]="150" class="hidden sm:block">
+            <ng-container *ngTemplateOutlet="dossierExample" />
+          </div>
+          <details class="group -mt-2 sm:hidden">
+            <summary class="flex cursor-pointer list-none items-center justify-center gap-2 py-2 text-sm font-semibold text-accent">
+              Voir comment un dossier est protégé
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-open:rotate-180" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+            </summary>
+            <div class="pb-2 pt-3">
+              <ng-container *ngTemplateOutlet="dossierExample" />
             </div>
-          </figure>
+          </details>
+
+          <ng-template #dossierExample>
+            <figure class="pointer-events-none relative mx-auto w-[88%] max-w-md select-none sm:w-full" aria-label="Exemple : le journal d'un dossier de cession">
+              <div class="absolute inset-0 translate-x-3 translate-y-3 rotate-2 rounded-3xl bg-[#DCE5F7]" aria-hidden="true"></div>
+              <div class="relative -rotate-1 rounded-3xl bg-white p-5 shadow-xl ring-1 ring-border sm:rotate-0 sm:p-8">
+                <div class="flex items-start justify-between gap-4 border-b border-border pb-5">
+                  <div>
+                    <p class="inline-block rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-accent">Exemple de dossier</p>
+                    <p class="mt-1 text-lg font-bold text-primary sm:text-xl">Éditeur de logiciel SaaS · Lyon</p>
+                  </div>
+                  <span class="dossier-lock flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary text-white" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path class="dossier-shackle" d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                  </span>
+                </div>
+                <ol class="mt-5 space-y-4">
+                  @for (event of dossierEvents; track event.title; let i = $index) {
+                    <li class="dossier-event flex gap-3" [style.animation-delay.ms]="400 + i * 700">
+                      <span class="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></span>
+                      <div>
+                        <p class="font-semibold text-primary">{{ event.title }}</p>
+                        <p class="text-sm text-muted-foreground">{{ event.detail }}</p>
+                      </div>
+                    </li>
+                  }
+                </ol>
+                <p class="dossier-open mt-6 rounded-xl bg-accent/10 px-4 py-3 text-center font-semibold text-accent">Dossier et contact du cédant ouverts</p>
+              </div>
+            </figure>
+          </ng-template>
         </div>
       </section>
 
@@ -502,7 +519,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
             <div class="scrollbar-none -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0 lg:col-span-8">
               @for (card of teamCards(); track card.key; let i = $index; let last = $last) {
                 <article appReveal [revealDelay]="i * 110"
-                         class="lift flex w-[80%] flex-shrink-0 snap-start flex-col rounded-2xl bg-white p-4 shadow-sm ring-1 ring-border hover:shadow-xl sm:w-auto sm:p-5 sm:shadow-lg"
+                         class="lift flex w-[88%] flex-shrink-0 snap-start snap-always flex-col rounded-2xl bg-white p-4 shadow-sm ring-1 ring-border hover:shadow-xl sm:w-auto sm:p-5 sm:shadow-lg"
                          [class.sm:col-span-2]="last && teamCards().length % 2 === 1">
                   <div class="flex items-start gap-3">
                     <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center text-lg font-extrabold text-white" [class]="card.kind === 'project' ? 'rounded-xl bg-accent' : 'rounded-full bg-primary'" aria-hidden="true">{{ card.initial }}</span>

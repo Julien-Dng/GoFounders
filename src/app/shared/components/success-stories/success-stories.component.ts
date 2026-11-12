@@ -15,11 +15,11 @@ import { SuccessStoriesService, SuccessStory } from '../../../core/services/succ
             <h2 id="success-stories-title" class="text-center text-2xl text-primary sm:text-4xl">Ce que pensent nos membres</h2>
           </div>
 
-          <!-- Boucle infinie : les avis défilent en continu (liste répétée, sans retour visible au début).
-               Défilement à la main possible (doigt, trackpad) ; pause au survol ou au toucher. -->
+          <!-- Ordinateur : boucle infinie, les avis défilent en continu (liste répétée, sans retour visible au début),
+               pause au survol. Téléphone : défilement à la main uniquement, arrêt sur chaque avis, pour laisser lire. -->
           <div
             #track
-            class="scrollbar-none -mx-4 mt-6 flex gap-4 overflow-x-auto px-4 pb-4 pt-2 sm:mt-6 sm:gap-6"
+            class="scrollbar-none -mx-4 mt-6 flex gap-4 overflow-x-auto px-4 pb-4 pt-2 max-sm:snap-x max-sm:snap-mandatory max-sm:scroll-px-4 sm:mt-6 sm:gap-6"
             tabindex="0"
             role="region"
             aria-label="Témoignages de vendeurs, faire défiler horizontalement"
@@ -33,7 +33,7 @@ import { SuccessStoriesService, SuccessStory } from '../../../core/services/succ
           >
             @for (item of loop(); track $index) {
               <figure
-                class="lift flex w-[85%] flex-shrink-0 flex-col rounded-2xl bg-white p-6 shadow-lg ring-1 ring-border hover:shadow-xl sm:w-[23rem] sm:p-7"
+                class="lift flex w-[88%] flex-shrink-0 flex-col rounded-2xl bg-white p-6 max-sm:snap-start max-sm:snap-always shadow-lg ring-1 ring-border hover:shadow-xl sm:w-[23rem] sm:p-7"
                 [attr.aria-hidden]="item.copy ? 'true' : null"
               >
                 <div class="flex items-start justify-between gap-3">
@@ -65,12 +65,18 @@ export class SuccessStoriesComponent implements OnInit, OnDestroy {
   readonly limit = input(6);
   readonly background = input('bg-white');
   readonly stories = signal<SuccessStory[]>([]);
+  // Défilement automatique : ordinateur et tablette seulement, et jamais si l'appareil demande moins d'animations.
+  private readonly autoplay = signal(
+    typeof window !== 'undefined'
+      && !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      && !window.matchMedia('(max-width: 639px)').matches
+  );
 
   // Liste répétée pour la boucle : assez de copies pour couvrir l'écran ; les copies sont ignorées
   // par les lecteurs d'écran.
   readonly loop = computed(() => {
     const stories = this.stories();
-    if (stories.length < 2) {
+    if (stories.length < 2 || !this.autoplay()) {
       return stories.map(story => ({ story, copy: false }));
     }
 
@@ -157,8 +163,7 @@ export class SuccessStoriesComponent implements OnInit, OnDestroy {
   }
 
   private startAutoplay(): void {
-    const reduced = typeof window === 'undefined' || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduced || this.stories().length < 2) {
+    if (!this.autoplay() || this.stories().length < 2) {
       return;
     }
 
