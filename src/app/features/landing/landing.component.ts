@@ -308,7 +308,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
 
       <section id="entreprises" class="scroll-mt-20 px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-20" aria-labelledby="latest-title">
         <div class="mx-auto max-w-[78rem]">
-          <h2 appReveal id="latest-title" class="text-center text-3xl text-primary sm:text-4xl">Entreprises à reprendre</h2>
+          <h2 appReveal id="latest-title" class="text-center text-2xl text-primary sm:text-4xl">Entreprises à reprendre</h2>
 
           <div class="mx-auto mt-8 hidden max-w-3xl rounded-xl bg-white p-2 shadow-lg ring-1 ring-border sm:block" role="search">
             <div class="flex flex-col gap-2 sm:flex-row">
@@ -372,7 +372,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
         <!-- Projets et associés : vrais profils de la vitrine publique (anonymisés), sinon exemples fictifs signalés. -->
         <section class="bg-secondary px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-20" aria-labelledby="team-title">
           <div class="mx-auto max-w-[78rem]">
-            <h2 appReveal id="team-title" class="text-center text-3xl text-primary sm:text-4xl">Projets et associés</h2>
+            <h2 appReveal id="team-title" class="text-center text-2xl text-primary sm:text-4xl">Projets et associés</h2>
             <p class="mx-auto mt-3 hidden max-w-[56ch] text-center text-lg text-muted-foreground sm:block">Trouvez les compétences pour avancer, ou un projet à rejoindre</p>
             <div class="mt-6 grid gap-4 sm:mt-10 sm:gap-6 md:grid-cols-3 max-sm:[&>*:nth-child(3)]:hidden">
               @for (card of teamCards(); track card.key; let i = $index) {
@@ -469,7 +469,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
 
       <section class="hidden bg-secondary px-4 py-16 sm:block sm:px-6 lg:px-8 lg:py-24" aria-labelledby="prices-title">
         <div class="mx-auto max-w-[78rem]">
-          <h2 appReveal id="prices-title" class="text-center text-3xl text-primary sm:text-4xl">Vendre est gratuit. Une mise en relation coûte {{ buyerPrice }}</h2>
+          <h2 appReveal id="prices-title" class="text-center text-2xl text-primary sm:text-4xl">Vendre est gratuit. Une mise en relation coûte {{ buyerPrice }}</h2>
           <p class="mx-auto mt-3 max-w-[60ch] text-center text-lg text-muted-foreground">
             Aucune commission sur la vente, aucun abonnement
           </p>

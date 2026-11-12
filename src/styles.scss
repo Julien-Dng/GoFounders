@@ -163,10 +163,17 @@ html {
   font-size: 16px;
 }
 
-/* Téléphones : texte un peu plus petit (toutes les tailles en rem suivent). */
+/* Téléphones : texte plus petit (toutes les tailles en rem suivent). Les champs de saisie restent à 16 px :
+   en dessous, l'iPhone zoome automatiquement sur le champ touché. */
 @media (max-width: 639px) {
   html {
-    font-size: 14.5px;
+    font-size: 14px;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
   }
 }
 

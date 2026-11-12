@@ -12,7 +12,7 @@ import { SuccessStoriesService, SuccessStory } from '../../../core/services/succ
       <section class="overflow-hidden px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20" [class]="background()" aria-labelledby="success-stories-title">
         <div class="mx-auto max-w-[78rem]">
           <div>
-            <h2 id="success-stories-title" class="text-center text-3xl text-primary sm:text-4xl">Ce que pensent nos membres</h2>
+            <h2 id="success-stories-title" class="text-center text-2xl text-primary sm:text-4xl">Ce que pensent nos membres</h2>
           </div>
 
           <!-- Boucle infinie : les avis défilent en continu (liste répétée, sans retour visible au début).
