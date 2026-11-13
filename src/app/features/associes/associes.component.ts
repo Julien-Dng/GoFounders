@@ -158,25 +158,6 @@ const STAGE_LABELS: Record<string, string> = {
         </div>
       </section>
 
-      <section class="bg-white px-4 py-14 sm:px-6 lg:px-8 lg:py-20" aria-labelledby="how-title">
-        <div class="mx-auto max-w-[78rem]">
-          <h2 id="how-title" class="text-center text-3xl text-primary sm:text-4xl">Comment ça marche</h2>
-          <ol class="mt-10 grid gap-6 md:grid-cols-3">
-            @for (step of steps; track step.title; let index = $index) {
-              <li class="rounded-2xl bg-secondary p-7">
-                <span class="tabular flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 text-lg font-extrabold text-accent">{{ index + 1 }}</span>
-                <h3 class="mt-5 text-xl font-bold text-primary">{{ step.title }}</h3>
-                <p class="mt-2 text-base leading-relaxed text-muted-foreground">{{ step.text }}</p>
-              </li>
-            }
-          </ol>
-          <p class="mt-8 text-center text-base text-muted-foreground">
-            Rejoindre un projet est gratuit. Les porteurs de projet contactent {{ freeContacts }} nouveaux associés par mois sans payer.
-            <a routerLink="/tarifs" fragment="associes" class="font-semibold text-accent underline-offset-4 hover:underline">Voir les tarifs</a>
-          </p>
-        </div>
-      </section>
-
       <app-footer />
     </div>
   `,
@@ -192,11 +173,6 @@ export class AssociesComponent implements OnInit {
   readonly tabs: Array<{ value: ShowcaseTab; label: string }> = [
     { value: 'talent', label: 'Associés disponibles' },
     { value: 'project', label: 'Projets qui recrutent' },
-  ];
-  readonly steps = [
-    { title: 'Créez votre profil', text: 'Porteur de projet ou futur associé : décrivez ce que vous apportez ou ce que vous cherchez. Inscription gratuite' },
-    { title: 'Découvrez les profils compatibles', text: 'Un score de compatibilité, calculé sur les compétences, la localisation, la disponibilité et le secteur, met en avant les meilleurs profils' },
-    { title: 'Échangez en toute discrétion', text: 'Vous discutez dans la messagerie. Pour un projet sensible, le porteur peut demander un engagement de confidentialité avant de tout dévoiler' },
   ];
 
   readonly talents = computed(() => this.entries().filter(entry => entry.kind === 'talent'));

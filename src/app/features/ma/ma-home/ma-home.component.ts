@@ -10,7 +10,6 @@ import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../
 import { lastGrowth, revenueSeries } from '../../../core/ma/listing-options';
 
 type SortKey = 'pertinence' | 'recent' | 'prix-asc' | 'prix-desc' | 'ca-desc' | 'benefice-desc' | 'multiple-asc';
-import { SuccessStoriesComponent } from '../../../shared/components/success-stories/success-stories.component';
 import { VerifiedBadgeComponent } from '../../../shared/components/verified-badge/verified-badge.component';
 import { RevealDirective } from '../../../shared/directives/reveal.directive';
 
@@ -18,7 +17,7 @@ import { RevealDirective } from '../../../shared/directives/reveal.directive';
 @Component({
   selector: 'app-ma-home',
   standalone: true,
-  imports: [RouterLink, SuccessStoriesComponent, VerifiedBadgeComponent, RevealDirective],
+  imports: [RouterLink, VerifiedBadgeComponent, RevealDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-secondary">
@@ -225,7 +224,6 @@ import { RevealDirective } from '../../../shared/directives/reveal.directive';
         </div>
       </section>
 
-      <app-success-stories background="bg-secondary" />
 
       <section class="relative overflow-hidden bg-primary px-4 py-20 text-primary-foreground sm:px-6 lg:px-8 lg:py-24" aria-labelledby="ma-sell-title">
         <img src="/assets/images/provisoire/statistiques-ecran.jpg" alt="" aria-hidden="true" width="1400" height="933" loading="lazy" class="absolute inset-0 h-full w-full object-cover">
