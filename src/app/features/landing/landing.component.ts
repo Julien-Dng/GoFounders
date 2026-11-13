@@ -553,12 +553,12 @@ export class LandingComponent implements OnInit {
   readonly simpleSteps = FEATURES.associates
     ? [
         { title: 'Découvrez', text: 'Explorez les entreprises à reprendre et les projets', detail: 'Annonces anonymes, relues avant publication' },
-        { title: 'Entrez en contact', text: `Dossier et contact d'une entreprise : ${OFFER_PRICES.INTRO.label.replace(' ', '\u00a0')}. Écrire à un associé est gratuit`, detail: 'Engagement de confidentialité · paiement sécurisé par Stripe' },
+        { title: 'Entrez en contact', text: `Accédez au dossier et au contact du vendeur pour ${OFFER_PRICES.INTRO.label.replace(' ', '\u00a0')}`, detail: 'Engagement de confidentialité · paiement sécurisé par Stripe' },
         { title: 'Échangez directement', text: 'Construisez la suite avec les bonnes personnes', detail: 'Messagerie intégrée, sans commission sur la vente' },
       ]
     : [
         { title: 'Découvrez', text: 'Explorez les entreprises à reprendre', detail: 'Annonces anonymes, relues avant publication' },
-        { title: 'Entrez en contact', text: `Dossier et contact d'une entreprise : ${OFFER_PRICES.INTRO.label.replace(' ', '\u00a0')}`, detail: 'Engagement de confidentialité · paiement sécurisé par Stripe' },
+        { title: 'Entrez en contact', text: `Accédez au dossier et au contact du vendeur pour ${OFFER_PRICES.INTRO.label.replace(' ', '\u00a0')}`, detail: 'Engagement de confidentialité · paiement sécurisé par Stripe' },
         { title: 'Échangez directement', text: 'Construisez la suite avec le cédant', detail: 'Messagerie intégrée, sans commission sur la vente' },
       ];
 
