@@ -148,7 +148,7 @@ import { RevealDirective } from '../../../shared/directives/reveal.directive';
                 <ul class="mt-5 space-y-4">
                   @for (item of filteredListings(); track item.listing.id; let i = $index) {
                     <li>
-                      <article appReveal [revealDelay]="(i % 4) * 80" class="lift group relative grid rounded-2xl bg-white shadow-lg ring-1 hover:shadow-xl md:grid-cols-[1fr,15rem]" [class]="item.listing.featured ? 'ring-amber-500/60' : 'ring-border'" [attr.aria-labelledby]="'listing-' + item.listing.id">
+                      <article appReveal [revealDelay]="(i % 4) * 80" class="lift group relative grid rounded-2xl bg-white shadow-lg ring-1 ring-border hover:shadow-xl md:grid-cols-[1fr,15rem]" [attr.aria-labelledby]="'listing-' + item.listing.id">
                         <div class="p-5 sm:p-6">
                           <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
                             <span>{{ item.listing.type }}</span>
