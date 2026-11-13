@@ -406,16 +406,16 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       }
 
       <!-- Téléphones : fonctionnement et prix réunis dans un bloc court (étapes dépliables). -->
-      <!-- Comment ça marche, en trois étapes (nouveau design) : sans icônes, séparées par des traits, dans un encadré bleu clair. -->
+      <!-- Comment ça marche, en trois étapes (nouveau design) : sans icônes, séparées par des traits, dans un encadré bleu marine. -->
       <section class="px-4 pt-6 sm:px-6 sm:pt-8 lg:px-8 lg:pt-10" aria-labelledby="simple-title">
-        <!-- Encadré bleu clair : le distingue des avis, eux aussi sur fond blanc. -->
-        <div class="mx-auto max-w-[78rem] rounded-2xl bg-[#F3F6FD] px-5 py-6 ring-1 ring-accent/10 sm:px-8 sm:py-7">
-          <h2 appReveal id="simple-title" class="text-2xl text-primary sm:text-3xl">Simple, du premier échange à la rencontre</h2>
-          <ol class="mt-4 grid gap-4 sm:mt-5 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-accent/15">
+        <!-- Encadré bleu marine : se distingue à la fois de la section projets (bleu clair) et des avis (blanc). -->
+        <div class="mx-auto max-w-[78rem] rounded-2xl bg-primary px-5 py-6 text-white sm:px-8 sm:py-7">
+          <h2 appReveal id="simple-title" class="text-2xl text-white sm:text-3xl">Simple, du premier échange à la rencontre</h2>
+          <ol class="mt-4 grid gap-4 sm:mt-5 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-white/15">
             @for (step of simpleSteps; track step.title; let i = $index) {
               <li appReveal [revealDelay]="i * 110" class="sm:px-6 sm:first:pl-0 sm:last:pr-0">
-                <h3 class="text-base font-bold text-primary sm:text-lg">{{ i + 1 }}. {{ step.title }}</h3>
-                <p class="mt-1 text-base leading-relaxed text-muted-foreground">{{ step.text }}</p>
+                <h3 class="text-base font-bold text-white sm:text-lg">{{ i + 1 }}. {{ step.title }}</h3>
+                <p class="mt-1 text-base leading-relaxed text-white/70">{{ step.text }}</p>
               </li>
             }
           </ol>
