@@ -203,7 +203,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       <section class="bg-[#F3F6FD] px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-14" aria-labelledby="trust-title">
         <div class="mx-auto grid max-w-[78rem] items-center gap-6 lg:grid-cols-2 lg:gap-16">
           <div>
-            <h2 appReveal id="trust-title" class="text-2xl text-primary sm:text-center sm:text-4xl lg:text-left" style="text-align: center"><span class="sm:hidden">Des échanges en confiance</span><span class="hidden sm:inline">Une reprise encadrée, en toute confiance</span></h2>
+            <h2 appReveal id="trust-title" class="text-2xl text-primary sm:text-center sm:text-3xl lg:text-left" style="text-align: center"><span class="sm:hidden">Des échanges en confiance</span><span class="hidden sm:inline">Une reprise encadrée, en toute confiance</span></h2>
             <!-- Téléphones : liste simple, une ligne par engagement. -->
             <ul class="mt-4 space-y-3 sm:hidden">
               @for (item of guarantees; track item.title) {
@@ -291,7 +291,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
           <!-- En-tête : titre et accroche à gauche, lien vers toutes les annonces à droite (ordinateur). -->
           <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
             <div>
-              <h2 appReveal id="latest-title" class="text-2xl text-primary sm:text-3xl lg:text-4xl">Des entreprises à reprendre</h2>
+              <h2 appReveal id="latest-title" class="text-2xl text-primary sm:text-3xl">Des entreprises à reprendre</h2>
               <p class="mt-1 text-base text-muted-foreground sm:text-lg">Une activité, un savoir-faire, une nouvelle étape</p>
             </div>
             <a routerLink="/ma" class="group hidden flex-shrink-0 font-semibold text-accent sm:inline-block">Toutes les entreprises&nbsp;<span class="arrow-nudge">→</span></a>
@@ -360,7 +360,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
           <!-- Accroche à gauche, deux profils en lignes à droite (un projet et un associé quand c'est possible). -->
           <div class="relative mx-auto grid max-w-[78rem] gap-5 lg:grid-cols-12 lg:items-center lg:gap-10">
             <div class="lg:col-span-5">
-              <h2 appReveal id="team-title" class="text-2xl leading-tight text-primary sm:text-3xl lg:text-[2.6rem]">Le projet est là.<br> Il ne manque <span class="whitespace-nowrap">peut-être</span> que vous</h2>
+              <h2 appReveal id="team-title" class="text-2xl leading-tight text-primary sm:text-3xl">Le projet est là.<br> Il ne manque <span class="whitespace-nowrap">peut-être</span> que vous</h2>
               <p class="mt-2 text-base text-muted-foreground sm:mt-3 sm:text-lg">Trouvez un associé ou rejoignez une équipe</p>
               <a [routerLink]="associatesHref()" class="group mt-4 hidden font-semibold text-accent sm:inline-block">Explorer les projets et associés&nbsp;<span class="arrow-nudge">→</span></a>
               @if (teamCardsAreExamples()) {
@@ -412,7 +412,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
              Ordinateur : titre, phrase et bouton à gauche, étapes détaillées à droite. -->
         <div class="mx-auto grid max-w-[78rem] gap-6 rounded-2xl bg-primary px-5 py-7 text-white sm:px-8 sm:py-8 lg:grid-cols-12 lg:items-center lg:gap-12 lg:px-12 lg:py-10">
           <div class="lg:col-span-5">
-            <h2 appReveal id="simple-title" class="text-2xl leading-tight text-white sm:text-3xl lg:text-[2.2rem]">Simple, du premier échange à la rencontre</h2>
+            <h2 appReveal id="simple-title" class="text-2xl leading-tight text-white sm:text-3xl">Simple, du premier échange à la rencontre</h2>
             <p class="mt-3 text-base leading-relaxed text-white/70 sm:text-lg">{{ simpleIntro }}</p>
             @if (!isLoggedIn()) {
               <a routerLink="/inscription" class="mt-6 hidden rounded-lg bg-accent px-6 py-3.5 font-semibold text-white transition-colors hover:bg-accent/90 lg:inline-block">Créer mon compte gratuit</a>
