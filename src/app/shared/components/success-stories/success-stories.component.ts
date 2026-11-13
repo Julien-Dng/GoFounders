@@ -19,7 +19,7 @@ import { SuccessStoriesService, SuccessStory } from '../../../core/services/succ
                pause au survol. Téléphone : défilement à la main uniquement, arrêt sur chaque avis, pour laisser lire. -->
           <div
             #track
-            class="scrollbar-none -mx-4 mt-6 flex gap-4 overflow-x-auto px-4 pb-3 pt-2 max-sm:snap-x max-sm:snap-mandatory max-sm:scroll-px-4 sm:mt-5 sm:gap-5"
+            class="scrollbar-none -mx-4 mt-6 flex gap-4 overflow-x-auto px-4 pb-3 pt-2 max-sm:snap-x max-sm:snap-mandatory max-sm:scroll-px-4 sm:mx-0 sm:mt-5 sm:gap-5 sm:px-0 sm:[mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]"
             tabindex="0"
             role="region"
             aria-label="Témoignages de vendeurs, faire défiler horizontalement"
