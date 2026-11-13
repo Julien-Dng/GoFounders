@@ -173,28 +173,28 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
             </p>
           </div>
 
-          <!-- Photos : équipe au travail, et un binôme en médaillon. -->
-          <figure class="hero-enter relative mx-auto w-full max-w-xl pb-8 pr-6 sm:pb-12 sm:pr-10 lg:col-span-6 lg:row-span-2 lg:mr-0 lg:max-w-none" style="animation-delay: 180ms">
+          <!-- Photos : équipe au travail, et un binôme en médaillon (ordinateur et tablette ; une seule photo sur téléphone). -->
+          <figure class="hero-enter relative mx-auto w-full max-w-xl sm:pb-12 sm:pr-10 lg:col-span-6 lg:row-span-2 lg:mr-0 lg:max-w-none" style="animation-delay: 180ms">
             <img src="/assets/images/hero/equipe-startup.webp" width="1100" height="760" fetchpriority="high"
                  alt="Une équipe travaille sur ses ordinateurs autour d'une grande table"
                  class="aspect-[3/2] w-full rounded-2xl object-cover shadow-2xl">
             <img src="/assets/images/hero/binome-ordinateur.webp" width="560" height="420" loading="lazy"
                  alt="Deux associés échangent devant un ordinateur"
-                 class="hero-float-late absolute bottom-0 right-0 aspect-[4/3] w-[44%] rounded-xl border-4 border-white object-cover shadow-2xl">
+                 class="hero-float-late absolute bottom-0 right-0 hidden aspect-[4/3] w-[44%] rounded-xl border-4 border-white object-cover shadow-2xl sm:block">
           </figure>
 
           <!-- Garanties : une ligne, séparées par des traits (sous le texte sur ordinateur, sous les photos sur téléphone). -->
-          <ul class="hero-enter flex items-center justify-between gap-2 text-xs text-white/80 sm:justify-start sm:gap-0 sm:text-base lg:col-span-6 lg:row-start-2" style="animation-delay: 320ms" aria-label="Nos garanties">
-            <li class="flex items-center gap-1.5 sm:gap-2 sm:pr-5">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg>
+          <ul class="hero-enter flex w-full items-center justify-between gap-1 whitespace-nowrap text-[clamp(0.56rem,2.85vw,0.75rem)] text-white/85 sm:max-w-[38rem] sm:gap-4 sm:text-base lg:col-span-6 lg:row-start-2" style="animation-delay: 320ms" aria-label="Nos garanties">
+            <li class="flex items-center gap-1 min-[380px]:gap-1.5 sm:gap-2.5">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 flex-shrink-0 min-[380px]:h-[18px] min-[380px]:w-[18px] sm:h-[22px] sm:w-[22px]" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg>
               Annonces relues
             </li>
-            <li class="flex items-center gap-1.5 border-l border-white/25 pl-2 sm:gap-2 sm:px-5">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <li class="flex flex-1 items-center justify-center gap-1 border-x border-white/25 px-1.5 min-[380px]:gap-1.5 min-[380px]:px-2 sm:gap-2.5 sm:px-4">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 flex-shrink-0 min-[380px]:h-[18px] min-[380px]:w-[18px] sm:h-[22px] sm:w-[22px]" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
               Confidentialité
             </li>
-            <li class="flex items-center gap-1.5 border-l border-white/25 pl-2 sm:gap-2 sm:pl-5">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
+            <li class="flex items-center gap-1 min-[380px]:gap-1.5 sm:gap-2.5">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 flex-shrink-0 min-[380px]:h-[18px] min-[380px]:w-[18px] sm:h-[22px] sm:w-[22px]" aria-hidden="true"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
               Sans commission
             </li>
           </ul>
