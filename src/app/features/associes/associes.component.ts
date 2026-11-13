@@ -62,6 +62,14 @@ const STAGE_LABELS: Record<string, string> = {
                 </button>
               }
             </div>
+            <!-- Recherche dans la vitrine : filtre sur les informations déjà affichées (intitulé, compétences, secteur…). -->
+            <div class="relative w-full sm:w-80" role="search">
+              <label for="associes-search" class="sr-only">Rechercher une compétence, un secteur</label>
+              <svg class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <input id="associes-search" type="search" [value]="query()" (input)="query.set($any($event.target).value)"
+                     [placeholder]="tab() === 'talent' ? 'Compétence, métier, disponibilité…' : 'Secteur, compétence recherchée…'"
+                     class="w-full rounded-full border border-border bg-white py-2.5 pl-10 pr-4 text-base outline-none transition-colors focus:border-accent">
+            </div>
           </div>
 
           @if (!loaded()) {
@@ -76,9 +84,18 @@ const STAGE_LABELS: Record<string, string> = {
                 {{ tab() === 'talent' ? 'Rejoindre la liste des associés' : 'Présenter mon projet' }}
               </a>
             </div>
+          } @else if (results().length === 0) {
+            <div class="mt-8 rounded-2xl bg-white p-8 text-center ring-1 ring-border" role="status">
+              <p class="text-lg font-semibold text-primary">Aucun résultat pour « {{ query().trim() }} »</p>
+              <p class="mt-1 text-muted-foreground">Essayez un autre mot, ou consultez tous les profils</p>
+              <button type="button" (click)="query.set('')" class="mt-4 font-semibold text-accent hover:underline">Effacer la recherche</button>
+            </div>
           } @else {
-            <ul class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-              @for (entry of visible(); track entry.profile_id + entry.kind) {
+            @if (query().trim()) {
+              <p class="mt-6 text-sm text-muted-foreground" role="status">{{ results().length }} résultat{{ results().length > 1 ? 's' : '' }} pour « {{ query().trim() }} »</p>
+            }
+            <ul class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3" [class.mt-3]="!!query().trim()">
+              @for (entry of results(); track entry.profile_id + entry.kind) {
                 <!-- Toute la carte est cliquable : le lien « Voir le profil ↗ » s'étend sur la carte (clavier compris). -->
                 <li class="group relative flex flex-col rounded-2xl bg-white p-5 shadow-md ring-1 ring-border transition-shadow focus-within:ring-2 focus-within:ring-accent"
                     [class]="profileLink(entry).path ? 'hover:shadow-lg hover:ring-accent/50' : ''">
@@ -158,6 +175,22 @@ export class AssociesComponent implements OnInit {
   readonly talents = computed(() => this.entries().filter(entry => entry.kind === 'talent'));
   readonly projects = computed(() => this.entries().filter(entry => entry.kind === 'project'));
   readonly visible = computed(() => (this.tab() === 'talent' ? this.talents() : this.projects()));
+  // Recherche dans la vitrine, sans accents ni majuscules, sur les seuls champs publics affichés.
+  readonly query = signal('');
+  readonly results = computed(() => {
+    const words = this.normalize(this.query()).split(/\s+/).filter(Boolean);
+    if (words.length === 0) {
+      return this.visible();
+    }
+
+    return this.visible().filter(entry => {
+      const text = this.normalize([
+        entry.title, entry.availability, entry.sector, entry.stage ? this.stageLabel(entry.stage) : '',
+        ...entry.skills, ...(entry.looking_for ?? []),
+      ].filter(Boolean).join(' '));
+      return words.every(word => text.includes(word));
+    });
+  });
   readonly canBrowseFull = computed(() => usesTeamMarketplace(this.auth.currentUser()));
   readonly isAuthenticated = this.auth.isAuthenticated;
 
@@ -165,6 +198,10 @@ export class AssociesComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     this.entries.set(await this.showcase.list());
     this.loaded.set(true);
+  }
+
+  private normalize(value: string): string {
+    return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   }
 
   stageLabel(stage: string | null): string {
