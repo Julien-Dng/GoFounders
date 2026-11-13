@@ -8,8 +8,7 @@ import { FEATURES } from '../../core/config/features';
 import { MaService } from '../../core/services/ma.service';
 import { AuthService } from '../../core/services/auth.service';
 import { usesTeamMarketplace } from '../../core/models/user.model';
-import { formatEuros, formatMultiple, listingMetrics } from '../../core/ma/listing-metrics';
-import { INCLUDED_ASSETS, IncludedAsset, labelOf, revenueSeries } from '../../core/ma/listing-options';
+import { formatEuros, listingMetrics } from '../../core/ma/listing-metrics';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
 import { SuccessStoriesComponent } from '../../shared/components/success-stories/success-stories.component';
 import { VerifiedBadgeComponent } from '../../shared/components/verified-badge/verified-badge.component';
@@ -304,117 +303,16 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
           </div>
 
           @if (latestListings().length > 0) {
-            <!-- Mobile : deux cartes compactes. Ordinateur : une grande carte détaillée et deux plus petites. -->
-            <div class="mt-4 grid gap-3 sm:mt-6 sm:gap-4 md:grid-cols-2 lg:grid-cols-5 max-sm:[&>*:nth-child(3)]:hidden">
-              @for (item of latestListings(); track item.listing.id; let i = $index; let first = $first) {
+            <!-- Cartes compactes, même style sur téléphone et ordinateur : secteur, titre, chiffres clés, prix.
+                 Trois côte à côte sur ordinateur, deux sur téléphone. -->
+            <div class="mt-4 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 max-lg:[&>*:nth-child(3)]:hidden">
+              @for (item of latestListings(); track item.listing.id; let i = $index) {
                 <a appReveal [revealDelay]="i * 110" [routerLink]="['/ma/annonce', item.listing.id]"
-                   class="lift group flex flex-col rounded-xl border border-border bg-white p-4 transition-shadow hover:shadow-md sm:rounded-2xl sm:border-0 sm:p-6 sm:shadow-lg sm:ring-1 sm:ring-border sm:hover:shadow-xl"
-                   [class]="first ? 'md:col-span-2 lg:col-span-3 lg:row-span-2' : 'lg:col-span-2'">
-                  <div class="flex items-center gap-3">
-                    <div class="min-w-0 flex-1">
-                      <p class="truncate text-sm text-muted-foreground">{{ item.listing.sector }} · {{ item.listing.region }}</p>
-                      @if (item.metrics.age !== null) {
-                        <p class="hidden text-sm text-muted-foreground sm:block">Créée il y a {{ item.metrics.age }} ans@if (item.listing.teamSize) { · {{ item.listing.teamSize }} salarié{{ item.listing.teamSize > 1 ? 's' : '' }}}</p>
-                      }
-                    </div>
-                    @if (item.listing.featured) {
-                      <span class="hidden flex-shrink-0 rounded-full border border-amber-500/40 px-2 py-0.5 text-xs font-semibold text-amber-700 sm:inline">En vedette</span>
-                    }
-                  </div>
-
-                  <h3 class="mt-1 line-clamp-2 text-lg font-bold leading-snug text-primary group-hover:text-accent sm:mt-4" [class.lg:text-2xl]="first">{{ item.listing.title || item.listing.summary }}@if (item.listing.verified) { <app-verified-badge [size]="first ? 24 : 20" class="ml-1" /> }</h3>
-                  @if (first && item.listing.title) {
-                    <div class="mt-2 hidden lg:block">
-                      <p class="line-clamp-2 text-base leading-relaxed text-muted-foreground">{{ item.listing.summary }}</p>
-                    </div>
-                  }
-
-                  <!-- Mobile : une ligne de chiffres et le prix. -->
-                  <p class="tabular mt-1.5 truncate text-sm text-muted-foreground sm:hidden">CA {{ euros(item.metrics.revenue) }} · Bénéfice {{ euros(item.metrics.netProfit) }}</p>
-                  <p class="tabular mt-1.5 font-bold text-amber-600 sm:hidden"><span class="whitespace-nowrap">{{ item.listing.priceMin }}</span> à <span class="whitespace-nowrap">{{ item.listing.priceMax }}</span></p>
-
-                  <!-- Ordinateur : chiffres clés et évolution du chiffre d'affaires déclarée par le cédant.
-                       Grande carte : chiffres sur une ligne puis graphique en largeur ; petites cartes : graphique à droite. -->
-                  @if (first) {
-                    <dl class="tabular mt-5 hidden grid-cols-2 gap-x-4 gap-y-3 sm:grid lg:mt-6 lg:grid-cols-4">
-                      <div>
-                        <dt class="text-sm text-muted-foreground">Chiffre d'affaires</dt>
-                        <dd class="text-lg font-bold text-primary">{{ euros(item.metrics.revenue) }}</dd>
-                      </div>
-                      <div>
-                        <dt class="text-sm text-muted-foreground">Bénéfice net</dt>
-                        <dd class="text-lg font-bold text-primary">{{ euros(item.metrics.netProfit) }}</dd>
-                      </div>
-                      <div>
-                        <dt class="text-sm text-muted-foreground">Marge nette</dt>
-                        <dd class="text-lg font-bold text-primary">{{ item.listing.margin }}</dd>
-                      </div>
-                      <div>
-                        <dt class="text-sm text-muted-foreground">Multiple</dt>
-                        <dd class="text-lg font-bold text-primary">{{ item.metrics.multiple !== null ? multiple(item.metrics.multiple) : '—' }}</dd>
-                      </div>
-                    </dl>
-                    @if (revenueBars(item.listing).length > 1) {
-                      <figure class="mt-5 hidden rounded-xl bg-secondary p-4 lg:block" aria-label="Évolution du chiffre d’affaires">
-                        <figcaption class="text-sm font-semibold text-primary">Chiffre d'affaires déclaré</figcaption>
-                        <div class="mt-2 flex h-16 items-end gap-3">
-                          @for (bar of revenueBars(item.listing); track bar.year; let last = $last) {
-                            <div class="flex h-full flex-1 flex-col justify-end">
-                              <span class="tabular mb-1 text-center text-xs font-semibold text-muted-foreground">{{ euros(bar.revenue) }}</span>
-                              <span class="rounded-t-md" [class]="last ? 'bg-accent' : 'bg-accent/25'" [style.height.%]="bar.height * 0.75"></span>
-                            </div>
-                          }
-                        </div>
-                        <div class="mt-1.5 flex gap-3 text-xs text-muted-foreground">
-                          @for (bar of revenueBars(item.listing); track bar.year) {
-                            <span class="flex-1 text-center">{{ bar.year }}</span>
-                          }
-                        </div>
-                      </figure>
-                    }
-                  } @else {
-                    <div class="mt-5 hidden gap-5 sm:flex">
-                      <dl class="tabular grid flex-1 grid-cols-2 gap-x-4 gap-y-3">
-                        <div>
-                          <dt class="text-sm text-muted-foreground">Chiffre d'affaires</dt>
-                          <dd class="font-bold text-primary">{{ euros(item.metrics.revenue) }}</dd>
-                        </div>
-                        <div>
-                          <dt class="text-sm text-muted-foreground">Bénéfice net</dt>
-                          <dd class="font-bold text-primary">{{ euros(item.metrics.netProfit) }}</dd>
-                        </div>
-                      </dl>
-                      @if (revenueBars(item.listing).length > 1) {
-                        <figure class="flex flex-shrink-0 flex-col" aria-label="Évolution du chiffre d’affaires">
-                          <div class="flex h-14 items-end gap-1.5">
-                            @for (bar of revenueBars(item.listing); track bar.year; let last = $last) {
-                              <span class="w-5 rounded-t-md" [class]="last ? 'bg-accent' : 'bg-accent/25'" [style.height.%]="bar.height" [attr.title]="bar.year + ' : ' + euros(bar.revenue)"></span>
-                            }
-                          </div>
-                          <figcaption class="mt-1 flex gap-1.5 text-[0.65rem] text-muted-foreground">
-                            @for (bar of revenueBars(item.listing); track bar.year) {
-                              <span class="w-5 text-center">{{ bar.year.toString().slice(2) }}</span>
-                            }
-                          </figcaption>
-                        </figure>
-                      }
-                    </div>
-                  }
-
-                  @if (first && (item.listing.includedAssets?.length ?? 0) > 0) {
-                    <ul class="mt-4 hidden flex-wrap gap-2 lg:flex">
-                      @for (asset of assetLabels(item.listing).slice(0, 5); track asset) {
-                        <li class="rounded-full bg-secondary px-3 py-1 text-sm font-medium text-primary">{{ asset }}</li>
-                      }
-                    </ul>
-                  }
-
-                  <div class="mt-auto hidden pt-5 sm:block">
-                    <div class="flex items-baseline justify-between gap-3 border-t border-border pt-4">
-                      <span class="text-sm text-muted-foreground">Prix demandé</span>
-                      <span class="tabular font-bold text-amber-600" [class.lg:text-xl]="first"><span class="whitespace-nowrap">{{ item.listing.priceMin }}</span> à <span class="whitespace-nowrap">{{ item.listing.priceMax }}</span></span>
-                    </div>
-                  </div>
+                   class="lift group flex flex-col rounded-xl border border-border bg-white p-4 transition-shadow hover:shadow-md sm:p-5">
+                  <p class="truncate text-sm text-muted-foreground">{{ item.listing.sector }} · {{ item.listing.region }}</p>
+                  <h3 class="mt-1 line-clamp-2 text-lg font-bold leading-snug text-primary group-hover:text-accent">{{ item.listing.title || item.listing.summary }}@if (item.listing.verified) { <app-verified-badge [size]="20" class="ml-1" /> }</h3>
+                  <p class="tabular mt-1.5 truncate text-sm text-muted-foreground">CA {{ euros(item.metrics.revenue) }} · Bénéfice {{ euros(item.metrics.netProfit) }}</p>
+                  <p class="tabular mt-auto pt-1.5 font-bold text-amber-600"><span class="whitespace-nowrap">{{ item.listing.priceMin }}</span> à <span class="whitespace-nowrap">{{ item.listing.priceMax }}</span></p>
                 </a>
               }
             </div>
@@ -629,19 +527,8 @@ export class LandingComponent implements OnInit {
   readonly buyerPrice = OFFER_PRICES.INTRO.label;
 
   readonly euros = formatEuros;
-  readonly stageLabels = STAGE_ORDER.map(stage => STAGE_LABELS[stage]);
 
-  // Barres du chiffre d'affaires déclaré (années précédentes puis dernière année), hauteur relative au maximum.
-  revenueBars(listing: MaListingData): Array<{ year: number; revenue: number; height: number }> {
-    const series = revenueSeries(listing.revenueHistory, listing.revenueYear, listing.revenueValue).slice(-4);
-    const max = Math.max(...series.map(point => point.revenue), 1);
-    return series.map(point => ({ ...point, height: Math.max(12, Math.round((point.revenue / max) * 100)) }));
-  }
 
-  assetLabels(listing: MaListingData): string[] {
-    return (listing.includedAssets ?? []).map(asset => labelOf(INCLUDED_ASSETS, asset as IncludedAsset));
-  }
-  readonly multiple = formatMultiple;
   private readonly items = computed(() => this.listings().map(listing => ({ listing, metrics: listingMetrics(listing) })));
 
 
