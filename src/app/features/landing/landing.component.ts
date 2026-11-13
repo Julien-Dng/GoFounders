@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } 
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MaListingData } from '../../core/data/mock-platform.data';
-import { FREE_CONTACTS_PER_MONTH, INTRO_SUMMARY, OFFER_PRICES } from '../../core/config/offers';
+import { OFFER_PRICES } from '../../core/config/offers';
 import { ShowcaseEntry, ShowcaseService } from '../../core/services/showcase.service';
 import { FEATURES } from '../../core/config/features';
 import { MaService } from '../../core/services/ma.service';
@@ -13,11 +13,6 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
 import { SuccessStoriesComponent } from '../../shared/components/success-stories/success-stories.component';
 import { VerifiedBadgeComponent } from '../../shared/components/verified-badge/verified-badge.component';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
-
-interface LandingFaqItem {
-  question: string;
-  answer: string;
-}
 
 // Accueil de la refonte « reprise ». Système de design : docs/DESIGN.md (fiche de cession, chiffres en avant).
 // Cartes de la section « Projets et associés » de l'accueil.
@@ -411,11 +406,12 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       }
 
       <!-- Téléphones : fonctionnement et prix réunis dans un bloc court (étapes dépliables). -->
-      <!-- Comment ça marche, en trois étapes (nouveau design) : sans icônes, séparées par des traits. -->
-      <section class="px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10" aria-labelledby="simple-title">
-        <div class="mx-auto max-w-[78rem]">
+      <!-- Comment ça marche, en trois étapes (nouveau design) : sans icônes, séparées par des traits, dans un encadré bleu clair. -->
+      <section class="px-4 pt-6 sm:px-6 sm:pt-8 lg:px-8 lg:pt-10" aria-labelledby="simple-title">
+        <!-- Encadré bleu clair : le distingue des avis, eux aussi sur fond blanc. -->
+        <div class="mx-auto max-w-[78rem] rounded-2xl bg-[#F3F6FD] px-5 py-6 ring-1 ring-accent/10 sm:px-8 sm:py-7">
           <h2 appReveal id="simple-title" class="text-2xl text-primary sm:text-3xl">Simple, du premier échange à la rencontre</h2>
-          <ol class="mt-4 grid gap-4 sm:mt-6 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-border">
+          <ol class="mt-4 grid gap-4 sm:mt-5 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-accent/15">
             @for (step of simpleSteps; track step.title; let i = $index) {
               <li appReveal [revealDelay]="i * 110" class="sm:px-6 sm:first:pl-0 sm:last:pr-0">
                 <h3 class="text-base font-bold text-primary sm:text-lg">{{ i + 1 }}. {{ step.title }}</h3>
@@ -468,39 +464,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
         </div>
       </section>
 
-      <section class="bg-secondary px-4 py-6 sm:bg-transparent sm:px-6 sm:py-8 lg:px-8 lg:py-10" aria-labelledby="faq-title">
-        <!-- Ordinateur : titre et liens à gauche, questions à droite (composition différente des sections centrées). -->
-        <div class="mx-auto grid max-w-3xl gap-5 sm:gap-8 lg:max-w-[78rem] lg:grid-cols-12 lg:gap-12">
-          <div class="text-center lg:col-span-4 lg:text-left">
-            <h2 appReveal id="faq-title" class="text-2xl text-primary sm:text-3xl">Questions fréquentes</h2>
-            <p class="mt-4 hidden text-base leading-relaxed text-muted-foreground lg:block">Une autre question ? Écrivez-nous, nous vous répondons par e-mail</p>
-            <p class="mt-5 hidden flex-col gap-2 lg:flex">
-              <a routerLink="/faq" class="group font-semibold text-accent">Toutes les questions&nbsp;<span class="arrow-nudge">→</span></a>
-              <a routerLink="/contact" class="group font-semibold text-accent">Nous contacter&nbsp;<span class="arrow-nudge">→</span></a>
-            </p>
-          </div>
-          <div class="lg:col-span-8">
-            <div class="space-y-2 sm:space-y-3 max-sm:[&>*:nth-child(n+4)]:hidden">
-              @for (item of faq; track item.question) {
-                <details class="group rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-border sm:rounded-2xl sm:px-6 sm:py-4">
-                  <summary class="flex cursor-pointer list-none items-start justify-between gap-6 font-bold text-primary">
-                    {{ item.question }}
-                    <span class="mt-0.5 text-xl leading-none text-accent transition-transform group-open:rotate-45" aria-hidden="true">+</span>
-                  </summary>
-                  <p class="mt-3 text-base leading-relaxed text-muted-foreground">{{ item.answer }}</p>
-                </details>
-              }
-            </div>
-            <p class="mt-5 text-center lg:hidden">
-              <a routerLink="/faq" class="font-semibold text-accent underline-offset-4 hover:underline">Toutes les questions</a>
-              <span class="mx-2 text-muted-foreground max-sm:hidden" aria-hidden="true">·</span>
-              <a routerLink="/contact" class="font-semibold text-accent underline-offset-4 hover:underline max-sm:hidden">Nous contacter</a>
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section class="hidden bg-secondary px-4 py-8 sm:block sm:px-6 lg:px-8 lg:py-10" aria-label="Notre conviction">
+      <section class="hidden px-4 py-8 sm:block sm:px-6 lg:px-8 lg:py-10" aria-label="Notre conviction">
         <div appReveal class="mx-auto grid max-w-[78rem] items-center gap-10 overflow-hidden rounded-3xl bg-white shadow-lg lg:grid-cols-12 lg:gap-0">
           <div class="p-6 sm:p-8 lg:col-span-7">
             <p class="text-[1.4rem] font-bold leading-snug tracking-tight text-primary sm:text-[1.6rem]">
@@ -631,17 +595,6 @@ export class LandingComponent implements OnInit {
     { who: 'Repreneur', detail: 'Dossier complet, coordonnées du cédant et messagerie, ouverts aussitôt après l’engagement de confidentialité.', price: `${OFFER_PRICES.INTRO.label} par entreprise`, href: '/ma', cta: 'Voir les annonces' },
   ];
 
-  // Questions courtes ; sur téléphone, seules les trois premières s'affichent.
-  readonly faq: LandingFaqItem[] = [
-    { question: 'Mon annonce est-elle confidentielle ?', answer: 'Oui. Seule une annonce anonymisée est publique, après relecture par notre équipe. Le dossier complet et vos coordonnées ne s’ouvrent qu’aux repreneurs qui acceptent un engagement de confidentialité et paient l’accès ; vous êtes prévenu à chaque ouverture.' },
-    { question: 'Que comprennent les 50 € ?', answer: INTRO_SUMMARY + ' Le paiement est unique pour cette entreprise, sans abonnement ni commission sur la vente.' },
-    ...(FEATURES.associates
-      ? [{ question: 'Comment trouver un associé ?', answer: `Créez votre profil gratuitement et présentez votre projet, ou indiquez vos compétences si vous voulez rejoindre une équipe. Vous voyez les profils compatibles et écrivez directement aux associés : ${FREE_CONTACTS_PER_MONTH} nouveaux contacts par mois sont gratuits pour un porteur de projet, sans limite pour un associé.` }]
-      : []),
-    { question: 'Quelles entreprises ?', answer: 'Des entreprises françaises de tous secteurs : commerces, restaurants, artisans et entreprises du bâtiment, sociétés de services, PME industrielles, mais aussi entreprises en ligne (e-commerce, logiciels, sites, agences). Surtout des TPE et petites PME, de quelques dizaines de milliers d’euros à quelques millions d’euros de chiffre d’affaires.' },
-    { question: 'Une commission sur la vente ?', answer: 'Non. La publication est gratuite pour les cédants et nous ne prenons aucun pourcentage sur le prix de vente.' },
-    { question: 'Un accompagnement juridique ?', answer: 'Non, nous ne fournissons pas de conseil juridique. Nous vous mettons en relation avec des experts juridiques et comptables partenaires pour sécuriser la transaction.' },
-  ];
 
   ngOnInit(): void {
     void this.loadListings();

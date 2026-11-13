@@ -79,7 +79,7 @@ export class FooterComponent {
       ],
     },
     {
-      category: 'Aide',
+      category: 'Aide & FAQ',
       links: [
         { label: 'Questions fréquentes', href: '/faq' },
         { label: 'Nous contacter', href: '/contact' },
