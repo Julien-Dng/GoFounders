@@ -436,25 +436,27 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
         </div>
       </section>
 
-      <div>
-        <app-success-stories />
-      </div>
-
-      <!-- Tarifs en une ligne : publication gratuite, lien vers la page Tarifs (remplace les blocs de prix ;
-           sur téléphone, aussi l'encadré « Vous vendez ? », avec le bouton de dépôt). -->
-      <section class="px-4 pb-6 sm:px-6 sm:pb-8 lg:px-8 lg:pb-10" aria-label="Tarifs">
-        <div appReveal class="mx-auto flex max-w-[78rem] flex-col gap-3 rounded-2xl bg-[#EEF2FE] px-5 py-4 ring-1 ring-accent/15 sm:flex-row sm:items-center sm:justify-between sm:px-7 sm:py-5">
-          <div>
-            <p class="text-lg font-bold text-primary">Publier une entreprise : gratuit</p>
-            <p class="text-sm text-muted-foreground sm:text-base">Sans commission sur la vente</p>
-          </div>
-          <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
-            <!-- Téléphones : le bandeau remplace aussi l'ancien encadré « Vous vendez ? ». -->
+      <!-- Tarifs en un bandeau, juste sous les étapes : les trois prix côte à côte (ordinateur), lien vers la page Tarifs.
+           Sur téléphone, il reprend aussi le bouton de dépôt de l'ancien encadré « Vous vendez ? ». -->
+      <section class="px-4 pt-3 sm:px-6 sm:pt-4 lg:px-8" aria-label="Tarifs">
+        <div appReveal class="mx-auto grid max-w-[78rem] gap-4 rounded-2xl bg-[#EEF2FE] px-5 py-5 ring-1 ring-accent/15 sm:px-7 sm:py-6 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-center lg:gap-0">
+          @for (price of priceBand; track price.label; let first = $first) {
+            <div class="lg:px-6" [class]="first ? 'lg:pl-0' : 'lg:border-l lg:border-accent/15'">
+              <p class="text-sm text-muted-foreground">{{ price.label }}</p>
+              <p class="tabular text-xl font-bold text-primary">{{ price.value }}</p>
+              <p class="text-sm text-muted-foreground">{{ price.note }}</p>
+            </div>
+          }
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-3 lg:justify-end lg:pl-6">
             <a routerLink="/ma/deposer" class="rounded-lg bg-primary px-5 py-2.5 text-center font-semibold text-white sm:hidden">Publier mon annonce</a>
             <a routerLink="/tarifs" class="group flex-shrink-0 font-semibold text-accent">Comprendre les tarifs&nbsp;<span class="arrow-nudge">→</span></a>
           </div>
         </div>
       </section>
+
+      <div>
+        <app-success-stories />
+      </div>
 
       <section class="hidden px-4 py-8 sm:block sm:px-6 lg:px-8 lg:py-10" aria-label="Notre conviction">
         <div appReveal class="mx-auto grid max-w-[78rem] items-center gap-10 overflow-hidden rounded-3xl bg-white shadow-lg lg:grid-cols-12 lg:gap-0">
@@ -547,6 +549,14 @@ export class LandingComponent implements OnInit {
 
   // « Simple, du premier échange à la rencontre » : le parcours en trois étapes, entreprises et projets.
   readonly isLoggedIn = computed(() => this.auth.isAuthenticated());
+  // Bandeau des tarifs : uniquement des prix réels (offers.ts).
+  readonly priceBand = [
+    { label: 'Publier une entreprise', value: 'Gratuit', note: 'Sans commission sur la vente' },
+    { label: 'Dossier et contact du vendeur', value: `${OFFER_PRICES.INTRO.label} par entreprise`, note: 'Paiement unique, sans abonnement' },
+    ...(FEATURES.associates
+      ? [{ label: 'Associés et projets', value: 'Gratuit', note: `Offre PRO : ${OFFER_PRICES.PRO.label}` }]
+      : []),
+  ];
   readonly simpleIntro = FEATURES.associates
     ? 'Un seul compte gratuit pour reprendre ou céder une entreprise, trouver des associés ou rejoindre un projet'
     : 'Un compte gratuit pour reprendre ou céder une entreprise';
