@@ -437,7 +437,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       </section>
 
       <!-- Tarifs en un bandeau, juste sous les étapes : les trois prix côte à côte (ordinateur), lien vers la page Tarifs.
-           Sur téléphone, il reprend aussi le bouton de dépôt de l'ancien encadré « Vous vendez ? ». -->
+           Le bouton de dépôt est dans le bandeau final « Vous pensez à passer la main ? ». -->
       <section class="px-4 pt-3 sm:px-6 sm:pt-4 lg:px-8" aria-label="Tarifs">
         <div appReveal class="mx-auto grid max-w-[78rem] gap-4 rounded-2xl bg-[#EEF2FE] px-5 py-5 ring-1 ring-accent/15 sm:px-7 sm:py-6 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-center lg:gap-0">
           @for (price of priceBand; track price.label; let first = $first) {
@@ -448,7 +448,6 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
             </div>
           }
           <div class="flex flex-wrap items-center gap-x-5 gap-y-3 lg:justify-end lg:pl-6">
-            <a routerLink="/ma/deposer" class="rounded-lg bg-primary px-5 py-2.5 text-center font-semibold text-white sm:hidden">Publier mon annonce</a>
             <a routerLink="/tarifs" class="group flex-shrink-0 font-semibold text-accent">Comprendre les tarifs&nbsp;<span class="arrow-nudge">→</span></a>
           </div>
         </div>
@@ -458,39 +457,19 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
         <app-success-stories />
       </div>
 
-      <section class="hidden px-4 py-8 sm:block sm:px-6 lg:px-8 lg:py-10" aria-label="Notre conviction">
-        <div appReveal class="mx-auto grid max-w-[78rem] items-center gap-10 overflow-hidden rounded-3xl bg-white shadow-lg lg:grid-cols-12 lg:gap-0">
-          <div class="p-6 sm:p-8 lg:col-span-7">
-            <p class="text-[1.4rem] font-bold leading-snug tracking-tight text-primary sm:text-[1.6rem]">
-              Une entreprise, ce sont des années de travail, des clients qui vous font confiance, parfois une équipe.
-              La transmettre mérite mieux qu'une petite annonce
-            </p>
-            <p class="mt-6 max-w-[56ch] text-base leading-relaxed text-muted-foreground">
-              Chaque année, des entreprises rentables ferment faute de repreneur, pendant que d'autres cherchent
-              à racheter une activité qui tourne déjà. GoFounders les rapproche, discrètement et sans commission
-            </p>
-            <p class="mt-5 font-bold text-primary">L'équipe GoFounders</p>
-          </div>
-          <figure class="h-full lg:col-span-5">
-            <img src="/assets/images/provisoire/fondateurs-ecran.jpg" alt="Un fondateur travaille sur le site de son entreprise, sur deux écrans" width="1400" height="933" loading="lazy" class="h-full max-h-[28rem] w-full object-cover object-[15%_center] lg:max-h-none">
-          </figure>
-        </div>
-      </section>
-
-      <section class="hidden px-4 py-8 sm:block sm:px-6 lg:px-8 lg:py-10" aria-labelledby="sell-title">
-        <div appReveal class="relative mx-auto max-w-[78rem] overflow-hidden rounded-3xl bg-primary px-6 py-8 text-white sm:px-10 lg:py-9">
-          <img src="/assets/images/provisoire/bureau-vue-dessus.jpg" alt="" aria-hidden="true" width="1400" height="933" loading="lazy" class="absolute inset-0 h-full w-full object-cover">
-          <div class="absolute inset-0" style="background: rgba(15, 27, 45, 0.86)" aria-hidden="true"></div>
-          <div class="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+      <!-- Bandeau final pour les cédants (téléphone et ordinateur) : reprend l'idée de « Notre conviction » en une phrase. -->
+      <section class="px-4 pb-8 pt-2 sm:px-6 sm:pb-10 lg:px-8 lg:pb-12" aria-labelledby="sell-title">
+        <div appReveal class="relative mx-auto max-w-[78rem] overflow-hidden rounded-2xl bg-primary px-5 py-6 text-white sm:rounded-3xl sm:px-10 sm:py-8">
+          <img src="/assets/images/provisoire/bureau-vue-dessus.jpg" alt="" aria-hidden="true" width="1400" height="933" loading="lazy" class="absolute inset-0 hidden h-full w-full object-cover sm:block">
+          <div class="absolute inset-0 hidden sm:block" style="background: rgba(15, 27, 45, 0.86)" aria-hidden="true"></div>
+          <div class="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h2 id="sell-title" class="text-2xl sm:text-3xl">Vous pensez à passer la main ?</h2>
-              <p class="mt-3 max-w-[60ch] text-lg leading-relaxed text-white/75">
-                Déposez votre annonce gratuitement. Elle reste anonyme : seuls les repreneurs qui acceptent l'engagement de confidentialité et débloquent votre dossier voient le détail et vos coordonnées
-              </p>
+              <p class="mt-2 max-w-[56ch] text-base leading-relaxed text-white/75 sm:text-lg">Votre entreprise mérite mieux qu'une petite annonce. Publiez gratuitement, sans commission</p>
             </div>
             <div class="flex flex-shrink-0 flex-col gap-3 sm:flex-row sm:items-center">
-              <a routerLink="/estimation" class="rounded-lg border border-white/30 px-6 py-3.5 text-center font-semibold text-white transition-colors hover:border-white/70">Estimer sa valeur d'abord</a>
-              <a routerLink="/ma/deposer" class="rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90">Déposer mon annonce</a>
+              <a routerLink="/ma/deposer" class="rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90 sm:order-2">Déposer mon annonce</a>
+              <a routerLink="/estimation" class="rounded-lg border border-white/30 px-6 py-3.5 text-center font-semibold text-white transition-colors hover:border-white/70 sm:order-1">Estimer sa valeur d'abord</a>
             </div>
           </div>
         </div>
