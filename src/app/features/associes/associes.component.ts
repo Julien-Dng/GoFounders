@@ -50,26 +50,6 @@ const STAGE_LABELS: Record<string, string> = {
         </div>
       </section>
 
-      @if (loaded() && entries().length > 0) {
-        <section class="bg-[#16243B] px-4 py-8 text-white sm:px-6 lg:px-8" aria-label="La communauté en chiffres">
-          <dl class="mx-auto grid max-w-[78rem] grid-cols-2 gap-y-6 text-center lg:grid-cols-3">
-            <div class="px-4 lg:border-r lg:border-dashed lg:border-white/25">
-              <dd class="tabular text-3xl font-extrabold">{{ talents().length }}</dd>
-              <dt class="mt-1 text-base text-white/70">{{ talents().length > 1 ? 'associés visibles' : 'associé visible' }}</dt>
-            </div>
-            <div class="px-4 lg:border-r lg:border-dashed lg:border-white/25">
-              <dd class="tabular text-3xl font-extrabold">{{ projects().length }}</dd>
-              <dt class="mt-1 text-base text-white/70">{{ projects().length > 1 ? 'projets qui recrutent' : 'projet qui recrute' }}</dt>
-            </div>
-            @if (topSkills().length > 0) {
-              <div class="col-span-2 px-4 lg:col-span-1">
-                <dd class="text-xl font-bold">{{ topSkills().join(' · ') }}</dd>
-                <dt class="mt-1 text-base text-white/70">compétences les plus présentes</dt>
-              </div>
-            }
-          </dl>
-        </section>
-      }
 
       <section class="px-4 py-14 sm:px-6 lg:px-8 lg:py-16" aria-labelledby="showcase-title">
         <div class="mx-auto max-w-[78rem]">
@@ -181,15 +161,6 @@ export class AssociesComponent implements OnInit {
   readonly canBrowseFull = computed(() => usesTeamMarketplace(this.auth.currentUser()));
   readonly isAuthenticated = this.auth.isAuthenticated;
 
-  readonly topSkills = computed(() => {
-    const counts = new Map<string, number>();
-    for (const entry of this.talents()) {
-      for (const skill of entry.skills) {
-        counts.set(skill, (counts.get(skill) ?? 0) + 1);
-      }
-    }
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([skill]) => skill);
-  });
 
   async ngOnInit(): Promise<void> {
     this.entries.set(await this.showcase.list());
