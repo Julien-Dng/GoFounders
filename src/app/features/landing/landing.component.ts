@@ -411,6 +411,21 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       }
 
       <!-- Téléphones : fonctionnement et prix réunis dans un bloc court (étapes dépliables). -->
+      <!-- Comment ça marche, en trois étapes (nouveau design) : sans icônes, séparées par des traits. -->
+      <section class="px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10" aria-labelledby="simple-title">
+        <div class="mx-auto max-w-[78rem]">
+          <h2 appReveal id="simple-title" class="text-2xl text-primary sm:text-3xl">Simple, du premier échange à la rencontre</h2>
+          <ol class="mt-4 grid gap-4 sm:mt-6 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-border">
+            @for (step of simpleSteps; track step.title; let i = $index) {
+              <li appReveal [revealDelay]="i * 110" class="sm:px-6 sm:first:pl-0 sm:last:pr-0">
+                <h3 class="text-base font-bold text-primary sm:text-lg">{{ i + 1 }}. {{ step.title }}</h3>
+                <p class="mt-1 text-base leading-relaxed text-muted-foreground">{{ step.text }}</p>
+              </li>
+            }
+          </ol>
+        </div>
+      </section>
+
       <div>
         <app-success-stories />
       </div>
@@ -584,6 +599,19 @@ export class LandingComponent implements OnInit {
   readonly showAssociates = FEATURES.associates;
   // Porteurs de projet et associés connectés : recherche complète ; les autres : vitrine publique.
   readonly associatesHref = computed(() => (usesTeamMarketplace(this.auth.currentUser()) ? '/recherche' : '/associes'));
+
+  // « Simple, du premier échange à la rencontre » : le parcours en trois étapes, entreprises et projets.
+  readonly simpleSteps = FEATURES.associates
+    ? [
+        { title: 'Découvrez', text: 'Explorez les entreprises à reprendre et les projets' },
+        { title: 'Entrez en contact', text: `Dossier et contact d'une entreprise : ${OFFER_PRICES.INTRO.label.replace(' ', '\u00a0')}. Écrire à un associé est gratuit` },
+        { title: 'Échangez directement', text: 'Construisez la suite avec les bonnes personnes' },
+      ]
+    : [
+        { title: 'Découvrez', text: 'Explorez les entreprises à reprendre' },
+        { title: 'Entrez en contact', text: `Dossier et contact d'une entreprise : ${OFFER_PRICES.INTRO.label.replace(' ', '\u00a0')}` },
+        { title: 'Échangez directement', text: 'Construisez la suite avec le cédant' },
+      ];
 
   // Bloc de confiance sous le haut de page : uniquement des garanties réelles de la plateforme.
   readonly guarantees = [
