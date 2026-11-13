@@ -94,7 +94,7 @@ const STAGE_LABELS: Record<string, string> = {
             @if (query().trim()) {
               <p class="mt-6 text-sm text-muted-foreground" role="status">{{ results().length }} résultat{{ results().length > 1 ? 's' : '' }} pour « {{ query().trim() }} »</p>
             }
-            <ul class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3" [class.mt-3]="!!query().trim()">
+            <ul class="mt-8 grid gap-6 md:auto-rows-fr md:grid-cols-2 xl:grid-cols-3" [class.mt-3]="!!query().trim()">
               @for (entry of results(); track entry.profile_id + entry.kind) {
                 <!-- Toute la carte est cliquable : le lien « Voir le profil ↗ » s'étend sur la carte (clavier compris). -->
                 <li class="group relative flex flex-col rounded-2xl bg-white p-5 shadow-md ring-1 ring-border transition-shadow focus-within:ring-2 focus-within:ring-accent"
