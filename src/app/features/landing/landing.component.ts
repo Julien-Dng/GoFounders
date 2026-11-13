@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { MaListingData } from '../../core/data/mock-platform.data';
 import { FREE_CONTACTS_PER_MONTH, INTRO_SUMMARY, OFFER_PRICES } from '../../core/config/offers';
 import { ShowcaseEntry, ShowcaseService } from '../../core/services/showcase.service';
@@ -291,35 +291,16 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       </section>
       }
 
-      <section id="entreprises" class="scroll-mt-20 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10" aria-labelledby="latest-title">
-        <div class="mx-auto max-w-[78rem]">
-          <!-- Ordinateur : titre et recherche sur une même ligne (maquette resserrée). -->
-          <div class="lg:flex lg:items-center lg:justify-between lg:gap-8">
-          <h2 appReveal id="latest-title" class="text-center text-2xl text-primary sm:text-3xl lg:flex-shrink-0 lg:text-left">Entreprises à reprendre</h2>
-
-          <div class="mx-auto mt-4 hidden max-w-3xl rounded-xl bg-white p-1.5 shadow-md ring-1 ring-border sm:block lg:mx-0 lg:mt-0 lg:w-full lg:max-w-[40rem]" role="search">
-            <div class="flex flex-col gap-2 sm:flex-row">
-              <label for="hero-search" class="sr-only">Rechercher une entreprise</label>
-              <input
-                id="hero-search"
-                type="search"
-                [value]="heroQuery()"
-                (input)="heroQuery.set($any($event.target).value)"
-                (keydown.enter)="search()"
-                placeholder="Secteur, ville, mot-clé"
-                class="min-w-0 flex-1 rounded-lg px-4 py-2.5 text-base text-foreground outline-none placeholder:text-muted-foreground"
-              >
-              <label for="hero-revenue" class="sr-only">Chiffre d'affaires</label>
-              <select id="hero-revenue" [value]="heroRevenue()" (change)="heroRevenue.set($any($event.target).value)" class="rounded-lg border border-border bg-secondary px-3 py-2.5 text-base text-foreground outline-none sm:w-52">
-                <option value="">Tout chiffre d'affaires</option>
-                <option value="0-100000">Moins de 100 k€</option>
-                <option value="100000-500000">100 à 500 k€</option>
-                <option value="500000-1000000">500 k€ à 1 M€</option>
-                <option value="1000000-">Plus de 1 M€</option>
-              </select>
-              <button type="button" (click)="search()" class="rounded-lg bg-accent px-5 py-2.5 font-semibold text-white transition-colors hover:bg-accent/90">Rechercher</button>
+      <section id="entreprises" class="relative scroll-mt-20 overflow-hidden px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10" aria-labelledby="latest-title">
+        <svg class="pointer-events-none absolute -top-10 right-0 hidden h-28 w-[28rem] text-accent/50 lg:block" viewBox="0 0 400 100" fill="none" preserveAspectRatio="none" aria-hidden="true"><path d="M0 4 C120 70 280 70 400 40" stroke="currentColor" stroke-width="1.2"/></svg>
+        <div class="relative mx-auto max-w-[78rem]">
+          <!-- En-tête : titre et accroche à gauche, lien vers toutes les annonces à droite (ordinateur). -->
+          <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
+            <div>
+              <h2 appReveal id="latest-title" class="text-2xl text-primary sm:text-3xl lg:text-4xl">Des entreprises à reprendre</h2>
+              <p class="mt-1 text-base text-muted-foreground sm:text-lg">Une activité, un savoir-faire, une nouvelle étape</p>
             </div>
-          </div>
+            <a routerLink="/ma" class="group hidden flex-shrink-0 font-semibold text-accent sm:inline-block">Toutes les entreprises&nbsp;<span class="arrow-nudge">→</span></a>
           </div>
 
           @if (latestListings().length > 0) {
@@ -438,84 +419,53 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
               }
             </div>
           }
-          <div class="mt-4 text-center sm:mt-6">
-            <a routerLink="/ma" class="inline-block rounded-lg bg-primary px-7 py-3.5 font-semibold text-white transition-colors hover:bg-primary/90"><span class="sm:hidden">Explorer les entreprises</span><span class="hidden sm:inline">Voir toutes les annonces</span></a>
+          <div class="mt-4 text-center sm:hidden">
+            <a routerLink="/ma" class="inline-block rounded-lg bg-primary px-7 py-3.5 font-semibold text-white transition-colors hover:bg-primary/90">Explorer les entreprises</a>
           </div>
         </div>
       </section>
 
       @if (showAssociates) {
         <!-- Projets et associés : vrais profils de la vitrine publique (anonymisés), sinon exemples fictifs signalés. -->
-        <section class="bg-secondary px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10" aria-labelledby="team-title">
-          <!-- Composition différente des annonces : texte à gauche, cartes à droite (ordinateur) ;
-               deux cartes compactes empilées sur téléphone. -->
-          <div class="mx-auto grid max-w-[78rem] gap-4 lg:grid-cols-12 lg:items-center lg:gap-8">
-            <div class="text-center lg:col-span-4 lg:text-left">
-              <h2 appReveal id="team-title" class="text-2xl text-primary sm:text-3xl">Projets et associés</h2>
-              <p class="mx-auto mt-3 hidden max-w-[40ch] text-lg leading-relaxed text-muted-foreground sm:block lg:mx-0">Présentez votre projet et trouvez les compétences qui vous manquent, ou rejoignez une équipe</p>
-              <div class="mt-4 hidden flex-wrap justify-center gap-3 sm:flex lg:justify-start">
-                <a [routerLink]="associatesHref()" class="group rounded-lg bg-accent px-5 py-3 font-semibold text-white transition-colors hover:bg-accent/90">Explorer les projets et associés&nbsp;<span class="arrow-nudge">→</span></a>
-              </div>
+        <section class="relative overflow-hidden bg-secondary px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12" aria-labelledby="team-title">
+          <svg class="pointer-events-none absolute -bottom-6 left-0 hidden h-24 w-[22rem] text-accent/50 lg:block" viewBox="0 0 300 80" fill="none" preserveAspectRatio="none" aria-hidden="true"><path d="M0 20 C90 10 200 30 300 78" stroke="currentColor" stroke-width="1.2"/></svg>
+          <!-- Accroche à gauche, deux profils en lignes à droite (un projet et un associé quand c'est possible). -->
+          <div class="relative mx-auto grid max-w-[78rem] gap-5 lg:grid-cols-12 lg:items-center lg:gap-10">
+            <div class="lg:col-span-5">
+              <h2 appReveal id="team-title" class="text-2xl leading-tight text-primary sm:text-3xl lg:text-[2.6rem]">Le projet est là.<br> Il ne manque <span class="whitespace-nowrap">peut-être</span> que vous</h2>
+              <p class="mt-2 text-base text-muted-foreground sm:mt-3 sm:text-lg">Trouvez un associé ou rejoignez une équipe</p>
+              <a [routerLink]="associatesHref()" class="group mt-4 hidden font-semibold text-accent sm:inline-block">Explorer les projets et associés&nbsp;<span class="arrow-nudge">→</span></a>
               @if (teamCardsAreExamples()) {
-                <p class="mt-3 hidden text-sm italic text-muted-foreground sm:block">Exemples fictifs</p>
+                <p class="mt-2 hidden text-sm italic text-muted-foreground sm:block">Exemples fictifs</p>
               }
             </div>
 
-            <div class="grid gap-3 sm:grid-cols-2 sm:gap-5 lg:col-span-8 max-sm:[&>*:nth-child(n+3)]:hidden">
-              @for (card of teamCards(); track card.key; let i = $index; let last = $last) {
-                <article appReveal [revealDelay]="i * 110"
-                         class="lift flex flex-col rounded-2xl bg-white p-4 shadow-sm ring-1 ring-border hover:shadow-xl sm:p-5 sm:shadow-lg"
-                         [class.sm:col-span-2]="last && teamCards().length % 2 === 1">
-                  <div class="flex items-start gap-3">
-                    <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center text-lg font-extrabold text-white" [class]="card.kind === 'project' ? 'rounded-xl bg-accent' : 'rounded-full bg-primary'" aria-hidden="true">{{ card.initial }}</span>
-                    <div class="min-w-0">
-                      <span class="inline-block rounded-full px-2 py-0.5 text-[0.7rem] font-bold uppercase tracking-wide"
+            <ul class="grid gap-3 sm:gap-4 lg:col-span-7">
+              @for (card of teamPreview(); track card.key; let i = $index) {
+                <li appReveal [revealDelay]="i * 110">
+                  <a [routerLink]="associatesHref()" class="lift group flex items-center gap-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-border hover:shadow-lg hover:ring-accent/40 sm:gap-5 sm:p-5">
+                    <span class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full text-lg font-bold sm:h-14 sm:w-14"
+                          [class]="card.kind === 'project' ? 'bg-accent/10 text-accent' : 'bg-primary/10 text-primary'" aria-hidden="true">{{ card.initial }}</span>
+                    <span class="min-w-0 flex-1 border-l border-border pl-4 sm:pl-5">
+                      <span class="inline-block rounded-md px-2 py-0.5 text-[0.7rem] font-bold uppercase tracking-wide"
                             [class]="card.kind === 'project' ? 'bg-accent/10 text-accent' : 'bg-primary/10 text-primary'">{{ card.badge }}</span>
-                      <h3 class="mt-1 text-lg font-bold leading-tight text-primary">{{ card.name }}</h3>
+                      <span class="mt-1 block text-base font-bold leading-snug text-primary group-hover:text-accent sm:text-lg">{{ card.name }}</span>
                       @if (card.subtitle) {
-                        <p class="mt-0.5 text-sm text-muted-foreground">{{ card.subtitle }}</p>
+                        <span class="block text-sm text-muted-foreground">{{ card.subtitle }}</span>
                       }
-                    </div>
-                  </div>
-
-                  @if (card.summary) {
-                    <p class="mt-3 hidden text-base leading-relaxed text-foreground/85 sm:block">{{ card.summary }}</p>
-                  }
-
-                  <!-- Ordinateur : avancement du projet et conditions. -->
-                  @if (card.stageIndex >= 0) {
-                    <div class="mt-4 hidden sm:block" [attr.aria-label]="'Stade : ' + stageLabels[card.stageIndex]">
-                      <div class="flex gap-1" aria-hidden="true">
-                        @for (step of stageLabels; track step; let s = $index) {
-                          <span class="h-1.5 flex-1 rounded-full" [class]="s <= card.stageIndex ? 'bg-accent' : 'bg-accent/15'"></span>
-                        }
-                      </div>
-                      <p class="mt-1.5 text-xs font-semibold text-muted-foreground">Stade : {{ stageLabels[card.stageIndex] }}</p>
-                    </div>
-                  }
-                  @if (card.meta.length > 0) {
-                    <ul class="mt-3 hidden flex-wrap gap-2 sm:flex">
-                      @for (item of card.meta; track item.text) {
-                        <li class="rounded-md bg-secondary px-2 py-1 text-xs font-semibold text-primary">{{ item.text }}</li>
+                      @if (card.chips.length > 0) {
+                        <span class="mt-2 flex flex-wrap gap-1.5">
+                          @for (chip of card.chips.slice(0, 3); track chip) {
+                            <span class="rounded-md bg-secondary px-2.5 py-0.5 text-sm font-medium text-primary">{{ chip }}</span>
+                          }
+                        </span>
                       }
-                    </ul>
-                  }
-
-                  @if (card.chips.length > 0) {
-                    <p class="mt-3 text-xs font-bold uppercase tracking-wide text-muted-foreground sm:mt-4">{{ card.chipsLabel }}</p>
-                    <ul class="mt-1.5 flex flex-wrap gap-1.5 max-sm:[&>li:nth-child(n+3)]:hidden">
-                      @for (chip of card.chips; track chip) {
-                        <li class="rounded-full bg-accent/10 px-2.5 py-0.5 text-sm font-semibold text-accent">{{ chip }}</li>
-                      }
-                    </ul>
-                  }
-
-                  <div class="mt-auto pt-3 sm:pt-4">
-                    <a [routerLink]="associatesHref()" class="group block border-t border-border pt-3 text-sm font-semibold text-accent sm:text-base">{{ card.linkLabel }}&nbsp;<span class="arrow-nudge">→</span></a>
-                  </div>
-                </article>
+                    </span>
+                    <span class="arrow-nudge flex-shrink-0 text-xl text-accent" aria-hidden="true">→</span>
+                  </a>
+                </li>
               }
-            </div>
+            </ul>
 
             <div class="text-center sm:hidden">
               <a [routerLink]="associatesHref()" class="inline-block rounded-lg bg-accent px-6 py-3 font-semibold text-white">Tout explorer&nbsp;→</a>
@@ -654,20 +604,24 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
 })
 export class LandingComponent implements OnInit {
   private readonly maService = inject(MaService);
-  private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
   private readonly showcaseService = inject(ShowcaseService);
   // Aperçu « Projets et associés » : deux projets et un associé de la vitrine publique (profils anonymisés).
   readonly showcase = signal<ShowcaseEntry[]>([]);
   // Tant qu'aucun membre n'est sur la vitrine, des exemples fictifs (signalés comme tels) illustrent la section.
   readonly teamCardsAreExamples = computed(() => this.showcase().length === 0);
+  // Aperçu de l'accueil : un projet et un associé quand les deux existent, sinon les deux premiers profils.
+  readonly teamPreview = computed<TeamCard[]>(() => {
+    const cards = this.teamCards();
+    const project = cards.find(card => card.kind === 'project');
+    const talent = cards.find(card => card.kind === 'talent');
+    return project && talent ? [project, talent] : cards.slice(0, 2);
+  });
   readonly teamCards = computed<TeamCard[]>(() =>
     this.teamCardsAreExamples() ? EXAMPLE_TEAM_CARDS : this.showcase().map(entry => toTeamCard(entry))
   );
   private readonly listings = signal<MaListingData[]>([]);
 
-  readonly heroQuery = signal('');
-  readonly heroRevenue = signal('');
 
 
   // Essai du nouveau design : bloc de confiance masqué, les garanties sont dans le haut de page.
@@ -701,19 +655,6 @@ export class LandingComponent implements OnInit {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  search(): void {
-    const queryParams: Record<string, string> = {};
-
-    if (this.heroQuery().trim()) {
-      queryParams['q'] = this.heroQuery().trim();
-    }
-
-    if (this.heroRevenue()) {
-      queryParams['ca'] = this.heroRevenue();
-    }
-
-    void this.router.navigate(['/ma'], { queryParams, fragment: 'ma-listings' });
-  }
 
   readonly allOffersLabel = FEATURES.pros ? 'Toutes les offres, dont celles des professionnels et l’accompagnement sur devis' : 'Toutes les offres et l’accompagnement sur devis';
 
