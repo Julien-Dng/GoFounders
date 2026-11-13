@@ -32,7 +32,7 @@ const STAGE_LABELS: Record<string, string> = {
         <div class="relative mx-auto max-w-[78rem]">
           <h1 class="max-w-[18ch] text-[2.4rem] leading-[1.08] sm:text-[3.25rem]">Trouvez l'associé qui complète votre projet</h1>
           <p class="mt-5 max-w-[56ch] text-lg leading-relaxed text-white/70">
-            Des profils compétents et des projets qui recrutent. Inscrivez-vous gratuitement pour voir les noms et les contacter
+            Trouvez un associé ou rejoignez un projet. Inscrivez-vous pour découvrir les profils et entrer en contact
           </p>
           <div class="mt-8 flex flex-col gap-3 sm:flex-row">
             @if (canBrowseFull()) {
