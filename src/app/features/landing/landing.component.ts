@@ -440,41 +440,19 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
         <app-success-stories />
       </div>
 
-      <!-- Téléphones : les prix, après les avis (sur ordinateur, la section « Vendre est gratuit » plus bas). -->
-      <section class="px-4 pb-6 pt-1 sm:hidden" aria-labelledby="prices-mobile-title">
-        <h2 appReveal id="prices-mobile-title" class="text-center text-2xl text-primary">Combien ça coûte ?</h2>
-        <dl appReveal class="mt-5 grid grid-cols-2 gap-3 text-center">
-          <div class="rounded-2xl bg-white px-3 py-4 shadow-sm ring-1 ring-border">
-            <dt class="text-sm text-muted-foreground">Vendre</dt>
-            <dd class="mt-1 text-lg font-extrabold text-primary">Gratuit</dd>
+      <!-- Tarifs en une ligne : publication gratuite, lien vers la page Tarifs (remplace les blocs de prix ;
+           sur téléphone, aussi l'encadré « Vous vendez ? », avec le bouton de dépôt). -->
+      <section class="px-4 pb-6 sm:px-6 sm:pb-8 lg:px-8 lg:pb-10" aria-label="Tarifs">
+        <div appReveal class="mx-auto flex max-w-[78rem] flex-col gap-3 rounded-2xl bg-[#EEF2FE] px-5 py-4 ring-1 ring-accent/15 sm:flex-row sm:items-center sm:justify-between sm:px-7 sm:py-5">
+          <div>
+            <p class="text-lg font-bold text-primary">Publier une entreprise : gratuit</p>
+            <p class="text-sm text-muted-foreground sm:text-base">Sans commission sur la vente</p>
           </div>
-          <div class="rounded-2xl bg-white px-3 py-4 shadow-sm ring-1 ring-border">
-            <dt class="text-sm text-muted-foreground">Dossier + contact</dt>
-            <dd class="mt-1 text-lg font-extrabold text-primary">{{ buyerPrice }} <span class="text-sm font-semibold text-muted-foreground">/ entreprise</span></dd>
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
+            <!-- Téléphones : le bandeau remplace aussi l'ancien encadré « Vous vendez ? ». -->
+            <a routerLink="/ma/deposer" class="rounded-lg bg-primary px-5 py-2.5 text-center font-semibold text-white sm:hidden">Publier mon annonce</a>
+            <a routerLink="/tarifs" class="group flex-shrink-0 font-semibold text-accent">Comprendre les tarifs&nbsp;<span class="arrow-nudge">→</span></a>
           </div>
-        </dl>
-        <p class="mt-4 text-center text-sm text-muted-foreground">Aucune commission sur la vente, aucun abonnement. <a routerLink="/tarifs" class="whitespace-nowrap font-semibold text-accent">Voir les tarifs</a></p>
-      </section>
-
-      <section class="hidden bg-secondary px-4 py-8 sm:block sm:px-6 lg:px-8 lg:py-10" aria-labelledby="prices-title">
-        <div class="mx-auto max-w-[78rem]">
-          <h2 appReveal id="prices-title" class="text-center text-2xl text-primary sm:text-3xl">Vendre est gratuit. Une mise en relation coûte {{ buyerPrice }}</h2>
-          <p class="mx-auto mt-3 max-w-[60ch] text-center text-lg text-muted-foreground">
-            Aucune commission sur la vente, aucun abonnement
-          </p>
-          <div class="mx-auto mt-6 grid max-w-4xl gap-5 md:grid-cols-2">
-            @for (row of priceRows; track row.who; let first = $first; let i = $index) {
-              <div appReveal [revealDelay]="i * 120" class="lift flex flex-col rounded-2xl p-6 shadow-lg" [class]="first ? 'bg-white ring-1 ring-border' : 'bg-primary text-white'">
-                <h3 class="text-lg font-bold" [class]="first ? 'text-primary' : 'text-white'">{{ row.who }}</h3>
-                <p class="tabular mt-3 text-4xl font-extrabold tracking-tight">{{ row.price }}</p>
-                <p class="mt-3 flex-1 text-base" [class]="first ? 'text-muted-foreground' : 'text-white/70'">{{ row.detail }}</p>
-                <a [routerLink]="row.href" class="mt-7 rounded-lg px-5 py-3 text-center font-semibold transition-colors" [class]="first ? 'bg-primary text-white hover:bg-primary/90' : 'bg-accent text-white hover:bg-accent/90'">{{ row.cta }}</a>
-              </div>
-            }
-          </div>
-          <p class="mt-8 text-center">
-            <a routerLink="/tarifs" class="font-semibold text-accent underline-offset-4 hover:underline">{{ allOffersLabel }}</a>
-          </p>
         </div>
       </section>
 
@@ -494,14 +472,6 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
           <figure class="h-full lg:col-span-5">
             <img src="/assets/images/provisoire/fondateurs-ecran.jpg" alt="Un fondateur travaille sur le site de son entreprise, sur deux écrans" width="1400" height="933" loading="lazy" class="h-full max-h-[28rem] w-full object-cover object-[15%_center] lg:max-h-none">
           </figure>
-        </div>
-      </section>
-
-      <!-- Téléphones : petit encart vendeur. -->
-      <section class="px-4 py-6 sm:hidden" aria-label="Vendre son entreprise">
-        <div class="flex items-center justify-between gap-4 rounded-2xl bg-primary px-5 py-4 text-white">
-          <p class="font-semibold">Vous vendez ? Publiez gratuitement</p>
-          <a routerLink="/ma/deposer" class="flex-shrink-0 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white">Déposer</a>
         </div>
       </section>
 
@@ -552,7 +522,6 @@ export class LandingComponent implements OnInit {
 
   // Essai du nouveau design : bloc de confiance masqué, les garanties sont dans le haut de page.
   readonly showTrustBlock = false;
-  readonly buyerPrice = OFFER_PRICES.INTRO.label;
 
   readonly euros = formatEuros;
 
@@ -570,8 +539,6 @@ export class LandingComponent implements OnInit {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-
-  readonly allOffersLabel = FEATURES.pros ? 'Toutes les offres, dont celles des professionnels et l’accompagnement sur devis' : 'Toutes les offres et l’accompagnement sur devis';
 
 
   readonly showAssociates = FEATURES.associates;
@@ -608,10 +575,6 @@ export class LandingComponent implements OnInit {
   ];
 
 
-  readonly priceRows = [
-    { who: 'Cédant', detail: 'Annonce anonymisée, relue avant publication. Vous êtes prévenu à chaque ouverture de votre dossier.', price: 'Gratuit', href: '/ma/deposer', cta: 'Déposer une annonce' },
-    { who: 'Repreneur', detail: 'Dossier complet, coordonnées du cédant et messagerie, ouverts aussitôt après l’engagement de confidentialité.', price: `${OFFER_PRICES.INTRO.label} par entreprise`, href: '/ma', cta: 'Voir les annonces' },
-  ];
 
 
   ngOnInit(): void {
