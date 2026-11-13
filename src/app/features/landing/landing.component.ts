@@ -202,6 +202,9 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       </section>
 
       <!-- Entreprises à reprendre : recherche et filtres, puis les annonces du moment. -->
+      <!-- Bloc « Une reprise encadrée, en toute confiance » mis de côté (essai sans ce bloc, nouveau design) :
+           repasser showTrustBlock à true pour le réafficher. -->
+      @if (showTrustBlock) {
       <!-- Confiance, juste après le haut de page : trois garanties réelles et le journal d'un dossier qui s'ouvre. -->
       <section class="bg-[#F3F6FD] px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-14" aria-labelledby="trust-title">
         <div class="mx-auto grid max-w-[78rem] items-center gap-6 lg:grid-cols-2 lg:gap-16">
@@ -286,6 +289,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
           </ng-template>
         </div>
       </section>
+      }
 
       <section id="entreprises" class="scroll-mt-20 px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16" aria-labelledby="latest-title">
         <div class="mx-auto max-w-[78rem]">
@@ -663,6 +667,8 @@ export class LandingComponent implements OnInit {
   readonly heroRevenue = signal('');
 
 
+  // Essai du nouveau design : bloc de confiance masqué, les garanties sont dans le haut de page.
+  readonly showTrustBlock = false;
   readonly buyerPrice = OFFER_PRICES.INTRO.label;
 
   readonly euros = formatEuros;
