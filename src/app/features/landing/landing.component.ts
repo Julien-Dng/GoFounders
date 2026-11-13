@@ -408,17 +408,31 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       <!-- Téléphones : fonctionnement et prix réunis dans un bloc court (étapes dépliables). -->
       <!-- Comment ça marche, en trois étapes (nouveau design) : sans icônes, séparées par des traits, dans un encadré bleu marine. -->
       <section class="px-4 pt-6 sm:px-6 sm:pt-8 lg:px-8 lg:pt-10" aria-labelledby="simple-title">
-        <!-- Encadré bleu marine : se distingue à la fois de la section projets (bleu clair) et des avis (blanc). -->
-        <div class="mx-auto max-w-[78rem] rounded-2xl bg-primary px-5 py-6 text-white sm:px-8 sm:py-7">
-          <h2 appReveal id="simple-title" class="text-2xl text-white sm:text-3xl">Simple, du premier échange à la rencontre</h2>
-          <ol class="mt-4 grid gap-4 sm:mt-5 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-white/15">
+        <!-- Encadré bleu marine : se distingue à la fois de la section projets (bleu clair) et des avis (blanc).
+             Ordinateur : titre, phrase et bouton à gauche, étapes détaillées à droite. -->
+        <div class="mx-auto grid max-w-[78rem] gap-6 rounded-2xl bg-primary px-5 py-7 text-white sm:px-8 sm:py-8 lg:grid-cols-12 lg:items-center lg:gap-12 lg:px-12 lg:py-10">
+          <div class="lg:col-span-5">
+            <h2 appReveal id="simple-title" class="text-2xl leading-tight text-white sm:text-3xl lg:text-[2.2rem]">Simple, du premier échange à la rencontre</h2>
+            <p class="mt-3 text-base leading-relaxed text-white/70 sm:text-lg">{{ simpleIntro }}</p>
+            @if (!isLoggedIn()) {
+              <a routerLink="/inscription" class="mt-6 hidden rounded-lg bg-accent px-6 py-3.5 font-semibold text-white transition-colors hover:bg-accent/90 lg:inline-block">Créer mon compte gratuit</a>
+            }
+          </div>
+          <ol class="space-y-5 lg:col-span-7">
             @for (step of simpleSteps; track step.title; let i = $index) {
-              <li appReveal [revealDelay]="i * 110" class="sm:px-6 sm:first:pl-0 sm:last:pr-0">
-                <h3 class="text-base font-bold text-white sm:text-lg">{{ i + 1 }}. {{ step.title }}</h3>
-                <p class="mt-1 text-base leading-relaxed text-white/70">{{ step.text }}</p>
+              <li appReveal [revealDelay]="i * 110" class="flex gap-4">
+                <span class="tabular flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-white/10 font-bold text-white ring-1 ring-white/20" aria-hidden="true">{{ i + 1 }}</span>
+                <div>
+                  <h3 class="text-base font-bold text-white sm:text-lg">{{ step.title }}</h3>
+                  <p class="mt-0.5 text-base leading-relaxed text-white/75">{{ step.text }}</p>
+                  <p class="mt-1 text-sm text-[#9DB8FF]">{{ step.detail }}</p>
+                </div>
               </li>
             }
           </ol>
+          @if (!isLoggedIn()) {
+            <a routerLink="/inscription" class="rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-white lg:hidden">Créer mon compte gratuit</a>
+          }
         </div>
       </section>
 
@@ -565,16 +579,20 @@ export class LandingComponent implements OnInit {
   readonly associatesHref = computed(() => (usesTeamMarketplace(this.auth.currentUser()) ? '/recherche' : '/associes'));
 
   // « Simple, du premier échange à la rencontre » : le parcours en trois étapes, entreprises et projets.
+  readonly isLoggedIn = computed(() => this.auth.isAuthenticated());
+  readonly simpleIntro = FEATURES.associates
+    ? 'Un seul compte gratuit pour reprendre ou céder une entreprise, trouver des associés ou rejoindre un projet'
+    : 'Un compte gratuit pour reprendre ou céder une entreprise';
   readonly simpleSteps = FEATURES.associates
     ? [
-        { title: 'Découvrez', text: 'Explorez les entreprises à reprendre et les projets' },
-        { title: 'Entrez en contact', text: `Dossier et contact d'une entreprise : ${OFFER_PRICES.INTRO.label.replace(' ', '\u00a0')}. Écrire à un associé est gratuit` },
-        { title: 'Échangez directement', text: 'Construisez la suite avec les bonnes personnes' },
+        { title: 'Découvrez', text: 'Explorez les entreprises à reprendre et les projets', detail: 'Annonces anonymes, relues avant publication' },
+        { title: 'Entrez en contact', text: `Dossier et contact d'une entreprise : ${OFFER_PRICES.INTRO.label.replace(' ', '\u00a0')}. Écrire à un associé est gratuit`, detail: 'Engagement de confidentialité · paiement sécurisé par Stripe' },
+        { title: 'Échangez directement', text: 'Construisez la suite avec les bonnes personnes', detail: 'Messagerie intégrée, sans commission sur la vente' },
       ]
     : [
-        { title: 'Découvrez', text: 'Explorez les entreprises à reprendre' },
-        { title: 'Entrez en contact', text: `Dossier et contact d'une entreprise : ${OFFER_PRICES.INTRO.label.replace(' ', '\u00a0')}` },
-        { title: 'Échangez directement', text: 'Construisez la suite avec le cédant' },
+        { title: 'Découvrez', text: 'Explorez les entreprises à reprendre', detail: 'Annonces anonymes, relues avant publication' },
+        { title: 'Entrez en contact', text: `Dossier et contact d'une entreprise : ${OFFER_PRICES.INTRO.label.replace(' ', '\u00a0')}`, detail: 'Engagement de confidentialité · paiement sécurisé par Stripe' },
+        { title: 'Échangez directement', text: 'Construisez la suite avec le cédant', detail: 'Messagerie intégrée, sans commission sur la vente' },
       ];
 
   // Bloc de confiance sous le haut de page : uniquement des garanties réelles de la plateforme.
