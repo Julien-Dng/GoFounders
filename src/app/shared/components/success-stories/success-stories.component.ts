@@ -9,17 +9,17 @@ import { SuccessStoriesService, SuccessStory } from '../../../core/services/succ
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (stories().length > 0) {
-      <section class="overflow-hidden px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16" [class]="background()" aria-labelledby="success-stories-title">
+      <section class="overflow-hidden px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10" [class]="background()" aria-labelledby="success-stories-title">
         <div class="mx-auto max-w-[78rem]">
           <div>
-            <h2 id="success-stories-title" class="text-center text-2xl text-primary sm:text-4xl">Ce que pensent nos membres</h2>
+            <h2 id="success-stories-title" class="text-center text-2xl text-primary sm:text-3xl lg:text-left">Ce que pensent nos membres</h2>
           </div>
 
           <!-- Ordinateur : boucle infinie, les avis défilent en continu (liste répétée, sans retour visible au début),
                pause au survol. Téléphone : défilement à la main uniquement, arrêt sur chaque avis, pour laisser lire. -->
           <div
             #track
-            class="scrollbar-none -mx-4 mt-6 flex gap-4 overflow-x-auto px-4 pb-4 pt-2 max-sm:snap-x max-sm:snap-mandatory max-sm:scroll-px-4 sm:mt-6 sm:gap-6"
+            class="scrollbar-none -mx-4 mt-6 flex gap-4 overflow-x-auto px-4 pb-3 pt-2 max-sm:snap-x max-sm:snap-mandatory max-sm:scroll-px-4 sm:mt-5 sm:gap-5"
             tabindex="0"
             role="region"
             aria-label="Témoignages de vendeurs, faire défiler horizontalement"

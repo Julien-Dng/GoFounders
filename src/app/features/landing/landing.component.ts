@@ -291,11 +291,13 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       </section>
       }
 
-      <section id="entreprises" class="scroll-mt-20 px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16" aria-labelledby="latest-title">
+      <section id="entreprises" class="scroll-mt-20 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10" aria-labelledby="latest-title">
         <div class="mx-auto max-w-[78rem]">
-          <h2 appReveal id="latest-title" class="text-center text-2xl text-primary sm:text-4xl">Entreprises à reprendre</h2>
+          <!-- Ordinateur : titre et recherche sur une même ligne (maquette resserrée). -->
+          <div class="lg:flex lg:items-center lg:justify-between lg:gap-8">
+          <h2 appReveal id="latest-title" class="text-center text-2xl text-primary sm:text-3xl lg:flex-shrink-0 lg:text-left">Entreprises à reprendre</h2>
 
-          <div class="mx-auto mt-6 hidden max-w-3xl rounded-xl bg-white p-2 shadow-lg ring-1 ring-border sm:block" role="search">
+          <div class="mx-auto mt-4 hidden max-w-3xl rounded-xl bg-white p-1.5 shadow-md ring-1 ring-border sm:block lg:mx-0 lg:mt-0 lg:w-full lg:max-w-[40rem]" role="search">
             <div class="flex flex-col gap-2 sm:flex-row">
               <label for="hero-search" class="sr-only">Rechercher une entreprise</label>
               <input
@@ -305,23 +307,24 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
                 (input)="heroQuery.set($any($event.target).value)"
                 (keydown.enter)="search()"
                 placeholder="Secteur, ville, mot-clé"
-                class="min-w-0 flex-1 rounded-lg px-4 py-3 text-base text-foreground outline-none placeholder:text-muted-foreground"
+                class="min-w-0 flex-1 rounded-lg px-4 py-2.5 text-base text-foreground outline-none placeholder:text-muted-foreground"
               >
               <label for="hero-revenue" class="sr-only">Chiffre d'affaires</label>
-              <select id="hero-revenue" [value]="heroRevenue()" (change)="heroRevenue.set($any($event.target).value)" class="rounded-lg border border-border bg-secondary px-3 py-3 text-base text-foreground outline-none sm:w-56">
+              <select id="hero-revenue" [value]="heroRevenue()" (change)="heroRevenue.set($any($event.target).value)" class="rounded-lg border border-border bg-secondary px-3 py-2.5 text-base text-foreground outline-none sm:w-52">
                 <option value="">Tout chiffre d'affaires</option>
                 <option value="0-100000">Moins de 100 k€</option>
                 <option value="100000-500000">100 à 500 k€</option>
                 <option value="500000-1000000">500 k€ à 1 M€</option>
                 <option value="1000000-">Plus de 1 M€</option>
               </select>
-              <button type="button" (click)="search()" class="rounded-lg bg-accent px-6 py-3 font-semibold text-white transition-colors hover:bg-accent/90">Rechercher</button>
+              <button type="button" (click)="search()" class="rounded-lg bg-accent px-5 py-2.5 font-semibold text-white transition-colors hover:bg-accent/90">Rechercher</button>
             </div>
+          </div>
           </div>
 
           @if (latestListings().length > 0) {
             <!-- Mobile : deux cartes compactes. Ordinateur : une grande carte détaillée et deux plus petites. -->
-            <div class="mt-5 grid gap-3 sm:mt-8 sm:gap-5 md:grid-cols-2 lg:grid-cols-5 max-sm:[&>*:nth-child(3)]:hidden">
+            <div class="mt-4 grid gap-3 sm:mt-6 sm:gap-4 md:grid-cols-2 lg:grid-cols-5 max-sm:[&>*:nth-child(3)]:hidden">
               @for (item of latestListings(); track item.listing.id; let i = $index; let first = $first) {
                 <a appReveal [revealDelay]="i * 110" [routerLink]="['/ma/annonce', item.listing.id]"
                    class="lift group flex flex-col rounded-xl border border-border bg-white p-4 transition-shadow hover:shadow-md sm:rounded-2xl sm:border-0 sm:p-6 sm:shadow-lg sm:ring-1 sm:ring-border sm:hover:shadow-xl"
@@ -373,7 +376,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
                     @if (revenueBars(item.listing).length > 1) {
                       <figure class="mt-5 hidden rounded-xl bg-secondary p-4 lg:block" aria-label="Évolution du chiffre d’affaires">
                         <figcaption class="text-sm font-semibold text-primary">Chiffre d'affaires déclaré</figcaption>
-                        <div class="mt-3 flex h-24 items-end gap-3">
+                        <div class="mt-2 flex h-16 items-end gap-3">
                           @for (bar of revenueBars(item.listing); track bar.year; let last = $last) {
                             <div class="flex h-full flex-1 flex-col justify-end">
                               <span class="tabular mb-1 text-center text-xs font-semibold text-muted-foreground">{{ euros(bar.revenue) }}</span>
@@ -418,7 +421,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
                   }
 
                   @if (first && (item.listing.includedAssets?.length ?? 0) > 0) {
-                    <ul class="mt-5 hidden flex-wrap gap-2 lg:flex">
+                    <ul class="mt-4 hidden flex-wrap gap-2 lg:flex">
                       @for (asset of assetLabels(item.listing).slice(0, 5); track asset) {
                         <li class="rounded-full bg-secondary px-3 py-1 text-sm font-medium text-primary">{{ asset }}</li>
                       }
@@ -435,7 +438,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
               }
             </div>
           }
-          <div class="mt-5 text-center sm:mt-8">
+          <div class="mt-4 text-center sm:mt-6">
             <a routerLink="/ma" class="inline-block rounded-lg bg-primary px-7 py-3.5 font-semibold text-white transition-colors hover:bg-primary/90"><span class="sm:hidden">Explorer les entreprises</span><span class="hidden sm:inline">Voir toutes les annonces</span></a>
           </div>
         </div>
@@ -443,14 +446,14 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
 
       @if (showAssociates) {
         <!-- Projets et associés : vrais profils de la vitrine publique (anonymisés), sinon exemples fictifs signalés. -->
-        <section class="bg-secondary px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16" aria-labelledby="team-title">
+        <section class="bg-secondary px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10" aria-labelledby="team-title">
           <!-- Composition différente des annonces : texte à gauche, cartes à droite (ordinateur) ;
                deux cartes compactes empilées sur téléphone. -->
-          <div class="mx-auto grid max-w-[78rem] gap-5 lg:grid-cols-12 lg:items-center lg:gap-10">
+          <div class="mx-auto grid max-w-[78rem] gap-4 lg:grid-cols-12 lg:items-center lg:gap-8">
             <div class="text-center lg:col-span-4 lg:text-left">
-              <h2 appReveal id="team-title" class="text-2xl text-primary sm:text-4xl">Projets et associés</h2>
+              <h2 appReveal id="team-title" class="text-2xl text-primary sm:text-3xl">Projets et associés</h2>
               <p class="mx-auto mt-3 hidden max-w-[40ch] text-lg leading-relaxed text-muted-foreground sm:block lg:mx-0">Présentez votre projet et trouvez les compétences qui vous manquent, ou rejoignez une équipe</p>
-              <div class="mt-6 hidden flex-wrap justify-center gap-3 sm:flex lg:justify-start">
+              <div class="mt-4 hidden flex-wrap justify-center gap-3 sm:flex lg:justify-start">
                 <a [routerLink]="associatesHref()" class="group rounded-lg bg-accent px-5 py-3 font-semibold text-white transition-colors hover:bg-accent/90">Explorer les projets et associés&nbsp;<span class="arrow-nudge">→</span></a>
               </div>
               @if (teamCardsAreExamples()) {
@@ -530,7 +533,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       </div>
 
       <!-- Téléphones : les prix, après les avis (sur ordinateur, la section « Vendre est gratuit » plus bas). -->
-      <section class="px-4 pb-8 pt-2 sm:hidden" aria-labelledby="prices-mobile-title">
+      <section class="px-4 pb-6 pt-1 sm:hidden" aria-labelledby="prices-mobile-title">
         <h2 appReveal id="prices-mobile-title" class="text-center text-2xl text-primary">Combien ça coûte ?</h2>
         <dl appReveal class="mt-5 grid grid-cols-2 gap-3 text-center">
           <div class="rounded-2xl bg-white px-3 py-4 shadow-sm ring-1 ring-border">
@@ -545,15 +548,15 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
         <p class="mt-4 text-center text-sm text-muted-foreground">Aucune commission sur la vente, aucun abonnement. <a routerLink="/tarifs" class="whitespace-nowrap font-semibold text-accent">Voir les tarifs</a></p>
       </section>
 
-      <section class="hidden bg-secondary px-4 py-12 sm:block sm:px-6 lg:px-8 lg:py-16" aria-labelledby="prices-title">
+      <section class="hidden bg-secondary px-4 py-8 sm:block sm:px-6 lg:px-8 lg:py-10" aria-labelledby="prices-title">
         <div class="mx-auto max-w-[78rem]">
-          <h2 appReveal id="prices-title" class="text-center text-2xl text-primary sm:text-4xl">Vendre est gratuit. Une mise en relation coûte {{ buyerPrice }}</h2>
+          <h2 appReveal id="prices-title" class="text-center text-2xl text-primary sm:text-3xl">Vendre est gratuit. Une mise en relation coûte {{ buyerPrice }}</h2>
           <p class="mx-auto mt-3 max-w-[60ch] text-center text-lg text-muted-foreground">
             Aucune commission sur la vente, aucun abonnement
           </p>
-          <div class="mx-auto mt-8 grid max-w-4xl gap-6 md:grid-cols-2">
+          <div class="mx-auto mt-6 grid max-w-4xl gap-5 md:grid-cols-2">
             @for (row of priceRows; track row.who; let first = $first; let i = $index) {
-              <div appReveal [revealDelay]="i * 120" class="lift flex flex-col rounded-2xl p-8 shadow-lg" [class]="first ? 'bg-white ring-1 ring-border' : 'bg-primary text-white'">
+              <div appReveal [revealDelay]="i * 120" class="lift flex flex-col rounded-2xl p-6 shadow-lg" [class]="first ? 'bg-white ring-1 ring-border' : 'bg-primary text-white'">
                 <h3 class="text-lg font-bold" [class]="first ? 'text-primary' : 'text-white'">{{ row.who }}</h3>
                 <p class="tabular mt-3 text-4xl font-extrabold tracking-tight">{{ row.price }}</p>
                 <p class="mt-3 flex-1 text-base" [class]="first ? 'text-muted-foreground' : 'text-white/70'">{{ row.detail }}</p>
@@ -567,11 +570,11 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
         </div>
       </section>
 
-      <section class="bg-secondary px-4 py-8 sm:bg-transparent sm:px-6 sm:py-12 lg:px-8 lg:py-16" aria-labelledby="faq-title">
+      <section class="bg-secondary px-4 py-6 sm:bg-transparent sm:px-6 sm:py-8 lg:px-8 lg:py-10" aria-labelledby="faq-title">
         <!-- Ordinateur : titre et liens à gauche, questions à droite (composition différente des sections centrées). -->
         <div class="mx-auto grid max-w-3xl gap-5 sm:gap-8 lg:max-w-[78rem] lg:grid-cols-12 lg:gap-12">
           <div class="text-center lg:col-span-4 lg:text-left">
-            <h2 appReveal id="faq-title" class="text-2xl text-primary sm:text-4xl">Questions fréquentes</h2>
+            <h2 appReveal id="faq-title" class="text-2xl text-primary sm:text-3xl">Questions fréquentes</h2>
             <p class="mt-4 hidden text-base leading-relaxed text-muted-foreground lg:block">Une autre question ? Écrivez-nous, nous vous répondons par e-mail</p>
             <p class="mt-5 hidden flex-col gap-2 lg:flex">
               <a routerLink="/faq" class="group font-semibold text-accent">Toutes les questions&nbsp;<span class="arrow-nudge">→</span></a>
@@ -599,10 +602,10 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
         </div>
       </section>
 
-      <section class="hidden bg-secondary px-4 py-12 sm:block sm:px-6 lg:px-8 lg:py-16" aria-label="Notre conviction">
+      <section class="hidden bg-secondary px-4 py-8 sm:block sm:px-6 lg:px-8 lg:py-10" aria-label="Notre conviction">
         <div appReveal class="mx-auto grid max-w-[78rem] items-center gap-10 overflow-hidden rounded-3xl bg-white shadow-lg lg:grid-cols-12 lg:gap-0">
-          <div class="p-8 sm:p-12 lg:col-span-7">
-            <p class="text-[1.75rem] font-bold leading-snug tracking-tight text-primary sm:text-[2.1rem]">
+          <div class="p-6 sm:p-8 lg:col-span-7">
+            <p class="text-[1.4rem] font-bold leading-snug tracking-tight text-primary sm:text-[1.6rem]">
               Une entreprise, ce sont des années de travail, des clients qui vous font confiance, parfois une équipe.
               La transmettre mérite mieux qu'une petite annonce
             </p>
@@ -619,20 +622,20 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
       </section>
 
       <!-- Téléphones : petit encart vendeur. -->
-      <section class="px-4 py-8 sm:hidden" aria-label="Vendre son entreprise">
+      <section class="px-4 py-6 sm:hidden" aria-label="Vendre son entreprise">
         <div class="flex items-center justify-between gap-4 rounded-2xl bg-primary px-5 py-4 text-white">
           <p class="font-semibold">Vous vendez ? Publiez gratuitement</p>
           <a routerLink="/ma/deposer" class="flex-shrink-0 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white">Déposer</a>
         </div>
       </section>
 
-      <section class="hidden px-4 py-12 sm:block sm:px-6 lg:px-8 lg:py-16" aria-labelledby="sell-title">
-        <div appReveal class="relative mx-auto max-w-[78rem] overflow-hidden rounded-3xl bg-primary px-6 py-14 text-white sm:px-12 lg:py-16">
+      <section class="hidden px-4 py-8 sm:block sm:px-6 lg:px-8 lg:py-10" aria-labelledby="sell-title">
+        <div appReveal class="relative mx-auto max-w-[78rem] overflow-hidden rounded-3xl bg-primary px-6 py-8 text-white sm:px-10 lg:py-9">
           <img src="/assets/images/provisoire/bureau-vue-dessus.jpg" alt="" aria-hidden="true" width="1400" height="933" loading="lazy" class="absolute inset-0 h-full w-full object-cover">
           <div class="absolute inset-0" style="background: rgba(15, 27, 45, 0.86)" aria-hidden="true"></div>
           <div class="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h2 id="sell-title" class="text-3xl sm:text-4xl">Vous pensez à passer la main ?</h2>
+              <h2 id="sell-title" class="text-2xl sm:text-3xl">Vous pensez à passer la main ?</h2>
               <p class="mt-3 max-w-[60ch] text-lg leading-relaxed text-white/75">
                 Déposez votre annonce gratuitement. Elle reste anonyme : seuls les repreneurs qui acceptent l'engagement de confidentialité et débloquent votre dossier voient le détail et vos coordonnées
               </p>
