@@ -303,16 +303,51 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
           </div>
 
           @if (latestListings().length > 0) {
-            <!-- Cartes compactes, même style sur téléphone et ordinateur : secteur, titre, chiffres clés, prix.
-                 Trois côte à côte sur ordinateur, deux sur téléphone. -->
+            <!-- Cartes d'annonce : secteur, titre, ancienneté et équipe, accroche (ordinateur), chiffres clés, prix.
+                 Trois côte à côte sur ordinateur, deux sur tablette et téléphone. -->
             <div class="mt-4 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 max-lg:[&>*:nth-child(3)]:hidden">
               @for (item of latestListings(); track item.listing.id; let i = $index) {
                 <a appReveal [revealDelay]="i * 110" [routerLink]="['/ma/annonce', item.listing.id]"
-                   class="lift group flex flex-col rounded-xl border border-border bg-white p-4 transition-shadow hover:shadow-md sm:p-5">
-                  <p class="truncate text-sm text-muted-foreground">{{ item.listing.sector }} · {{ item.listing.region }}</p>
-                  <h3 class="mt-1 line-clamp-2 text-lg font-bold leading-snug text-primary group-hover:text-accent">{{ item.listing.title || item.listing.summary }}@if (item.listing.verified) { <app-verified-badge [size]="20" class="ml-1" /> }</h3>
-                  <p class="tabular mt-1.5 truncate text-sm text-muted-foreground">CA {{ euros(item.metrics.revenue) }} · Bénéfice {{ euros(item.metrics.netProfit) }}</p>
-                  <p class="tabular mt-auto pt-1.5 font-bold text-amber-600"><span class="whitespace-nowrap">{{ item.listing.priceMin }}</span> à <span class="whitespace-nowrap">{{ item.listing.priceMax }}</span></p>
+                   class="lift group flex flex-col rounded-2xl border border-border bg-white p-4 transition-shadow hover:border-accent/40 hover:shadow-lg sm:p-6">
+                  <div class="flex items-center justify-between gap-3">
+                    <p class="truncate text-sm text-muted-foreground">{{ item.listing.sector }} · {{ item.listing.region }}</p>
+                    @if (item.listing.featured) {
+                      <span class="flex-shrink-0 rounded-full border border-amber-500/40 px-2 py-0.5 text-xs font-semibold text-amber-700">En vedette</span>
+                    }
+                  </div>
+                  <h3 class="mt-2 line-clamp-2 text-lg font-bold leading-snug text-primary group-hover:text-accent sm:text-xl">{{ item.listing.title || item.listing.summary }}@if (item.listing.verified) { <app-verified-badge [size]="20" class="ml-1" /> }</h3>
+                  @if (item.metrics.age !== null) {
+                    <p class="mt-1 text-sm text-muted-foreground">{{ item.metrics.age }} ans d'activité@if (item.listing.teamSize) { · {{ item.listing.teamSize }} salarié{{ item.listing.teamSize > 1 ? 's' : '' }}}</p>
+                  }
+                  @if (item.listing.title) {
+                    <div class="mt-3 hidden sm:block">
+                      <p class="line-clamp-2 text-sm leading-relaxed text-foreground/75">{{ item.listing.summary }}</p>
+                    </div>
+                  }
+
+                  <dl class="tabular mt-4 grid grid-cols-3 divide-x divide-border rounded-xl bg-secondary py-3 text-center">
+                    <div class="px-2">
+                      <dt class="text-xs text-muted-foreground">CA annuel</dt>
+                      <dd class="mt-0.5 font-bold text-primary">{{ euros(item.metrics.revenue) }}</dd>
+                    </div>
+                    <div class="px-2">
+                      <dt class="text-xs text-muted-foreground">Bénéfice</dt>
+                      <dd class="mt-0.5 font-bold text-primary">{{ euros(item.metrics.netProfit) }}</dd>
+                    </div>
+                    <div class="px-2">
+                      <dt class="text-xs text-muted-foreground">Marge</dt>
+                      <dd class="mt-0.5 font-bold text-primary">{{ item.listing.margin }}</dd>
+                    </div>
+                  </dl>
+
+                  <span class="min-h-4 flex-1" aria-hidden="true"></span>
+                  <div class="flex items-end justify-between gap-3 border-t border-border pt-4">
+                    <div>
+                      <p class="text-xs text-muted-foreground">Prix demandé</p>
+                      <p class="tabular text-lg font-bold text-amber-600"><span class="whitespace-nowrap">{{ item.listing.priceMin }}</span> à <span class="whitespace-nowrap">{{ item.listing.priceMax }}</span></p>
+                    </div>
+                    <span class="arrow-nudge text-xl text-accent" aria-hidden="true">→</span>
+                  </div>
                 </a>
               }
             </div>
