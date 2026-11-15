@@ -20,6 +20,7 @@ interface StoredUserRecord {
   location: string;
   profileType: ProfileType;
   usages?: Usage[];
+  associateOfferedAt?: string;
   profileTitle?: string;
   bio?: string;
   skills?: string[];
@@ -340,11 +341,11 @@ export class AuthService {
     const user = this._currentUser();
     const cleaned = Array.from(new Set(usages));
     if (!user || user.profileType === 'pro') {
-      return { success: false, message: 'Les usages ne concernent pas les comptes professionnels.' };
+      return { success: false, message: 'Les objectifs ne concernent pas les comptes professionnels.' };
     }
 
     if (cleaned.length === 0) {
-      return { success: false, message: 'Choisissez au moins un usage.' };
+      return { success: false, message: 'Choisissez au moins un objectif.' };
     }
 
     if (this.supabase.isConfigured) {
@@ -363,6 +364,63 @@ export class AuthService {
 
     this._currentUser.set({ ...user, usages: cleaned });
     return { success: true, message: 'Vos choix sont enregistrés.' };
+  }
+
+  // Objectif ajouté après une action confirmée (projet publié, annonce déposée, dossier débloqué). Avec Supabase,
+  // les déclencheurs l'ont déjà ajouté : on recharge le profil. En mode local, on l'ajoute ici.
+  async noteActionUsage(usage: Usage): Promise<void> {
+    const user = this._currentUser();
+    if (!user || user.profileType === 'pro' || usagesOf(user).includes(usage)) {
+      return;
+    }
+
+    if (this.supabase.isConfigured) {
+      await this.reloadCurrentProfile();
+      return;
+    }
+
+    const usages = [...usagesOf(user), usage];
+    this.updateLocalUser(user.uid, { usages });
+    this._currentUser.set({ ...user, usages });
+  }
+
+  // « Proposer mon profil aux porteurs de projet » : choix explicite (set_associate_offer). Proposer ajoute l'objectif
+  // « Rejoindre un projet » et exige au moins une compétence ; retirer ne touche pas aux objectifs.
+  async setAssociateOffer(offer: boolean): Promise<AuthResult> {
+    const user = this._currentUser();
+    if (!user || user.profileType === 'pro') {
+      return { success: false, message: 'Réservé aux membres.' };
+    }
+
+    if (offer && (user.skills?.length ?? 0) === 0) {
+      return { success: false, message: 'Ajoutez au moins une compétence pour proposer votre profil.' };
+    }
+
+    if (this.supabase.isConfigured) {
+      const { error } = await this.supabase.client.rpc('set_associate_offer', { p_offer: offer });
+      if (error) {
+        return { success: false, message: error.message.includes('COMPETENCES_REQUISES')
+          ? 'Ajoutez au moins une compétence pour proposer votre profil.'
+          : 'Impossible d’enregistrer ce choix pour le moment.' };
+      }
+      await this.reloadCurrentProfile();
+    } else {
+      const usages = offer && !usagesOf(user).includes('associe') ? [...usagesOf(user), 'associe' as Usage] : usagesOf(user);
+      const associateOfferedAt = offer ? user.associateOfferedAt ?? new Date().toISOString() : undefined;
+      this.updateLocalUser(user.uid, { usages, associateOfferedAt });
+      this._currentUser.set({ ...user, usages, associateOfferedAt });
+    }
+
+    return { success: true, message: offer ? 'Votre profil est proposé aux porteurs de projet.' : 'Votre profil n’est plus proposé aux porteurs de projet.' };
+  }
+
+  private updateLocalUser(uid: string, changes: Pick<Partial<StoredUserRecord>, 'usages' | 'associateOfferedAt'>): void {
+    const users = this.readUsers();
+    const index = users.findIndex(entry => entry.uid === uid);
+    if (index >= 0) {
+      users[index] = { ...users[index], ...changes };
+      this.writeUsers(users);
+    }
   }
 
   // E-mails de nouveaux messages (colonne email_notifications, 2026-10-28-lancement.sql).
@@ -866,6 +924,7 @@ export class AuthService {
       location: payload.location.trim(),
       profileType: payload.profileType,
       usages: payload.profileType === 'pro' ? [] : payload.usages,
+      associateOfferedAt: this.has(payload, 'associe') ? now : undefined,
       profileTitle: this.buildInitialProfileTitle(payload),
       skills: this.buildInitialSkills(payload),
       lookingFor: this.buildInitialLookingFor(payload),
@@ -1090,6 +1149,7 @@ export class AuthService {
       location: user.location,
       profileType: user.profileType,
       usages: usagesOf(user),
+      associateOfferedAt: user.associateOfferedAt,
       profileTitle: user.profileTitle,
       bio: user.bio,
       skills: user.skills,
@@ -1135,6 +1195,7 @@ export class AuthService {
       maSector: profile.ma_sector ?? undefined,
       maBudget: profile.ma_budget ?? undefined,
       profileVerifiedAt: profile.verified_at ?? undefined,
+      associateOfferedAt: profile.associate_offered_at ?? undefined,
       maRegion: profile.ma_region ?? undefined,
       githubUrl: profile.github_url ?? undefined,
       linkedinUrl: profile.linkedin_url ?? undefined,

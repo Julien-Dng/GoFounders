@@ -3,7 +3,7 @@ import { MARKETPLACE_PROFILES, MarketplaceProfile, findMarketplaceProfileById } 
 import { Match } from '../models/match.model';
 import { Profile } from '../models/project.model';
 import { SupabaseProfileRow, SupabaseProjectRow, PROFILE_COLUMNS, PROJECT_COLUMNS } from '../models/supabase-database.model';
-import { PROFILE_TYPE_LABELS, ProfileType, hasUsage, isFeaturedProjectPlan, usagesOf } from '../models/user.model';
+import { PROFILE_TYPE_LABELS, ProfileType, hasUsage, isFeaturedProjectPlan, offersAssociateProfile } from '../models/user.model';
 import { ProjectSide, TalentSide, computeCompatibility } from '../matching/compatibility';
 import { AuthService } from './auth.service';
 import { ProjectService } from './project.service';
@@ -52,7 +52,7 @@ export class MatchingService {
 
       const me = this.auth.currentUser()?.uid;
       const associates = profileRows
-        .filter(profile => profile.id !== me && usagesOf({ profileType: profile.role, usages: profile.usages ?? undefined }).includes('associe') && (profile.skills?.length ?? 0) > 0)
+        .filter(profile => profile.id !== me && profile.role !== 'pro' && !!profile.associate_offered_at && (profile.skills?.length ?? 0) > 0)
         .map(profile => ({ ...this.mapProfileRowToMarketplaceProfile(profile), profileType: 'talent' as ProfileType }));
       const projects = projectRows
         .filter(project => project.owner_id !== me)
@@ -91,8 +91,8 @@ export class MatchingService {
       if (!profileError && profileData) {
         const row = profileData as SupabaseProfileRow;
         const mapped = this.mapProfileRowToMarketplaceProfile(row);
-        // Compte multi-usages : un membre qui veut rejoindre un projet s'affiche comme associé, quel que soit son premier usage.
-        return usagesOf({ profileType: row.role, usages: row.usages ?? undefined }).includes('associe') ? { ...mapped, profileType: 'talent' } : mapped;
+        // Compte multi-usages : un membre qui propose son profil d'associé s'affiche comme associé, quel que soit son premier objectif.
+        return row.role !== 'pro' && !!row.associate_offered_at ? { ...mapped, profileType: 'talent' } : mapped;
       }
 
       const { data: projectData, error: projectError } = await this.supabase.client
@@ -256,7 +256,7 @@ export class MatchingService {
     const user = this.auth.currentUser();
     const sides: ViewerSide[] = [];
 
-    if (user && hasUsage(user, 'associe')) {
+    if (user && offersAssociateProfile(user)) {
       sides.push({
         kind: 'talent',
         talent: {

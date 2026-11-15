@@ -92,6 +92,19 @@ export const routes: Routes = [
         canActivate: [authGuard],
         loadComponent: () => import('./features/profil/modifier/modifier.component').then(m => m.ModifierComponent)
       },
+      // « Mon projet » et « Mon profil d'associé » : le même formulaire, réduit à ce qui sert (mode).
+      {
+        path: 'mon-projet',
+        canActivate: [featureGuard('associates'), authGuard],
+        data: { mode: 'projet' },
+        loadComponent: () => import('./features/profil/modifier/modifier.component').then(m => m.ModifierComponent)
+      },
+      {
+        path: 'profil/associe',
+        canActivate: [featureGuard('associates'), authGuard],
+        data: { mode: 'associe' },
+        loadComponent: () => import('./features/profil/modifier/modifier.component').then(m => m.ModifierComponent)
+      },
       {
         path: 'profil/:id',
         canActivate: [authGuard],

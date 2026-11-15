@@ -602,6 +602,7 @@ export class MaDeposerComponent {
 
         if (listingId) {
           this.createdListingId.set(listingId);
+          await this.auth.noteActionUsage('cession');
         }
       }
 

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, HostListener, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { hasUsage, isProAccount, usesTeamMarketplace } from '../../core/models/user.model';
+import { hasUsage, isProAccount, offersAssociateProfile } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { ShowcaseEntry, ShowcaseService } from '../../core/services/showcase.service';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
@@ -47,7 +47,8 @@ const STAGE_LABELS: Record<string, string> = {
             @if (canBrowseFull()) {
               <a routerLink="/recherche" class="rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90">Ouvrir la recherche complète</a>
             } @else if (isAuthenticated() && !isPro()) {
-              <a routerLink="/parametres" fragment="usages" class="rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90">Ajouter cet usage à mon compte</a>
+              <a routerLink="/mon-projet" class="rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90">Présenter mon projet</a>
+              <a routerLink="/profil/associe" class="rounded-lg border border-white/30 px-6 py-3.5 text-center font-semibold text-white transition-colors hover:border-white/70">Proposer mes compétences</a>
             } @else {
               <a routerLink="/inscription" [queryParams]="{ profil: 'entrepreneur' }" class="rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90">Je cherche un associé</a>
               <a routerLink="/inscription" [queryParams]="{ profil: 'talent' }" class="rounded-lg border border-white/30 px-6 py-3.5 text-center font-semibold text-white transition-colors hover:border-white/70">Je veux devenir associé</a>
@@ -232,7 +233,7 @@ const STAGE_LABELS: Record<string, string> = {
               @if (banner.text) {
                 <p class="mx-auto mt-3 max-w-[52ch] text-base leading-relaxed text-white/75">{{ banner.text }}</p>
               }
-              <a [routerLink]="banner.path" [queryParams]="banner.params" [fragment]="banner.fragment" class="mt-6 inline-block rounded-lg bg-accent px-6 py-3.5 font-semibold text-white transition-colors hover:bg-accent/90">{{ banner.label }}</a>
+              <a [routerLink]="banner.path" [queryParams]="banner.params" class="mt-6 inline-block rounded-lg bg-accent px-6 py-3.5 font-semibold text-white transition-colors hover:bg-accent/90">{{ banner.label }}</a>
             </div>
           }
         </div>
@@ -315,26 +316,26 @@ export class AssociesComponent implements OnInit {
         { title: 'Trouvez votre projet', detail: 'Découvrez les projets qui recrutent et ce qu’ils recherchent' },
         { title: 'Échangez directement', detail: 'Prenez contact avec le porteur et avancez ensemble' },
       ]);
-  readonly canBrowseFull = computed(() => usesTeamMarketplace(this.auth.currentUser()));
-  // Bannière finale selon la personne : visiteur → inscription ; membre qui a l'usage de l'onglet → recherche
-  // complète ; membre sans cet usage → l'ajouter dans Paramètres (même compte) ; compte pro → rien.
-  readonly banner = computed<{ title: string; text: string | null; path: string; params: Record<string, string> | null; fragment: string | undefined; label: string } | null>(() => {
+  readonly canBrowseFull = computed(() => this.canOpen('talent') || this.canOpen('project'));
+  // Bannière finale selon la personne : visiteur → inscription ; membre qui peut déjà consulter l'onglet → recherche
+  // complète ; sinon → l'action qui ouvre l'accès (présenter son projet, proposer ses compétences) ; compte pro → rien.
+  readonly banner = computed<{ title: string; text: string | null; path: string; params: Record<string, string> | null; label: string } | null>(() => {
     const user = this.auth.currentUser();
     const talentTab = this.tab() === 'talent';
     const title = talentTab ? 'Votre prochain associé est peut-être ici' : 'Votre prochain projet est peut-être ici';
 
     if (!this.isAuthenticated()) {
-      return { title, text: null, path: '/inscription', params: { profil: talentTab ? 'entrepreneur' : 'talent' }, fragment: undefined, label: 'Commencer gratuitement' };
+      return { title, text: null, path: '/inscription', params: { profil: talentTab ? 'entrepreneur' : 'talent' }, label: 'Commencer gratuitement' };
     }
     if (isProAccount(user)) {
       return null;
     }
-    if (hasUsage(user, talentTab ? 'projet' : 'associe')) {
-      return { title, text: null, path: '/recherche', params: null, fragment: undefined, label: talentTab ? 'Voir tous les associés' : 'Voir tous les projets' };
+    if (this.canOpen(talentTab ? 'talent' : 'project')) {
+      return { title, text: null, path: '/recherche', params: null, label: talentTab ? 'Voir tous les associés' : 'Voir tous les projets' };
     }
     return talentTab
-      ? { title: 'Vous cherchez un associé ?', text: 'Ajoutez « Trouver des associés » à vos usages pour présenter votre projet et contacter ces profils, avec le même compte', path: '/parametres', params: null, fragment: 'usages', label: 'Modifier mes usages' }
-      : { title: 'Envie de rejoindre un projet ?', text: 'Ajoutez « Rejoindre un projet » à vos usages pour proposer vos compétences et contacter les porteurs, avec le même compte', path: '/parametres', params: null, fragment: 'usages', label: 'Modifier mes usages' };
+      ? { title: 'Vous cherchez un associé ?', text: 'Présentez votre projet et les compétences qui vous manquent : les associés pourront le découvrir et vous écrire', path: '/mon-projet', params: null, label: 'Présenter mon projet' }
+      : { title: 'Envie de rejoindre un projet ?', text: 'Proposez vos compétences aux porteurs de projet pour consulter leurs projets et leur écrire', path: '/profil/associe', params: null, label: 'Proposer mes compétences' };
   });
   readonly isAuthenticated = this.auth.isAuthenticated;
   readonly isPro = computed(() => isProAccount(this.auth.currentUser()));
@@ -407,6 +408,13 @@ export class AssociesComponent implements OnInit {
     return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   }
 
+  // Associés : visibles une fois son projet publié (objectif ajouté automatiquement). Projets : une fois son profil
+  // d'associé proposé. Les règles réelles sont vérifiées par Supabase.
+  private canOpen(kind: 'talent' | 'project'): boolean {
+    const user = this.auth.currentUser();
+    return kind === 'talent' ? hasUsage(user, 'projet') : offersAssociateProfile(user);
+  }
+
   stageLabel(stage: string | null): string {
     return stage ? STAGE_LABELS[stage] ?? stage : 'Stade non précisé';
   }
@@ -417,12 +425,17 @@ export class AssociesComponent implements OnInit {
     const wantedRole = entry.kind === 'talent' ? 'entrepreneur' : 'talent';
     const label = entry.kind === 'talent' ? 'Voir le profil' : 'Voir le projet';
 
-    if (hasUsage(this.auth.currentUser(), entry.kind === 'talent' ? 'projet' : 'associe')) {
+    if (this.canOpen(entry.kind)) {
       return { path: `/profil/${entry.profile_id}`, params: null, label };
     }
 
     if (this.auth.isAuthenticated()) {
-      return { path: '', params: null, label: entry.kind === 'talent' ? 'Ajoutez « Trouver des associés » dans Paramètres' : 'Ajoutez « Rejoindre un projet » dans Paramètres' };
+      if (this.isPro()) {
+        return { path: '', params: null, label: 'Réservé aux membres' };
+      }
+      return entry.kind === 'talent'
+        ? { path: '/mon-projet', params: null, label: 'Présenter mon projet pour le contacter' }
+        : { path: '/profil/associe', params: null, label: 'Proposer mes compétences pour le voir' };
     }
 
     return { path: '/inscription', params: { profil: wantedRole, returnUrl: `/profil/${entry.profile_id}` }, label: `${label}` };

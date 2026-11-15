@@ -394,7 +394,7 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                     <p class="text-sm leading-relaxed text-emerald-800">
                       La partie confidentielle de votre projet est ouverte à cet associé{{ myProjectNda() ? ', après acceptation de l’engagement de confidentialité' : '' }}
                     </p>
-                    <a routerLink="/profil/modifier" class="mt-3 inline-block text-sm font-semibold text-accent hover:underline">Gérer les accès à mon projet</a>
+                    <a routerLink="/mon-projet" class="mt-3 inline-block text-sm font-semibold text-accent hover:underline">Gérer les accès à mon projet</a>
                   } @else {
                     <p class="mb-4 text-sm leading-relaxed text-foreground/80">
                       Ce profil vous intéresse ? Ouvrez-lui la partie confidentielle de votre projet{{ myProjectNda() ? ' : il devra d’abord accepter votre engagement de confidentialité' : '' }}. Il en est prévenu, et vous pouvez retirer l’accès à tout moment.

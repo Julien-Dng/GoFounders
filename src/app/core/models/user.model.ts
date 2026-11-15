@@ -83,6 +83,12 @@ export function usesTeamMarketplace(user: Pick<User, 'profileType' | 'usages'> |
   return hasUsage(user, 'projet') || hasUsage(user, 'associe');
 }
 
+// Profil d'associé proposé (case « Proposer mon profil aux porteurs de projet ») avec au moins une compétence :
+// c'est ce qui ouvre les projets (is_associate côté Supabase), pas l'objectif.
+export function offersAssociateProfile(user: Pick<User, 'profileType' | 'associateOfferedAt' | 'skills'> | null | undefined): boolean {
+  return !!user && user.profileType !== 'pro' && !!user.associateOfferedAt && (user.skills?.length ?? 0) > 0;
+}
+
 // Reprise : tout membre (hors compte pro) peut ouvrir un dossier pour 50 € ; les droits sont vérifiés par Supabase.
 export function canBuyMaDossier(user: Pick<User, 'profileType'> | null | undefined): boolean {
   return !!user && user.profileType !== 'pro';
@@ -133,6 +139,8 @@ export interface User {
   maBudget?: string;
   // Date de vérification du profil par l'équipe (badge « Profil vérifié »).
   profileVerifiedAt?: string;
+  // Profil d'associé proposé aux porteurs de projet : choix explicite, distinct de l'objectif « Rejoindre un projet ».
+  associateOfferedAt?: string;
   maRegion?: string;
   githubUrl?: string;
   linkedinUrl?: string;

@@ -119,6 +119,7 @@ export class PaymentService {
 
     if (!this.supabase.isConfigured) {
       if (product === 'INTRO' && ListingAccessService.demoUnlock(listingId)) {
+        await this.auth.noteActionUsage('reprise');
         return { success: true, message: `${LISTING_MESSAGES.INTRO} (mode démo).` };
       }
       return { success: false, message: 'Disponible uniquement avec la base Supabase (mode démo).' };
@@ -134,6 +135,9 @@ export class PaymentService {
       return { success: false, message: this.readableError(error.message) };
     }
 
+    if (product === 'INTRO') {
+      await this.auth.noteActionUsage('reprise');
+    }
     return { success: true, message: `${LISTING_MESSAGES[product]} (paiement simulé).` };
   }
 

@@ -249,6 +249,11 @@ type SearchProfileType = ProfileType;
                     >
                       Réinitialiser les filtres
                     </button>
+                  } @else {
+                    <a [routerLink]="visibleProfileType() === 'talent' ? '/mon-projet' : '/profil/associe'"
+                       class="shrink-0 rounded-lg bg-white px-4 py-2 text-center text-sm font-semibold text-accent transition-colors hover:bg-white/90">
+                      {{ visibleProfileType() === 'talent' ? 'Présenter mon projet' : 'Proposer mes compétences' }}
+                    </a>
                   }
                 </div>
               }
@@ -468,8 +473,8 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     return this.visibleProfileType() === 'talent'
-      ? "Aucun associé à afficher. Publiez votre projet depuis « Modifier mon profil » pour voir les associés disponibles."
-      : "Aucun projet à afficher. Ajoutez « Rejoindre un projet » dans Paramètres et renseignez vos compétences pour voir les projets.";
+      ? "Aucun associé à afficher. Publiez votre projet depuis « Mon projet » pour voir les associés disponibles."
+      : "Aucun projet à afficher. Proposez votre profil depuis « Mon profil d'associé » pour voir les projets.";
   });
   readonly cardBadgeLabel = computed(() =>
     this.visibleProfileType() === 'talent' ? 'Associé' : 'Projet'

@@ -89,11 +89,14 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
             </div>
           </section>
 
-          <!-- MES USAGES : personnalisent le site, n'ouvrent aucun droit (compte multi-usages). -->
+          <!-- MES OBJECTIFS (colonne technique usages) : personnalisent le site, n'ouvrent aucun droit et ne suppriment rien. -->
           @if (!isPro()) {
             <section id="usages" class="scroll-mt-24 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6" aria-labelledby="usages-titre">
-              <h2 id="usages-titre" class="text-lg font-semibold">Mes usages</h2>
-              <p class="mt-1 text-sm text-muted-foreground">Ils personnalisent votre tableau de bord et votre navigation. Les accès dépendent de vos actions : projet publié, profil d'associé complété, dossier débloqué</p>
+              <h2 id="usages-titre" class="text-lg font-semibold">Mes objectifs</h2>
+              <p class="mt-1 text-sm text-muted-foreground">
+                Ils personnalisent votre tableau de bord et vos recommandations, et s'ajoutent d'eux-mêmes quand vous publiez un projet,
+                une annonce ou débloquez un dossier. Retirer un objectif ne supprime ni vos annonces, ni vos projets, ni vos dossiers achetés
+              </p>
               <div class="mt-4 grid gap-2 sm:grid-cols-2">
                 @for (option of usageOptions; track option.value) {
                   <label class="flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors"
@@ -110,9 +113,17 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
                 <button type="button" (click)="saveUsages()" [disabled]="busy() || !usagesChanged() || draftUsages().length === 0"
                         class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:opacity-50">Enregistrer</button>
                 @if (draftUsages().length === 0) {
-                  <span class="text-sm text-destructive">Choisissez au moins un usage</span>
+                  <span class="text-sm text-destructive">Choisissez au moins un objectif</span>
                 }
               </div>
+              <ul class="mt-4 space-y-1 border-t border-border pt-4 text-sm text-muted-foreground">
+                <li>Retirer une annonce : <a routerLink="/ma/mes-annonces" class="font-semibold text-accent hover:underline">Mes annonces</a></li>
+                @if (associatesEnabled) {
+                  <li>Ne plus proposer votre profil aux porteurs de projet : <a routerLink="/profil/associe" class="font-semibold text-accent hover:underline">Mon profil d'associé</a></li>
+                  <li>Retirer votre projet : <a routerLink="/mon-projet" class="font-semibold text-accent hover:underline">Mon projet</a> (le passer en brouillon)</li>
+                }
+                <li>Masquer votre profil de la recherche : réglage « Profil visible dans la recherche » ci-dessous</li>
+              </ul>
               @if (usagesFeedback(); as feedback) {
                 <p class="mt-3 text-sm" [class.text-success]="feedback.ok" [class.text-destructive]="!feedback.ok" role="status">{{ feedback.text }}</p>
               }
@@ -262,6 +273,7 @@ export class ParametresComponent implements OnInit {
   readonly isTalent = computed(() => hasUsage(this.auth.currentUser(), 'associe') && !hasUsage(this.auth.currentUser(), 'projet'));
   readonly isPro = computed(() => this.auth.currentUser()?.profileType === 'pro');
   readonly usageOptions = USAGE_OPTIONS;
+  readonly associatesEnabled = FEATURES.associates;
   private readonly savedUsages = computed(() => usagesOf(this.auth.currentUser()));
   readonly draftUsages = signal<Usage[]>([]);
   readonly usagesChanged = computed(() => {

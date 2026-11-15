@@ -21,6 +21,7 @@ from (values
   (13, '2026-11-05f-inviter-associe.sql',             exists (select 1 from pg_proc where proname = 'invite_to_project')),
   (14, '2026-11-05g-paiements-colonnes.sql',          exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'payments' and column_name = 'listing_id')),
   (15, '2026-11-11-titre-annonce.sql',                exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'ma_listings' and column_name = 'public_title')),
-  (16, '2026-11-13-compte-multi-usages.sql',          exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'usages'))
+  (16, '2026-11-13-compte-multi-usages.sql',          exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'usages')),
+  (17, '2026-11-15-objectifs-automatiques.sql',      exists (select 1 from pg_proc where proname = 'set_associate_offer'))
 ) as check_list(ordre, migration, passee)
 order by ordre;

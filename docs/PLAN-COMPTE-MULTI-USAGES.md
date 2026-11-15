@@ -99,3 +99,21 @@ Les conversations existantes reçoivent leur contexte d'après les rôles des de
 | 2 | Modèle, inscription, Paramètres |
 | 3 | Tableau de bord, navigation, recherche, messagerie, paiements |
 | 4 | Textes, tarifs, recette complète |
+
+## Objectifs automatiques et profil d'associé proposé (novembre 2026)
+
+Migration : `supabase/2026-11-15-objectifs-automatiques.sql` (à exécuter après `2026-11-13-compte-multi-usages.sql`).
+
+- Sur le site, les usages s'appellent **« Mes objectifs »** (Paramètres). La colonne technique reste `profiles.usages`.
+- **Objectif ajouté après une action confirmée** (déclencheurs Supabase, rien côté client) : publier un projet →
+  « Trouver des associés » ; déposer une annonce → « Vendre » ; débloquer un dossier → « Reprendre ». Un brouillon de
+  projet n'ajoute rien. Comptes pro exclus.
+- **« Rejoindre un projet » n'est jamais déduit** : le membre coche « Proposer mon profil aux porteurs de projet » sur
+  « Mon profil d'associé » (`set_associate_offer`, au moins une compétence), ou le choisit à l'inscription.
+- **Droit d'associé = profil proposé** (`profiles.associate_offered_at`, non modifiable en direct) + au moins une
+  compétence. L'objectif ne fait que personnaliser : le retirer ne masque pas le profil. Retirer la proposition, masquer
+  son profil, passer son projet en brouillon ou retirer une annonce sont des actions distinctes. La vitrine publique
+  `/associes` reste un second choix séparé (`public_listing`).
+- **Un bouton = sa destination** : « Présenter mon projet » → `/mon-projet` (projet seul) ; « Proposer mes compétences »
+  → `/profil/associe` (profil d'associé seul). Le profil général reste `/profil/modifier`.
+- Retirer un objectif ne supprime ni projet, ni annonce, ni dossier acheté. Les droits FREE / PRO restent indépendants.

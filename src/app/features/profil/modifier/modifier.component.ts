@@ -2,13 +2,14 @@ import { NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, NgZone, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService, UpdateProfilePayload } from '../../../core/services/auth.service';
 import { ProjectService } from '../../../core/services/project.service';
 import { ProjectAccessRequest, ProjectAccessService } from '../../../core/services/project-access.service';
 import { downloadTextFile, ndaProofDocument } from '../../../core/legal/nda';
 import { ProjectAccessStatus } from '../../../core/models/supabase-database.model';
-import { PRO_CATEGORY_LABELS, ProCategory, hasUsage, usagesOf } from '../../../core/models/user.model';
+import { PRO_CATEGORY_LABELS, ProCategory, hasUsage, offersAssociateProfile, usagesOf } from '../../../core/models/user.model';
+import { isEnabled } from '../../../core/config/features';
 import { ProfileVerificationCardComponent } from '../../../shared/components/profile-verification-card/profile-verification-card.component';
 
 @Component({
@@ -38,17 +39,20 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
               </svg>
               Retour au profil
             </a>
-            <h1 class="text-3xl font-semibold text-primary sm:text-4xl">Modifier mon profil</h1>
-            <p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Ajoutez une bio, une photo et vos liens professionnels pour rendre votre profil plus crédible
-            </p>
+            <h1 class="text-3xl font-semibold text-primary sm:text-4xl">{{ heading().title }}</h1>
+            <p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">{{ heading().subtitle }}</p>
           </div>
+
+          @if (mode === 'profil') {
 
           <div class="rounded-2xl border border-border bg-white px-5 py-4">
             <div class="text-sm font-semibold text-muted-foreground">Complétion actuelle</div>
             <div class="mt-1 text-2xl font-semibold text-accent">{{ currentUser()?.profileComplete ?? 0 }}%</div>
           </div>
+          }
         </div>
+
+        @if (mode === 'profil') {
 
         <div class="mb-6 rounded-lg bg-white shadow-lg ring-1 ring-border p-5 sm:p-6">
           <h2 class="text-2xl text-primary">Un profil complet inspire plus vite confiance</h2>
@@ -56,8 +60,10 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
             Ajoutez une photo nette, une bio concrète et quelques liens utiles. L'objectif n'est pas de faire long, mais de donner assez de signaux pour déclencher une conversation qualifiée
           </p>
         </div>
+        }
 
-        <div class="grid gap-6 xl:grid-cols-[340px_minmax(0,1fr)]">
+        <div class="grid gap-6" [class]="mode === 'profil' ? 'xl:grid-cols-[340px_minmax(0,1fr)]' : 'mx-auto max-w-3xl'">
+          @if (mode === 'profil') {
           <aside class="self-start rounded-3xl bg-white shadow-lg ring-1 ring-border p-6">
             <div class="text-center">
               <div class="mx-auto mb-4 h-32 w-32 overflow-hidden rounded-3xl border border-border bg-primary">
@@ -107,14 +113,17 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
             </div>
 
           </aside>
+          }
 
           <section class="rounded-3xl bg-white shadow-lg ring-1 ring-border p-6 sm:p-8">
             <div [formGroup]="profileForm" class="space-y-8">
+              @if (mode !== 'projet') {
               <div>
-                <h2 class="text-xl font-semibold text-primary">Informations principales</h2>
-                <p class="mt-1 text-sm text-muted-foreground">Ce sont les premières informations vues sur votre profil</p>
+                <h2 class="text-xl font-semibold text-primary">{{ mode === 'associe' ? 'Ce que vous proposez' : 'Informations principales' }}</h2>
+                <p class="mt-1 text-sm text-muted-foreground">{{ mode === 'associe' ? 'Ce que les porteurs de projet voient en premier' : 'Ce sont les premières informations vues sur votre profil' }}</p>
 
                 <div class="mt-5 grid gap-5 md:grid-cols-2">
+                  @if (mode === 'profil') {
                   <div>
                     <label for="profile-name" class="mb-2 block text-sm font-semibold">Nom complet</label>
                     <input
@@ -136,6 +145,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                       placeholder="Paris, France"
                     >
                   </div>
+                  }
 
                   <div>
                     <label for="profile-title" class="mb-2 block text-sm font-semibold">Titre du profil</label>
@@ -202,8 +212,42 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                   <p class="mt-2 text-sm text-muted-foreground">Ces tags aident à comprendre rapidement votre objectif</p>
                 </div>
               </div>
+              }
 
-              @if (isPro()) {
+              @if (mode === 'associe') {
+                <!-- Choix explicite : proposer son profil aux porteurs de projet (set_associate_offer). -->
+                <div class="rounded-2xl border border-accent/20 bg-accent/[0.035] p-5 sm:p-6">
+                  <label for="associate-offer" class="flex cursor-pointer items-start gap-3">
+                    <input id="associate-offer" type="checkbox" class="mt-1 h-4 w-4 accent-accent" [checked]="associateOffer()" (change)="associateOffer.set($any($event.target).checked)" aria-describedby="associate-offer-help">
+                    <span>
+                      <span class="block font-semibold text-primary">Proposer mon profil aux porteurs de projet</span>
+                      <span id="associate-offer-help" class="mt-1 block text-sm leading-relaxed text-muted-foreground">
+                        Les membres qui ont publié un projet pourront voir votre profil et vous écrire, et vous pourrez consulter leurs projets.
+                        Au moins une compétence est nécessaire. Vous pouvez retirer votre profil à tout moment
+                      </span>
+                    </span>
+                  </label>
+                  <p class="mt-4 border-t border-accent/15 pt-4 text-sm text-muted-foreground">
+                    L'apparition anonyme sur la page publique « Trouver un associé » est un choix séparé, dans
+                    <a routerLink="/parametres" class="font-semibold text-accent hover:underline">Paramètres</a>
+                  </p>
+                </div>
+              }
+
+              @if (mode === 'profil' && !isPro() && associatesEnabled) {
+                <div class="grid gap-3 sm:grid-cols-2">
+                  <a routerLink="/mon-projet" class="group rounded-2xl border border-border p-4 transition-colors hover:border-accent">
+                    <span class="block font-semibold text-primary group-hover:text-accent">Mon projet&nbsp;<span aria-hidden="true">→</span></span>
+                    <span class="mt-1 block text-sm text-muted-foreground">Présenter votre projet et trouver des associés</span>
+                  </a>
+                  <a routerLink="/profil/associe" class="group rounded-2xl border border-border p-4 transition-colors hover:border-accent">
+                    <span class="block font-semibold text-primary group-hover:text-accent">Mon profil d'associé&nbsp;<span aria-hidden="true">→</span></span>
+                    <span class="mt-1 block text-sm text-muted-foreground">Proposer vos compétences aux porteurs de projet</span>
+                  </a>
+                </div>
+              }
+
+              @if (mode === 'profil' && isPro()) {
                 <div class="rounded-2xl border border-accent/20 bg-accent/[0.035] p-5 sm:p-6">
                   <h2 class="text-xl font-semibold text-primary">Votre fiche professionnelle</h2>
                   <p class="mt-1 text-sm text-muted-foreground">
@@ -221,7 +265,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                 </div>
               }
 
-              @if (isMaRole()) {
+              @if (mode === 'profil' && isMaRole()) {
                 <div class="rounded-2xl border border-[#D97706]/30 bg-[#D97706]/[0.04] p-5 sm:p-6" [formGroup]="maForm">
                   <div class="text-sm font-semibold text-amber-700">Marketplace M&A</div>
                   <h2 class="mt-1 text-xl font-semibold text-primary">{{ maLabels().title }}</h2>
@@ -264,14 +308,14 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                 </div>
               }
 
-              @if (isEntrepreneur()) {
+              @if (mode === 'projet') {
                 <div class="rounded-2xl border border-accent/20 bg-accent/[0.035] p-5 sm:p-6" [formGroup]="projectForm">
                   <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <div class="text-sm font-semibold text-accent">Annonce visible par les associés</div>
                       <h2 class="mt-1 text-xl font-semibold text-primary">Mon annonce de projet</h2>
                       <p class="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                        Modifiez ici le projet créé lors de votre inscription. Les informations publiées alimentent directement les résultats de recherche des associés
+                        Les informations publiées alimentent directement les résultats de recherche des associés
                       </p>
                       <p class="mt-3 flex max-w-2xl items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm leading-relaxed text-foreground/80">
                         <svg class="mt-0.5 flex-shrink-0 text-emerald-600" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -517,6 +561,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                 }
               }
 
+              @if (mode === 'profil') {
               <div>
                 <h2 class="text-xl font-semibold text-primary">Liens professionnels</h2>
                 <p class="mt-1 text-sm text-muted-foreground">Ajoutez seulement les liens utiles pour inspirer confiance</p>
@@ -556,6 +601,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                   </div>
                 </div>
               </div>
+              }
 
               @if (errorMessage()) {
                 <div class="rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive" role="alert">
@@ -587,14 +633,16 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                   @if (isSaving()) {
                     Enregistrement...
                   } @else {
-                    Enregistrer les modifications
+                    {{ heading().save }}
                   }
                 </button>
               </div>
             </div>
           </section>
 
-          <app-profile-verification-card class="block xl:col-start-2" />
+          @if (mode === 'profil') {
+            <app-profile-verification-card class="block xl:col-start-2" />
+          }
         </div>
       </div>
     </div>
@@ -618,8 +666,22 @@ export class ModifierComponent implements OnInit {
   readonly projectId = signal<string | null>(null);
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
-  // Compte multi-usages : chaque bloc suit les usages choisis dans Paramètres.
-  readonly isEntrepreneur = computed(() => hasUsage(this.currentUser(), 'projet'));
+  // Trois pages, un même formulaire : le profil général (/profil/modifier), « Mon projet » (/mon-projet) et
+  // « Mon profil d'associé » (/profil/associe). Chaque bouton mène à sa vraie destination.
+  readonly associatesEnabled = isEnabled('associates');
+  readonly mode: 'profil' | 'projet' | 'associe' = inject(ActivatedRoute).snapshot.data['mode'] ?? 'profil';
+  readonly heading = computed(() => {
+    switch (this.mode) {
+      case 'projet':
+        return { title: 'Mon projet', subtitle: 'Présentez votre projet et les compétences qui vous manquent. Une fois publié, il est visible des associés', save: 'Enregistrer mon projet' };
+      case 'associe':
+        return { title: "Mon profil d'associé", subtitle: 'Présentez ce que vous pouvez apporter à un projet, puis choisissez de proposer votre profil', save: 'Enregistrer' };
+      default:
+        return { title: 'Modifier mon profil', subtitle: 'Ajoutez une bio, une photo et vos liens professionnels pour rendre votre profil plus crédible', save: 'Enregistrer les modifications' };
+    }
+  });
+  // Case « Proposer mon profil aux porteurs de projet » : décochée tant que le membre ne l'a pas choisie.
+  readonly associateOffer = signal(offersAssociateProfile(this.auth.currentUser()) || !!this.auth.currentUser()?.associateOfferedAt);
   readonly isPro = computed(() => this.currentUser()?.profileType === 'pro');
   readonly proCategory = signal<ProCategory | ''>(this.auth.currentUser()?.proCategory ?? '');
   readonly proCategories = (Object.keys(PRO_CATEGORY_LABELS) as ProCategory[]).map(value => ({ value, label: PRO_CATEGORY_LABELS[value] }));
@@ -772,36 +834,42 @@ export class ModifierComponent implements OnInit {
   }
 
   async saveProfile(): Promise<void> {
-    this.profileForm.markAllAsTouched();
-    if (this.isEntrepreneur()) {
-      this.projectForm.markAllAsTouched();
-    }
-    if (this.isMaRole()) {
-      this.maForm.markAllAsTouched();
-    }
     this.errorMessage.set('');
     this.successMessage.set('');
 
-    if (
-      this.profileForm.invalid ||
-      (this.isEntrepreneur() && this.projectForm.invalid) ||
-      (this.isMaRole() && this.maForm.invalid)
-    ) {
+    if (this.mode === 'projet') {
+      await this.saveProjectPage();
+      return;
+    }
+
+    this.profileForm.markAllAsTouched();
+    const checkMa = this.mode === 'profil' && this.isMaRole();
+    if (checkMa) {
+      this.maForm.markAllAsTouched();
+    }
+
+    if (this.profileForm.invalid || (checkMa && this.maForm.invalid)) {
       this.errorMessage.set(`À compléter ou raccourcir : ${this.invalidFieldLabels().join(', ')}.`);
       return;
     }
 
     const value = this.profileForm.getRawValue();
+    const skills = this.splitTags(value.skills);
+    if (this.mode === 'associe' && this.associateOffer() && skills.length === 0) {
+      this.errorMessage.set('Ajoutez au moins une compétence pour proposer votre profil.');
+      return;
+    }
+
     const maValue = this.maForm.getRawValue();
     const payload: UpdateProfilePayload = {
       displayName: value.displayName,
       location: value.location,
       profileTitle: value.profileTitle,
       availabilityLabel: value.availabilityLabel,
-      ...(this.isMaRole() ? { maSector: maValue.sector, maBudget: maValue.budget, maRegion: maValue.region } : {}),
-      ...(this.isPro() ? { proCategory: this.proCategory() } : {}),
+      ...(checkMa ? { maSector: maValue.sector, maBudget: maValue.budget, maRegion: maValue.region } : {}),
+      ...(this.mode === 'profil' && this.isPro() ? { proCategory: this.proCategory() } : {}),
       bio: value.bio,
-      skills: this.splitTags(value.skills),
+      skills,
       lookingFor: this.splitTags(value.lookingFor),
       githubUrl: this.normalizeUrl(value.githubUrl),
       linkedinUrl: this.normalizeUrl(value.linkedinUrl),
@@ -819,22 +887,49 @@ export class ModifierComponent implements OnInit {
         return;
       }
 
-      if (this.isEntrepreneur()) {
-        const projectResult = await this.saveProject();
-
-        if (!projectResult) {
-          return;
+      if (this.mode === 'associe') {
+        const wasOffered = !!this.currentUser()?.associateOfferedAt;
+        if (this.associateOffer() !== wasOffered) {
+          const offerResult = await this.auth.setAssociateOffer(this.associateOffer());
+          if (!offerResult.success) {
+            this.errorMessage.set(offerResult.message ?? 'Impossible d’enregistrer ce choix pour le moment.');
+            return;
+          }
         }
+        this.successMessage.set(this.associateOffer()
+          ? 'Profil d’associé enregistré et proposé aux porteurs de projet.'
+          : 'Profil d’associé enregistré. Il n’est pas proposé aux porteurs de projet.');
+        return;
       }
 
-      this.successMessage.set(this.isEntrepreneur()
-        ? this.projectForm.controls.isActive.value
-          ? 'Profil et annonce de projet mis à jour.'
-          : 'Profil mis à jour, annonce enregistrée en brouillon (non visible par les associés).'
-        : 'Profil mis à jour. Vous pouvez ouvrir votre profil pour vérifier le rendu.'
-      );
+      this.successMessage.set('Profil mis à jour. Vous pouvez ouvrir votre profil pour vérifier le rendu.');
       this.photoMessage.set('');
       this.photoErrorMessage.set('');
+    } finally {
+      this.isSaving.set(false);
+    }
+  }
+
+  // « Mon projet » : seul le projet est enregistré. Le publier ajoute l'objectif « Trouver des associés ».
+  private async saveProjectPage(): Promise<void> {
+    this.projectForm.markAllAsTouched();
+    if (this.projectForm.invalid) {
+      this.errorMessage.set(`À compléter ou raccourcir : ${this.invalidFieldLabels().join(', ')}.`);
+      return;
+    }
+
+    this.isSaving.set(true);
+    try {
+      if (!(await this.saveProject())) {
+        return;
+      }
+      const published = this.projectForm.controls.isActive.value;
+      if (published) {
+        await this.auth.noteActionUsage('projet');
+      }
+      this.successMessage.set(published
+        ? 'Projet publié. Il est visible des associés.'
+        : 'Projet enregistré en brouillon (non visible par les associés).');
     } finally {
       this.isSaving.set(false);
     }
@@ -886,7 +981,7 @@ export class ModifierComponent implements OnInit {
   private async loadProject(): Promise<void> {
     await this.auth.ensureSessionReady();
 
-    if (!this.isEntrepreneur()) {
+    if (this.mode !== 'projet') {
       return;
     }
 
@@ -963,7 +1058,7 @@ export class ModifierComponent implements OnInit {
       }
     };
 
-    collect(this.profileForm.controls, {
+    if (this.mode !== 'projet') collect(this.profileForm.controls, {
       displayName: 'Nom complet',
       location: 'Localisation',
       profileTitle: 'Titre du profil (90 caractères max.)',
@@ -976,7 +1071,7 @@ export class ModifierComponent implements OnInit {
       websiteUrl: 'Site / portfolio',
     });
 
-    if (this.isEntrepreneur()) {
+    if (this.mode === 'projet') {
       collect(this.projectForm.controls, {
         name: 'Nom du projet',
         sector: 'Secteur',
@@ -990,7 +1085,7 @@ export class ModifierComponent implements OnInit {
       });
     }
 
-    if (this.isMaRole()) {
+    if (this.mode === 'profil' && this.isMaRole()) {
       collect(this.maForm.controls, { sector: 'Secteur M&A', budget: 'Budget / ordre de grandeur', region: 'Région' });
     }
 

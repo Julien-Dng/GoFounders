@@ -4,7 +4,7 @@ import { MARKETPLACE_PROFILES } from '../data/mock-platform.data';
 import { ProjectAccessStatus, SupabaseProjectAccessRequestRow } from '../models/supabase-database.model';
 import { AuthService } from './auth.service';
 import { SupabaseService } from './supabase.service';
-import { hasUsage } from '../models/user.model';
+import { offersAssociateProfile } from '../models/user.model';
 
 const LOCAL_REQUESTS_KEY = 'gofounders.mock.access-requests';
 
@@ -185,7 +185,7 @@ export class ProjectAccessService {
   private requestLocally(projectId: string, acceptNda: boolean, names: { projectName: string; ownerName: string }): RequestAccessResult {
     const user = this.auth.currentUser();
 
-    if (!user || !hasUsage(user, 'associe') || (user.skills?.length ?? 0) === 0) {
+    if (!user || !offersAssociateProfile(user)) {
       return { success: false, message: ERROR_MESSAGES['ACCES_RESERVE_ASSOCIES'] };
     }
 
