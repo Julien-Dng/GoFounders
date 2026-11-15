@@ -8,6 +8,7 @@ import { MaService, VerificationRequest } from '../../../core/services/ma.servic
 import { PaymentService } from '../../../core/services/payment.service';
 import { ListingAccessService, ListingReview, ReceivedAccessRequest } from '../../../core/services/listing-access.service';
 import { FEATURES } from '../../../core/config/features';
+import { MesEntreprisesTabsComponent } from '../../../shared/components/mes-entreprises-tabs/mes-entreprises-tabs.component';
 import { VerifiedBadgeComponent } from '../../../shared/components/verified-badge/verified-badge.component';
 
 // Annonces du vendeur (ou du cabinet avec un compte pro) : relecture, demandes d'accès, modification ;
@@ -15,16 +16,14 @@ import { VerifiedBadgeComponent } from '../../../shared/components/verified-badg
 @Component({
   selector: 'app-ma-mes-annonces',
   standalone: true,
-  imports: [RouterLink, VerifiedBadgeComponent],
+  imports: [RouterLink, VerifiedBadgeComponent, MesEntreprisesTabsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-secondary px-4 pb-16 pt-28 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-5xl">
-        <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 class="text-3xl font-semibold text-primary sm:text-4xl">Mes annonces</h1>
-            <p class="mt-2 text-muted-foreground">Suivez la relecture de vos annonces et choisissez les repreneurs qui voient votre dossier</p>
-          </div>
+        <app-mes-entreprises-tabs />
+        <div class="mb-8 mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <p class="text-muted-foreground">Suivez la relecture de vos annonces et les repreneurs qui ont ouvert votre dossier</p>
           <div class="flex flex-wrap gap-2">
             <a routerLink="/ma/statistiques" class="rounded-lg border border-border bg-white px-5 py-3 text-center text-sm font-semibold transition-colors hover:border-primary">Mes statistiques</a>
             @if (canPublish()) {

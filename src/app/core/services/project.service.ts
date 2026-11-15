@@ -24,6 +24,8 @@ export interface EditableProject {
   // Partie réservée aux associés dont le porteur a accepté la demande d'accès.
   confidentialDetails: string;
   ndaRequired: boolean;
+  // Aperçu anonyme sur la vitrine publique, seulement pour un projet publié.
+  publicListing: boolean;
 }
 
 export interface SaveProjectPayload {
@@ -38,6 +40,8 @@ export interface SaveProjectPayload {
   openToEquity: boolean;
   confidentialDetails: string;
   ndaRequired: boolean;
+  // Aperçu anonyme sur la vitrine publique, seulement pour un projet publié.
+  publicListing: boolean;
 }
 
 export interface SaveProjectResult {
@@ -106,6 +110,7 @@ export class ProjectService {
       open_to_equity: payload.openToEquity,
       confidential_details: this.optionalText(payload.confidentialDetails),
       nda_required: payload.ndaRequired,
+      public_listing: payload.isActive && payload.publicListing,
       updated_at: new Date().toISOString(),
     };
 
@@ -121,7 +126,7 @@ export class ProjectService {
       if (error || !data) {
         return {
           success: false,
-          message: error?.message ?? "Impossible de mettre à jour l'annonce.",
+          message: this.readableError(error?.message) ?? "Impossible de mettre à jour l'annonce.",
         };
       }
 
@@ -141,6 +146,7 @@ export class ProjectService {
       open_to_equity: values.open_to_equity,
       confidential_details: values.confidential_details,
       nda_required: values.nda_required,
+      public_listing: values.public_listing,
       updated_at: values.updated_at,
     };
     const { data, error } = await this.supabase.client
@@ -152,7 +158,7 @@ export class ProjectService {
     if (error || !data) {
       return {
         success: false,
-        message: error?.message ?? "Impossible de créer l'annonce.",
+        message: this.readableError(error?.message) ?? "Impossible de créer l'annonce.",
       };
     }
 
@@ -182,6 +188,7 @@ export class ProjectService {
       openToEquity: payload.openToEquity,
       confidentialDetails: payload.confidentialDetails.trim(),
       ndaRequired: payload.ndaRequired,
+      publicListing: payload.isActive && payload.publicListing,
     };
 
     if (existingIndex >= 0) {
@@ -222,7 +229,15 @@ export class ProjectService {
       openToEquity: row.open_to_equity ?? false,
       confidentialDetails,
       ndaRequired: row.nda_required ?? false,
+      publicListing: row.public_listing ?? false,
     };
+  }
+
+  private readableError(message: string | undefined): string | undefined {
+    if (message?.includes('PROJET_INCOMPLET')) {
+      return 'Pour publier, indiquez un titre, une présentation d’au moins 50 caractères et au moins une compétence recherchée. Vous pouvez aussi enregistrer un brouillon.';
+    }
+    return message;
   }
 
   private optionalText(value: string): string | null {

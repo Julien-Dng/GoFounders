@@ -4,7 +4,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { MarketplaceProfile } from '../../core/data/mock-platform.data';
-import { MATCH_REASONS_UPSELL, canSeeMatchReasons, hasUsage, usageSummary } from '../../core/models/user.model';
+import { MATCH_REASONS_UPSELL, canSeeMatchReasons, hasUsage, isAssociateProfileComplete, isProjectPresented, usageSummary } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { MatchingService } from '../../core/services/matching.service';
 import { StatsService } from '../../core/services/stats.service';
@@ -104,6 +104,12 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                           </svg>
                           Modifier mon profil
                         </a>
+                      } @else if (contactGate()) {
+                        <!-- Pour écrire : projet présenté (vers un associé) ou profil d'associé complété (vers un porteur). -->
+                        <a [routerLink]="contactGate()!.path" class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-white transition-colors hover:bg-primary/90">
+                          {{ contactGate()!.label }}
+                        </a>
+                        <p class="text-sm text-muted-foreground sm:basis-full">{{ contactGate()!.hint }}</p>
                       } @else {
                         <a routerLink="/messages" [queryParams]="{ conversation: profileId() }" class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-white transition-all hover:scale-105 hover:bg-primary/90 active:scale-95">
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -651,6 +657,20 @@ export class ProfilComponent implements OnInit {
     && this.publicProfile()?.profileType === 'talent'
     && !!this.myProject()?.confidentialDetails?.trim()
   );
+  // Ce qu'il manque pour écrire à ce membre (règles de 2026-11-17-visibilite-contact.sql, vérifiées aussi par Supabase).
+  readonly contactGate = computed<{ label: string; path: string; hint: string } | null>(() => {
+    const profile = this.publicProfile();
+    if (this.isOwnProfile() || !profile) {
+      return null;
+    }
+    if (profile.profileType === 'talent' && !isProjectPresented(this.myProject())) {
+      return { label: 'Présenter mon projet pour lui écrire', path: '/mon-projet', hint: 'Un brouillon suffit : titre, courte présentation et compétences recherchées. Il ne sera lisible que par les associés à qui vous écrivez' };
+    }
+    if (profile.profileType === 'entrepreneur' && !isAssociateProfileComplete(this.currentUser())) {
+      return { label: 'Compléter mon profil d’associé pour lui écrire', path: '/profil/associe', hint: 'Intitulé, une compétence et une courte présentation. Vous n’avez pas besoin d’être visible dans la recherche' };
+    }
+    return null;
+  });
   readonly isProjectProfile = computed(() => !this.isOwnProfile() && this.publicProfile()?.profileType === 'entrepreneur');
   readonly accessState = computed(() => this.myRequest()?.status ?? 'none');
   private readonly ndaParties = computed(() => ({
@@ -781,7 +801,7 @@ export class ProfilComponent implements OnInit {
       await this.loadAccess(profile.id);
     }
 
-    if (profile?.profileType === 'talent' && hasUsage(this.currentUser(), 'projet')) {
+    if (profile?.profileType === 'talent') {
       await this.loadInvitation(profile.id);
     }
   }

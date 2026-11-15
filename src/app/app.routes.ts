@@ -138,6 +138,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/ma/ma-favoris/ma-favoris.component').then(m => m.MaFavorisComponent)
       },
       {
+        path: 'ma/dossiers',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/ma/ma-dossiers/ma-dossiers.component').then(m => m.MaDossiersComponent)
+      },
+      {
         path: 'ma/mes-annonces',
         canActivate: [authGuard],
         loadComponent: () => import('./features/ma/ma-mes-annonces/ma-mes-annonces.component').then(m => m.MaMesAnnoncesComponent)

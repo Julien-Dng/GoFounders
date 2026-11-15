@@ -23,6 +23,7 @@ from (values
   (15, '2026-11-11-titre-annonce.sql',                exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'ma_listings' and column_name = 'public_title')),
   (16, '2026-11-13-compte-multi-usages.sql',          exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'usages')),
   (17, '2026-11-15-objectifs-automatiques.sql',      exists (select 1 from pg_proc where proname = 'set_associate_offer')),
-  (18, '2026-11-16-favoris.sql',                     exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'listing_favorites'))
+  (18, '2026-11-16-favoris.sql',                     exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'listing_favorites')),
+  (19, '2026-11-17-visibilite-contact.sql',          exists (select 1 from pg_proc where proname = 'project_presented'))
 ) as check_list(ordre, migration, passee)
 order by ordre;

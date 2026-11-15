@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, ElementRef, HostListener, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { hasUsage, isProAccount, offersAssociateProfile } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { ShowcaseEntry, ShowcaseService } from '../../core/services/showcase.service';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
@@ -46,9 +45,6 @@ const STAGE_LABELS: Record<string, string> = {
           <div class="mt-8 flex flex-col gap-3 sm:flex-row">
             @if (canBrowseFull()) {
               <a routerLink="/recherche" class="rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90">Ouvrir la recherche complète</a>
-            } @else if (isAuthenticated() && !isPro()) {
-              <a routerLink="/mon-projet" class="rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90">Présenter mon projet</a>
-              <a routerLink="/profil/associe" class="rounded-lg border border-white/30 px-6 py-3.5 text-center font-semibold text-white transition-colors hover:border-white/70">Proposer mes compétences</a>
             } @else {
               <a routerLink="/inscription" [queryParams]="{ profil: 'entrepreneur' }" class="rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90">Je cherche un associé</a>
               <a routerLink="/inscription" [queryParams]="{ profil: 'talent' }" class="rounded-lg border border-white/30 px-6 py-3.5 text-center font-semibold text-white transition-colors hover:border-white/70">Je veux devenir associé</a>
@@ -316,29 +312,16 @@ export class AssociesComponent implements OnInit {
         { title: 'Trouvez votre projet', detail: 'Découvrez les projets qui recrutent et ce qu’ils recherchent' },
         { title: 'Échangez directement', detail: 'Prenez contact avec le porteur et avancez ensemble' },
       ]);
-  readonly canBrowseFull = computed(() => this.canOpen('talent') || this.canOpen('project'));
-  // Bannière finale selon la personne : visiteur → inscription ; membre qui peut déjà consulter l'onglet → recherche
-  // complète ; sinon → l'action qui ouvre l'accès (présenter son projet, proposer ses compétences) ; compte pro → rien.
-  readonly banner = computed<{ title: string; text: string | null; path: string; params: Record<string, string> | null; label: string } | null>(() => {
-    const user = this.auth.currentUser();
+  readonly canBrowseFull = computed(() => this.canOpen());
+  // Bannière finale : inscription pour les visiteurs, recherche complète pour les membres.
+  readonly banner = computed<{ title: string; text: string | null; path: string; params: Record<string, string> | null; label: string }>(() => {
     const talentTab = this.tab() === 'talent';
     const title = talentTab ? 'Votre prochain associé est peut-être ici' : 'Votre prochain projet est peut-être ici';
-
-    if (!this.isAuthenticated()) {
-      return { title, text: null, path: '/inscription', params: { profil: talentTab ? 'entrepreneur' : 'talent' }, label: 'Commencer gratuitement' };
-    }
-    if (isProAccount(user)) {
-      return null;
-    }
-    if (this.canOpen(talentTab ? 'talent' : 'project')) {
-      return { title, text: null, path: '/recherche', params: null, label: talentTab ? 'Voir tous les associés' : 'Voir tous les projets' };
-    }
-    return talentTab
-      ? { title: 'Vous cherchez un associé ?', text: 'Présentez votre projet et les compétences qui vous manquent : les associés pourront le découvrir et vous écrire', path: '/mon-projet', params: null, label: 'Présenter mon projet' }
-      : { title: 'Envie de rejoindre un projet ?', text: 'Proposez vos compétences aux porteurs de projet pour consulter leurs projets et leur écrire', path: '/profil/associe', params: null, label: 'Proposer mes compétences' };
+    return this.isAuthenticated()
+      ? { title, text: null, path: '/recherche', params: null, label: talentTab ? 'Voir tous les associés' : 'Voir tous les projets' }
+      : { title, text: null, path: '/inscription', params: { profil: talentTab ? 'entrepreneur' : 'talent' }, label: 'Commencer gratuitement' };
   });
   readonly isAuthenticated = this.auth.isAuthenticated;
-  readonly isPro = computed(() => isProAccount(this.auth.currentUser()));
 
 
   async ngOnInit(): Promise<void> {
@@ -408,34 +391,23 @@ export class AssociesComponent implements OnInit {
     return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   }
 
-  // Associés : visibles une fois son projet publié (objectif ajouté automatiquement). Projets : une fois son profil
-  // d'associé proposé. Les règles réelles sont vérifiées par Supabase.
-  private canOpen(kind: 'talent' | 'project'): boolean {
-    const user = this.auth.currentUser();
-    return kind === 'talent' ? hasUsage(user, 'projet') : offersAssociateProfile(user);
+  // Consulter est ouvert à tout membre connecté (2026-11-17-visibilite-contact.sql) ; écrire demande un projet présenté
+  // ou un profil d'associé complété, indiqué sur le profil.
+  private canOpen(): boolean {
+    return this.auth.isAuthenticated();
   }
 
   stageLabel(stage: string | null): string {
     return stage ? STAGE_LABELS[stage] ?? stage : 'Stade non précisé';
   }
 
-  // Membre du bon rôle : profil complet. Visiteur : inscription dans le rôle complémentaire, retour sur le profil.
+  // Membre : profil complet. Visiteur : inscription dans le rôle complémentaire, retour sur le profil.
   profileLink(entry: ShowcaseEntry): { path: string; params: Record<string, string> | null; label: string } {
-    // Compte multi-usages : les associés pour qui cherche des associés, les projets pour qui veut en rejoindre un.
     const wantedRole = entry.kind === 'talent' ? 'entrepreneur' : 'talent';
     const label = entry.kind === 'talent' ? 'Voir le profil' : 'Voir le projet';
 
-    if (this.canOpen(entry.kind)) {
+    if (this.canOpen()) {
       return { path: `/profil/${entry.profile_id}`, params: null, label };
-    }
-
-    if (this.auth.isAuthenticated()) {
-      if (this.isPro()) {
-        return { path: '', params: null, label: 'Réservé aux membres' };
-      }
-      return entry.kind === 'talent'
-        ? { path: '/mon-projet', params: null, label: 'Présenter mon projet pour le contacter' }
-        : { path: '/profil/associe', params: null, label: 'Proposer mes compétences pour le voir' };
     }
 
     return { path: '/inscription', params: { profil: wantedRole, returnUrl: `/profil/${entry.profile_id}` }, label: `${label}` };

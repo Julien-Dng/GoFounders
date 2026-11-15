@@ -314,6 +314,8 @@ export interface SupabaseProjectRow {
   is_active: boolean;
   open_to_equity?: boolean | null;
   nda_required?: boolean | null;
+  // Aperçu anonyme du projet sur la vitrine /associes, seulement s'il est publié (2026-11-17-visibilite-contact.sql).
+  public_listing?: boolean | null;
   // Indique qu'une partie confidentielle existe ; son contenu passe par get_project_confidential().
   has_confidential_details?: boolean | null;
   created_at: string;
@@ -322,7 +324,7 @@ export interface SupabaseProjectRow {
 
 // Colonnes lisibles d'un projet : jamais de select('*') (confidential_details n'est pas accordée en lecture).
 export const PROJECT_COLUMNS =
-  'id, owner_id, name, sector, stage, description, looking_for, skills_needed, location, is_active, open_to_equity, nda_required, has_confidential_details, created_at, updated_at';
+  'id, owner_id, name, sector, stage, description, looking_for, skills_needed, location, is_active, open_to_equity, nda_required, has_confidential_details, public_listing, created_at, updated_at';
 
 export type ProjectAccessStatus = 'pending' | 'approved' | 'refused';
 
@@ -357,6 +359,7 @@ export interface SupabaseProjectInsert {
   nda_required?: boolean;
   created_at?: string;
   updated_at?: string;
+  public_listing?: boolean;
 }
 
 export interface SupabaseProjectUpdate {
@@ -372,4 +375,5 @@ export interface SupabaseProjectUpdate {
   confidential_details?: string | null;
   nda_required?: boolean;
   updated_at?: string;
+  public_listing?: boolean;
 }

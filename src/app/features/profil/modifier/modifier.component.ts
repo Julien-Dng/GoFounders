@@ -8,7 +8,7 @@ import { ProjectService } from '../../../core/services/project.service';
 import { ProjectAccessRequest, ProjectAccessService } from '../../../core/services/project-access.service';
 import { downloadTextFile, ndaProofDocument } from '../../../core/legal/nda';
 import { ProjectAccessStatus } from '../../../core/models/supabase-database.model';
-import { PRO_CATEGORY_LABELS, ProCategory, hasUsage, offersAssociateProfile, usagesOf } from '../../../core/models/user.model';
+import { MIN_PRESENTATION_LENGTH, PRO_CATEGORY_LABELS, ProCategory, hasUsage, isProjectPresented, usagesOf } from '../../../core/models/user.model';
 import { isEnabled } from '../../../core/config/features';
 import { ProfileVerificationCardComponent } from '../../../shared/components/profile-verification-card/profile-verification-card.component';
 
@@ -148,7 +148,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                   }
 
                   <div>
-                    <label for="profile-title" class="mb-2 block text-sm font-semibold">Titre du profil</label>
+                    <label for="profile-title" class="mb-2 block text-sm font-semibold">{{ mode === 'associe' ? 'Intitulé' : 'Titre du profil' }}</label>
                     <input
                       id="profile-title"
                       type="text"
@@ -172,7 +172,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
               </div>
 
               <div>
-                <label for="profile-bio" class="mb-2 block text-sm font-semibold">Bio</label>
+                <label for="profile-bio" class="mb-2 block text-sm font-semibold">{{ mode === 'associe' ? 'Présentation' : 'Bio' }}</label>
                 <textarea
                   id="profile-bio"
                   formControlName="bio"
@@ -215,22 +215,41 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
               }
 
               @if (mode === 'associe') {
-                <!-- Choix explicite : proposer son profil aux porteurs de projet (set_associate_offer). -->
+                <!-- Profil complété : pour écrire aux porteurs (même sans être visible). Visible : choix explicite (set_associate_offer).
+                     Vitrine : option en plus, seulement si le profil est visible (2026-11-17-visibilite-contact.sql). -->
+                <div class="rounded-2xl border border-border p-5 sm:p-6" aria-labelledby="associate-complete-title">
+                  <h2 id="associate-complete-title" class="font-semibold text-primary">Profil complété {{ associateChecklistDone() ? '✓' : '' }}</h2>
+                  <p class="mt-1 text-sm text-muted-foreground">Nécessaire pour écrire aux porteurs de projet et pour apparaître dans la recherche</p>
+                  <ul class="mt-3 space-y-1 text-sm">
+                    @for (item of associateChecklist(); track item.label) {
+                      <li class="flex items-center gap-2" [class]="item.done ? 'text-emerald-700' : 'text-muted-foreground'">
+                        <span aria-hidden="true">{{ item.done ? '✓' : '○' }}</span>{{ item.label }}<span class="sr-only">{{ item.done ? ' : fait' : ' : à compléter' }}</span>
+                      </li>
+                    }
+                  </ul>
+                </div>
+
                 <div class="rounded-2xl border border-accent/20 bg-accent/[0.035] p-5 sm:p-6">
                   <label for="associate-offer" class="flex cursor-pointer items-start gap-3">
-                    <input id="associate-offer" type="checkbox" class="mt-1 h-4 w-4 accent-accent" [checked]="associateOffer()" (change)="associateOffer.set($any($event.target).checked)" aria-describedby="associate-offer-help">
+                    <input id="associate-offer" type="checkbox" class="mt-1 h-4 w-4 accent-accent" [checked]="associateOffer()" (change)="setAssociateOfferDraft($any($event.target).checked)" aria-describedby="associate-offer-help">
                     <span>
-                      <span class="block font-semibold text-primary">Proposer mon profil aux porteurs de projet</span>
+                      <span class="block font-semibold text-primary">Rendre mon profil visible</span>
                       <span id="associate-offer-help" class="mt-1 block text-sm leading-relaxed text-muted-foreground">
-                        Les membres qui ont publié un projet pourront voir votre profil et vous écrire, et vous pourrez consulter leurs projets.
-                        Au moins une compétence est nécessaire. Vous pouvez retirer votre profil à tout moment
+                        Les membres de GoFounders pourront voir votre profil dans la recherche et les recommandations, et vous écrire.
+                        Sans cette case, vous pouvez quand même écrire aux porteurs de projet : seuls ceux à qui vous écrivez voient votre profil
                       </span>
                     </span>
                   </label>
-                  <p class="mt-4 border-t border-accent/15 pt-4 text-sm text-muted-foreground">
-                    L'apparition anonyme sur la page publique « Trouver un associé » est un choix séparé, dans
-                    <a routerLink="/parametres" class="font-semibold text-accent hover:underline">Paramètres</a>
-                  </p>
+                  <label for="associate-vitrine" class="mt-4 flex items-start gap-3 border-t border-accent/15 pt-4" [class]="associateOffer() ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'">
+                    <input id="associate-vitrine" type="checkbox" class="mt-1 h-4 w-4 accent-accent" [checked]="associateOffer() && associateVitrine()" [disabled]="!associateOffer()" (change)="associateVitrine.set($any($event.target).checked)" aria-describedby="associate-vitrine-help">
+                    <span>
+                      <span class="block font-semibold text-primary">Autoriser un aperçu anonyme sur la vitrine publique</span>
+                      <span id="associate-vitrine-help" class="mt-1 block text-sm leading-relaxed text-muted-foreground">
+                        Les visiteurs de la page <a routerLink="/associes" class="relative z-10 font-semibold text-accent hover:underline">Trouver un associé</a> voient votre intitulé,
+                        vos compétences et votre disponibilité, jamais votre nom, votre photo ni votre ville{{ associateOffer() ? '' : '. Disponible quand votre profil est visible' }}
+                      </span>
+                    </span>
+                  </label>
                 </div>
               }
 
@@ -312,17 +331,18 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                 <div class="rounded-2xl border border-accent/20 bg-accent/[0.035] p-5 sm:p-6" [formGroup]="projectForm">
                   <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <div class="text-sm font-semibold text-accent">Annonce visible par les associés</div>
-                      <h2 class="mt-1 text-xl font-semibold text-primary">Mon annonce de projet</h2>
+                      <div class="text-sm font-semibold text-accent">{{ isProjectPublished() ? 'Publié : visible des membres' : 'Brouillon : non visible dans la recherche' }}</div>
+                      <h2 class="mt-1 text-xl font-semibold text-primary">Présentation du projet</h2>
                       <p class="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                        Les informations publiées alimentent directement les résultats de recherche des associés
+                        Un titre, une présentation d'au moins 50 caractères et une compétence recherchée suffisent pour écrire aux associés,
+                        même en brouillon. Publié, votre projet apparaît dans la recherche et les recommandations
                       </p>
                       <p class="mt-3 flex max-w-2xl items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm leading-relaxed text-foreground/80">
                         <svg class="mt-0.5 flex-shrink-0 text-emerald-600" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                         </svg>
                         <span>
-                          <strong>Votre idée reste protégée</strong> Votre projet n'est visible que par les associés, jamais par les autres porteurs de projet.
+                          <strong>Votre idée reste protégée</strong> En brouillon, seuls les associés à qui vous écrivez lisent sa présentation.
                           Les détails sensibles vont dans la partie confidentielle : vous choisissez qui y accède, et pouvez exiger un engagement de confidentialité (NDA)
                         </span>
                       </p>
@@ -330,7 +350,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
 
                     <label class="inline-flex flex-shrink-0 items-center gap-3 rounded-full border border-border bg-white px-4 py-2 text-sm font-semibold">
                       <input type="checkbox" formControlName="isActive" class="h-4 w-4 accent-accent">
-                      Annonce publiée
+                      Publié dans la recherche
                     </label>
                   </div>
 
@@ -388,8 +408,8 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
 
                       <div class="md:col-span-2">
                         <label for="project-description" class="mb-2 block text-sm font-semibold">
-                          Présentation de l'annonce
-                          <span class="font-normal text-muted-foreground">{{ isProjectPublished() ? '(obligatoire pour publier)' : '(facultative en brouillon)' }}</span>
+                          Présentation du projet
+                          <span class="font-normal text-muted-foreground">(au moins 50 caractères pour publier ou écrire à un associé)</span>
                         </label>
                         <textarea
                           id="project-description"
@@ -415,7 +435,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                       </div>
 
                       <div>
-                        <label for="project-skills" class="mb-2 block text-sm font-semibold">Compétences attendues</label>
+                        <label for="project-skills" class="mb-2 block text-sm font-semibold">Compétences recherchées <span class="font-normal text-muted-foreground">(au moins une)</span></label>
                         <textarea
                           id="project-skills"
                           formControlName="skillsNeeded"
@@ -424,6 +444,18 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                           placeholder="Angular, UX/UI, vente B2B..."
                         ></textarea>
                         <p class="mt-2 text-sm text-muted-foreground">Séparez les compétences par des virgules</p>
+                      </div>
+
+                      <div class="md:col-span-2">
+                        <label for="project-vitrine" class="flex items-start gap-3 rounded-xl border border-border bg-white px-4 py-3" [class]="isProjectPublished() ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'">
+                          <input id="project-vitrine" type="checkbox" formControlName="publicListing" class="mt-1 h-4 w-4 accent-accent" aria-describedby="project-vitrine-help">
+                          <span>
+                            <span class="block font-semibold text-primary">Autoriser un aperçu anonyme sur la vitrine publique</span>
+                            <span id="project-vitrine-help" class="mt-1 block text-sm leading-relaxed text-muted-foreground">
+                              Les visiteurs voient le secteur, le stade et les profils recherchés, jamais votre nom, celui du projet ni sa présentation{{ isProjectPublished() ? '' : '. Disponible quand le projet est publié' }}
+                            </span>
+                          </span>
+                        </label>
                       </div>
 
                       <div class="md:col-span-2">
@@ -675,13 +707,22 @@ export class ModifierComponent implements OnInit {
       case 'projet':
         return { title: 'Mon projet', subtitle: 'Présentez votre projet et les compétences qui vous manquent. Une fois publié, il est visible des associés', save: 'Enregistrer mon projet' };
       case 'associe':
-        return { title: "Mon profil d'associé", subtitle: 'Présentez ce que vous pouvez apporter à un projet, puis choisissez de proposer votre profil', save: 'Enregistrer' };
+        return { title: "Mon profil d'associé", subtitle: 'Présentez ce que vous pouvez apporter à un projet, puis choisissez si votre profil apparaît dans la recherche', save: 'Enregistrer' };
       default:
         return { title: 'Modifier mon profil', subtitle: 'Ajoutez une bio, une photo et vos liens professionnels pour rendre votre profil plus crédible', save: 'Enregistrer les modifications' };
     }
   });
-  // Case « Proposer mon profil aux porteurs de projet » : décochée tant que le membre ne l'a pas choisie.
-  readonly associateOffer = signal(offersAssociateProfile(this.auth.currentUser()) || !!this.auth.currentUser()?.associateOfferedAt);
+  // Case « Rendre mon profil visible » : décochée tant que le membre ne l'a pas choisie. Vitrine : option en plus.
+  readonly associateOffer = signal(!!this.auth.currentUser()?.associateOfferedAt);
+  readonly associateVitrine = signal(false);
+  private savedVitrine = false;
+
+  setAssociateOfferDraft(checked: boolean): void {
+    this.associateOffer.set(checked);
+    if (!checked) {
+      this.associateVitrine.set(false);
+    }
+  }
   readonly isPro = computed(() => this.currentUser()?.profileType === 'pro');
   readonly proCategory = signal<ProCategory | ''>(this.auth.currentUser()?.proCategory ?? '');
   readonly proCategories = (Object.keys(PRO_CATEGORY_LABELS) as ProCategory[]).map(value => ({ value, label: PRO_CATEGORY_LABELS[value] }));
@@ -738,6 +779,18 @@ export class ModifierComponent implements OnInit {
     websiteUrl: [this.currentUser()?.websiteUrl ?? '', Validators.maxLength(160)],
   });
 
+  // Profil complété (règle de Supabase), suivi en direct pendant la saisie.
+  private readonly profileValues = toSignal(this.profileForm.valueChanges, { initialValue: this.profileForm.getRawValue() });
+  readonly associateChecklist = computed(() => {
+    const value = this.profileValues();
+    return [
+      { label: 'Un intitulé', done: !!value.profileTitle?.trim() },
+      { label: 'Au moins une compétence', done: this.splitTags(value.skills ?? '').length > 0 },
+      { label: `Une présentation d'au moins ${MIN_PRESENTATION_LENGTH} caractères (${(value.bio ?? '').trim().length}/${MIN_PRESENTATION_LENGTH})`, done: (value.bio ?? '').trim().length >= MIN_PRESENTATION_LENGTH },
+    ];
+  });
+  readonly associateChecklistDone = computed(() => this.associateChecklist().every(item => item.done));
+
   readonly maForm = this.fb.nonNullable.group({
     sector: [this.currentUser()?.maSector ?? '', [Validators.required, Validators.maxLength(80)]],
     budget: [this.currentUser()?.maBudget ?? '', [Validators.required, Validators.maxLength(80)]],
@@ -757,15 +810,27 @@ export class ModifierComponent implements OnInit {
     openToEquity: [false],
     confidentialDetails: ['', Validators.maxLength(3000)],
     ndaRequired: [false],
+    publicListing: [false],
   });
 
   // Une annonce publiée doit avoir une présentation ; un brouillon peut rester incomplet.
   private readonly syncDescriptionRequirement = this.projectForm.controls.isActive.valueChanges
     .pipe(takeUntilDestroyed())
     .subscribe(isActive => {
+      // Publier exige le même minimum que Supabase (enforce_project_minimum) ; un brouillon peut rester incomplet.
       const description = this.projectForm.controls.description;
-      description.setValidators(isActive ? [Validators.required, Validators.maxLength(900)] : [Validators.maxLength(900)]);
+      description.setValidators(isActive ? [Validators.required, Validators.minLength(MIN_PRESENTATION_LENGTH), Validators.maxLength(900)] : [Validators.maxLength(900)]);
       description.updateValueAndValidity();
+      const skills = this.projectForm.controls.skillsNeeded;
+      skills.setValidators(isActive ? [Validators.required, Validators.maxLength(260)] : [Validators.maxLength(260)]);
+      skills.updateValueAndValidity();
+      const vitrine = this.projectForm.controls.publicListing;
+      if (isActive) {
+        vitrine.enable({ emitEvent: false });
+      } else {
+        vitrine.setValue(false, { emitEvent: false });
+        vitrine.disable({ emitEvent: false });
+      }
     });
 
   readonly isProjectPublished = toSignal(this.projectForm.controls.isActive.valueChanges, { initialValue: true });
@@ -784,6 +849,12 @@ export class ModifierComponent implements OnInit {
       this.profileForm.controls.profileTitle.setValue('');
     }
     void this.loadProject();
+    if (this.mode === 'associe') {
+      void this.auth.getPublicListing().then(value => {
+        this.savedVitrine = !!value && this.associateOffer();
+        this.associateVitrine.set(this.savedVitrine);
+      });
+    }
   }
 
   onPhotoSelected(event: Event): void {
@@ -860,8 +931,8 @@ export class ModifierComponent implements OnInit {
 
     const value = this.profileForm.getRawValue();
     const skills = this.splitTags(value.skills);
-    if (this.mode === 'associe' && this.associateOffer() && skills.length === 0) {
-      this.errorMessage.set('Ajoutez au moins une compétence pour proposer votre profil.');
+    if (this.mode === 'associe' && this.associateOffer() && !this.associateChecklistDone()) {
+      this.errorMessage.set(`Pour rendre votre profil visible, complétez-le : un intitulé, au moins une compétence et une présentation d'au moins ${MIN_PRESENTATION_LENGTH} caractères.`);
       return;
     }
 
@@ -901,9 +972,20 @@ export class ModifierComponent implements OnInit {
             return;
           }
         }
+        const vitrine = this.associateOffer() && this.associateVitrine();
+        if (vitrine !== this.savedVitrine) {
+          const vitrineResult = await this.auth.setPublicListing(vitrine);
+          if (!vitrineResult.success) {
+            this.errorMessage.set(vitrineResult.message ?? 'Impossible d’enregistrer l’aperçu sur la vitrine pour le moment.');
+            return;
+          }
+          this.savedVitrine = vitrine;
+        }
         this.successMessage.set(this.associateOffer()
-          ? 'Profil d’associé enregistré et proposé aux porteurs de projet.'
-          : 'Profil d’associé enregistré. Il n’est pas proposé aux porteurs de projet.');
+          ? 'Profil d’associé enregistré et visible des membres.'
+          : this.associateChecklistDone()
+            ? 'Profil d’associé enregistré. Il n’apparaît pas dans la recherche, mais vous pouvez écrire aux porteurs de projet.'
+            : 'Profil d’associé enregistré. Complétez-le pour pouvoir écrire aux porteurs de projet.');
         return;
       }
 
@@ -932,9 +1014,13 @@ export class ModifierComponent implements OnInit {
       if (published) {
         await this.auth.noteActionUsage('projet');
       }
+      const value = this.projectForm.getRawValue();
+      const presented = isProjectPresented({ name: value.name, description: value.description, skillsNeeded: this.splitTags(value.skillsNeeded) });
       this.successMessage.set(published
-        ? 'Projet publié. Il est visible des associés.'
-        : 'Projet enregistré en brouillon (non visible par les associés).');
+        ? 'Projet publié : il est visible des membres dans la recherche.'
+        : presented
+          ? 'Brouillon enregistré : il n’apparaît pas dans la recherche, mais vous pouvez déjà écrire aux associés.'
+          : 'Brouillon enregistré. Complétez la présentation pour pouvoir écrire aux associés.');
     } finally {
       this.isSaving.set(false);
     }
@@ -1014,6 +1100,7 @@ export class ModifierComponent implements OnInit {
         openToEquity: project?.openToEquity ?? false,
         confidentialDetails: project?.confidentialDetails ?? '',
         ndaRequired: project?.ndaRequired ?? false,
+        publicListing: project?.publicListing ?? false,
       });
     } finally {
       this.isProjectLoading.set(false);
@@ -1041,6 +1128,7 @@ export class ModifierComponent implements OnInit {
       openToEquity: value.openToEquity,
       confidentialDetails: value.confidentialDetails,
       ndaRequired: value.ndaRequired,
+      publicListing: value.publicListing,
     });
 
     if (!result.success) {
@@ -1082,11 +1170,11 @@ export class ModifierComponent implements OnInit {
         sector: 'Secteur',
         stage: 'Stade du projet',
         location: 'Localisation du projet',
-        description: this.projectForm.controls.description.hasError('required')
-          ? "Présentation de l'annonce (obligatoire pour publier ; décochez « Annonce publiée » pour enregistrer un brouillon)"
-          : "Présentation de l'annonce (900 caractères max.)",
+        description: this.projectForm.controls.description.hasError('maxlength')
+          ? 'Présentation du projet (900 caractères max.)'
+          : 'Présentation du projet (au moins 50 caractères pour publier ; décochez « Publié dans la recherche » pour enregistrer un brouillon)',
         lookingFor: 'Profils recherchés',
-        skillsNeeded: 'Compétences attendues',
+        skillsNeeded: 'Compétences recherchées (au moins une pour publier)',
       });
     }
 

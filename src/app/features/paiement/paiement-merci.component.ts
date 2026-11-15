@@ -18,7 +18,7 @@ import { AuthService } from '../../core/services/auth.service';
         } @else {
           <h1 class="text-3xl text-primary">Merci, votre paiement est confirmé</h1>
           <p class="mt-3 text-base text-muted-foreground">
-            Votre offre est active. Un reçu vous a été envoyé par e-mail par Stripe. Vous retrouvez vos factures dans « Mon abonnement ».
+            Votre offre est active. Un reçu vous a été envoyé par e-mail par Stripe. Vous retrouvez vos paiements dans « Offre et facturation ».
           </p>
           <div class="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
             <a routerLink="/dashboard" class="rounded-lg bg-primary px-5 py-3 font-medium text-white transition-colors hover:bg-primary/90">Aller au tableau de bord</a>

@@ -93,3 +93,7 @@ r "Le cédant ne voit pas qui suit son annonce"   $LU "insert into listing_favor
 r "Annonce retirée : disparaît de la liste"      $LU "insert into listing_favorites (user_id, listing_id) values ('$LU','${L}03'); reset role; update ma_listings set status = 'withdrawn' where id = '${L}03'; set local role authenticated; select count(*) from list_my_favorite_listings()" 0
 r "Retirer un favori"                            $LU "insert into listing_favorites (user_id, listing_id) values ('$LU','${L}03'); delete from listing_favorites where listing_id = '${L}03'; select count(*) from listing_favorites" 0
 r "Favori : n'ajoute aucun objectif"             $LU "insert into listing_favorites (user_id, listing_id) values ('$LU','${L}03'); select usages from profiles where id = '$LU'" "{reprise}"
+echo "== Offre et facturation"
+r "Historique : ses propres paiements"           $T  "select count(*) > 0, bool_and(listing_title is not null) from list_my_payments()" "t|t"
+r "Historique : rien pour un autre membre"       $N  "select count(*) from list_my_payments()" 0
+r "Historique : visiteur refusé"                 "" "set local role anon; select count(*) from list_my_payments()" "ERROR:  permission denied"

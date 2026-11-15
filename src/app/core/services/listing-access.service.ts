@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { MA_NDA_VERSION } from '../legal/nda';
+import { MaListingData, findMaListingById } from '../data/mock-platform.data';
 import { SupabaseService } from './supabase.service';
 
 // Demandes d'accès aux dossiers et relecture des annonces (supabase/2026-10-28-lancement.sql).
@@ -138,7 +139,12 @@ export class ListingAccessService {
   // Dossiers que le membre a débloqués (50 € chacun), du plus récent au plus ancien.
   async listMyUnlocked(): Promise<UnlockedListing[]> {
     if (!this.supabase.isConfigured) {
-      return [];
+      // Mode démo : dossiers débloqués dans ce navigateur, avec les annonces de démonstration.
+      const now = new Date().toISOString();
+      return ListingAccessService.readIds(ListingAccessService.DEMO_UNLOCK_KEY)
+        .map(id => findMaListingById(id))
+        .filter((listing): listing is MaListingData => !!listing)
+        .map(listing => ({ listing_id: listing.id, title: listing.title || `${listing.sector}, ${listing.region}`, sector: listing.sector, region: listing.region, status: 'active', unlocked_at: now }));
     }
 
     const { data, error } = await this.supabase.client.rpc('list_my_unlocked_listings');

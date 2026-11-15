@@ -24,7 +24,7 @@ const ACTION_LINKS: Record<AiAction, ChatAction> = {
   voir_messages: { label: 'Ouvrir mes messages', icon: 'matches', path: '/messages' },
   voir_ma: { label: 'Voir les annonces M&A', icon: 'insights', path: '/ma' },
   deposer_annonce: { label: 'Déposer mon annonce', icon: 'insights', path: '/ma/deposer' },
-  voir_abonnement: { label: 'Mon abonnement', icon: 'insights', path: '/abonnement' },
+  voir_abonnement: { label: 'Offre et facturation', icon: 'insights', path: '/abonnement' },
 };
 
 @Component({

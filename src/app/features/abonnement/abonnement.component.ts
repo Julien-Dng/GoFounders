@@ -5,7 +5,16 @@ import { AuthService } from '../../core/services/auth.service';
 import { Plan } from '../../core/models/user.model';
 import { PaymentService } from '../../core/services/payment.service';
 import { OFFER_PRICES } from '../../core/config/offers';
-import { ListingAccessService, UnlockedListing } from '../../core/services/listing-access.service';
+import { SupabaseService } from '../../core/services/supabase.service';
+
+interface PaymentRow {
+  id: string;
+  product: string;
+  amount_cents: number | null;
+  created_at: string;
+  listing_id: string | null;
+  listing_title: string | null;
+}
 
 @Component({
   selector: 'app-abonnement',
@@ -16,8 +25,8 @@ import { ListingAccessService, UnlockedListing } from '../../core/services/listi
     <div class="min-h-screen bg-secondary pt-20 pb-12">
       <div class="mx-auto max-w-[62rem] px-4 py-8 sm:px-6 lg:px-8">
         <div class="mb-8">
-          <h1 class="mb-2 text-4xl font-semibold">Mon abonnement</h1>
-          <p class="text-muted-foreground">Gérez votre abonnement GoFounders et l'accès M&A</p>
+          <h1 class="mb-2 text-4xl font-semibold">Offre et facturation</h1>
+          <p class="text-muted-foreground">Votre formule, vos paiements et vos factures</p>
         </div>
 
         @if (statusMessage()) {
@@ -76,24 +85,28 @@ import { ListingAccessService, UnlockedListing } from '../../core/services/listi
             </div>
           </section>
 
-          @if (unlocked().length > 0) {
-            <section class="py-6" aria-labelledby="abo-dossiers">
-              <h2 id="abo-dossiers" class="text-lg font-semibold text-primary">Mes dossiers débloqués</h2>
+          <section class="py-6" aria-labelledby="abo-paiements">
+            <h2 id="abo-paiements" class="text-lg font-semibold text-primary">Historique des paiements</h2>
+            @if (payments().length === 0) {
+              <p class="mt-2 text-sm text-muted-foreground">Aucun paiement pour le moment</p>
+            } @else {
               <ul class="mt-3 divide-y divide-border rounded-xl ring-1 ring-border">
-                @for (item of unlocked(); track item.listing_id) {
-                  <li>
-                    <a [routerLink]="['/ma/annonce', item.listing_id]" class="flex items-center justify-between gap-4 px-4 py-3 hover:bg-secondary">
-                      <span class="min-w-0">
-                        <span class="block truncate font-medium text-primary">{{ item.title }}</span>
-                        <span class="block text-sm text-muted-foreground">Débloqué le {{ formatDate(item.unlocked_at) }}@if (item.status === 'sold') { · vendue}</span>
-                      </span>
-                      <span class="flex-shrink-0 text-sm font-semibold text-accent">Ouvrir le dossier →</span>
-                    </a>
+                @for (item of payments(); track item.id) {
+                  <li class="flex items-center justify-between gap-4 px-4 py-3">
+                    <span class="min-w-0">
+                      <span class="block truncate font-medium text-primary">{{ paymentLabel(item) }}</span>
+                      <span class="block text-sm text-muted-foreground">{{ formatDate(item.created_at) }}</span>
+                    </span>
+                    <span class="tabular flex-shrink-0 font-semibold text-primary">{{ amount(item.amount_cents) }}</span>
                   </li>
                 }
               </ul>
-            </section>
-          }
+            }
+            <p class="mt-3 text-sm text-muted-foreground">
+              Les dossiers d'entreprise achetés se retrouvent dans
+              <a routerLink="/ma/dossiers" class="font-semibold text-accent hover:underline">Mes entreprises</a>
+            </p>
+          </section>
         </div>
 
         @if (!isSimulation) {
@@ -123,10 +136,42 @@ export class AbonnementComponent {
   readonly features = FEATURES;
   private readonly auth = inject(AuthService);
   private readonly payment = inject(PaymentService);
-  private readonly access = inject(ListingAccessService);
+  private readonly supabase = inject(SupabaseService);
 
   constructor() {
-    void this.access.listMyUnlocked().then(list => this.unlocked.set(list));
+    void this.loadPayments();
+  }
+
+  // Historique de ses paiements (list_my_payments, 2026-11-17-visibilite-contact.sql) ; vide en mode démo.
+  readonly payments = signal<PaymentRow[]>([]);
+
+  private async loadPayments(): Promise<void> {
+    if (!this.supabase.isConfigured) {
+      return;
+    }
+    const { data, error } = await this.supabase.client.rpc('list_my_payments');
+    this.payments.set(error ? [] : ((data ?? []) as PaymentRow[]));
+  }
+
+  paymentLabel(item: PaymentRow): string {
+    const labels: Record<string, string> = {
+      INTRO: 'Dossier et contact du cédant',
+      PRO: 'Offre PRO',
+      PREMIUM: 'Accompagnement PREMIUM',
+      MA_ACCESS: 'Accès repreneur (ancienne offre)',
+      MA_PLUS: 'Accès repreneur Plus',
+      FEATURE_7D: 'Mise en avant de l’annonce (7 jours)',
+      FEATURE_30D: 'Mise en avant de l’annonce (30 jours)',
+      VERIFICATION: 'Dossier vérifié',
+      PRO_DIRECTORY: 'Fiche annuaire des pros',
+      PRO_ACCOUNT: 'Compte professionnel',
+    };
+    const label = labels[item.product] ?? item.product;
+    return item.listing_title ? `${label} · ${item.listing_title}` : label;
+  }
+
+  amount(cents: number | null): string {
+    return cents === null ? '—' : (cents / 100).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
   }
 
   formatDate(value: string): string {
@@ -140,7 +185,6 @@ export class AbonnementComponent {
   });
   // Même règle pour tous les membres : l'offre PRO ne débloque pas les dossiers de cession.
   readonly maDescription = `Publier une annonce est gratuit. Pour chaque entreprise qui vous intéresse, débloquez le dossier complet et le contact du cédant pour ${OFFER_PRICES.INTRO.label}, sans abonnement, que vous soyez en FREE ou en PRO.`;
-  readonly unlocked = signal<UnlockedListing[]>([]);
   readonly currentPlan = computed(() => this.auth.currentUser()?.plan ?? 'FREE');
   readonly hasMaAccess = computed(() => this.auth.hasMaAccess());
   readonly statusMessage = signal('');

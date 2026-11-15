@@ -4,7 +4,7 @@ import { Timestamp } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { User as SupabaseAuthUser } from '@supabase/supabase-js';
 import { SupabaseProfileInsert, SupabaseProfileRow, SupabaseProjectInsert, PROFILE_COLUMNS } from '../models/supabase-database.model';
-import { Plan, ProCategory, ProfileType, Usage, User, primaryProfileType, usagesOf } from '../models/user.model';
+import { Plan, ProCategory, ProfileType, Usage, User, isAssociateProfileComplete, primaryProfileType, usagesOf } from '../models/user.model';
 import { validateRegistrationEmail } from '../validators/email-policy.validator';
 import { SupabaseService } from './supabase.service';
 
@@ -392,15 +392,15 @@ export class AuthService {
       return { success: false, message: 'Réservé aux membres.' };
     }
 
-    if (offer && (user.skills?.length ?? 0) === 0) {
-      return { success: false, message: 'Ajoutez au moins une compétence pour proposer votre profil.' };
+    if (offer && !isAssociateProfileComplete(user)) {
+      return { success: false, message: 'Complétez votre profil d’associé (intitulé, compétence, présentation d’au moins 50 caractères) pour le rendre visible.' };
     }
 
     if (this.supabase.isConfigured) {
       const { error } = await this.supabase.client.rpc('set_associate_offer', { p_offer: offer });
       if (error) {
-        return { success: false, message: error.message.includes('COMPETENCES_REQUISES')
-          ? 'Ajoutez au moins une compétence pour proposer votre profil.'
+        return { success: false, message: error.message.includes('PROFIL_ASSOCIE_INCOMPLET')
+          ? 'Complétez votre profil d’associé (intitulé, compétence, présentation d’au moins 50 caractères) pour le rendre visible.'
           : 'Impossible d’enregistrer ce choix pour le moment.' };
       }
       await this.reloadCurrentProfile();
@@ -411,7 +411,7 @@ export class AuthService {
       this._currentUser.set({ ...user, usages, associateOfferedAt });
     }
 
-    return { success: true, message: offer ? 'Votre profil est proposé aux porteurs de projet.' : 'Votre profil n’est plus proposé aux porteurs de projet.' };
+    return { success: true, message: offer ? 'Votre profil est visible des membres.' : 'Votre profil n’apparaît plus dans la recherche.' };
   }
 
   private updateLocalUser(uid: string, changes: Pick<Partial<StoredUserRecord>, 'usages' | 'associateOfferedAt'>): void {
@@ -459,8 +459,11 @@ export class AuthService {
 
   async setPublicListing(enabled: boolean): Promise<AuthResult> {
     const user = this._currentUser();
-    if (!user || !this.supabase.isConfigured) {
-      return { success: false, message: 'Ce réglage nécessite Supabase (indisponible en mode local).' };
+    if (!user) {
+      return { success: false, message: 'Connectez-vous pour modifier ce réglage.' };
+    }
+    if (!this.supabase.isConfigured) {
+      return { success: true, message: 'Réglage enregistré (mode démo).' };
     }
 
     const { error } = await this.supabase.client.from('profiles').update({ public_listing: enabled }).eq('id', user.uid);

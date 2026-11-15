@@ -473,8 +473,8 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     return this.visibleProfileType() === 'talent'
-      ? "Aucun associé à afficher. Publiez votre projet depuis « Mon projet » pour voir les associés disponibles."
-      : "Aucun projet à afficher. Proposez votre profil depuis « Mon profil d'associé » pour voir les projets.";
+      ? "Aucun associé visible pour l'instant. Présentez votre projet pour pouvoir leur écrire dès leur arrivée."
+      : "Aucun projet publié pour l'instant. Complétez votre profil d'associé pour pouvoir écrire aux porteurs dès leur arrivée.";
   });
   readonly cardBadgeLabel = computed(() =>
     this.visibleProfileType() === 'talent' ? 'Associé' : 'Projet'

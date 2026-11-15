@@ -45,7 +45,10 @@ interface SupabaseQuotaRow {
 
 // Codes levés par les triggers Supabase (2026-10-11-free-quotas.sql, 2026-10-12-profils-par-role.sql).
 const QUOTA_ERROR_MESSAGES: Record<string, string> = {
-  ROLE_CONTACT_INTERDIT: "Ce membre ne peut pas être contacté pour l'instant : publiez un projet pour écrire aux associés, complétez votre profil d'associé pour écrire aux porteurs de projet, ou débloquez le dossier de son entreprise.",
+  ROLE_CONTACT_INTERDIT: "Ce membre ne peut pas être contacté pour l'instant : présentez votre projet pour écrire aux associés, complétez votre profil d'associé pour écrire aux porteurs de projet, ou débloquez le dossier de son entreprise.",
+  PROJET_INCOMPLET: "Présentez votre projet pour écrire à un associé : un titre, une présentation d'au moins 50 caractères et au moins une compétence recherchée (rubrique « Mon projet », un brouillon suffit).",
+  PROFIL_ASSOCIE_INCOMPLET: "Complétez votre profil d'associé pour écrire à un porteur de projet : un intitulé, au moins une compétence et une présentation d'au moins 50 caractères (rubrique « Mon profil d'associé »). Il n'a pas besoin d'être visible dans la recherche.",
+  LIMITE_CONTACTS_JOUR: "Vous avez ouvert beaucoup de nouvelles conversations aujourd'hui. Réessayez demain : vos conversations en cours restent ouvertes.",
   FREE_QUOTA_CONTACTS: `Vous avez atteint la limite de ${FREE_CONTACTS_PER_MONTH} nouveaux contacts ce mois-ci avec la formule gratuite. Passez en PRO pour des contacts illimités.`,
   // Ancienne limite de messages (avant 2026-10-12-offres.sql), gardée si la migration n'est pas encore passée.
   FREE_QUOTA_MESSAGES: 'Vous avez atteint la limite de messages de votre plan ce mois-ci. Passez en PRO pour une messagerie illimitée.',

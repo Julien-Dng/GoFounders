@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { USAGE_OPTIONS, Usage, hasUsage, usagesOf, usesTeamMarketplace } from '../../core/models/user.model';
+import { USAGE_OPTIONS, Usage, usagesOf } from '../../core/models/user.model';
 import { FEATURES } from '../../core/config/features';
 import { AuthService } from '../../core/services/auth.service';
 import { passwordPolicyValidator } from '../../core/validators/password-policy.validator';
@@ -119,10 +119,9 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
               <ul class="mt-4 space-y-1 border-t border-border pt-4 text-sm text-muted-foreground">
                 <li>Retirer une annonce : <a routerLink="/ma/mes-annonces" class="font-semibold text-accent hover:underline">Mes annonces</a></li>
                 @if (associatesEnabled) {
-                  <li>Ne plus proposer votre profil aux porteurs de projet : <a routerLink="/profil/associe" class="font-semibold text-accent hover:underline">Mon profil d'associé</a></li>
+                  <li>Ne plus apparaître dans la recherche : <a routerLink="/profil/associe" class="font-semibold text-accent hover:underline">Mon profil d'associé</a></li>
                   <li>Retirer votre projet : <a routerLink="/mon-projet" class="font-semibold text-accent hover:underline">Mon projet</a> (le passer en brouillon)</li>
                 }
-                <li>Masquer votre profil de la recherche : réglage « Profil visible dans la recherche » ci-dessous</li>
               </ul>
               @if (usagesFeedback(); as feedback) {
                 <p class="mt-3 text-sm" [class.text-success]="feedback.ok" [class.text-destructive]="!feedback.ok" role="status">{{ feedback.text }}</p>
@@ -133,11 +132,12 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
           <!-- CONFIDENTIALITÉ -->
           <section class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-6" aria-labelledby="confidentialite-titre">
             <h2 id="confidentialite-titre" class="mb-4 text-lg font-semibold">Confidentialité</h2>
+            @if (isPro()) {
             <div class="flex items-start justify-between gap-4">
               <div>
-                <div class="text-sm font-medium" id="visibilite-label">Profil visible dans la recherche</div>
+                <div class="text-sm font-medium" id="visibilite-label">Fiche visible dans l'annuaire des pros</div>
                 <p class="mt-1 text-sm text-muted-foreground">
-                  Masqué, votre profil n'apparaît plus dans la recherche. Vos conversations en cours continuent normalement
+                  Masquée, votre fiche n'apparaît plus dans l'annuaire. Vos conversations en cours continuent normalement
                 </p>
               </div>
               @if (isVisible() !== null) {
@@ -162,6 +162,17 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
               <p class="mt-3 text-sm" [class.text-success]="feedback.ok" [class.text-destructive]="!feedback.ok" role="status">{{ feedback.text }}</p>
             }
 
+            } @else {
+              <p class="text-sm text-muted-foreground">
+                Votre visibilité se règle là où elle s'applique :
+                @if (associatesEnabled) {
+                  <a routerLink="/profil/associe" class="font-semibold text-accent hover:underline">Mon profil d'associé</a> (visible dans la recherche, aperçu sur la vitrine) et
+                  <a routerLink="/mon-projet" class="font-semibold text-accent hover:underline">Mon projet</a> (publié ou brouillon).
+                }
+                Vos conversations en cours continuent dans tous les cas
+              </p>
+            }
+
             <div class="mt-5 flex items-start justify-between gap-4 border-t border-border pt-5">
               <div>
                 <div class="text-sm font-medium" id="emails-label">E-mail à chaque nouveau message</div>
@@ -181,41 +192,6 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
               <p class="mt-3 text-sm" [class.text-success]="feedback.ok" [class.text-destructive]="!feedback.ok" role="status">{{ feedback.text }}</p>
             }
 
-            @if (showsPublicListing()) {
-              <div class="mt-5 flex items-start justify-between gap-4 border-t border-border pt-5">
-                <div>
-                  <div class="text-sm font-medium" id="vitrine-label">Apparaître de façon anonyme sur la page « Trouver un associé »</div>
-                  <p class="mt-1 text-sm text-muted-foreground">
-                    @if (isTalent()) {
-                      Les visiteurs voient votre titre, vos compétences et votre disponibilité, jamais votre nom, votre photo ni votre ville
-                    } @else {
-                      Les visiteurs voient le secteur, le stade et les profils recherchés de votre projet, jamais votre nom, celui du projet ni sa description
-                    }
-                    <a routerLink="/associes" class="font-semibold text-accent hover:underline">Voir la page</a>
-                  </p>
-                </div>
-                @if (publicListing() !== null) {
-                  <button
-                    type="button"
-                    role="switch"
-                    [attr.aria-checked]="publicListing()"
-                    aria-labelledby="vitrine-label"
-                    (click)="togglePublicListing()"
-                    [disabled]="busy()"
-                    class="relative h-6 w-11 flex-shrink-0 rounded-full transition-colors disabled:opacity-50"
-                    [class.bg-accent]="publicListing()"
-                    [class.bg-border]="!publicListing()"
-                  >
-                    <span class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform" [class.translate-x-5]="publicListing()"></span>
-                  </button>
-                } @else {
-                  <span class="text-sm text-muted-foreground">Indisponible</span>
-                }
-              </div>
-              @if (publicListingFeedback(); as feedback) {
-                <p class="mt-3 text-sm" [class.text-success]="feedback.ok" [class.text-destructive]="!feedback.ok" role="status">{{ feedback.text }}</p>
-              }
-            }
           </section>
 
           <!-- ZONE DE DANGER -->
@@ -268,9 +244,6 @@ export class ParametresComponent implements OnInit {
   readonly isVisible = signal<boolean | null>(null);
   readonly visibilityFeedback = signal<Feedback | null>(null);
 
-  // Vitrine publique /associes : porteurs de projet et associés uniquement, accord explicite.
-  readonly showsPublicListing = computed(() => FEATURES.associates && usesTeamMarketplace(this.auth.currentUser()));
-  readonly isTalent = computed(() => hasUsage(this.auth.currentUser(), 'associe') && !hasUsage(this.auth.currentUser(), 'projet'));
   readonly isPro = computed(() => this.auth.currentUser()?.profileType === 'pro');
   readonly usageOptions = USAGE_OPTIONS;
   readonly associatesEnabled = FEATURES.associates;
@@ -282,8 +255,6 @@ export class ParametresComponent implements OnInit {
     return saved.length !== draft.length || draft.some(usage => !saved.includes(usage));
   });
   readonly usagesFeedback = signal<Feedback | null>(null);
-  readonly publicListing = signal<boolean | null>(null);
-  readonly publicListingFeedback = signal<Feedback | null>(null);
   readonly emailNotifications = signal<boolean | null>(null);
   readonly emailFeedbackSwitch = signal<Feedback | null>(null);
 
@@ -296,9 +267,6 @@ export class ParametresComponent implements OnInit {
     await this.auth.ensureSessionReady();
     this.draftUsages.set(usagesOf(this.auth.currentUser()));
     this.isVisible.set(await this.auth.getProfileVisibility());
-    if (this.showsPublicListing()) {
-      this.publicListing.set(await this.auth.getPublicListing());
-    }
     this.emailNotifications.set(await this.auth.getEmailNotifications());
   }
 
@@ -323,17 +291,6 @@ export class ParametresComponent implements OnInit {
     await this.run(async () => {
       const result = await this.auth.setUsages(ordered);
       this.usagesFeedback.set({ ok: result.success, text: result.message ?? '' });
-    });
-  }
-
-  async togglePublicListing(): Promise<void> {
-    const next = !this.publicListing();
-    await this.run(async () => {
-      const result = await this.auth.setPublicListing(next);
-      this.publicListingFeedback.set({ ok: result.success, text: result.message ?? '' });
-      if (result.success) {
-        this.publicListing.set(next);
-      }
     });
   }
 

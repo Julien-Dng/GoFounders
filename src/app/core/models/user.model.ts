@@ -89,6 +89,26 @@ export function offersAssociateProfile(user: Pick<User, 'profileType' | 'associa
   return !!user && user.profileType !== 'pro' && !!user.associateOfferedAt && (user.skills?.length ?? 0) > 0;
 }
 
+// Prise de contact (2026-11-17-visibilite-contact.sql) : présentation d'au moins 50 caractères, vérifiée aussi par Supabase.
+export const MIN_PRESENTATION_LENGTH = 50;
+
+// Profil d'associé complété : intitulé, au moins une compétence, présentation. Suffit pour écrire à un porteur de
+// projet, même sans être visible dans la recherche (associate_profile_complete côté Supabase).
+export function isAssociateProfileComplete(user: Pick<User, 'profileType' | 'profileTitle' | 'skills' | 'bio'> | null | undefined): boolean {
+  return !!user && user.profileType !== 'pro'
+    && !!user.profileTitle?.trim()
+    && (user.skills?.length ?? 0) > 0
+    && (user.bio?.trim().length ?? 0) >= MIN_PRESENTATION_LENGTH;
+}
+
+// Projet présenté : titre, présentation, au moins une compétence recherchée. Suffit pour écrire à un associé, même en
+// brouillon ; obligatoire pour publier (project_presented et enforce_project_minimum côté Supabase).
+export function isProjectPresented(project: { name: string; description: string; skillsNeeded: string[] } | null | undefined): boolean {
+  return !!project && !!project.name.trim()
+    && project.description.trim().length >= MIN_PRESENTATION_LENGTH
+    && project.skillsNeeded.length > 0;
+}
+
 // Reprise : tout membre (hors compte pro) peut ouvrir un dossier pour 50 € ; les droits sont vérifiés par Supabase.
 export function canBuyMaDossier(user: Pick<User, 'profileType'> | null | undefined): boolean {
   return !!user && user.profileType !== 'pro';

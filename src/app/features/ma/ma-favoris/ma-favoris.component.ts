@@ -4,25 +4,21 @@ import { MaListingData } from '../../../core/data/mock-platform.data';
 import { FavoritesService } from '../../../core/services/favorites.service';
 import { MaService } from '../../../core/services/ma.service';
 import { FavoriteButtonComponent } from '../../../shared/components/favorite-button/favorite-button.component';
+import { MesEntreprisesTabsComponent } from '../../../shared/components/mes-entreprises-tabs/mes-entreprises-tabs.component';
 import { VerifiedBadgeComponent } from '../../../shared/components/verified-badge/verified-badge.component';
 
-// « Mes favoris » : les entreprises mises de côté, du plus récent au plus ancien. Seules les annonces encore en
+// « Mes entreprises > Favoris » : les entreprises mises de côté, du plus récent au plus ancien. Seules les annonces encore en
 // ligne s'affichent ; le cédant ne sait pas qui suit son annonce (supabase/2026-11-16-favoris.sql).
 @Component({
   selector: 'app-ma-favoris',
   standalone: true,
-  imports: [RouterLink, FavoriteButtonComponent, VerifiedBadgeComponent],
+  imports: [RouterLink, FavoriteButtonComponent, VerifiedBadgeComponent, MesEntreprisesTabsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-secondary px-4 pb-16 pt-28 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-4xl">
-        <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 class="text-3xl font-semibold text-primary sm:text-4xl">Mes favoris</h1>
-            <p class="mt-2 text-muted-foreground">Les entreprises que vous avez mises de côté. Le cédant ne sait pas que vous suivez son annonce</p>
-          </div>
-          <a routerLink="/ma" class="rounded-lg border border-border bg-white px-5 py-3 text-center text-sm font-semibold transition-colors hover:border-primary">Voir toutes les entreprises</a>
-        </div>
+        <app-mes-entreprises-tabs />
+        <p class="mb-6 mt-5 text-muted-foreground">Les entreprises que vous avez mises de côté. Le cédant ne sait pas que vous suivez son annonce</p>
 
         @if (!loaded()) {
           <p class="py-16 text-center text-muted-foreground" role="status">Chargement…</p>

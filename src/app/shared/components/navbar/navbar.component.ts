@@ -4,7 +4,7 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/ro
 import { FEATURES } from '../../../core/config/features';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs/operators';
-import { hasUsage, usesTeamMarketplace } from '../../../core/models/user.model';
+import { hasUsage } from '../../../core/models/user.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserMenuComponent } from '../user-menu/user-menu.component';
 import { NotificationMenuComponent } from '../notification-menu/notification-menu.component';
@@ -306,10 +306,8 @@ export class NavbarComponent {
     { href: '/tarifs', label: 'Tarifs' },
   ];
 
-  // Repreneurs, cédants et pros : vitrine /associes (la recherche complète est réservée aux deux rôles concernés).
-  private readonly associateHref = computed(() =>
-    usesTeamMarketplace(this.auth.currentUser()) ? '/recherche' : '/associes'
-  );
+  // Visiteurs : vitrine anonyme /associes. Membres : recherche complète (consulter est ouvert à tous les membres).
+  private readonly associateHref = computed(() => (this.auth.isAuthenticated() ? '/recherche' : '/associes'));
 
   readonly navLinks = computed(() =>
     this.allNavLinks
@@ -323,12 +321,12 @@ export class NavbarComponent {
     { id: 'vendre',     label: 'Vendre',       icon: 'chart', path: '/ma/deposer',  badge: null, exact: true  },
     { id: 'recherche',  label: 'Associés & équipe', icon: 'users', path: '/recherche', badge: null, exact: true  },
     { id: 'tarifs',     label: 'Tarifs',       icon: 'credit-card', path: '/tarifs',  badge: null, exact: true  },
-    { id: 'favoris',    label: 'Mes favoris',  icon: 'heart', path: '/ma/favoris',  badge: null, exact: true  },
-    { id: 'mes-annonces', label: 'Mes annonces', icon: 'chart', path: '/ma/mes-annonces', badge: null, exact: true },
+    // « Mes entreprises » : favoris, dossiers débloqués et annonces publiées (trois onglets).
+    { id: 'mes-entreprises', label: 'Mes entreprises', icon: 'heart', path: '/ma/favoris', badge: null, exact: true },
     { id: 'statistiques', label: 'Mes statistiques', icon: 'bars', path: '/ma/statistiques', badge: null, exact: true },
     { id: 'annuaire',   label: 'Annuaire des pros', icon: 'users', path: '/pros',      badge: null, exact: true  },
     { id: 'messages',   label: 'Messages',     icon: 'messages', path: '/messages',    badge: null, exact: false },
-    { id: 'abonnement', label: 'Mon abonnement', icon: 'credit-card', path: '/abonnement', badge: null, exact: true  },
+    { id: 'abonnement', label: 'Offre et facturation', icon: 'credit-card', path: '/abonnement', badge: null, exact: true  },
     { id: 'parametres', label: 'Paramètres',   icon: 'settings', path: '/parametres',  badge: null, exact: true  },
     { id: 'admin-annonces', label: 'Modération des annonces', icon: 'shield', path: '/admin/annonces', badge: null, exact: true },
     { id: 'admin-profils', label: 'Profils à vérifier', icon: 'shield', path: '/admin/profils', badge: null, exact: true },
@@ -341,12 +339,12 @@ export class NavbarComponent {
     this.allNavItems.filter(item =>
       !(item.id === 'recherche' && this.hidesRecherche())
       && !(item.id === 'vendre' && this.hidesVendre())
-      && !((item.id === 'mes-annonces' || item.id === 'statistiques') && !this.ownsListings())
+      && !(item.id === 'statistiques' && !this.ownsListings())
       && !((item.id === 'verifications' || item.id.startsWith('admin-')) && !this.auth.isAdmin())
       && !(item.id === 'annuaire' && !FEATURES.pros)
       && !(item.id === 'verifications' && !FEATURES.sellerPaidOffers)
       // Visiteurs : mêmes liens que le menu ordinateur, sans les pages de compte.
-      && !(['messages', 'abonnement', 'parametres', 'favoris'].includes(item.id) && !this.auth.isAuthenticated())
+      && !(['messages', 'abonnement', 'parametres', 'mes-entreprises'].includes(item.id) && !this.auth.isAuthenticated())
     ).map(item => {
       if (item.id === 'recherche') {
         return { ...item, path: this.associateHref() };

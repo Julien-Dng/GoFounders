@@ -13,6 +13,7 @@
 --   Confidentiel     : autorisation du porteur, inchangé.
 --   Garde-fou        : 20 nouvelles conversations par jour et par membre, pour tous (PRO compris), contre les envois en masse.
 -- Le réglage « Profil visible dans la recherche » (is_visible) ne sert plus qu'aux comptes pro (annuaire).
+-- Offre et facturation : list_my_payments (historique de ses paiements).
 
 begin;
 
@@ -363,5 +364,26 @@ AS $function$
     limit 60
   );
 $function$;
+
+-- 7. Offre et facturation : historique de ses propres paiements (libellé d'entreprise anonymisé) -------------------
+create or replace function public.list_my_payments()
+returns table (id uuid, product text, amount_cents integer, created_at timestamptz, listing_id uuid, listing_title text)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select payment.id, payment.product, payment.amount_cents, payment.created_at, payment.listing_id,
+         case when listing.id is null then null
+              else coalesce(nullif(listing.public_title, ''), listing.sector || ', ' || listing.region) end
+  from public.payments payment
+  left join public.ma_listings listing on listing.id = payment.listing_id
+  where payment.user_id = auth.uid()
+  order by payment.created_at desc
+  limit 100;
+$$;
+
+revoke all on function public.list_my_payments() from public, anon;
+grant execute on function public.list_my_payments() to authenticated;
 
 commit;

@@ -127,3 +127,31 @@ Migration : `supabase/2026-11-16-favoris.sql` (après `2026-11-15-objectifs-auto
 - Table `listing_favorites` : chaque membre ne lit et ne modifie que ses propres favoris ; le cédant ne sait pas qui
   suit son annonce. On ne peut ajouter qu'une annonce visible ; une annonce retirée disparaît de la liste. 200 au plus.
 - Un favori n'ouvre aucun droit et n'ajoute aucun objectif.
+
+## Visibilité, prise de contact et accès confidentiel (novembre 2026)
+
+Migration : `supabase/2026-11-17-visibilite-contact.sql` (après `2026-11-16-favoris.sql`). Elle remplace, pour les
+membres, les règles « par rôle complémentaire » décrites plus haut.
+
+| | Condition |
+|---|---|
+| Consulter | Tout membre connecté voit les associés visibles et les projets publiés ; visiteurs : vitrine anonyme |
+| Apparaître | Associé : « Rendre mon profil visible » (profil complété exigé) ; projet : publié |
+| Vitrine publique | Option en plus, seulement si l'on est visible (`profiles.public_listing`, `projects.public_listing`) |
+| Contacter un porteur | Profil d'associé complété (intitulé, compétence, présentation ≥ 50 caractères), visible ou non |
+| Contacter un associé | Projet présenté (titre, présentation ≥ 50 caractères, compétence recherchée), même en brouillon ; quota FREE |
+| Confidentiel | Autorisation du porteur |
+
+- Le destinataire lit toujours le profil de qui lui écrit, et le projet en brouillon de qui lui écrit (jamais sa partie
+  confidentielle). Un brouillon reste invisible des autres membres.
+- Publier un projet exige le même minimum (`PROJET_INCOMPLET`) ; un projet créé à l'inscription reste en brouillon tant
+  qu'il n'est pas présenté. Les projets déjà publiés restent en ligne.
+- Garde-fou : 20 nouvelles conversations par jour et par membre, pour tous, contre les envois en masse (pas une limite d'offre).
+- Quotas : 5 nouveaux contacts par mois pour un porteur FREE, illimités en PRO ; répondre est gratuit ; écrire en tant
+  qu'associé est gratuit et illimité.
+- « Profil visible dans la recherche » (`is_visible`) ne sert plus qu'à l'annuaire des pros. Les membres qui avaient masqué
+  leur profil ont été repris comme non visibles (profil retiré, projet en brouillon).
+- Réglages sur leur page : « Mon profil d'associé » (visible, vitrine) et « Mon projet » (publié, vitrine).
+- **Mes entreprises** : onglets Favoris (`/ma/favoris`), Dossiers débloqués (`/ma/dossiers`), Mes annonces
+  (`/ma/mes-annonces`). **Offre et facturation** (`/abonnement`) : formule FREE / PRO, historique des paiements
+  (`list_my_payments`), factures Stripe.

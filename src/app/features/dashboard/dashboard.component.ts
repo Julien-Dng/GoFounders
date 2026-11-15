@@ -422,15 +422,14 @@ export class DashboardComponent {
     { id: 'profil', label: 'Mon profil', icon: 'user', path: this.ownProfilePath(), badge: null },
     { id: 'messages', label: 'Messages', icon: 'messages', path: '/messages', badge: this.messageUnreadCount() || null },
     { id: 'ma', label: 'Entreprises', icon: 'ma', path: '/ma', badge: null },
-    { id: 'favoris', label: 'Mes favoris', icon: 'ma', path: '/ma/favoris', badge: null },
+    { id: 'mes-entreprises', label: 'Mes entreprises', icon: 'ma', path: '/ma/favoris', badge: null },
     ...(this.sells()
       ? [
-          { id: 'mes-annonces', label: 'Mes annonces', icon: 'ma' as const, path: '/ma/mes-annonces', badge: null },
           { id: 'statistiques', label: 'Mes statistiques', icon: 'ma' as const, path: '/ma/statistiques', badge: null },
         ]
       : []),
     ...(FEATURES.assistant ? [{ id: 'assistant', label: 'Assistant IA', icon: 'sparkles' as const, path: '/coaching-ia', badge: null }] : []),
-    { id: 'abonnement', label: 'Abonnement', icon: 'credit-card', path: '/tarifs', badge: null },
+    { id: 'abonnement', label: 'Offre et facturation', icon: 'credit-card', path: '/abonnement', badge: null },
     { id: 'parametres', label: 'Paramètres', icon: 'settings', path: '/parametres', badge: null },
     ...(this.auth.isAdmin()
       ? [
