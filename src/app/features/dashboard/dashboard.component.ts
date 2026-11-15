@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { MarketplaceProfile } from '../../core/data/mock-platform.data';
 import { hasUsage, usesTeamMarketplace } from '../../core/models/user.model';
 import { FEATURES } from '../../core/config/features';
@@ -9,20 +9,10 @@ import { MatchingService } from '../../core/services/matching.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { MessagingService } from '../../core/services/messaging.service';
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
-import { NotificationMenuComponent } from '../../shared/components/notification-menu/notification-menu.component';
-import { UserMenuComponent } from '../../shared/components/user-menu/user-menu.component';
 
-type SidebarIcon = 'home' | 'search' | 'user' | 'messages' | 'ma' | 'sparkles' | 'credit-card' | 'settings';
 type StatIcon = 'views' | 'messages' | 'target';
 type QuickActionIcon = 'target' | 'user' | 'chart';
 
-interface SidebarItem {
-  id: string;
-  label: string;
-  icon: SidebarIcon;
-  path: string;
-  badge: number | null;
-}
 
 interface StatItem {
   label: string;
@@ -38,149 +28,15 @@ interface QuickActionItem {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, AvatarComponent, NotificationMenuComponent, UserMenuComponent],
+  imports: [RouterLink, AvatarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="flex min-h-screen bg-secondary">
-      <aside class="fixed bottom-0 left-0 top-0 flex w-60 flex-col border-r border-primary-foreground/10 bg-primary text-primary-foreground">
-        <div class="border-b border-primary-foreground/10 p-6">
-          <a routerLink="/dashboard" class="flex items-center gap-3">
-            <div class="brand-logo-mark h-11 w-11">
-              <img
-                src="/assets/images/gofounders-logo-256.png"
-                alt="Logo GoFounders"
-                class="h-full w-full object-contain"
-              >
-            </div>
-            <span class="text-xl font-semibold">GoFounders</span>
-          </a>
-        </div>
-
-        <nav class="flex-1 space-y-1 p-4">
-          @for (item of sidebarItems(); track item.id) {
-            <a
-              [routerLink]="item.path"
-              routerLinkActive="!bg-primary-foreground/20 !text-primary-foreground"
-              [routerLinkActiveOptions]="{ exact: true }"
-              class="group relative flex w-full items-center gap-3 rounded-lg px-4 py-3 text-primary-foreground/70 transition-all hover:bg-primary-foreground/10 hover:text-primary-foreground"
-            >
-              <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 text-current transition-colors group-hover:bg-white/10" aria-hidden="true">
-                @switch (item.icon) {
-                  @case ('home') {
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M3 10.5 12 3l9 7.5"/>
-                      <path d="M5 9.5V21h14V9.5"/>
-                    </svg>
-                  }
-                  @case ('search') {
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="11" cy="11" r="7"/>
-                      <path d="m20 20-3.5-3.5"/>
-                    </svg>
-                  }
-                  @case ('user') {
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M20 21a8 8 0 0 0-16 0"/>
-                      <circle cx="12" cy="8" r="4"/>
-                    </svg>
-                  }
-                  @case ('messages') {
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
-                  }
-                  @case ('ma') {
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M3 3v18h18"/>
-                      <path d="m7 14 4-4 3 3 5-7"/>
-                    </svg>
-                  }
-                  @case ('sparkles') {
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="m12 3-1.9 5.1L5 10l5.1 1.9L12 17l1.9-5.1L19 10l-5.1-1.9z"/>
-                      <path d="M5 3v4"/>
-                      <path d="M19 17v4"/>
-                      <path d="M3 5h4"/>
-                      <path d="M17 19h4"/>
-                    </svg>
-                  }
-                  @case ('credit-card') {
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="2" y="5" width="20" height="14" rx="2"/>
-                      <path d="M2 10h20"/>
-                    </svg>
-                  }
-                  @case ('settings') {
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="12" r="3"/>
-                      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09A1.65 1.65 0 0 0 10.09 3H10a2 2 0 1 1 4 0h-.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09A1.65 1.65 0 0 0 21 10.09V10a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                    </svg>
-                  }
-                }
-              </span>
-              <span class="text-sm font-medium">{{ item.label }}</span>
-              @if (item.badge) {
-                <span class="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white">
-                  {{ item.badge }}
-                </span>
-              }
-            </a>
-          }
-        </nav>
-
-        <div class="border-t border-primary-foreground/10 p-4">
-          <a
-            [routerLink]="ownProfilePath()"
-            class="block rounded-lg bg-primary-foreground/5 p-3 transition-colors hover:bg-primary-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground/60"
-            [attr.aria-label]="'Voir le profil de ' + displayName()"
-          >
-            <div class="flex items-center gap-3">
-              @if (showPhoto()) {
-                <img
-                  [src]="photoUrl()"
-                  [alt]="'Photo de profil de ' + displayName()"
-                  (error)="handlePhotoError()"
-                  class="h-10 w-10 flex-shrink-0 rounded-full border border-primary-foreground/10 object-cover"
-                >
-              } @else {
-                <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary font-semibold text-white">
-                  {{ initials() }}
-                </div>
-              }
-
-              <div class="min-w-0 flex-1">
-                <div class="truncate text-sm font-semibold">{{ displayName() }}</div>
-                <div class="flex items-center gap-1.5">
-                  <span class="rounded bg-muted/20 px-2 py-0.5 text-sm text-muted">{{ planLabel() }}</span>
-                </div>
-              </div>
-            </div>
-          </a>
-        </div>
-      </aside>
-
-      <div class="ml-60 flex flex-1 flex-col">
-        <header class="sticky top-0 z-40 border-b border-border bg-white">
-          <div class="flex h-16 items-center justify-between px-8">
-            <div class="max-w-xl flex-1">
-              <div class="relative">
-                <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="11" cy="11" r="8"/>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                </svg>
-                <input type="text" placeholder="Rechercher des profils, compétences..." class="w-full rounded-lg border border-transparent bg-secondary py-2 pl-10 pr-4 outline-none transition-colors focus:border-accent">
-              </div>
-            </div>
-            <div class="flex items-center gap-4">
-              <app-notification-menu />
-              <app-user-menu avatarClass="h-10 w-10" />
-            </div>
-          </div>
-        </header>
-
-        <div class="p-8">
-          <div class="grid grid-cols-12 gap-6">
-            <div class="col-span-3 space-y-6">
+    <!-- Tableau de bord dans la mise en page commune : même barre du haut et même menu ☰ que les autres pages. -->
+    <div class="min-h-screen bg-secondary px-4 pb-14 pt-24 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-[90rem]">
+          <h1 class="sr-only">Tableau de bord</h1>
+          <div class="grid gap-6 lg:grid-cols-12">
+            <div class="space-y-6 lg:col-span-3">
               <div class="animate-fade-in-up rounded-2xl bg-white shadow-lg ring-1 ring-border p-6">
                 <h3 class="mb-4 text-lg font-semibold">Mon profil</h3>
                 <div class="mb-4">
@@ -213,7 +69,7 @@ interface QuickActionItem {
               }
             </div>
 
-            <div class="col-span-6 space-y-6">
+            <div class="space-y-6 lg:col-span-6">
               <div class="animate-fade-in-up delay-100 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6">
                 <div class="mb-6 flex items-center justify-between">
                   <div class="flex items-center gap-2">
@@ -275,7 +131,7 @@ interface QuickActionItem {
               </div>
             </div>
 
-            <div class="col-span-3 space-y-6">
+            <div class="space-y-6 lg:col-span-3">
               @if (showAssistant) {
               <div class="animate-fade-in-up delay-200 rounded-2xl border border-accent/20 bg-secondary p-6">
                 <div class="mb-4 flex items-center gap-2">
@@ -361,7 +217,6 @@ interface QuickActionItem {
             </div>
           </div>
         </div>
-      </div>
 
       <a
         [routerLink]="floatingBubbleLink()"
@@ -386,15 +241,8 @@ export class DashboardComponent {
   private readonly notifications = inject(NotificationService);
 
   readonly currentUser = this.auth.currentUser;
-  private readonly failedPhotoUrl = signal('');
   readonly displayName = computed(() => this.currentUser()?.displayName ?? 'Mon compte');
   readonly firstName = computed(() => this.displayName().split(' ')[0] || 'membre');
-  readonly photoUrl = computed(() => this.currentUser()?.photoURL?.trim() ?? '');
-  readonly showPhoto = computed(() => {
-    const photoUrl = this.photoUrl();
-    return photoUrl.length > 0 && this.failedPhotoUrl() !== photoUrl;
-  });
-  readonly initials = this.auth.initials;
   readonly planLabel = computed(() => this.currentUser()?.plan ?? 'FREE');
   readonly floatingBubbleLink = computed(() => '/messages');
   readonly floatingBubbleLabel = computed(() => 'Ouvrir les messages');
@@ -414,32 +262,6 @@ export class DashboardComponent {
   readonly showProUpsell = computed(() => FEATURES.associates && this.usesTalentMarketplace() && this.planLabel() === 'FREE');
   readonly showAssistant = FEATURES.assistant;
 
-  readonly sidebarItems = computed<SidebarItem[]>(() => [
-    { id: 'accueil', label: 'Accueil', icon: 'home', path: '/dashboard', badge: null },
-    ...(FEATURES.associates && this.usesTalentMarketplace()
-      ? [{ id: 'recherche', label: 'Recherche', icon: 'search' as const, path: '/recherche', badge: null }]
-      : []),
-    { id: 'profil', label: 'Mon profil', icon: 'user', path: this.ownProfilePath(), badge: null },
-    { id: 'messages', label: 'Messages', icon: 'messages', path: '/messages', badge: this.messageUnreadCount() || null },
-    { id: 'ma', label: 'Entreprises', icon: 'ma', path: '/ma', badge: null },
-    { id: 'mes-entreprises', label: 'Mes entreprises', icon: 'ma', path: '/ma/favoris', badge: null },
-    ...(this.sells()
-      ? [
-          { id: 'statistiques', label: 'Mes statistiques', icon: 'ma' as const, path: '/ma/statistiques', badge: null },
-        ]
-      : []),
-    ...(FEATURES.assistant ? [{ id: 'assistant', label: 'Assistant IA', icon: 'sparkles' as const, path: '/coaching-ia', badge: null }] : []),
-    { id: 'abonnement', label: 'Offre et facturation', icon: 'credit-card', path: '/abonnement', badge: null },
-    { id: 'parametres', label: 'Paramètres', icon: 'settings', path: '/parametres', badge: null },
-    ...(this.auth.isAdmin()
-      ? [
-          { id: 'admin-annonces', label: 'Modération des annonces', icon: 'settings' as const, path: '/admin/annonces', badge: null },
-          { id: 'admin-profils', label: 'Profils à vérifier', icon: 'settings' as const, path: '/admin/profils', badge: null },
-          { id: 'admin-dossiers', label: 'Dossiers à vérifier', icon: 'settings' as const, path: '/admin/verifications', badge: null },
-          { id: 'admin-temoignages', label: 'Ventes à valider', icon: 'settings' as const, path: '/admin/temoignages', badge: null },
-        ]
-      : []),
-  ]);
 
   readonly matches = signal<MarketplaceProfile[]>([]);
   readonly matchesTitle = computed(() => {
@@ -524,7 +346,4 @@ export class DashboardComponent {
     this.notifications.markAsRead(notificationId);
   }
 
-  handlePhotoError(): void {
-    this.failedPhotoUrl.set(this.photoUrl());
-  }
 }

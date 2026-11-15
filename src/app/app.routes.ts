@@ -4,12 +4,6 @@ import { featureGuard } from './core/guards/feature.guard';
 import { planGuard } from './core/guards/plan.guard';
 
 export const routes: Routes = [
-  // Dashboard (layout propre, sans navbar publique). Déclaré avant le layout public, dont la page 404 capte tout le reste.
-  {
-    path: 'dashboard',
-    canActivate: [authGuard],
-    loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
-  },
   // Routes publiques (avec navbar)
   {
     path: '',
@@ -19,6 +13,12 @@ export const routes: Routes = [
         path: '',
         pathMatch: 'full',
         loadComponent: () => import('./features/landing/landing.component').then(m => m.LandingComponent)
+      },
+      // Tableau de bord : même mise en page et même menu que les autres pages.
+      {
+        path: 'dashboard',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
       },
       {
         path: 'tarifs',

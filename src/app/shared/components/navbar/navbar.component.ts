@@ -9,7 +9,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { UserMenuComponent } from '../user-menu/user-menu.component';
 import { NotificationMenuComponent } from '../notification-menu/notification-menu.component';
 
-type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles' | 'credit-card' | 'settings' | 'bars' | 'shield' | 'heart';
+type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles' | 'credit-card' | 'settings' | 'bars' | 'shield' | 'heart' | 'user';
 
 @Component({
   selector: 'app-navbar',
@@ -68,7 +68,7 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
             @if (auth.isAuthenticated()) {
 
               <a routerLink="/dashboard" class="px-4 py-2 text-base font-semibold transition-colors" [class]="onDark() ? 'text-white/80 hover:text-white' : 'text-foreground/80 hover:text-primary'">
-                Dashboard
+                Tableau de bord
               </a>
               <a
                 routerLink="/messages"
@@ -175,6 +175,12 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
                       <path d="M19 17v4"/>
                       <path d="M3 5h4"/>
                       <path d="M17 19h4"/>
+                    </svg>
+                  }
+                  @case ('user') {
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 21a8 8 0 0 0-16 0"/>
+                      <circle cx="12" cy="8" r="4"/>
                     </svg>
                   }
                   @case ('heart') {
@@ -316,7 +322,7 @@ export class NavbarComponent {
   );
 
   private readonly allNavItems: Array<{ id: string; label: string; icon: DrawerIcon; path: string; badge: number | null; exact: boolean }> = [
-    { id: 'accueil',    label: 'Accueil',     icon: 'home', path: '/dashboard',   badge: null, exact: true  },
+    { id: 'accueil',    label: 'Tableau de bord', icon: 'home', path: '/dashboard',   badge: null, exact: true  },
     { id: 'ma',         label: 'Annonces',     icon: 'search', path: '/ma',          badge: null, exact: true  },
     { id: 'vendre',     label: 'Vendre',       icon: 'chart', path: '/ma/deposer',  badge: null, exact: true  },
     { id: 'recherche',  label: 'Associés & équipe', icon: 'users', path: '/recherche', badge: null, exact: true  },
@@ -325,6 +331,7 @@ export class NavbarComponent {
     { id: 'mes-entreprises', label: 'Mes entreprises', icon: 'heart', path: '/ma/favoris', badge: null, exact: true },
     { id: 'statistiques', label: 'Mes statistiques', icon: 'bars', path: '/ma/statistiques', badge: null, exact: true },
     { id: 'annuaire',   label: 'Annuaire des pros', icon: 'users', path: '/pros',      badge: null, exact: true  },
+    { id: 'profil',     label: 'Mon profil',   icon: 'user', path: '/profil/modifier', badge: null, exact: false },
     { id: 'messages',   label: 'Messages',     icon: 'messages', path: '/messages',    badge: null, exact: false },
     { id: 'abonnement', label: 'Offre et facturation', icon: 'credit-card', path: '/abonnement', badge: null, exact: true  },
     { id: 'parametres', label: 'Paramètres',   icon: 'settings', path: '/parametres',  badge: null, exact: true  },
@@ -344,13 +351,17 @@ export class NavbarComponent {
       && !(item.id === 'annuaire' && !FEATURES.pros)
       && !(item.id === 'verifications' && !FEATURES.sellerPaidOffers)
       // Visiteurs : mêmes liens que le menu ordinateur, sans les pages de compte.
-      && !(['messages', 'abonnement', 'parametres', 'mes-entreprises'].includes(item.id) && !this.auth.isAuthenticated())
+      && !(['messages', 'abonnement', 'parametres', 'mes-entreprises', 'profil'].includes(item.id) && !this.auth.isAuthenticated())
     ).map(item => {
       if (item.id === 'recherche') {
         return { ...item, path: this.associateHref() };
       }
+      if (item.id === 'profil') {
+        const uid = this.auth.currentUser()?.uid;
+        return uid ? { ...item, path: `/profil/${uid}` } : item;
+      }
       if (item.id === 'accueil') {
-        return this.auth.isAuthenticated() ? { ...item, label: 'Dashboard' } : { ...item, path: '/' };
+        return this.auth.isAuthenticated() ? item : { ...item, label: 'Accueil', path: '/' };
       }
       return item;
     })
@@ -372,7 +383,8 @@ export class NavbarComponent {
 
   readonly isHidden = computed(() => {
     const url = this.currentUrl() ?? '';
-    return url.startsWith('/dashboard') || url.startsWith('/coaching-ia');
+    // Le tableau de bord utilise la même barre que les autres pages ; seul l'assistant IA garde sa mise en page.
+    return url.startsWith('/coaching-ia');
   });
 
   readonly logoLink = computed(() =>
