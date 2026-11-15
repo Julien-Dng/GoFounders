@@ -1,6 +1,6 @@
 #!/bin/bash
 # Tests de sécurité du compte multi-usages (2026-11-13-compte-multi-usages.sql, 2026-11-15-objectifs-automatiques.sql,
-# 2026-11-16-favoris.sql), sur une base de test locale
+# 2026-11-16-favoris.sql, 2026-11-17-visibilite-contact.sql), sur une base de test locale
 # avec comptes-test.sql, annonces-demo.sql et demo-complete.sql. Chaque cas est annulé (ROLLBACK).
 # Usage : D=<dossier du socket> bash supabase/tests/compte-multi-usages.sh
 D=${D:-/var/tmp/pgtest}
@@ -14,37 +14,51 @@ SQL
 r() { run "$1" "$2" "$3" "rollback" "$4"; }
 U=a1000000-0000-4000-8000-0000000000; L=c1000000-0000-4000-8000-0000000000
 N=${U}07; JU=${U}08; A=${U}10; IN=${U}11; BR=${U}12; CA=${U}13; T=${U}06; SA=${U}05; LU=${U}04; M=${U}01; K=${U}02
-echo "== Visibilité des profils"
+BIO="Ancien directeur financier, j accompagne les petites entreprises dans leur croissance"
+COMPLET="update profiles set title='Directeur financier', skills=array['Finance'], bio='$BIO' where id='$LU'"
+PROJET="insert into projects (owner_id, name, description, skills_needed, is_active) values ('$LU','Atelier','$BIO',array['Commerce'],false)"
+echo "== Consulter : tout membre voit les associés visibles et les projets publiés"
 r "Associé voit un porteur de projet"            $A  "select count(*) from profiles where id='$N'" 1
-r "Associé ne voit pas un autre associé"         $A  "select count(*) from profiles where id='$BR'" 0
-r "Porteur voit un associé"                      $N  "select count(*) from profiles where id='$A'" 1
+r "Associé voit un autre associé visible"        $A  "select count(*) from profiles where id='$BR'" 1
+r "Repreneur voit un associé visible"            $LU "select count(*) from profiles where id='$A'" 1
+r "Repreneur voit les projets publiés"           $T  "select count(*) > 0 from projects" t
 r "Porteur ne voit pas un cédant"                $N  "select count(*) from profiles where id='$K'" 0
-r "Repreneur ne voit pas un associé"             $LU "select count(*) from profiles where id='$A'" 0
 r "Repreneur ne voit pas un autre repreneur"     $LU "select count(*) from profiles where id='$SA'" 0
 r "Repreneur voit le cédant avec qui il échange" $T  "select count(*) from profiles where id='$M'" 1
-echo "== Cocher un usage n'ouvre rien ; l'action, oui"
-r "Repreneur coche « associé » sans compétence"  $LU "update profiles set usages = array['reprise','associe'] where id='$LU'; select count(*) from projects where is_active" 0
-r "… même avec une compétence (objectif seul)"    $LU "update profiles set usages = array['reprise','associe'], skills = array['Finance'] where id='$LU'; select count(*) from projects where is_active" 0
-r "Proposer son profil sans compétence : refusé" $LU "select set_associate_offer(true)" "ERROR:  COMPETENCES_REQUISES"
-r "Proposer son profil : voit les projets"       $LU "update profiles set skills = array['Finance'] where id='$LU'; select set_associate_offer(true) is not null; select 'associe' = any(usages), (select count(*) > 0 from projects where is_active) from profiles where id='$LU'" "t t|t"
+r "Profil retiré : plus visible des membres"     $A  "select set_associate_offer(false) is null; set local request.jwt.claim.sub = '$LU'; select count(*) from profiles where id='$A'" "t 0"
+r "Visiteur : aucun profil"                      "" "select count(*) from profiles" 0
+echo "== Visibilité : un seul réglage, la vitrine en option"
+r "Objectif « associé » + compétence : pas visible" $LU "update profiles set usages = array['reprise','associe'], skills = array['Finance'] where id='$LU'; select is_associate('$LU')" f
+r "Proposer un profil incomplet : refusé"        $LU "update profiles set skills = array['Finance'] where id='$LU'; select set_associate_offer(true)" "ERROR:  PROFIL_ASSOCIE_INCOMPLET"
+r "Proposer un profil complet : visible"         $LU "$COMPLET; select set_associate_offer(true) is not null; select 'associe' = any(usages), is_associate('$LU') from profiles where id='$LU'" "t t|t"
 r "Date de proposition non modifiable en direct" $LU "update profiles set associate_offered_at = now() where id='$LU'" "ERROR:  permission denied"
 r "Retirer l'objectif ne retire pas le profil"   $A  "update profiles set usages = array['reprise'] where id='$A'; select is_associate('$A')" t
-r "Retirer la proposition : plus de projets"     $A  "select set_associate_offer(false) is null; select count(*) from projects" "t 0"
-echo "== Objectifs ajoutés après une action"
+r "Retirer la proposition retire la vitrine"     $A  "select set_associate_offer(false) is null; select is_associate('$A'), public_listing from profiles where id='$A'" "t f|f"
+r "Vitrine impossible sans profil visible"       $LU "update profiles set public_listing = true where id='$LU'; select public_listing from profiles where id='$LU'" f
+r "Vitrine d'un projet en brouillon : non"       $LU "$PROJET; update projects set public_listing = true where owner_id='$LU'; select public_listing from projects where owner_id='$LU'" f
+echo "== Publier un projet : minimum exigé"
 r "Projet en brouillon : aucun objectif"         $LU "insert into projects (owner_id, name, is_active) values ('$LU','T',false); select usages from profiles where id='$LU'" "{reprise}"
-r "Projet publié : « Trouver des associés »"     $LU "insert into projects (owner_id, name, is_active) values ('$LU','T',true); select usages from profiles where id='$LU'" "{reprise,projet}"
+r "Projet incomplet publié : refusé"             $LU "insert into projects (owner_id, name, is_active) values ('$LU','T',true)" "ERROR:  PROJET_INCOMPLET"
+r "Projet présenté publié : « Trouver des associés »" $LU "$PROJET; update projects set is_active = true where owner_id='$LU'; select usages from profiles where id='$LU'" "{reprise,projet}"
+echo "== Objectifs ajoutés après une action"
 r "Annonce déposée : « Vendre »"                 $A  "insert into ma_listings (owner_id, sector, region, public_summary) values ('$A','Services','Bretagne','Test de publication par un associé'); select 'cession' = any(usages) from profiles where id='$A'" t
 r "Dossier débloqué : « Reprendre »"             $A  "select request_listing_access('${L}03','',true,'ma-v0-provisoire-2026-10-28'); select simulate_listing_purchase('INTRO','${L}03',null); select 'reprise' = any(usages) from profiles where id='$A'" "pending  t"
 r "Fonction d'ajout non appelable"               $A  "select add_profile_usage('$A','projet')" "ERROR:  permission denied"
-r "Repreneur coche « projet » sans projet publié" $LU "update profiles set usages = array['reprise','projet'] where id='$LU'; select count(*) from profiles where id='$A'" 0
-r "… puis publie un projet : voit les associés"  $LU "update profiles set usages = array['reprise','projet'] where id='$LU'; insert into projects (owner_id, name, is_active) values ('$LU','Test',true); select count(*) from profiles where id='$A'" 1
 r "Usage inconnu refusé"                         $LU "update profiles set usages = array['admin'] where id='$LU'" "ERROR:  new row for relation \"profiles\" violates check"
 r "Rôle toujours non modifiable par le membre"   $LU "update profiles set role='pro' where id='$LU'" ERROR
+echo "== Contacter"
+r "Porteur sans projet présenté → associé"       $LU "insert into conversations (participant_a, participant_b) values ('$LU','$A')" "ERROR:  PROJET_INCOMPLET"
+r "Porteur, brouillon présenté → associé"        $LU "$PROJET; insert into conversations (participant_a, participant_b) values ('$LU','$A') returning context" projet
+r "Brouillon lisible par l'associé contacté"     $LU "$PROJET; insert into conversations (participant_a, participant_b) values ('$LU','$A'); set local request.jwt.claim.sub = '$A'; select count(*) from projects where owner_id='$LU'" 1
+r "… mais pas par les autres membres"            $LU "$PROJET; insert into conversations (participant_a, participant_b) values ('$LU','$A'); set local request.jwt.claim.sub = '$T'; select count(*) from projects where owner_id='$LU'" 0
+r "… ni sa partie confidentielle"                $LU "$PROJET; update projects set confidential_details = 'Secret' where owner_id='$LU'; insert into conversations (participant_a, participant_b) values ('$LU','$A'); set local request.jwt.claim.sub = '$A'; select coalesce(get_project_confidential((select id from projects where owner_id='$LU')),'(rien)')" "(rien)"
+r "Profil d'associé incomplet → porteur"         $T  "insert into conversations (participant_a, participant_b) values ('$T','$N')" "ERROR:  PROFIL_ASSOCIE_INCOMPLET"
+r "Associé discret (complet, non visible) → porteur" $LU "$COMPLET; insert into conversations (participant_a, participant_b) values ('$LU','$N') returning context; set local request.jwt.claim.sub = '$N'; select count(*) from profiles where id='$LU'" "projet 1"
+r "Associé → porteur : pas de quota"             $LU "$COMPLET; insert into conversations (participant_a, participant_b) values ('$LU','$N'); select coalesce((select contacts from usage_counters where user_id='$LU'),0)" "0"
+r "Garde-fou : 21e conversation du jour refusée" $LU "reset role; set local request.jwt.claim.sub = ''; insert into conversations (participant_a, participant_b, context) select '$LU', id, 'pro' from profiles where id <> '$LU' limit 20; set local request.jwt.claim.sub = '$LU'; set local role authenticated; $COMPLET; insert into conversations (participant_a, participant_b) values ('$LU','$JU')" "ERROR:  LIMITE_CONTACTS_JOUR"
 echo "== Projets"
-r "Associé voit les projets actifs"              $A  "select count(*) > 0 from projects" t
-r "Repreneur ne voit aucun projet"               $T  "select count(*) from projects" 0
 r "Partie confidentielle toujours protégée"      $A  "select coalesce(get_project_confidential((select id from projects where owner_id='$N')),'(rien)')" "(rien)"
-r "Demande d'accès : refusée sans profil associé" $T "select request_project_access((select id from projects where owner_id='$N'), true, 'v0-provisoire-2026-10-19')" "ERROR:  ACCES_RESERVE_ASSOCIES"
+r "Demande d'accès : refusée sans profil complet" $T "select request_project_access((select id from projects where owner_id='$N'), true, 'v0-provisoire-2026-10-19')" "ERROR:  ACCES_RESERVE_ASSOCIES"
 r "Demande d'accès : acceptée pour un associé"   $CA "select request_project_access((select id from projects where owner_id='$N'), true, 'v0-provisoire-2026-10-19')" pending
 r "Invitation d'un non-associé refusée"          $N  "select invite_to_project('$T')" "ERROR:  ASSOCIE_INTROUVABLE"
 r "Invitation d'un associé acceptée"             $N  "select invite_to_project('$CA')" nda_required
