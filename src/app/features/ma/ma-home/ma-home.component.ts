@@ -10,6 +10,7 @@ import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../
 import { lastGrowth, revenueSeries } from '../../../core/ma/listing-options';
 
 type SortKey = 'pertinence' | 'recent' | 'prix-asc' | 'prix-desc' | 'ca-desc' | 'benefice-desc' | 'multiple-asc';
+import { FavoriteButtonComponent } from '../../../shared/components/favorite-button/favorite-button.component';
 import { VerifiedBadgeComponent } from '../../../shared/components/verified-badge/verified-badge.component';
 import { RevealDirective } from '../../../shared/directives/reveal.directive';
 
@@ -17,7 +18,7 @@ import { RevealDirective } from '../../../shared/directives/reveal.directive';
 @Component({
   selector: 'app-ma-home',
   standalone: true,
-  imports: [RouterLink, VerifiedBadgeComponent, RevealDirective],
+  imports: [RouterLink, VerifiedBadgeComponent, RevealDirective, FavoriteButtonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-secondary">
@@ -164,6 +165,7 @@ import { RevealDirective } from '../../../shared/directives/reveal.directive';
                             @if (item.listing.isNew) {
                               <span class="rounded-full border border-accent/30 px-2 py-0.5 font-medium text-accent">Nouvelle</span>
                             }
+                            <app-favorite-button class="ml-auto" [listingId]="item.listing.id" [label]="item.listing.title || item.listing.sector" />
                           </div>
                           <h2 [id]="'listing-' + item.listing.id" class="mt-2 text-xl font-bold leading-snug text-primary group-hover:text-accent sm:text-2xl">
                             <a [routerLink]="['/ma/annonce', item.listing.id]" class="after:absolute after:inset-0 after:rounded-2xl focus:outline-none focus-visible:underline">{{ item.listing.title || item.listing.sector + ', ' + item.listing.region }}</a>

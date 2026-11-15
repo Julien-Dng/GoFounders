@@ -1,5 +1,6 @@
 #!/bin/bash
-# Tests de sécurité du compte multi-usages (2026-11-13-compte-multi-usages.sql), sur une base de test locale
+# Tests de sécurité du compte multi-usages (2026-11-13-compte-multi-usages.sql, 2026-11-15-objectifs-automatiques.sql,
+# 2026-11-16-favoris.sql), sur une base de test locale
 # avec comptes-test.sql, annonces-demo.sql et demo-complete.sql. Chaque cas est annulé (ROLLBACK).
 # Usage : D=<dossier du socket> bash supabase/tests/compte-multi-usages.sh
 D=${D:-/var/tmp/pgtest}
@@ -69,3 +70,12 @@ r "Quota affiché : repreneur sans limite"         $T  "select contacts_limit is
 r "Associé et repreneur ne peuvent pas s'écrire" $A  "insert into conversations (participant_a, participant_b) values ('$A','$LU')" "ERROR:  ROLE_CONTACT_INTERDIT"
 echo "== Vitrine publique"
 run "Vitrine : associés et projets listés"       "" "set local role anon" "select string_agg(kind||':'||n, ' ') from (select kind, count(*) n from list_public_marketplace() group by kind order by kind) x; rollback" "project"
+echo "== Favoris d'entreprises"
+r "Ajouter une annonce publique en favori"      $LU "insert into listing_favorites (user_id, listing_id) values ('$LU','${L}03'); select count(*) from list_my_favorite_listings()" 1
+r "Annonce non relue : refusée"                  $LU "insert into listing_favorites (user_id, listing_id) values ('$LU','${L}04')" "ERROR:  new row violates row-level security"
+r "Favori au nom d'un autre membre : refusé"     $LU "insert into listing_favorites (user_id, listing_id) values ('$A','${L}03')" "ERROR:  new row violates row-level security"
+r "Les favoris d'un autre restent invisibles"    $LU "insert into listing_favorites (user_id, listing_id) values ('$LU','${L}03'); set local request.jwt.claim.sub = '$A'; select count(*) from listing_favorites" 0
+r "Le cédant ne voit pas qui suit son annonce"   $LU "insert into listing_favorites (user_id, listing_id) values ('$LU','${L}03'); set local request.jwt.claim.sub = '$K'; select count(*) from listing_favorites where listing_id = '${L}03'" 0
+r "Annonce retirée : disparaît de la liste"      $LU "insert into listing_favorites (user_id, listing_id) values ('$LU','${L}03'); reset role; update ma_listings set status = 'withdrawn' where id = '${L}03'; set local role authenticated; select count(*) from list_my_favorite_listings()" 0
+r "Retirer un favori"                            $LU "insert into listing_favorites (user_id, listing_id) values ('$LU','${L}03'); delete from listing_favorites where listing_id = '${L}03'; select count(*) from listing_favorites" 0
+r "Favori : n'ajoute aucun objectif"             $LU "insert into listing_favorites (user_id, listing_id) values ('$LU','${L}03'); select usages from profiles where id = '$LU'" "{reprise}"

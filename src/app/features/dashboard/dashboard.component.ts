@@ -422,6 +422,7 @@ export class DashboardComponent {
     { id: 'profil', label: 'Mon profil', icon: 'user', path: this.ownProfilePath(), badge: null },
     { id: 'messages', label: 'Messages', icon: 'messages', path: '/messages', badge: this.messageUnreadCount() || null },
     { id: 'ma', label: 'Entreprises', icon: 'ma', path: '/ma', badge: null },
+    { id: 'favoris', label: 'Mes favoris', icon: 'ma', path: '/ma/favoris', badge: null },
     ...(this.sells()
       ? [
           { id: 'mes-annonces', label: 'Mes annonces', icon: 'ma' as const, path: '/ma/mes-annonces', badge: null },

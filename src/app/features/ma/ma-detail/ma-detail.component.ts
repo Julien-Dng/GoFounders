@@ -14,13 +14,14 @@ import { ListingAccessService, MyAccessRequest } from '../../../core/services/li
 import { FEATURES } from '../../../core/config/features';
 import { formatEuros, formatMultiple, listingMetrics, publishedLabel } from '../../../core/ma/listing-metrics';
 import { ACQUISITION_CHANNELS, AcquisitionChannel, INCLUDED_ASSETS, IncludedAsset, labelOf, lastGrowth, revenueSeries } from '../../../core/ma/listing-options';
+import { FavoriteButtonComponent } from '../../../shared/components/favorite-button/favorite-button.component';
 import { VerifiedBadgeComponent } from '../../../shared/components/verified-badge/verified-badge.component';
 import { canBuyMaDossier } from '../../../core/models/user.model';
 
 @Component({
   selector: 'app-ma-detail',
   standalone: true,
-  imports: [RouterLink, VerifiedBadgeComponent],
+  imports: [RouterLink, VerifiedBadgeComponent, FavoriteButtonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-secondary pb-28 pt-20 lg:pb-16">
@@ -50,6 +51,7 @@ import { canBuyMaDossier } from '../../../core/models/user.model';
               <p class="mt-2 text-base font-medium text-muted-foreground">{{ item.sector }} · {{ item.region }}</p>
             }
             <p class="mt-4 text-lg leading-relaxed text-foreground/80">{{ item.summary }}</p>
+            <app-favorite-button class="mt-5 inline-block" [listingId]="item.id" [label]="item.title || item.sector" [withText]="true" />
           </header>
 
           <dl class="tabular mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-border shadow-lg ring-1 ring-border sm:grid-cols-3 lg:grid-cols-6">

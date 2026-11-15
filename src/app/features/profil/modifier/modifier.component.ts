@@ -711,7 +711,7 @@ export class ModifierComponent implements OnInit {
   });
   readonly rolePlaceholder = computed(() => {
     const user = this.currentUser();
-    switch (user?.profileType === 'pro' ? 'pro' : usagesOf(user)[0]) {
+    switch (user?.profileType === 'pro' ? 'pro' : this.mode === 'associe' ? 'associe' : usagesOf(user)[0]) {
       case 'associe':
         return 'Développeur full-stack, CTO freelance, Growth marketer...';
       case 'reprise':
@@ -778,6 +778,11 @@ export class ModifierComponent implements OnInit {
   ];
 
   ngOnInit(): void {
+    // « Mon profil d'associé » : l'intitulé créé à l'inscription pour la reprise ou la cession (« Recherche M&A - … »)
+    // ne décrit pas ce que la personne apporte à un projet. Le champ reste vide, sans rien enregistrer tant qu'on ne valide pas.
+    if (this.mode === 'associe' && /^(Recherche|Cession) M&A - /.test(this.profileForm.controls.profileTitle.value)) {
+      this.profileForm.controls.profileTitle.setValue('');
+    }
     void this.loadProject();
   }
 

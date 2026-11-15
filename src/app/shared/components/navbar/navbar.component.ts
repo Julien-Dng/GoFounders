@@ -9,7 +9,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { UserMenuComponent } from '../user-menu/user-menu.component';
 import { NotificationMenuComponent } from '../notification-menu/notification-menu.component';
 
-type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles' | 'credit-card' | 'settings' | 'bars' | 'shield';
+type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles' | 'credit-card' | 'settings' | 'bars' | 'shield' | 'heart';
 
 @Component({
   selector: 'app-navbar',
@@ -177,6 +177,11 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
                       <path d="M17 19h4"/>
                     </svg>
                   }
+                  @case ('heart') {
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8 3.6 4.5 7.1 4.5c2 0 3.6 1.1 4.9 2.8 1.3-1.7 2.9-2.8 4.9-2.8 3.5 0 5.6 3.5 4.4 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/>
+                    </svg>
+                  }
                   @case ('bars') {
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M4 20V10"/>
@@ -318,6 +323,7 @@ export class NavbarComponent {
     { id: 'vendre',     label: 'Vendre',       icon: 'chart', path: '/ma/deposer',  badge: null, exact: true  },
     { id: 'recherche',  label: 'Associés & équipe', icon: 'users', path: '/recherche', badge: null, exact: true  },
     { id: 'tarifs',     label: 'Tarifs',       icon: 'credit-card', path: '/tarifs',  badge: null, exact: true  },
+    { id: 'favoris',    label: 'Mes favoris',  icon: 'heart', path: '/ma/favoris',  badge: null, exact: true  },
     { id: 'mes-annonces', label: 'Mes annonces', icon: 'chart', path: '/ma/mes-annonces', badge: null, exact: true },
     { id: 'statistiques', label: 'Mes statistiques', icon: 'bars', path: '/ma/statistiques', badge: null, exact: true },
     { id: 'annuaire',   label: 'Annuaire des pros', icon: 'users', path: '/pros',      badge: null, exact: true  },
@@ -340,7 +346,7 @@ export class NavbarComponent {
       && !(item.id === 'annuaire' && !FEATURES.pros)
       && !(item.id === 'verifications' && !FEATURES.sellerPaidOffers)
       // Visiteurs : mêmes liens que le menu ordinateur, sans les pages de compte.
-      && !(['messages', 'abonnement', 'parametres'].includes(item.id) && !this.auth.isAuthenticated())
+      && !(['messages', 'abonnement', 'parametres', 'favoris'].includes(item.id) && !this.auth.isAuthenticated())
     ).map(item => {
       if (item.id === 'recherche') {
         return { ...item, path: this.associateHref() };

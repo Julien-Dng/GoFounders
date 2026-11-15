@@ -27,7 +27,7 @@ modifiables dans Paramètres ; ils ne donnent **aucun accès** supplémentaire.
 ## Le compte rassemble
 
 - **Mon profil** : présentation, compétences et expérience.
-- **Mes entreprises** : annonces publiées, favoris (à créer) et dossiers débloqués.
+- **Mes entreprises** : annonces publiées, favoris (`/ma/favoris`) et dossiers débloqués.
 - **Mes projets et associés** : projets, recherches et demandes d'accès aux projets (« candidatures »).
 - **Messages** : une messagerie commune, chaque conversation rattachée à son entreprise ou à son projet.
 - **Paiements** : achats de dossiers et éventuelle offre PRO pour les associés.
@@ -117,3 +117,13 @@ Migration : `supabase/2026-11-15-objectifs-automatiques.sql` (à exécuter aprè
 - **Un bouton = sa destination** : « Présenter mon projet » → `/mon-projet` (projet seul) ; « Proposer mes compétences »
   → `/profil/associe` (profil d'associé seul). Le profil général reste `/profil/modifier`.
 - Retirer un objectif ne supprime ni projet, ni annonce, ni dossier acheté. Les droits FREE / PRO restent indépendants.
+
+## Favoris d'entreprises (novembre 2026)
+
+Migration : `supabase/2026-11-16-favoris.sql` (après `2026-11-15-objectifs-automatiques.sql`).
+
+- Cœur sur chaque annonce (`/ma`, fiche) ; page « Mes favoris » (`/ma/favoris`, menu et tableau de bord). Un visiteur
+  qui touche le cœur est envoyé vers la connexion puis revient sur la page.
+- Table `listing_favorites` : chaque membre ne lit et ne modifie que ses propres favoris ; le cédant ne sait pas qui
+  suit son annonce. On ne peut ajouter qu'une annonce visible ; une annonce retirée disparaît de la liste. 200 au plus.
+- Un favori n'ouvre aucun droit et n'ajoute aucun objectif.

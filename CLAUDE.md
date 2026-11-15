@@ -34,7 +34,7 @@ Un seul compte par personne, qui **cumule des usages** modifiables (Paramètres 
 `projet` (cherche des associés), `associe` (rejoindre un projet). Plan complet : `docs/PLAN-COMPTE-MULTI-USAGES.md`,
 migration `supabase/2026-11-13-compte-multi-usages.sql`, tests `supabase/tests/`.
 
-- Sur le site, les usages s'appellent **« Mes objectifs »** ; ils s'ajoutent d'eux-mêmes après une action confirmée (projet publié, annonce déposée, dossier débloqué, `2026-11-15-objectifs-automatiques.sql`). « Rejoindre un projet » vient seulement de la case « Proposer mon profil aux porteurs de projet » (`/profil/associe`, `set_associate_offer`) ou de l'inscription. Pages dédiées : `/mon-projet` et `/profil/associe`.
+- Sur le site, les usages s'appellent **« Mes objectifs »** ; ils s'ajoutent d'eux-mêmes après une action confirmée (projet publié, annonce déposée, dossier débloqué, `2026-11-15-objectifs-automatiques.sql`). « Rejoindre un projet » vient seulement de la case « Proposer mon profil aux porteurs de projet » (`/profil/associe`, `set_associate_offer`) ou de l'inscription. Pages dédiées : `/mon-projet` et `/profil/associe`. Favoris d'entreprises : `/ma/favoris` (`listing_favorites`, `2026-11-16-favoris.sql`, invisibles du cédant).
 - **Les usages personnalisent le site, ils n'ouvrent aucun droit.** Les droits viennent des actions et des achats :
   projet publié → voir/contacter les associés ; profil d'associé proposé (`associate_offered_at`, case explicite) + compétences → voir/contacter
   les projets ; 50 € payés → dossier et contact de cette entreprise (tout membre, cédant compris) ; annonce possédée → la gérer.
