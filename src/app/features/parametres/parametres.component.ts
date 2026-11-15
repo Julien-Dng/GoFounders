@@ -91,7 +91,7 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
 
           <!-- MES USAGES : personnalisent le site, n'ouvrent aucun droit (compte multi-usages). -->
           @if (!isPro()) {
-            <section class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-6" aria-labelledby="usages-titre">
+            <section id="usages" class="scroll-mt-24 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6" aria-labelledby="usages-titre">
               <h2 id="usages-titre" class="text-lg font-semibold">Mes usages</h2>
               <p class="mt-1 text-sm text-muted-foreground">Ils personnalisent votre tableau de bord et votre navigation. Les accès dépendent de vos actions : projet publié, profil d'associé complété, dossier débloqué</p>
               <div class="mt-4 grid gap-2 sm:grid-cols-2">

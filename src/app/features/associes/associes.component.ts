@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, HostListener, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { hasUsage, usesTeamMarketplace } from '../../core/models/user.model';
+import { hasUsage, isProAccount, usesTeamMarketplace } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { ShowcaseEntry, ShowcaseService } from '../../core/services/showcase.service';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
@@ -46,11 +46,8 @@ const STAGE_LABELS: Record<string, string> = {
           <div class="mt-8 flex flex-col gap-3 sm:flex-row">
             @if (canBrowseFull()) {
               <a routerLink="/recherche" class="rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90">Ouvrir la recherche complète</a>
-            } @else if (isAuthenticated()) {
-              <p class="max-w-[60ch] rounded-xl bg-white/10 px-5 py-4 text-base leading-relaxed text-white/85">
-                Votre compte actuel sert à la reprise d'entreprise. Pour chercher un associé ou rejoindre un projet,
-                créez un second compte, porteur de projet ou associé, avec une autre adresse e-mail
-              </p>
+            } @else if (isAuthenticated() && !isPro()) {
+              <a routerLink="/parametres" fragment="usages" class="rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90">Ajouter cet usage à mon compte</a>
             } @else {
               <a routerLink="/inscription" [queryParams]="{ profil: 'entrepreneur' }" class="rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90">Je cherche un associé</a>
               <a routerLink="/inscription" [queryParams]="{ profil: 'talent' }" class="rounded-lg border border-white/30 px-6 py-3.5 text-center font-semibold text-white transition-colors hover:border-white/70">Je veux devenir associé</a>
@@ -229,10 +226,13 @@ const STAGE_LABELS: Record<string, string> = {
             </ol>
           </div>
 
-          @if (bannerLink(); as link) {
+          @if (banner(); as banner) {
             <div class="rounded-2xl bg-primary px-6 py-10 text-center text-white sm:px-10">
-              <h2 class="text-2xl sm:text-3xl">{{ tab() === 'talent' ? 'Votre prochain associé est peut-être ici' : 'Votre prochain projet est peut-être ici' }}</h2>
-              <a [routerLink]="link.path" [queryParams]="link.params" class="mt-6 inline-block rounded-lg bg-accent px-6 py-3.5 font-semibold text-white transition-colors hover:bg-accent/90">{{ link.label }}</a>
+              <h2 class="text-2xl sm:text-3xl">{{ banner.title }}</h2>
+              @if (banner.text) {
+                <p class="mx-auto mt-3 max-w-[52ch] text-base leading-relaxed text-white/75">{{ banner.text }}</p>
+              }
+              <a [routerLink]="banner.path" [queryParams]="banner.params" [fragment]="banner.fragment" class="mt-6 inline-block rounded-lg bg-accent px-6 py-3.5 font-semibold text-white transition-colors hover:bg-accent/90">{{ banner.label }}</a>
             </div>
           }
         </div>
@@ -316,17 +316,28 @@ export class AssociesComponent implements OnInit {
         { title: 'Échangez directement', detail: 'Prenez contact avec le porteur et avancez ensemble' },
       ]);
   readonly canBrowseFull = computed(() => usesTeamMarketplace(this.auth.currentUser()));
-  // Bannière finale : inscription pour les visiteurs, recherche complète pour les membres concernés.
-  readonly bannerLink = computed<{ path: string; params: Record<string, string> | null; label: string } | null>(() => {
-    if (this.canBrowseFull()) {
-      return { path: '/recherche', params: null, label: 'Ouvrir la recherche complète' };
+  // Bannière finale selon la personne : visiteur → inscription ; membre qui a l'usage de l'onglet → recherche
+  // complète ; membre sans cet usage → l'ajouter dans Paramètres (même compte) ; compte pro → rien.
+  readonly banner = computed<{ title: string; text: string | null; path: string; params: Record<string, string> | null; fragment: string | undefined; label: string } | null>(() => {
+    const user = this.auth.currentUser();
+    const talentTab = this.tab() === 'talent';
+    const title = talentTab ? 'Votre prochain associé est peut-être ici' : 'Votre prochain projet est peut-être ici';
+
+    if (!this.isAuthenticated()) {
+      return { title, text: null, path: '/inscription', params: { profil: talentTab ? 'entrepreneur' : 'talent' }, fragment: undefined, label: 'Commencer gratuitement' };
     }
-    if (this.isAuthenticated()) {
+    if (isProAccount(user)) {
       return null;
     }
-    return { path: '/inscription', params: { profil: this.tab() === 'talent' ? 'entrepreneur' : 'talent' }, label: 'Commencer gratuitement' };
+    if (hasUsage(user, talentTab ? 'projet' : 'associe')) {
+      return { title, text: null, path: '/recherche', params: null, fragment: undefined, label: talentTab ? 'Voir tous les associés' : 'Voir tous les projets' };
+    }
+    return talentTab
+      ? { title: 'Vous cherchez un associé ?', text: 'Ajoutez « Trouver des associés » à vos usages pour présenter votre projet et contacter ces profils, avec le même compte', path: '/parametres', params: null, fragment: 'usages', label: 'Modifier mes usages' }
+      : { title: 'Envie de rejoindre un projet ?', text: 'Ajoutez « Rejoindre un projet » à vos usages pour proposer vos compétences et contacter les porteurs, avec le même compte', path: '/parametres', params: null, fragment: 'usages', label: 'Modifier mes usages' };
   });
   readonly isAuthenticated = this.auth.isAuthenticated;
+  readonly isPro = computed(() => isProAccount(this.auth.currentUser()));
 
 
   async ngOnInit(): Promise<void> {
