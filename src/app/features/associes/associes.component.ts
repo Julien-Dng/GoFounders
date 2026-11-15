@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, HostListener, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { hasUsage, usesTeamMarketplace } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
@@ -7,6 +7,15 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
 import { FREE_CONTACTS_PER_MONTH } from '../../core/config/offers';
 
 type ShowcaseTab = 'talent' | 'project';
+type FilterKey = 'availability' | 'skills' | 'sector' | 'stage';
+
+interface FilterGroup {
+  key: FilterKey;
+  label: string;
+  options: Array<{ value: string; label: string }>;
+}
+
+const NO_FILTERS: Record<FilterKey, string[]> = { availability: [], skills: [], sector: [], stage: [] };
 
 const STAGE_LABELS: Record<string, string> = {
   idea: 'Idée',
@@ -54,22 +63,66 @@ const STAGE_LABELS: Record<string, string> = {
       <section class="px-4 py-14 sm:px-6 lg:px-8 lg:py-16" aria-labelledby="showcase-title">
         <div class="mx-auto max-w-[78rem]">
           <h2 id="showcase-title" class="sr-only">Profils</h2>
-          <div class="flex flex-wrap items-center justify-between gap-4">
+          <div class="flex flex-wrap items-center gap-4">
             <div class="flex gap-2" role="tablist" aria-label="Type de profil">
               @for (option of tabs; track option.value) {
-                <button type="button" role="tab" [attr.aria-selected]="tab() === option.value" (click)="tab.set(option.value)" class="rounded-full px-5 py-2.5 font-semibold transition-colors" [class]="tab() === option.value ? 'bg-primary text-white' : 'bg-white text-primary ring-1 ring-border hover:text-accent'">
+                <button type="button" role="tab" [attr.aria-selected]="tab() === option.value" (click)="selectTab(option.value)" class="rounded-full px-5 py-2.5 font-semibold transition-colors" [class]="tab() === option.value ? 'bg-primary text-white' : 'bg-white text-primary ring-1 ring-border hover:text-accent'">
                   {{ option.label }}
                 </button>
               }
             </div>
-            <!-- Recherche dans la vitrine : filtre sur les informations déjà affichées (intitulé, compétences, secteur…). -->
-            <div class="relative w-full sm:w-80" role="search">
-              <label for="associes-search" class="sr-only">Rechercher une compétence, un secteur</label>
-              <svg class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          </div>
+
+          <!-- Barre de recherche et filtres : uniquement sur les informations déjà affichées (aucun lieu, aucun nom). -->
+          <div class="relative mt-5 flex gap-3" role="search" #filterZone>
+            <div class="relative min-w-0 flex-1">
+              <label for="associes-search" class="sr-only">{{ tab() === 'talent' ? 'Rechercher un métier, une compétence' : 'Rechercher un secteur, une compétence recherchée' }}</label>
+              <svg class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-primary/70" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
               <input id="associes-search" type="search" [value]="query()" (input)="query.set($any($event.target).value)"
-                     [placeholder]="tab() === 'talent' ? 'Compétence, métier, disponibilité…' : 'Secteur, compétence recherchée…'"
-                     class="w-full rounded-full border border-border bg-white py-2.5 pl-10 pr-4 text-base outline-none transition-colors focus:border-accent">
+                     [placeholder]="tab() === 'talent' ? 'Un métier, une compétence…' : 'Un secteur, une compétence recherchée…'"
+                     class="h-14 w-full rounded-xl border border-border bg-white pl-12 pr-4 text-base shadow-sm outline-none transition-colors focus:border-accent">
             </div>
+            <button type="button" (click)="filtersOpen.set(!filtersOpen())" [attr.aria-expanded]="filtersOpen()" aria-controls="associes-filters"
+                    class="flex h-14 flex-shrink-0 items-center gap-2 rounded-xl border bg-white px-4 font-semibold text-primary shadow-sm transition-colors hover:border-accent sm:px-5"
+                    [class]="filtersOpen() || activeFilterCount() > 0 ? 'border-accent' : 'border-border'">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
+              <span class="max-sm:sr-only">Filtres</span>
+              @if (activeFilterCount() > 0) {
+                <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-xs text-white">{{ activeFilterCount() }}<span class="sr-only"> actifs</span></span>
+              }
+              <svg class="max-sm:hidden transition-transform" [class.rotate-180]="filtersOpen()" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+
+            @if (filtersOpen()) {
+              <div id="associes-filters" class="absolute right-0 top-full z-20 mt-2 w-full rounded-2xl bg-white p-5 shadow-xl ring-1 ring-border sm:w-[26rem]">
+                @for (group of filterGroups(); track group.key) {
+                  <fieldset class="mb-5 last:mb-0">
+                    <legend class="mb-2 text-sm font-semibold text-primary">{{ group.label }}</legend>
+                    <div class="flex flex-wrap gap-2">
+                      @for (option of group.options; track option.value) {
+                        <button type="button" (click)="toggleFilter(group.key, option.value)" [attr.aria-pressed]="isSelected(group.key, option.value)"
+                                class="rounded-full px-3 py-1.5 text-sm font-medium transition-colors"
+                                [class]="isSelected(group.key, option.value) ? 'bg-primary text-white' : 'bg-secondary text-foreground hover:bg-accent/10'">
+                          {{ option.label }}
+                        </button>
+                      }
+                    </div>
+                  </fieldset>
+                }
+                @if (tab() === 'project') {
+                  <label class="mt-1 flex cursor-pointer items-center gap-3 text-sm font-medium text-foreground">
+                    <input type="checkbox" class="h-4 w-4 accent-accent" [checked]="equityOnly()" (change)="equityOnly.set($any($event.target).checked)">
+                    Ouvert à un associé au capital
+                  </label>
+                }
+                <div class="mt-5 flex items-center justify-between border-t border-border pt-4">
+                  <button type="button" (click)="clearFilters()" class="text-sm font-semibold text-muted-foreground hover:text-primary" [disabled]="activeFilterCount() === 0">Réinitialiser</button>
+                  <button type="button" (click)="filtersOpen.set(false)" class="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent/90">
+                    Voir {{ results().length }} résultat{{ results().length > 1 ? 's' : '' }}
+                  </button>
+                </div>
+              </div>
+            }
           </div>
 
           @if (!loaded()) {
@@ -86,15 +139,18 @@ const STAGE_LABELS: Record<string, string> = {
             </div>
           } @else if (results().length === 0) {
             <div class="mt-8 rounded-2xl bg-white p-8 text-center ring-1 ring-border" role="status">
-              <p class="text-lg font-semibold text-primary">Aucun résultat pour « {{ query().trim() }} »</p>
-              <p class="mt-1 text-muted-foreground">Essayez un autre mot, ou consultez tous les profils</p>
-              <button type="button" (click)="query.set('')" class="mt-4 font-semibold text-accent hover:underline">Effacer la recherche</button>
+              <p class="text-lg font-semibold text-primary">{{ query().trim() ? 'Aucun résultat pour « ' + query().trim() + ' »' : 'Aucun résultat avec ces filtres' }}</p>
+              <p class="mt-1 text-muted-foreground">Essayez un autre mot ou retirez un filtre</p>
+              <button type="button" (click)="resetSearch()" class="mt-4 font-semibold text-accent hover:underline">Tout effacer</button>
             </div>
           } @else {
-            @if (query().trim()) {
-              <p class="mt-6 text-sm text-muted-foreground" role="status">{{ results().length }} résultat{{ results().length > 1 ? 's' : '' }} pour « {{ query().trim() }} »</p>
+            @if (isFiltering()) {
+              <p class="mt-5 flex flex-wrap items-center gap-x-3 text-sm text-muted-foreground" role="status">
+                {{ results().length }} résultat{{ results().length > 1 ? 's' : '' }}{{ query().trim() ? ' pour « ' + query().trim() + ' »' : '' }}
+                <button type="button" (click)="resetSearch()" class="font-semibold text-accent hover:underline">Tout effacer</button>
+              </p>
             }
-            <ul class="mt-8 grid gap-6 md:auto-rows-fr md:grid-cols-2 xl:grid-cols-3" [class.mt-3]="!!query().trim()">
+            <ul class="grid gap-6 md:auto-rows-fr md:grid-cols-2 xl:grid-cols-3" [class]="isFiltering() ? 'mt-3' : 'mt-8'">
               @for (entry of results(); track entry.profile_id + entry.kind) {
                 <!-- Toute la carte est cliquable : le lien « Voir le profil ↗ » s'étend sur la carte (clavier compris). -->
                 <li class="group relative flex flex-col rounded-2xl bg-white p-5 shadow-md ring-1 ring-border transition-shadow focus-within:ring-2 focus-within:ring-accent"
@@ -155,6 +211,33 @@ const STAGE_LABELS: Record<string, string> = {
         </div>
       </section>
 
+      <!-- Comment ça marche, adapté à l'onglet, puis l'appel à s'inscrire. -->
+      <section class="px-4 pb-14 sm:px-6 lg:px-8 lg:pb-16" aria-labelledby="associes-steps-title">
+        <div class="mx-auto max-w-[78rem] space-y-6">
+          <div class="rounded-2xl bg-white px-6 py-8 shadow-sm ring-1 ring-border sm:px-10">
+            <h2 id="associes-steps-title" class="text-center text-2xl text-primary sm:text-3xl">Un profil. Un projet. Une rencontre</h2>
+            <ol class="mt-8 grid gap-6 md:grid-cols-3 md:gap-0">
+              @for (step of steps(); track step.title; let i = $index) {
+                <li class="flex gap-4 md:px-8 md:first:pl-0 md:last:pr-0 md:[&:not(:first-child)]:border-l md:[&:not(:first-child)]:border-border">
+                  <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-white" aria-hidden="true">{{ i + 1 }}</span>
+                  <div>
+                    <h3 class="text-lg font-bold text-primary">{{ step.title }}</h3>
+                    <p class="mt-1 text-base leading-relaxed text-muted-foreground">{{ step.detail }}</p>
+                  </div>
+                </li>
+              }
+            </ol>
+          </div>
+
+          @if (bannerLink(); as link) {
+            <div class="rounded-2xl bg-primary px-6 py-10 text-center text-white sm:px-10">
+              <h2 class="text-2xl sm:text-3xl">{{ tab() === 'talent' ? 'Votre prochain associé est peut-être ici' : 'Votre prochain projet est peut-être ici' }}</h2>
+              <a [routerLink]="link.path" [queryParams]="link.params" class="mt-6 inline-block rounded-lg bg-accent px-6 py-3.5 font-semibold text-white transition-colors hover:bg-accent/90">{{ link.label }}</a>
+            </div>
+          }
+        </div>
+      </section>
+
       <app-footer />
     </div>
   `,
@@ -177,13 +260,43 @@ export class AssociesComponent implements OnInit {
   readonly visible = computed(() => (this.tab() === 'talent' ? this.talents() : this.projects()));
   // Recherche dans la vitrine, sans accents ni majuscules, sur les seuls champs publics affichés.
   readonly query = signal('');
+  readonly filters = signal<Record<FilterKey, string[]>>(NO_FILTERS);
+  readonly equityOnly = signal(false);
+  readonly filtersOpen = signal(false);
+  private readonly filterZone = viewChild<ElementRef<HTMLElement>>('filterZone');
+
+  // Filtres construits à partir des profils affichés : seules les valeurs réellement présentes sont proposées.
+  readonly filterGroups = computed<FilterGroup[]>(() => {
+    const entries = this.visible();
+    if (this.tab() === 'talent') {
+      return [
+        { key: 'availability', label: 'Disponibilité', options: this.distinct(entries.map(entry => entry.availability)) },
+        { key: 'skills', label: 'Compétences', options: this.topSkills(entries) },
+      ].filter(group => group.options.length > 0) as FilterGroup[];
+    }
+    return [
+      { key: 'sector', label: 'Secteur', options: this.distinct(entries.map(entry => entry.sector)) },
+      { key: 'stage', label: 'Stade', options: this.distinct(entries.map(entry => entry.stage)).map(option => ({ value: option.value, label: this.stageLabel(option.value) })) },
+      { key: 'skills', label: 'Compétences recherchées', options: this.topSkills(entries) },
+    ].filter(group => group.options.length > 0) as FilterGroup[];
+  });
+  readonly activeFilterCount = computed(() =>
+    Object.values(this.filters()).reduce((total, values) => total + values.length, 0) + (this.equityOnly() ? 1 : 0));
+  readonly isFiltering = computed(() => !!this.query().trim() || this.activeFilterCount() > 0);
+
   readonly results = computed(() => {
     const words = this.normalize(this.query()).split(/\s+/).filter(Boolean);
-    if (words.length === 0) {
-      return this.visible();
-    }
+    const filters = this.filters();
+    const equityOnly = this.equityOnly();
 
     return this.visible().filter(entry => {
+      if (filters.availability.length && !filters.availability.includes(entry.availability ?? '')) { return false; }
+      if (filters.sector.length && !filters.sector.includes(entry.sector ?? '')) { return false; }
+      if (filters.stage.length && !filters.stage.includes(entry.stage ?? '')) { return false; }
+      if (filters.skills.length && !filters.skills.some(skill => entry.skills.includes(skill))) { return false; }
+      if (equityOnly && !entry.open_to_equity) { return false; }
+      if (words.length === 0) { return true; }
+
       const text = this.normalize([
         entry.title, entry.availability, entry.sector, entry.stage ? this.stageLabel(entry.stage) : '',
         ...entry.skills, ...(entry.looking_for ?? []),
@@ -191,13 +304,92 @@ export class AssociesComponent implements OnInit {
       return words.every(word => text.includes(word));
     });
   });
+  readonly steps = computed(() => this.tab() === 'talent'
+    ? [
+        { title: 'Présentez votre projet', detail: 'Décrivez votre idée, votre avancement et les compétences qui vous manquent' },
+        { title: 'Trouvez votre complément', detail: 'Parcourez les associés disponibles et leurs compétences' },
+        { title: 'Échangez directement', detail: 'Prenez contact et avancez ensemble sur votre projet' },
+      ]
+    : [
+        { title: 'Présentez-vous', detail: 'Décrivez votre parcours, vos compétences et ce que vous cherchez' },
+        { title: 'Trouvez votre projet', detail: 'Découvrez les projets qui recrutent et ce qu’ils recherchent' },
+        { title: 'Échangez directement', detail: 'Prenez contact avec le porteur et avancez ensemble' },
+      ]);
   readonly canBrowseFull = computed(() => usesTeamMarketplace(this.auth.currentUser()));
+  // Bannière finale : inscription pour les visiteurs, recherche complète pour les membres concernés.
+  readonly bannerLink = computed<{ path: string; params: Record<string, string> | null; label: string } | null>(() => {
+    if (this.canBrowseFull()) {
+      return { path: '/recherche', params: null, label: 'Ouvrir la recherche complète' };
+    }
+    if (this.isAuthenticated()) {
+      return null;
+    }
+    return { path: '/inscription', params: { profil: this.tab() === 'talent' ? 'entrepreneur' : 'talent' }, label: 'Commencer gratuitement' };
+  });
   readonly isAuthenticated = this.auth.isAuthenticated;
 
 
   async ngOnInit(): Promise<void> {
     this.entries.set(await this.showcase.list());
     this.loaded.set(true);
+  }
+
+  selectTab(tab: ShowcaseTab): void {
+    if (tab !== this.tab()) {
+      this.tab.set(tab);
+      this.clearFilters();
+    }
+  }
+
+  isSelected(key: FilterKey, value: string): boolean {
+    return this.filters()[key].includes(value);
+  }
+
+  toggleFilter(key: FilterKey, value: string): void {
+    this.filters.update(filters => ({
+      ...filters,
+      [key]: filters[key].includes(value) ? filters[key].filter(item => item !== value) : [...filters[key], value],
+    }));
+  }
+
+  clearFilters(): void {
+    this.filters.set(NO_FILTERS);
+    this.equityOnly.set(false);
+  }
+
+  resetSearch(): void {
+    this.query.set('');
+    this.clearFilters();
+  }
+
+  // Le panneau des filtres se ferme au clic ailleurs et avec Échap.
+  @HostListener('document:click', ['$event'])
+  closeOnOutsideClick(event: MouseEvent): void {
+    const zone = this.filterZone()?.nativeElement;
+    if (this.filtersOpen() && zone && !zone.contains(event.target as Node)) {
+      this.filtersOpen.set(false);
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  closeOnEscape(): void {
+    this.filtersOpen.set(false);
+  }
+
+  private distinct(values: Array<string | null>): Array<{ value: string; label: string }> {
+    return [...new Set(values.filter((value): value is string => !!value?.trim()))]
+      .sort((a, b) => a.localeCompare(b, 'fr'))
+      .map(value => ({ value, label: value }));
+  }
+
+  // Les compétences les plus fréquentes (10 au plus), pour garder un panneau lisible.
+  private topSkills(entries: ShowcaseEntry[]): Array<{ value: string; label: string }> {
+    const counts = new Map<string, number>();
+    entries.flatMap(entry => entry.skills).forEach(skill => counts.set(skill, (counts.get(skill) ?? 0) + 1));
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'fr'))
+      .slice(0, 10)
+      .map(([value]) => ({ value, label: value }));
   }
 
   private normalize(value: string): string {
