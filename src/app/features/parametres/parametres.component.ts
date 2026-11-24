@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { USAGE_OPTIONS, Usage, usagesOf } from '../../core/models/user.model';
 import { FEATURES } from '../../core/config/features';
 import { AuthService } from '../../core/services/auth.service';
@@ -22,14 +22,25 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
   imports: [ReactiveFormsModule, PasswordCriteriaComponent, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-secondary pb-12 pt-20">
-      <div class="mx-auto max-w-3xl px-4 py-8 sm:px-8">
+    <div class="min-h-screen bg-secondary px-4 pb-14 pt-24 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-3xl">
         <div class="mb-8 animate-fade-in-up">
-          <h1 class="mb-2 text-4xl font-semibold">Paramètres</h1>
-          <p class="text-muted-foreground">Gérez votre compte et la visibilité de votre profil</p>
+          <h1 class="mb-2 text-3xl font-semibold text-primary sm:text-4xl">Paramètres</h1>
+          <p class="text-muted-foreground">Votre compte, vos notifications et vos objectifs</p>
         </div>
 
         <div class="space-y-4 animate-fade-in-up delay-100">
+          <div class="flex gap-1 overflow-x-auto border-b border-border" role="tablist" aria-label="Rubriques des paramètres">
+            @for (option of tabs(); track option.value) {
+              <button type="button" role="tab" [attr.aria-selected]="tab() === option.value" (click)="tab.set(option.value)"
+                      class="-mb-px whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors"
+                      [class]="tab() === option.value ? 'border-accent text-primary' : 'border-transparent text-muted-foreground hover:text-primary'">
+                {{ option.label }}
+              </button>
+            }
+          </div>
+
+          @if (tab() === 'compte') {
           <!-- COMPTE -->
           <section class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-6" aria-labelledby="compte-titre">
             <h2 id="compte-titre" class="mb-4 text-lg font-semibold">Compte</h2>
@@ -88,50 +99,38 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
               }
             </div>
           </section>
-
-          <!-- MES OBJECTIFS (colonne technique usages) : personnalisent le site, n'ouvrent aucun droit et ne suppriment rien. -->
-          @if (!isPro()) {
-            <section id="usages" class="scroll-mt-24 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6" aria-labelledby="usages-titre">
-              <h2 id="usages-titre" class="text-lg font-semibold">Mes objectifs</h2>
-              <p class="mt-1 text-sm text-muted-foreground">
-                Ils personnalisent votre tableau de bord et vos recommandations, et s'ajoutent d'eux-mêmes quand vous publiez un projet,
-                une annonce ou débloquez un dossier. Retirer un objectif ne supprime ni vos annonces, ni vos projets, ni vos dossiers achetés
-              </p>
-              <div class="mt-4 grid gap-2 sm:grid-cols-2">
-                @for (option of usageOptions; track option.value) {
-                  <label class="flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors"
-                         [class]="draftUsages().includes(option.value) ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/40'">
-                    <input type="checkbox" class="mt-1 h-4 w-4 flex-shrink-0 accent-accent" [checked]="draftUsages().includes(option.value)" (change)="toggleUsage(option.value)">
-                    <span>
-                      <span class="block text-sm font-semibold text-primary">{{ option.label }}</span>
-                      <span class="block text-sm text-muted-foreground">{{ option.description }}</span>
-                    </span>
-                  </label>
-                }
+          <!-- ZONE DE DANGER -->
+          <section class="rounded-2xl border border-destructive/20 bg-white p-6" aria-labelledby="danger-titre">
+            <h2 id="danger-titre" class="mb-2 text-lg font-semibold text-destructive">Zone de danger</h2>
+            <p class="mb-4 text-sm text-muted-foreground">
+              La suppression est définitive : profil, photo, projet, annonces M&A, conversations et messages sont effacés
+            </p>
+            @if (!confirmingDelete()) {
+              <button type="button" (click)="confirmingDelete.set(true)"
+                class="rounded-lg border border-destructive px-4 py-2 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/5">
+                Supprimer mon compte
+              </button>
+            } @else {
+              <label for="delete-confirmation" class="mb-2 block text-sm font-semibold">
+                Tapez {{ deleteWord }} pour confirmer
+              </label>
+              <div class="flex flex-col gap-3 sm:flex-row">
+                <input id="delete-confirmation" type="text" [value]="deleteInput()" (input)="deleteInput.set($any($event.target).value)"
+                  autocomplete="off" class="flex-1 rounded-lg border border-destructive/40 bg-secondary px-4 py-2.5 outline-none focus:border-destructive">
+                <button type="button" (click)="deleteAccount()" [disabled]="busy() || !canDelete()"
+                  class="rounded-lg bg-destructive px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-40">Supprimer définitivement</button>
+                <button type="button" (click)="cancelDelete()" class="rounded-lg border border-border px-5 py-2.5 text-sm font-semibold">Annuler</button>
               </div>
-              <div class="mt-4 flex flex-wrap items-center gap-3">
-                <button type="button" (click)="saveUsages()" [disabled]="busy() || !usagesChanged() || draftUsages().length === 0"
-                        class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:opacity-50">Enregistrer</button>
-                @if (draftUsages().length === 0) {
-                  <span class="text-sm text-destructive">Choisissez au moins un objectif</span>
-                }
-              </div>
-              <ul class="mt-4 space-y-1 border-t border-border pt-4 text-sm text-muted-foreground">
-                <li>Retirer une annonce : <a routerLink="/ma/mes-annonces" class="font-semibold text-accent hover:underline">Mes annonces</a></li>
-                @if (associatesEnabled) {
-                  <li>Ne plus apparaître dans la recherche : <a routerLink="/profil/associe" class="font-semibold text-accent hover:underline">Mon profil d'associé</a></li>
-                  <li>Retirer votre projet : <a routerLink="/mon-projet" class="font-semibold text-accent hover:underline">Mon projet</a> (le passer en brouillon)</li>
-                }
-              </ul>
-              @if (usagesFeedback(); as feedback) {
-                <p class="mt-3 text-sm" [class.text-success]="feedback.ok" [class.text-destructive]="!feedback.ok" role="status">{{ feedback.text }}</p>
-              }
-            </section>
+            }
+            @if (deleteError()) {
+              <p class="mt-3 text-sm text-destructive" role="alert">{{ deleteError() }}</p>
+            }
+          </section>
           }
-
+          @if (tab() === 'notifications') {
           <!-- CONFIDENTIALITÉ -->
           <section class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-6" aria-labelledby="confidentialite-titre">
-            <h2 id="confidentialite-titre" class="mb-4 text-lg font-semibold">Confidentialité</h2>
+            <h2 id="confidentialite-titre" class="mb-4 text-lg font-semibold">Notifications et visibilité</h2>
             @if (isPro()) {
             <div class="flex items-start justify-between gap-4">
               <div>
@@ -193,34 +192,48 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
             }
 
           </section>
-
-          <!-- ZONE DE DANGER -->
-          <section class="rounded-2xl border border-destructive/20 bg-white p-6" aria-labelledby="danger-titre">
-            <h2 id="danger-titre" class="mb-2 text-lg font-semibold text-destructive">Zone de danger</h2>
-            <p class="mb-4 text-sm text-muted-foreground">
-              La suppression est définitive : profil, photo, projet, annonces M&A, conversations et messages sont effacés
-            </p>
-            @if (!confirmingDelete()) {
-              <button type="button" (click)="confirmingDelete.set(true)"
-                class="rounded-lg border border-destructive px-4 py-2 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/5">
-                Supprimer mon compte
-              </button>
-            } @else {
-              <label for="delete-confirmation" class="mb-2 block text-sm font-semibold">
-                Tapez {{ deleteWord }} pour confirmer
-              </label>
-              <div class="flex flex-col gap-3 sm:flex-row">
-                <input id="delete-confirmation" type="text" [value]="deleteInput()" (input)="deleteInput.set($any($event.target).value)"
-                  autocomplete="off" class="flex-1 rounded-lg border border-destructive/40 bg-secondary px-4 py-2.5 outline-none focus:border-destructive">
-                <button type="button" (click)="deleteAccount()" [disabled]="busy() || !canDelete()"
-                  class="rounded-lg bg-destructive px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-40">Supprimer définitivement</button>
-                <button type="button" (click)="cancelDelete()" class="rounded-lg border border-border px-5 py-2.5 text-sm font-semibold">Annuler</button>
+          }
+          @if (tab() === 'objectifs') {
+          <!-- MES OBJECTIFS (colonne technique usages) : personnalisent le site, n'ouvrent aucun droit et ne suppriment rien. -->
+          @if (!isPro()) {
+            <section id="usages" class="scroll-mt-24 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6" aria-labelledby="usages-titre">
+              <h2 id="usages-titre" class="text-lg font-semibold">Mes objectifs</h2>
+              <p class="mt-1 text-sm text-muted-foreground">
+                Ils personnalisent votre tableau de bord et vos recommandations, et s'ajoutent d'eux-mêmes quand vous publiez un projet,
+                une annonce ou débloquez un dossier. Retirer un objectif ne supprime ni vos annonces, ni vos projets, ni vos dossiers achetés
+              </p>
+              <div class="mt-4 grid gap-2 sm:grid-cols-2">
+                @for (option of usageOptions; track option.value) {
+                  <label class="flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors"
+                         [class]="draftUsages().includes(option.value) ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/40'">
+                    <input type="checkbox" class="mt-1 h-4 w-4 flex-shrink-0 accent-accent" [checked]="draftUsages().includes(option.value)" (change)="toggleUsage(option.value)">
+                    <span>
+                      <span class="block text-sm font-semibold text-primary">{{ option.label }}</span>
+                      <span class="block text-sm text-muted-foreground">{{ option.description }}</span>
+                    </span>
+                  </label>
+                }
               </div>
-            }
-            @if (deleteError()) {
-              <p class="mt-3 text-sm text-destructive" role="alert">{{ deleteError() }}</p>
-            }
-          </section>
+              <div class="mt-4 flex flex-wrap items-center gap-3">
+                <button type="button" (click)="saveUsages()" [disabled]="busy() || !usagesChanged() || draftUsages().length === 0"
+                        class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:opacity-50">Enregistrer</button>
+                @if (draftUsages().length === 0) {
+                  <span class="text-sm text-destructive">Choisissez au moins un objectif</span>
+                }
+              </div>
+              <ul class="mt-4 space-y-1 border-t border-border pt-4 text-sm text-muted-foreground">
+                <li>Retirer une annonce : <a routerLink="/ma/mes-annonces" class="font-semibold text-accent hover:underline">Mes annonces</a></li>
+                @if (associatesEnabled) {
+                  <li>Ne plus apparaître dans la recherche : <a routerLink="/profil/associe" class="font-semibold text-accent hover:underline">Mon profil d'associé</a></li>
+                  <li>Retirer votre projet : <a routerLink="/mon-projet" class="font-semibold text-accent hover:underline">Mon projet</a> (le passer en brouillon)</li>
+                }
+              </ul>
+              @if (usagesFeedback(); as feedback) {
+                <p class="mt-3 text-sm" [class.text-success]="feedback.ok" [class.text-destructive]="!feedback.ok" role="status">{{ feedback.text }}</p>
+              }
+            </section>
+          }
+          }
         </div>
       </div>
     </div>
@@ -247,6 +260,13 @@ export class ParametresComponent implements OnInit {
   readonly isPro = computed(() => this.auth.currentUser()?.profileType === 'pro');
   readonly usageOptions = USAGE_OPTIONS;
   readonly associatesEnabled = FEATURES.associates;
+  // Onglets : Compte (e-mail, mot de passe, suppression), Notifications, Mes objectifs (membres uniquement).
+  readonly tab = signal<'compte' | 'notifications' | 'objectifs'>(inject(ActivatedRoute).snapshot.fragment === 'usages' ? 'objectifs' : 'compte');
+  readonly tabs = computed(() => [
+    { value: 'compte' as const, label: 'Compte' },
+    { value: 'notifications' as const, label: 'Notifications' },
+    ...(this.isPro() ? [] : [{ value: 'objectifs' as const, label: 'Mes objectifs' }]),
+  ]);
   private readonly savedUsages = computed(() => usagesOf(this.auth.currentUser()));
   readonly draftUsages = signal<Usage[]>([]);
   readonly usagesChanged = computed(() => {

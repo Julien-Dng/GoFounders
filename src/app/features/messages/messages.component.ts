@@ -1,3 +1,4 @@
+import { FEATURES } from '../../core/config/features';
 import { NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, HostListener, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -35,6 +36,27 @@ interface ConversationPreview {
   imports: [NgClass, RouterLink, AvatarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    @if (conversationsLoaded() && conversations().length === 0) {
+      <!-- Avant le premier échange : une seule invitation claire plutôt que trois panneaux vides. -->
+      <div class="min-h-screen bg-secondary px-4 pb-14 pt-24 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-4xl">
+          <h1 class="text-3xl font-semibold text-primary sm:text-4xl">Messages</h1>
+          <div class="mt-6 rounded-2xl bg-white px-6 py-14 text-center shadow-lg ring-1 ring-border">
+            <span class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-accent/10 text-accent" aria-hidden="true">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </span>
+            <h2 class="mt-5 text-2xl text-primary">Vos échanges commencent ici</h2>
+            <p class="mx-auto mt-2 max-w-[48ch] text-base text-muted-foreground">Découvrez un projet, un associé ou une entreprise pour démarrer une conversation</p>
+            <div class="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+              @if (associatesEnabled) {
+                <a routerLink="/recherche" class="rounded-lg bg-accent px-6 py-3 font-semibold text-white transition-colors hover:bg-accent/90">Explorer les profils et projets</a>
+              }
+              <a routerLink="/ma" class="rounded-lg border border-border px-6 py-3 font-semibold text-primary transition-colors hover:border-primary">Voir les entreprises</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    } @else {
     <div class="mt-16 h-[calc(100vh-64px)] bg-secondary px-4 py-4 sm:px-6 lg:px-8">
       <div class="mx-auto flex h-full w-full max-w-[1500px]">
 
@@ -306,7 +328,7 @@ interface ConversationPreview {
 
       </div>
     </div>
-
+    }
   `
 })
 export class MessagesComponent implements OnInit {
@@ -319,6 +341,8 @@ export class MessagesComponent implements OnInit {
   private readonly matchingService = inject(MatchingService);
 
   readonly conversations = signal<ConversationPreview[]>([]);
+  readonly conversationsLoaded = signal(false);
+  readonly associatesEnabled = FEATURES.associates;
 
   private readonly requestedConversationId = toSignal(
     this.route.queryParamMap.pipe(map(params => params.get('conversation'))),
@@ -538,6 +562,7 @@ export class MessagesComponent implements OnInit {
     }
 
     this.conversations.set([...(draft ? [draft] : []), ...threads.map(thread => this.toPreview(thread))]);
+    this.conversationsLoaded.set(true);
     this.localMessages.set(threads.reduce<Record<string, ConversationMessage[]>>((messagesByConversation, thread) => {
       messagesByConversation[thread.id] = [...thread.messages];
       return messagesByConversation;

@@ -4,7 +4,7 @@ import { FEATURES } from '../../core/config/features';
 import { AuthService } from '../../core/services/auth.service';
 import { Plan } from '../../core/models/user.model';
 import { PaymentService } from '../../core/services/payment.service';
-import { OFFER_PRICES } from '../../core/config/offers';
+import { FREE_CONTACTS_PER_MONTH, OFFER_PRICES } from '../../core/config/offers';
 import { SupabaseService } from '../../core/services/supabase.service';
 
 interface PaymentRow {
@@ -22,10 +22,10 @@ interface PaymentRow {
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-secondary pt-20 pb-12">
-      <div class="mx-auto max-w-[62rem] px-4 py-8 sm:px-6 lg:px-8">
+    <div class="min-h-screen bg-secondary px-4 pb-14 pt-24 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-[62rem]">
         <div class="mb-8">
-          <h1 class="mb-2 text-4xl font-semibold">Offre et facturation</h1>
+          <h1 class="mb-2 text-3xl font-semibold text-primary sm:text-4xl">Offre et facturation</h1>
           <p class="text-muted-foreground">Votre formule, vos paiements et vos factures</p>
         </div>
 
@@ -35,62 +35,68 @@ interface PaymentRow {
           </div>
         }
 
-        <div class="divide-y divide-border rounded-lg border border-border bg-white px-6">
-@if (features.associates) {
-          <section class="grid gap-4 py-6 sm:grid-cols-[1fr_16rem] sm:items-center sm:gap-8" aria-labelledby="abo-plan">
-            <div>
-              <p class="text-sm text-muted-foreground">Votre plan actuel</p>
-              <h2 id="abo-plan" class="mt-1 text-2xl text-primary">{{ currentPlan() }}</h2>
-              <p class="mt-2 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
-                PRO : contacts illimités, raisons détaillées de chaque score de compatibilité, recherche avancée et projet mis en avant. {{ proPrice }}, sans engagement
-              </p>
+        <div class="space-y-6">
+          @if (features.associates) {
+            <div class="grid gap-6 md:grid-cols-2">
+              <section class="rounded-2xl bg-white p-6 shadow-md ring-1 ring-border" aria-labelledby="abo-plan">
+                <div class="flex items-center justify-between gap-3">
+                  <h2 id="abo-plan" class="text-xl text-primary">Votre offre : {{ currentPlan() }}</h2>
+                  @if (currentPlan() === 'FREE') {
+                    <span class="rounded-md bg-secondary px-2 py-0.5 text-sm font-semibold text-muted-foreground">Gratuit</span>
+                  }
+                </div>
+                <ul class="mt-4 space-y-2 text-base text-foreground/85">
+                  <li class="flex gap-2"><span class="text-accent" aria-hidden="true">✓</span>{{ currentPlan() === 'FREE' ? freeContacts + ' nouveaux contacts par mois (porteur de projet)' : 'Nouveaux contacts illimités' }}</li>
+                  <li class="flex gap-2"><span class="text-accent" aria-hidden="true">✓</span>Réponses illimitées</li>
+                  <li class="flex gap-2"><span class="text-accent" aria-hidden="true">✓</span>Écrire en tant qu'associé : gratuit et illimité</li>
+                </ul>
+              </section>
+
+              <section class="rounded-2xl bg-accent/[0.06] p-6 ring-1 ring-accent/20" aria-labelledby="abo-pro">
+                <h2 id="abo-pro" class="text-xl text-primary">PRO · {{ proPrice }}</h2>
+                <ul class="mt-4 space-y-2 text-base text-foreground/85">
+                  <li class="flex gap-2"><span class="text-accent" aria-hidden="true">✓</span>Nouveaux contacts illimités</li>
+                  <li class="flex gap-2"><span class="text-accent" aria-hidden="true">✓</span>Raisons détaillées de chaque score et recherche avancée</li>
+                  <li class="flex gap-2"><span class="text-accent" aria-hidden="true">✓</span>Projet mis en avant dans les résultats</li>
+                </ul>
+                @if (currentPlan() === 'FREE') {
+                  <button type="button" (click)="activatePlan('PRO')" class="mt-5 w-full rounded-lg bg-accent px-5 py-3 font-semibold text-white transition-colors hover:bg-accent/90">
+                    {{ isSimulation ? 'Activer PRO (paiement simulé)' : 'Passer en PRO' }}
+                  </button>
+                } @else {
+                  <p class="mt-5 text-sm font-semibold text-accent">Votre offre actuelle est {{ currentPlan() }}</p>
+                }
+                <p class="mt-3 text-sm text-muted-foreground">Sans engagement. PRO n'inclut pas les dossiers d'entreprise</p>
+              </section>
             </div>
-            <button type="button" (click)="activatePlan('PRO')" class="w-full rounded-lg bg-primary px-5 py-3 font-medium text-white transition-colors hover:bg-primary/90">
-              {{ isSimulation ? 'Activer PRO (paiement simulé)' : 'Passer en PRO' }}
-            </button>
-          </section>
           }
 
-          <section class="grid gap-4 py-6 sm:grid-cols-[1fr_16rem] sm:items-center sm:gap-8" aria-labelledby="abo-premium">
-            <div>
-              <p class="text-sm text-muted-foreground">Accompagnement</p>
-              <h2 id="abo-premium" class="mt-1 text-2xl text-primary">PREMIUM, sur devis</h2>
-              <p class="mt-2 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
-                {{ features.associates ? 'On vous présente les bonnes personnes : associés qualifiés, investisseurs, experts juridiques partenaires, avec un interlocuteur dédié.' : 'Préparation de votre cession ou de votre reprise avec nos experts partenaires, et un interlocuteur dédié jusqu’à la signature.' }}
-              </p>
-            </div>
-            @if (isSimulation) {
-              <button type="button" (click)="activatePlan('PREMIUM')" class="w-full rounded-lg border border-primary px-5 py-3 font-medium text-primary transition-colors hover:bg-primary hover:text-white">
-                Activer PREMIUM (paiement simulé)
-              </button>
-            } @else {
-              <a routerLink="/tarifs" fragment="premium" class="block w-full rounded-lg border border-primary px-5 py-3 text-center font-medium text-primary transition-colors hover:bg-primary hover:text-white">
-                Demander un premier échange gratuit
-              </a>
-            }
-          </section>
-
-          <section class="grid gap-4 py-6 sm:grid-cols-[1fr_16rem] sm:items-center sm:gap-8" aria-labelledby="abo-ma">
-            <div>
-              <p class="text-sm text-muted-foreground">Reprise d'entreprise</p>
-              <h2 id="abo-ma" class="mt-1 text-2xl text-primary">Mise en relation, {{ introPrice }} par entreprise</h2>
-              <p class="mt-2 max-w-[60ch] text-base leading-relaxed text-muted-foreground">{{ maDescription }}</p>
-            </div>
-            <div>
-              <a routerLink="/ma" class="block w-full rounded-lg bg-primary px-5 py-3 text-center font-medium text-white transition-colors hover:bg-primary/90">Voir les annonces</a>
-              <a routerLink="/ma/deposer" class="mt-2 block text-center text-sm font-semibold text-accent hover:underline">Publier une annonce gratuitement</a>
-              @if (hasMaAccess()) {
-                <p class="mt-2 text-center text-sm text-muted-foreground">Ancien accès repreneur actif jusqu’au {{ maAccessEnd() }}</p>
-              }
+          <section class="rounded-2xl bg-white p-6 shadow-md ring-1 ring-border" aria-labelledby="abo-unite">
+            <h2 id="abo-unite" class="text-xl text-primary">Achats à l'unité</h2>
+            <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex items-start gap-3">
+                <svg class="mt-0.5 flex-shrink-0 text-muted-foreground" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>
+                <div>
+                  <p class="font-semibold text-primary">Dossiers d'entreprise · {{ introPrice }} par dossier</p>
+                  <p class="text-sm text-muted-foreground">Dossier complet et contact du cédant, sans abonnement, en FREE comme en PRO</p>
+                  @if (hasMaAccess()) {
+                    <p class="mt-1 text-sm text-muted-foreground">Ancien accès repreneur actif jusqu’au {{ maAccessEnd() }}</p>
+                  }
+                </div>
+              </div>
+              <a routerLink="/ma/dossiers" class="flex-shrink-0 text-sm font-semibold text-accent hover:underline">Mes dossiers débloqués <span aria-hidden="true">→</span></a>
             </div>
           </section>
 
-          <section class="py-6" aria-labelledby="abo-paiements">
-            <h2 id="abo-paiements" class="text-lg font-semibold text-primary">Historique des paiements</h2>
+          <section class="rounded-2xl bg-white p-6 shadow-md ring-1 ring-border" aria-labelledby="abo-paiements">
+            <h2 id="abo-paiements" class="text-xl text-primary">Factures et reçus</h2>
             @if (payments().length === 0) {
-              <p class="mt-2 text-sm text-muted-foreground">Aucun paiement pour le moment</p>
+              <div class="py-6 text-center">
+                <p class="font-semibold text-primary">Aucun paiement pour le moment</p>
+                <p class="mt-1 text-sm text-muted-foreground">Vos paiements apparaîtront ici après un achat ou un abonnement</p>
+              </div>
             } @else {
-              <ul class="mt-3 divide-y divide-border rounded-xl ring-1 ring-border">
+              <ul class="mt-4 divide-y divide-border rounded-xl ring-1 ring-border">
                 @for (item of payments(); track item.id) {
                   <li class="flex items-center justify-between gap-4 px-4 py-3">
                     <span class="min-w-0">
@@ -102,19 +108,23 @@ interface PaymentRow {
                 }
               </ul>
             }
-            <p class="mt-3 text-sm text-muted-foreground">
-              Les dossiers d'entreprise achetés se retrouvent dans
-              <a routerLink="/ma/dossiers" class="font-semibold text-accent hover:underline">Mes entreprises</a>
-            </p>
+            @if (!isSimulation) {
+              <div class="mt-4 flex flex-col items-center gap-2 text-center">
+                <button type="button" (click)="openPortal()" class="rounded-lg bg-accent px-5 py-2.5 font-semibold text-white transition-colors hover:bg-accent/90">Gérer la facturation</button>
+                <p class="text-sm text-muted-foreground">Moyens de paiement, factures et résiliation, dans l'espace sécurisé de Stripe</p>
+              </div>
+            }
           </section>
-        </div>
 
-        @if (!isSimulation) {
-          <div class="mt-6 flex flex-col gap-3 rounded-lg bg-white shadow-lg ring-1 ring-border p-5 sm:flex-row sm:items-center sm:justify-between">
-            <p class="text-base text-muted-foreground">Moyens de paiement, factures, résiliation : tout se gère dans l'espace sécurisé de Stripe</p>
-            <button type="button" (click)="openPortal()" class="flex-shrink-0 rounded-lg border border-primary px-5 py-2.5 font-medium text-primary transition-colors hover:bg-primary hover:text-white">Gérer mes abonnements et factures</button>
-          </div>
-        }
+          <p class="text-sm text-muted-foreground">
+            Besoin d'un accompagnement humain ?
+            @if (isSimulation) {
+              <button type="button" (click)="activatePlan('PREMIUM')" class="font-semibold text-accent hover:underline">Activer PREMIUM (paiement simulé)</button>
+            } @else {
+              <a routerLink="/tarifs" fragment="premium" class="font-semibold text-accent hover:underline">PREMIUM, sur devis <span aria-hidden="true">→</span></a>
+            }
+          </p>
+        </div>
 
         @if (isSimulation) {
         <div class="mt-6 rounded-lg bg-white shadow-lg ring-1 ring-border p-5 text-sm text-muted-foreground">
@@ -133,6 +143,7 @@ interface PaymentRow {
 export class AbonnementComponent {
   readonly proPrice = OFFER_PRICES.PRO.label;
   readonly introPrice = OFFER_PRICES.INTRO.label;
+  readonly freeContacts = FREE_CONTACTS_PER_MONTH;
   readonly features = FEATURES;
   private readonly auth = inject(AuthService);
   private readonly payment = inject(PaymentService);
@@ -184,7 +195,6 @@ export class AbonnementComponent {
     return expiresAt ? new Date(expiresAt).toLocaleDateString('fr-FR') : 'sans limite';
   });
   // Même règle pour tous les membres : l'offre PRO ne débloque pas les dossiers de cession.
-  readonly maDescription = `Publier une annonce est gratuit. Pour chaque entreprise qui vous intéresse, débloquez le dossier complet et le contact du cédant pour ${OFFER_PRICES.INTRO.label}, sans abonnement, que vous soyez en FREE ou en PRO.`;
   readonly currentPlan = computed(() => this.auth.currentUser()?.plan ?? 'FREE');
   readonly hasMaAccess = computed(() => this.auth.hasMaAccess());
   readonly statusMessage = signal('');
