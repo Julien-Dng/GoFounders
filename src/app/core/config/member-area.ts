@@ -20,8 +20,8 @@ const MEMBER_AREA_PREFIXES = [
   '/admin',
 ];
 
-// Annonces : pour un membre connecté, la liste et les fiches restent dans l'espace membre (même cadre après chaque clic).
-const MEMBER_LISTING_PAGES = ['/ma', '/ma/annonce'];
+// Annonces et annuaire des pros : pour un membre connecté, la liste et les fiches restent dans l'espace membre (même cadre après chaque clic).
+const MEMBER_LISTING_PAGES = ['/ma', '/ma/annonce', '/pros'];
 
 export function isMemberAreaUrl(url: string): boolean {
   const path = url.split(/[?#]/)[0];

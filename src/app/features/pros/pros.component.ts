@@ -12,8 +12,8 @@ import { StatsService } from '../../core/services/stats.service';
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-secondary px-4 pb-16 pt-28 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-[1200px]">
+    <div class="min-h-screen bg-secondary px-4 pb-16 pt-24 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-6xl">
         <div class="mb-8">
           <h1 class="text-3xl font-semibold text-primary sm:text-4xl">Annuaire des professionnels</h1>
           <p class="mt-2 max-w-3xl text-muted-foreground">

@@ -11,7 +11,7 @@ import { MaListingData, MarketplaceProfile } from '../../../core/data/mock-platf
 import { NotificationMenuComponent } from '../notification-menu/notification-menu.component';
 import { UserMenuComponent } from '../user-menu/user-menu.component';
 
-type ShellIcon = 'home' | 'heart' | 'users' | 'search' | 'building' | 'messages' | 'user' | 'card' | 'settings' | 'shield';
+type ShellIcon = 'home' | 'heart' | 'users' | 'search' | 'briefcase' | 'building' | 'messages' | 'user' | 'card' | 'settings' | 'shield';
 
 interface ShellItem {
   id: string;
@@ -100,6 +100,7 @@ interface ShellItem {
                 @case ('heart') { <path d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8 3.6 4.5 7.1 4.5c2 0 3.6 1.1 4.9 2.8 1.3-1.7 2.9-2.8 4.9-2.8 3.5 0 5.6 3.5 4.4 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/> }
                 @case ('users') { <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/> }
                 @case ('search') { <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/> }
+                @case ('briefcase') { <rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/> }
                 @case ('building') { <rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1M10 21v-3h4v3"/> }
                 @case ('messages') { <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/> }
                 @case ('user') { <path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="8" r="4"/> }
@@ -153,6 +154,7 @@ export class MemberShellComponent {
       { id: 'favoris', label: 'Mes favoris', icon: 'heart', path: '/favoris', match: ['/favoris', '/ma/favoris'] },
       ...(FEATURES.associates ? [{ id: 'associes', label: 'Associés & projets', icon: 'users' as const, path: '/recherche', match: ['/recherche'] }] : []),
       { id: 'reprendre', label: 'Explorer les entreprises', icon: 'search', path: '/ma', match: ['/ma/annonce'] },
+      ...(FEATURES.pros ? [{ id: 'annuaire', label: 'Annuaire des pros', icon: 'briefcase' as const, path: '/pros', match: ['/pros'] }] : []),
       { id: 'entreprises', label: 'Mes entreprises', icon: 'building', path: '/mes-entreprises', match: ['/mes-entreprises', '/ma/dossiers', '/ma/mes-annonces', '/ma/statistiques', '/ma/deposer', '/ma/vendue'] },
       { id: 'messages', label: 'Messages', icon: 'messages', path: '/messages', match: ['/messages'], badge: this.messaging.unreadCount() || undefined },
       { id: 'profil', label: 'Mon profil', icon: 'user', path: this.profilePath(), match: [this.profilePath(), '/profil/modifier', '/profil/associe', '/mon-projet'] },

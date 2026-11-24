@@ -59,7 +59,7 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
                 #rla="routerLinkActive"
                 class="whitespace-nowrap py-2 text-base font-semibold transition-colors"
                 [class]="onDark() ? (rla.isActive ? 'text-white' : 'text-white/75 hover:text-white') : (rla.isActive ? 'text-primary' : 'text-foreground/75 hover:text-primary')"
-              >{{ link.label }}</a>
+              >@if (link.href === '/pros') {<span class="xl:hidden">Annuaire</span><span class="hidden xl:inline">{{ link.label }}</span>} @else {{{ link.label }}}</a>
             }
           </div>
 
@@ -309,6 +309,7 @@ export class NavbarComponent {
     { href: '/ma', label: 'Annonces' },
     { href: '/ma/deposer', label: 'Vendre' },
     { href: '/recherche', label: 'Associés & équipe' },
+    { href: '/pros', label: 'Annuaire des pros' },
     { href: '/tarifs', label: 'Tarifs' },
   ];
 
@@ -317,7 +318,7 @@ export class NavbarComponent {
 
   readonly navLinks = computed(() =>
     this.allNavLinks
-      .filter(link => !(link.href === '/recherche' && this.hidesRecherche()) && !(link.href === '/ma/deposer' && this.hidesVendre()))
+      .filter(link => !(link.href === '/recherche' && this.hidesRecherche()) && !(link.href === '/ma/deposer' && this.hidesVendre()) && !(link.href === '/pros' && !FEATURES.pros))
       .map(link => (link.href === '/recherche' ? { ...link, href: this.associateHref() } : link))
   );
 
