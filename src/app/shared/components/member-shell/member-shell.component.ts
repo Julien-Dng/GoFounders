@@ -66,7 +66,7 @@ interface ShellItem {
           </div>
         }
       </div>
-      <a routerLink="/ma" class="ml-auto hidden text-sm font-semibold text-muted-foreground transition-colors hover:text-primary lg:inline">Voir le site</a>
+      <a routerLink="/" class="ml-auto hidden text-sm font-semibold text-muted-foreground transition-colors hover:text-primary lg:inline">Voir le site</a>
       <div class="ml-auto flex items-center gap-3 sm:ml-4">
         <app-notification-menu />
         <app-user-menu avatarClass="h-10 w-10" />
@@ -152,7 +152,7 @@ export class MemberShellComponent {
       { id: 'dashboard', label: 'Tableau de bord', icon: 'home', path: '/dashboard', match: ['/dashboard'] },
       { id: 'favoris', label: 'Mes favoris', icon: 'heart', path: '/favoris', match: ['/favoris', '/ma/favoris'] },
       ...(FEATURES.associates ? [{ id: 'associes', label: 'Associés & projets', icon: 'users' as const, path: '/recherche', match: ['/recherche'] }] : []),
-      { id: 'reprendre', label: 'Entreprises à reprendre', icon: 'search', path: '/ma', match: [] },
+      { id: 'reprendre', label: 'Entreprises à reprendre', icon: 'search', path: '/ma', match: ['/ma/annonce'] },
       { id: 'entreprises', label: 'Mes entreprises', icon: 'building', path: '/mes-entreprises', match: ['/mes-entreprises', '/ma/dossiers', '/ma/mes-annonces', '/ma/statistiques', '/ma/deposer', '/ma/vendue'] },
       { id: 'messages', label: 'Messages', icon: 'messages', path: '/messages', match: ['/messages'], badge: this.messaging.unreadCount() || undefined },
       { id: 'profil', label: 'Mon profil', icon: 'user', path: this.profilePath(), match: [this.profilePath(), '/profil/modifier', '/profil/associe', '/mon-projet'] },
@@ -167,6 +167,9 @@ export class MemberShellComponent {
 
   isActive(item: ShellItem): boolean {
     const path = this.url().split(/[?#]/)[0];
+    if (item.id === 'reprendre' && path === '/ma') {
+      return true;
+    }
     // Fiche d'un autre membre : rattachée à « Associés & projets ».
     if (item.id === 'associes' && path.startsWith('/profil/') && !['/profil/modifier', '/profil/associe', this.profilePath()].includes(path)) {
       return true;

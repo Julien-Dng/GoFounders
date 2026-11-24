@@ -20,7 +20,7 @@ import { VerifiedBadgeComponent } from '../../../shared/components/verified-badg
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-secondary px-4 pb-16 pt-28 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-5xl">
+      <div class="mx-auto max-w-6xl">
         <app-mes-entreprises-tabs />
         <div class="mb-8 mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p class="text-muted-foreground">Suivez la relecture de vos annonces et les repreneurs qui ont ouvert votre dossier</p>

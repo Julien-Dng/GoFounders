@@ -44,7 +44,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
             <p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">{{ heading().subtitle }}</p>
             @if (associatesEnabled && !isPro()) {
               <!-- Trois pages, une même rubrique « Mon profil » -->
-              <nav class="mt-5 flex gap-1 overflow-x-auto border-b border-border" aria-label="Mon profil">
+              <nav class="mt-5 flex gap-1 overflow-x-auto overflow-y-hidden border-b border-border [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Mon profil">
                 @for (item of profileTabs; track item.path) {
                   <a [routerLink]="item.path" [attr.aria-current]="mode === item.mode ? 'page' : null"
                      class="-mb-px whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors"

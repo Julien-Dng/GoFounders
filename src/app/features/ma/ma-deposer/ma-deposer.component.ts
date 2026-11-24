@@ -24,7 +24,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-secondary px-4 pb-14 pt-24 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-3xl">
+      <div class="mx-auto max-w-6xl">
         <div class="mb-10">
           <nav class="mb-3 flex items-center gap-2 text-sm" aria-label="Fil d'Ariane">
             <a routerLink="/ma/mes-annonces" class="font-semibold text-accent hover:underline">Mes entreprises</a>
@@ -36,7 +36,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
         </div>
 
         <!-- Étapes : on revient librement sur une étape déjà vue. -->
-        <ol class="mb-8 flex items-start" aria-label="Étapes du dépôt">
+        <ol class="mb-8 flex max-w-4xl items-start" aria-label="Étapes du dépôt">
           @for (label of stepLabels; track label; let i = $index; let last = $last) {
             <li class="flex flex-1 items-start" [class.flex-none]="last">
               <button type="button" (click)="goToStep(i + 1)" [disabled]="i + 1 > maxStepReached()" [attr.aria-current]="currentStep() === i + 1 ? 'step' : null"
@@ -54,7 +54,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
           }
         </ol>
 
-        <div class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-6 sm:p-10">
+        <div class="max-w-4xl rounded-2xl bg-white shadow-lg ring-1 ring-border p-6 sm:p-10">
           @if (!canPublish()) {
             <div class="text-center">
               <h2 class="mb-2 text-2xl font-semibold">{{ proAccountOffered ? 'Compte pro requis' : 'Bientôt pour les cabinets' }}</h2>

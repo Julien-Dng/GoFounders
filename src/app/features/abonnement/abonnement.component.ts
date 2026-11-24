@@ -23,7 +23,7 @@ interface PaymentRow {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-secondary px-4 pb-14 pt-24 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-[62rem]">
+      <div class="mx-auto max-w-6xl">
         <div class="mb-8">
           <h1 class="mb-2 text-3xl font-semibold text-primary sm:text-4xl">Offre et facturation</h1>
           <p class="text-muted-foreground">Votre formule, vos paiements et vos factures</p>
@@ -35,7 +35,7 @@ interface PaymentRow {
           </div>
         }
 
-        <div class="space-y-6">
+        <div class="max-w-4xl space-y-6">
           @if (features.associates) {
             <div class="grid gap-6 md:grid-cols-2">
               <section class="rounded-2xl bg-white p-6 shadow-md ring-1 ring-border" aria-labelledby="abo-plan">

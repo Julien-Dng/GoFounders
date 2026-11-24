@@ -16,7 +16,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
       </div>
       <a routerLink="/ma/deposer" class="rounded-lg bg-accent px-5 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-accent/90">Déposer une annonce</a>
     </div>
-    <nav class="mt-5 flex gap-1 overflow-x-auto border-b border-border" aria-label="Mes entreprises">
+    <nav class="mt-5 flex gap-1 overflow-x-auto overflow-y-hidden border-b border-border [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Mes entreprises">
       @for (tab of tabs; track tab.path) {
         <a [routerLink]="tab.path" routerLinkActive="border-accent text-primary" [routerLinkActiveOptions]="{ exact: true }"
            #active="routerLinkActive" [attr.aria-current]="active.isActive ? 'page' : null"

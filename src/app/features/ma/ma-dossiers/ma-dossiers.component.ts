@@ -12,7 +12,7 @@ import { MesEntreprisesTabsComponent } from '../../../shared/components/mes-entr
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-secondary px-4 pb-16 pt-28 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-4xl">
+      <div class="mx-auto max-w-6xl">
         <app-mes-entreprises-tabs />
         <p class="mt-5 text-muted-foreground">
           Les entreprises dont vous avez ouvert le dossier complet et le contact du cédant ({{ introPrice }} par entreprise)

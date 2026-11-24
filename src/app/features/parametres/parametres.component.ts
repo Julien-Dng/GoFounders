@@ -23,14 +23,14 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-secondary px-4 pb-14 pt-24 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-3xl">
-        <div class="mb-8 animate-fade-in-up">
+      <div class="mx-auto max-w-6xl">
+        <div class="mb-6 animate-fade-in-up">
           <h1 class="mb-2 text-3xl font-semibold text-primary sm:text-4xl">Paramètres</h1>
           <p class="text-muted-foreground">Votre compte, vos notifications et vos objectifs</p>
         </div>
 
-        <div class="space-y-4 animate-fade-in-up delay-100">
-          <div class="flex gap-1 overflow-x-auto border-b border-border" role="tablist" aria-label="Rubriques des paramètres">
+        <div class="max-w-3xl space-y-4 animate-fade-in-up delay-100">
+          <div class="flex gap-1 overflow-x-auto overflow-y-hidden border-b border-border [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="tablist" aria-label="Rubriques des paramètres">
             @for (option of tabs(); track option.value) {
               <button type="button" role="tab" [attr.aria-selected]="tab() === option.value" (click)="tab.set(option.value)"
                       class="-mb-px whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors"
@@ -99,16 +99,20 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
               }
             </div>
           </section>
-          <!-- ZONE DE DANGER -->
-          <section class="rounded-2xl border border-destructive/20 bg-white p-6" aria-labelledby="danger-titre">
-            <h2 id="danger-titre" class="mb-2 text-lg font-semibold text-destructive">Zone de danger</h2>
+          <!-- SUPPRESSION DU COMPTE : repliée par défaut -->
+          <details class="group rounded-2xl bg-white p-5 shadow-lg ring-1 ring-border">
+            <summary class="flex cursor-pointer list-none items-center justify-between font-semibold text-primary [&::-webkit-details-marker]:hidden">
+              Supprimer mon compte
+              <svg class="text-muted-foreground transition-transform group-open:rotate-180" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <div class="mt-4">
             <p class="mb-4 text-sm text-muted-foreground">
               La suppression est définitive : profil, photo, projet, annonces M&A, conversations et messages sont effacés
             </p>
             @if (!confirmingDelete()) {
               <button type="button" (click)="confirmingDelete.set(true)"
                 class="rounded-lg border border-destructive px-4 py-2 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/5">
-                Supprimer mon compte
+                Continuer
               </button>
             } @else {
               <label for="delete-confirmation" class="mb-2 block text-sm font-semibold">
@@ -125,7 +129,8 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
             @if (deleteError()) {
               <p class="mt-3 text-sm text-destructive" role="alert">{{ deleteError() }}</p>
             }
-          </section>
+            </div>
+          </details>
           }
           @if (tab() === 'notifications') {
           <!-- CONFIDENTIALITÉ -->
@@ -198,10 +203,7 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
           @if (!isPro()) {
             <section id="usages" class="scroll-mt-24 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6" aria-labelledby="usages-titre">
               <h2 id="usages-titre" class="text-lg font-semibold">Mes objectifs</h2>
-              <p class="mt-1 text-sm text-muted-foreground">
-                Ils personnalisent votre tableau de bord et vos recommandations, et s'ajoutent d'eux-mêmes quand vous publiez un projet,
-                une annonce ou débloquez un dossier. Retirer un objectif ne supprime ni vos annonces, ni vos projets, ni vos dossiers achetés
-              </p>
+              <p class="mt-1 text-sm text-muted-foreground">Ils personnalisent votre espace, sans modifier vos accès</p>
               <div class="mt-4 grid gap-2 sm:grid-cols-2">
                 @for (option of usageOptions; track option.value) {
                   <label class="flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors"
@@ -221,13 +223,14 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
                   <span class="text-sm text-destructive">Choisissez au moins un objectif</span>
                 }
               </div>
-              <ul class="mt-4 space-y-1 border-t border-border pt-4 text-sm text-muted-foreground">
-                <li>Retirer une annonce : <a routerLink="/ma/mes-annonces" class="font-semibold text-accent hover:underline">Mes annonces</a></li>
+              <p class="mt-4 border-t border-border pt-4 text-sm text-muted-foreground">
+                Pour retirer un contenu :
+                <a routerLink="/ma/mes-annonces" class="font-semibold text-accent hover:underline">Mes annonces</a>
                 @if (associatesEnabled) {
-                  <li>Ne plus apparaître dans la recherche : <a routerLink="/profil/associe" class="font-semibold text-accent hover:underline">Mon profil d'associé</a></li>
-                  <li>Retirer votre projet : <a routerLink="/mon-projet" class="font-semibold text-accent hover:underline">Mon projet</a> (le passer en brouillon)</li>
+                  · <a routerLink="/mon-projet" class="font-semibold text-accent hover:underline">Mon projet</a>
+                  · <a routerLink="/profil/associe" class="font-semibold text-accent hover:underline">Mon profil d'associé</a>
                 }
-              </ul>
+              </p>
               @if (usagesFeedback(); as feedback) {
                 <p class="mt-3 text-sm" [class.text-success]="feedback.ok" [class.text-destructive]="!feedback.ok" role="status">{{ feedback.text }}</p>
               }

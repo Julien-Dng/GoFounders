@@ -22,6 +22,20 @@ import { RevealDirective } from '../../../shared/directives/reveal.directive';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-secondary">
+      @if (isMember()) {
+        <!-- Membre connecté : même cadre que l'espace membre, titre compact puis directement la recherche. -->
+        <div class="px-4 pt-24 sm:px-6 lg:px-8">
+          <div class="mx-auto flex max-w-[78rem] flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h1 class="text-3xl font-semibold text-primary sm:text-4xl">Entreprises à reprendre</h1>
+              <p class="mt-2 text-muted-foreground">Des entreprises de tous secteurs, partout en France. Dossier et contact du cédant : 50 € par entreprise</p>
+            </div>
+            @if (canDepositListing()) {
+              <a routerLink="/ma/deposer" class="flex-shrink-0 rounded-lg border border-border bg-white px-5 py-3 text-center text-sm font-semibold text-primary transition-colors hover:border-primary">Déposer une annonce</a>
+            }
+          </div>
+        </div>
+      } @else {
       <section class="bg-primary px-4 pb-8 pt-24 text-white sm:px-6 sm:pb-12 sm:pt-28 lg:px-8 lg:pt-36">
         <div class="mx-auto flex max-w-[78rem] flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -37,6 +51,7 @@ import { RevealDirective } from '../../../shared/directives/reveal.directive';
           }
         </div>
       </section>
+      }
       <section id="ma-listings" class="scroll-mt-20 px-4 pb-16 pt-5 sm:pt-8 sm:px-6 lg:px-8">
         <div class="mx-auto max-w-[78rem]">
           <label for="ma-search" class="sr-only">Rechercher une entreprise</label>
@@ -176,7 +191,7 @@ import { RevealDirective } from '../../../shared/directives/reveal.directive';
                           }
                           <p class="mt-2 line-clamp-2 text-base leading-relaxed text-foreground/80">{{ item.listing.summary }}</p>
 
-                          <dl class="tabular mt-4 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
+                          <dl class="tabular mt-4 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4 lg:grid-cols-2 2xl:grid-cols-4">
                             <div>
                               <dt class="text-sm text-muted-foreground">Chiffre d'affaires</dt>
                               <dd class="mt-0.5 text-lg font-semibold text-primary">
@@ -318,6 +333,8 @@ export class MaHomeComponent implements OnInit {
     const user = this.auth.currentUser();
     return FEATURES.buyerPlus && (!user || !hasBuyerPlus(user));
   });
+  // Membre connecté : la page s'affiche dans l'espace membre (bandeau), sans le grand en-tête des visiteurs.
+  readonly isMember = this.auth.isAuthenticated;
   readonly canDepositListing = computed(() => !this.auth.isAuthenticated() || canPublishMa(this.auth.currentUser()));
   readonly showAccessCta = computed(() =>
     !this.auth.isAuthenticated()
