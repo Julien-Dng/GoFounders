@@ -1,235 +1,225 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { MarketplaceProfile } from '../../core/data/mock-platform.data';
-import { hasUsage, usesTeamMarketplace } from '../../core/models/user.model';
+import { MaListingData, MarketplaceProfile } from '../../core/data/mock-platform.data';
 import { FEATURES } from '../../core/config/features';
+import { hasUsage, isAssociateProfileComplete, isProjectPresented, usesTeamMarketplace } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
+import { FavoritesService } from '../../core/services/favorites.service';
+import { ListingAccessService } from '../../core/services/listing-access.service';
 import { MaService } from '../../core/services/ma.service';
 import { MatchingService } from '../../core/services/matching.service';
-import { NotificationService } from '../../core/services/notification.service';
 import { MessagingService } from '../../core/services/messaging.service';
+import { NotificationService } from '../../core/services/notification.service';
+import { EditableProject, ProjectService } from '../../core/services/project.service';
+import { KIND_LABELS, buildFavoriteCards } from '../favoris/favoris.component';
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
 
-type StatIcon = 'views' | 'messages' | 'target';
-type QuickActionIcon = 'target' | 'user' | 'chart';
+interface NextStep {
+  eyebrow: string;
+  title: string;
+  text: string;
+  cta: string;
+  path: string;
+  steps: Array<{ label: string; done: boolean }>;
+}
 
-
-interface StatItem {
-  label: string;
+interface Tile {
   value: string;
-  icon: StatIcon;
-}
-
-interface QuickActionItem {
   label: string;
-  icon: QuickActionIcon;
+  path: string;
+  icon: 'messages' | 'users' | 'heart' | 'file' | 'building';
 }
 
+// Tableau de bord : prochaine étape, chiffres utiles, derniers favoris, suggestions, activité et profil.
+// Il suit les objectifs du membre (personnalisation seulement, aucun droit).
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [RouterLink, AvatarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <!-- Tableau de bord dans la mise en page commune : même barre du haut et même menu ☰ que les autres pages. -->
     <div class="min-h-screen bg-secondary px-4 pb-14 pt-24 sm:px-6 lg:px-8">
-        <div class="mx-auto max-w-[90rem]">
-          <h1 class="sr-only">Tableau de bord</h1>
-          <div class="grid gap-6 lg:grid-cols-12">
-            <div class="space-y-6 lg:col-span-3">
-              <div class="animate-fade-in-up rounded-2xl bg-white shadow-lg ring-1 ring-border p-6">
-                <h3 class="mb-4 text-lg font-semibold">Mon profil</h3>
-                <div class="mb-4">
-                  <div class="mb-2 flex items-center justify-between">
-                    <span class="text-sm text-muted-foreground">Complétion</span>
-                    <span class="text-sm font-semibold text-accent">{{ profileComplete() }}%</span>
-                  </div>
-                  <div class="h-2 overflow-hidden rounded-full bg-secondary">
-                    <div class="h-full rounded-full bg-primary" [style.width.%]="profileComplete()"></div>
-                  </div>
-                </div>
-                <p class="mb-4 text-sm text-muted-foreground">Complétez votre profil pour augmenter vos chances de match</p>
-                <a routerLink="/profil/modifier" class="block w-full rounded-lg border border-border py-2 text-center text-sm font-semibold transition-colors hover:border-accent">
-                  Compléter mon profil
-                </a>
-              </div>
-
-              @if (showProUpsell()) {
-                <div class="animate-fade-in-up delay-100 rounded-2xl bg-primary p-6 text-white">
-                  <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/20">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="m2 4 3 12h14l3-12-6 5-4-5-4 5-6-5z"/>
-                      <path d="M5 20h14"/>
-                    </svg>
-                  </div>
-                  <h3 class="mb-2 text-lg font-semibold">Passez en PRO</h3>
-                  <p class="mb-4 text-sm leading-relaxed opacity-90">Contacts illimités, raisons détaillées de chaque score et assistant IA personnel</p>
-                  <a routerLink="/tarifs" fragment="associes" class="block w-full rounded-lg bg-white py-2.5 text-center font-semibold text-accent transition-colors hover:bg-white/95">Découvrir PRO</a>
-                </div>
-              }
-            </div>
-
-            <div class="space-y-6 lg:col-span-6">
-              <div class="animate-fade-in-up delay-100 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6">
-                <div class="mb-6 flex items-center justify-between">
-                  <div class="flex items-center gap-2">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
-                    </svg>
-                    <h2 class="text-xl font-semibold">{{ matchesTitle() }}</h2>
-                  </div>
-                  <a [routerLink]="matchesLink()" class="text-sm font-semibold text-accent hover:underline">Voir tous</a>
-                </div>
-
-                <div class="space-y-4">
-                  @if (!usesTalentMarketplace()) {
-                    <div class="rounded-xl bg-secondary p-4">
-                      <p class="mb-4 text-sm text-foreground/80">{{ maPrompt() }}</p>
-                      <a [routerLink]="maCtaLink()" class="inline-block rounded-lg bg-[#D97706] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#D97706]/90">
-                        {{ maCtaLabel() }}
-                      </a>
-                    </div>
-                  } @else if (matches().length === 0) {
-                    <p class="rounded-xl bg-secondary p-4 text-sm text-muted-foreground">Aucun profil à vous proposer pour le moment. Complétez votre profil pour améliorer vos suggestions</p>
-                  }
-                  @for (match of matches(); track match.id) {
-                    <a [routerLink]="['/profil', match.id]" class="flex items-center gap-4 rounded-xl border border-border p-4 transition-colors hover:border-primary/30 hover:bg-secondary">
-                      <app-avatar class="h-12 w-12 flex-shrink-0" [photoUrl]="match.photoURL" [initials]="match.initials" [name]="match.displayName" />
-                      <div class="min-w-0 flex-1">
-                        <h3 class="truncate font-semibold text-primary">{{ match.displayName }}</h3>
-                        <p class="truncate text-sm text-muted-foreground">{{ match.title }}, {{ match.stage }}</p>
-                      </div>
-                      <span class="tabular flex-shrink-0 text-lg font-semibold text-accent" [attr.aria-label]="match.match + ' % compatible'">{{ match.match }} %</span>
-                    </a>
-                  }
-                </div>
-              </div>
-
-              <div class="animate-fade-in-up delay-200 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6">
-                <h2 class="mb-6 text-xl font-semibold">Activité récente</h2>
-                <div class="space-y-4">
-                  @for (activity of activities(); track activity.id) {
-                    <a
-                      [routerLink]="activity.href"
-                      [queryParams]="activity.queryParams"
-                      (click)="markActivityAsRead(activity.id)"
-                      class="flex items-start gap-3 border-b border-border pb-4 last:border-0 last:pb-0"
-                    >
-                      <div class="mt-2 h-2 w-2 flex-shrink-0 rounded-full" [class.bg-accent]="activity.unread" [class.bg-border]="!activity.unread"></div>
-                      <div class="flex-1">
-                        <p class="text-sm font-medium text-foreground">{{ activity.title }}</p>
-                        <p class="mt-1 text-sm text-muted-foreground">{{ activity.time }}</p>
-                      </div>
-                      <svg width="16" height="16" class="mt-1 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <polyline points="9 18 15 12 9 6"/>
-                      </svg>
-                    </a>
-                  } @empty {
-                    <p class="text-sm text-muted-foreground">Aucune activité récente pour le moment</p>
-                  }
-                </div>
-              </div>
-            </div>
-
-            <div class="space-y-6 lg:col-span-3">
-              @if (showAssistant) {
-              <div class="animate-fade-in-up delay-200 rounded-2xl border border-accent/20 bg-secondary p-6">
-                <div class="mb-4 flex items-center gap-2">
-                  <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
-                    </svg>
-                  </div>
-                  <h3 class="font-semibold">Assistant IA</h3>
-                </div>
-                <p class="mb-4 text-sm text-foreground/80">Bonjour {{ firstName() }}.<br>Que puis-je faire pour vous aujourd'hui ?</p>
-                <div class="space-y-2">
-                  @for (action of quickActions(); track action.label) {
-                    <a [routerLink]="action.path" class="group flex w-full items-center gap-3 rounded-lg border border-border bg-white px-3 py-2.5 text-left text-sm font-medium transition-all hover:border-accent/30 hover:bg-accent/5">
-                      <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-accent/10 text-accent" aria-hidden="true">
-                        @switch (action.icon) {
-                          @case ('target') {
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                              <circle cx="12" cy="12" r="8"/>
-                              <circle cx="12" cy="12" r="4"/>
-                              <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>
-                            </svg>
-                          }
-                          @case ('user') {
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M20 21a8 8 0 0 0-16 0"/>
-                              <circle cx="12" cy="8" r="4"/>
-                            </svg>
-                          }
-                          @case ('chart') {
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M3 3v18h18"/>
-                              <path d="m7 14 4-4 3 3 5-7"/>
-                            </svg>
-                          }
-                        }
-                      </span>
-                      <span class="flex-1">{{ action.label }}</span>
-                      <svg width="14" height="14" class="text-muted-foreground transition-colors group-hover:text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="9 18 15 12 9 6"/>
-                      </svg>
-                    </a>
-                  }
-                </div>
-              </div>
-              }
-
-              <div class="animate-fade-in-up delay-300 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6">
-                <h3 class="mb-4 text-lg font-semibold">Statistiques</h3>
-                <div class="space-y-4">
-                  @for (stat of stats(); track stat.label) {
-                    <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-2">
-                        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-muted-foreground" aria-hidden="true">
-                          @switch (stat.icon) {
-                            @case ('views') {
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/>
-                                <circle cx="12" cy="12" r="3"/>
-                              </svg>
-                            }
-                            @case ('messages') {
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                              </svg>
-                            }
-                            @case ('target') {
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="8"/>
-                                <circle cx="12" cy="12" r="4"/>
-                                <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>
-                              </svg>
-                            }
-                          }
-                        </span>
-                        <span class="text-sm text-muted-foreground">{{ stat.label }}</span>
-                      </div>
-                      <span class="text-lg font-semibold text-accent">{{ stat.value }}</span>
-                    </div>
-                  }
-                </div>
-              </div>
-            </div>
-          </div>
+      <div class="mx-auto max-w-6xl space-y-6">
+        <div>
+          <h1 class="text-3xl font-semibold text-primary sm:text-4xl">Bonjour, {{ firstName() }}</h1>
+          <p class="mt-1 text-muted-foreground">{{ subtitle() }}</p>
         </div>
 
-      <a
-        [routerLink]="floatingBubbleLink()"
-        class="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-2xl transition-all hover:scale-110 hover:bg-primary/90 active:scale-90"
-        [attr.aria-label]="floatingBubbleLabel()"
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-        </svg>
-        @if (floatingBubbleBadge() > 0) {
-          <span class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-sm font-semibold text-white">{{ floatingBubbleBadge() }}</span>
+        @if (nextStep(); as step) {
+          <section class="rounded-2xl bg-accent/[0.06] p-6 ring-1 ring-accent/15 sm:p-7" aria-labelledby="next-step-title">
+            <div class="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
+              <div>
+                <p class="text-sm font-bold uppercase tracking-wide text-accent">{{ step.eyebrow }}</p>
+                <h2 id="next-step-title" class="mt-1 text-2xl text-primary">{{ step.title }}</h2>
+                <p class="mt-2 max-w-[60ch] text-base leading-relaxed text-muted-foreground">{{ step.text }}</p>
+                <a [routerLink]="step.path" class="mt-5 inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-3 font-semibold text-white transition-colors hover:bg-accent/90">{{ step.cta }} <span aria-hidden="true">→</span></a>
+              </div>
+              @if (step.steps.length) {
+                <ol class="flex items-start" aria-label="Étapes">
+                  @for (item of step.steps; track item.label; let i = $index; let last = $last) {
+                    <li class="flex items-start">
+                      <span class="flex w-24 flex-col items-center text-center sm:w-28">
+                        <span class="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold"
+                              [class]="item.done ? 'bg-accent text-white' : 'bg-white text-muted-foreground ring-1 ring-border'">
+                          {{ item.done ? '✓' : i + 1 }}
+                        </span>
+                        <span class="mt-2 text-sm text-muted-foreground">{{ item.label }}<span class="sr-only">{{ item.done ? ' : fait' : ' : à faire' }}</span></span>
+                      </span>
+                      @if (!last) {
+                        <span class="mt-[1.1rem] h-0.5 w-6 sm:w-10" [class]="item.done ? 'bg-accent' : 'bg-border'" aria-hidden="true"></span>
+                      }
+                    </li>
+                  }
+                </ol>
+              }
+            </div>
+          </section>
         }
-      </a>
+
+        <div class="grid gap-4 sm:grid-cols-3">
+          @for (tile of tiles(); track tile.label) {
+            <a [routerLink]="tile.path" class="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-md ring-1 ring-border transition-shadow hover:shadow-lg">
+              <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  @switch (tile.icon) {
+                    @case ('messages') { <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/> }
+                    @case ('users') { <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/> }
+                    @case ('heart') { <path d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8 3.6 4.5 7.1 4.5c2 0 3.6 1.1 4.9 2.8 1.3-1.7 2.9-2.8 4.9-2.8 3.5 0 5.6 3.5 4.4 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/> }
+                    @case ('file') { <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/> }
+                    @case ('building') { <rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M10 21v-3h4v3"/> }
+                  }
+                </svg>
+              </span>
+              <span class="min-w-0">
+                <span class="tabular block text-2xl font-bold leading-tight text-primary">{{ tile.value }}</span>
+                <span class="block text-sm text-muted-foreground">{{ tile.label }}</span>
+              </span>
+            </a>
+          }
+        </div>
+
+        <section aria-labelledby="favorites-title">
+          <div class="flex items-end justify-between gap-4">
+            <h2 id="favorites-title" class="text-2xl text-primary">Vos derniers favoris</h2>
+            @if (favoriteCards().length) {
+              <a routerLink="/favoris" class="text-sm font-semibold text-accent hover:underline">Voir tous mes favoris <span aria-hidden="true">→</span></a>
+            }
+          </div>
+          @if (favoriteCards().length) {
+            <ul class="mt-4 grid gap-4 md:grid-cols-3">
+              @for (card of favoriteCards(); track card.kind + card.id) {
+                <li class="group relative flex flex-col rounded-2xl bg-white p-5 shadow-md ring-1 ring-border transition-shadow hover:shadow-lg">
+                  <span class="self-start rounded-md bg-accent/10 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-accent">{{ kindLabel(card.kind) }}</span>
+                  <h3 class="mt-3 text-lg font-bold leading-snug text-primary group-hover:text-accent">
+                    <a [routerLink]="card.link" class="after:absolute after:inset-0 after:rounded-2xl focus:outline-none focus-visible:underline">{{ card.title }}</a>
+                  </h3>
+                  <p class="text-sm text-muted-foreground">{{ card.subtitle }}</p>
+                  @if (card.figures.length) {
+                    <p class="tabular mt-2 text-sm text-foreground/80">@for (figure of card.figures; track figure.label; let last = $last) { {{ figure.label }} {{ figure.value }}@if (!last) { · } }</p>
+                  } @else if (card.detail) {
+                    <p class="mt-2 text-sm text-foreground/80">{{ card.detail }}</p>
+                  }
+                  <span class="mt-auto self-end pt-3 text-accent" aria-hidden="true">→</span>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="mt-3 rounded-2xl bg-white p-5 text-sm text-muted-foreground ring-1 ring-border">
+              Touchez le cœur sur une entreprise, un projet ou un associé : vos trois derniers favoris s'afficheront ici
+            </p>
+          }
+        </section>
+
+        <section aria-labelledby="suggestions-title">
+          <div class="flex items-end justify-between gap-4">
+            <h2 id="suggestions-title" class="text-2xl text-primary">{{ suggestionsTitle() }}</h2>
+            <a [routerLink]="suggestionsLink()" class="text-sm font-semibold text-accent hover:underline">Voir tout <span aria-hidden="true">→</span></a>
+          </div>
+          @if (suggestedProfiles().length) {
+            <ul class="mt-4 grid gap-4 md:grid-cols-3">
+              @for (profile of suggestedProfiles(); track profile.id) {
+                <li class="group relative rounded-2xl bg-white p-5 shadow-md ring-1 ring-border transition-shadow hover:shadow-lg">
+                  <div class="flex items-start gap-3">
+                    <app-avatar class="h-11 w-11 flex-shrink-0" [photoUrl]="profile.photoURL" [initials]="profile.initials" [name]="profile.displayName" />
+                    <div class="min-w-0 flex-1">
+                      <h3 class="truncate font-bold text-primary group-hover:text-accent">
+                        <a [routerLink]="['/profil', profile.id]" class="after:absolute after:inset-0 after:rounded-2xl focus:outline-none">{{ profile.profileType === 'talent' ? (profile.title || profile.displayName) : profile.displayName }}</a>
+                      </h3>
+                      <p class="truncate text-sm text-muted-foreground">{{ profile.location }}</p>
+                      @if (profile.availabilityLabel) {
+                        <p class="mt-0.5 truncate text-sm text-emerald-700">{{ profile.availabilityLabel }}</p>
+                      }
+                    </div>
+                    <span class="tabular text-sm font-bold text-accent">{{ profile.match }} %</span>
+                  </div>
+                  <div class="mt-3 flex flex-wrap gap-1.5">
+                    @for (skill of profile.skills.slice(0, 2); track skill) {
+                      <span class="rounded-md bg-secondary px-2 py-0.5 text-sm font-medium text-foreground">{{ skill }}</span>
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+          } @else if (suggestedListings().length) {
+            <ul class="mt-4 grid gap-4 md:grid-cols-3">
+              @for (listing of suggestedListings(); track listing.id) {
+                <li class="group relative rounded-2xl bg-white p-5 shadow-md ring-1 ring-border transition-shadow hover:shadow-lg">
+                  <p class="text-sm text-muted-foreground">{{ listing.sector }} · {{ listing.region }}</p>
+                  <h3 class="mt-1 font-bold leading-snug text-primary group-hover:text-accent">
+                    <a [routerLink]="['/ma/annonce', listing.id]" class="after:absolute after:inset-0 after:rounded-2xl focus:outline-none">{{ listing.title || listing.sector }}</a>
+                  </h3>
+                  <p class="tabular mt-2 text-sm text-foreground/80">CA {{ listing.revenue }} · <span class="font-semibold text-amber-600">{{ listing.priceMin }} à {{ listing.priceMax }}</span></p>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="mt-3 rounded-2xl bg-white p-5 text-sm text-muted-foreground ring-1 ring-border">Rien à vous proposer pour le moment. Complétez votre profil pour affiner les suggestions</p>
+          }
+        </section>
+
+        <div class="grid gap-6 lg:grid-cols-[3fr_2fr]">
+          <section class="rounded-2xl bg-white p-6 shadow-md ring-1 ring-border" aria-labelledby="activity-title">
+            <h2 id="activity-title" class="text-xl text-primary">Activité récente</h2>
+            <ul class="mt-4 space-y-3">
+              @for (activity of activities(); track activity.id) {
+                <li>
+                  <a [routerLink]="activity.href" [queryParams]="activity.queryParams" (click)="markActivityAsRead(activity.id)" class="flex items-start gap-3 rounded-lg p-2 -m-2 hover:bg-secondary">
+                    <span class="mt-2 h-2 w-2 flex-shrink-0 rounded-full" [class]="activity.unread ? 'bg-accent' : 'bg-border'" aria-hidden="true"></span>
+                    <span class="flex-1">
+                      <span class="block text-sm font-medium text-foreground">{{ activity.title }}</span>
+                      <span class="block text-sm text-muted-foreground">{{ activity.time }}</span>
+                    </span>
+                  </a>
+                </li>
+              } @empty {
+                <li class="py-4 text-center">
+                  <p class="font-medium text-primary">Aucune activité pour le moment</p>
+                  <p class="mt-1 text-sm text-muted-foreground">Vos messages, contacts et mises à jour apparaîtront ici</p>
+                </li>
+              }
+            </ul>
+          </section>
+
+          <section class="rounded-2xl bg-white p-6 shadow-md ring-1 ring-border" aria-labelledby="profile-title">
+            <h2 id="profile-title" class="text-xl text-primary">Votre profil · <span class="text-accent">{{ profileComplete() }} %</span></h2>
+            <div class="mt-4 h-2 overflow-hidden rounded-full bg-secondary" role="progressbar" [attr.aria-valuenow]="profileComplete()" aria-valuemin="0" aria-valuemax="100" aria-label="Complétion du profil">
+              <div class="h-full rounded-full bg-accent" [style.width.%]="profileComplete()"></div>
+            </div>
+            <p class="mt-4 text-sm leading-relaxed text-muted-foreground">
+              {{ profileComplete() >= 100 ? 'Votre profil est complet' : 'Ajoutez quelques informations (parcours, compétences, objectifs) pour être davantage visible' }}
+            </p>
+            <a routerLink="/profil/modifier" class="mt-3 inline-block text-sm font-semibold text-accent hover:underline">Compléter mon profil <span aria-hidden="true">→</span></a>
+          </section>
+        </div>
+
+        @if (showProUpsell()) {
+          <a routerLink="/tarifs" fragment="associes" class="flex items-center gap-3 rounded-2xl bg-accent/[0.06] px-5 py-4 ring-1 ring-accent/15 transition-colors hover:bg-accent/10">
+            <svg class="text-accent" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>
+            <span class="font-semibold text-primary">Besoin de plus de contacts ?</span>
+            <span class="font-semibold text-accent">Découvrir PRO <span aria-hidden="true">→</span></span>
+          </a>
+        }
+      </div>
     </div>
   `
 })
@@ -239,111 +229,155 @@ export class DashboardComponent {
   private readonly matchingService = inject(MatchingService);
   private readonly maService = inject(MaService);
   private readonly notifications = inject(NotificationService);
+  private readonly favorites = inject(FavoritesService);
+  private readonly projects = inject(ProjectService);
+  private readonly listingAccess = inject(ListingAccessService);
 
   readonly currentUser = this.auth.currentUser;
-  readonly displayName = computed(() => this.currentUser()?.displayName ?? 'Mon compte');
-  readonly firstName = computed(() => this.displayName().split(' ')[0] || 'membre');
-  readonly planLabel = computed(() => this.currentUser()?.plan ?? 'FREE');
-  readonly floatingBubbleLink = computed(() => '/messages');
-  readonly floatingBubbleLabel = computed(() => 'Ouvrir les messages');
-  readonly messageUnreadCount = this.messaging.unreadCount;
-  readonly floatingBubbleBadge = computed(() => this.messageUnreadCount());
-  readonly ownProfilePath = computed(() => {
-    const uid = this.currentUser()?.uid ?? '';
-    return uid ? `/profil/${uid}` : '/dashboard';
-  });
-
-  // Compte multi-usages : le tableau de bord suit les usages choisis (personnalisation, aucun droit).
-  readonly profileType = computed(() => this.currentUser()?.profileType);
-  readonly usesTalentMarketplace = computed(() => usesTeamMarketplace(this.currentUser()));
-  private readonly sells = computed(() => this.profileType() === 'pro' || hasUsage(this.currentUser(), 'cession'));
-  private readonly sellsOnly = computed(() => this.sells() && !hasUsage(this.currentUser(), 'reprise'));
-  // PRO concerne la marketplace Associés & projets ; la reprise reste à 50 € par entreprise.
-  readonly showProUpsell = computed(() => FEATURES.associates && this.usesTalentMarketplace() && this.planLabel() === 'FREE');
-  readonly showAssistant = FEATURES.assistant;
-
-
-  readonly matches = signal<MarketplaceProfile[]>([]);
-  readonly matchesTitle = computed(() => {
-    const user = this.currentUser();
-    if (this.profileType() === 'pro') {
-      return 'Annonces de la marketplace';
-    }
-    if (hasUsage(user, 'projet')) {
-      return 'Associés pour votre projet';
-    }
-    if (hasUsage(user, 'associe')) {
-      return 'Projets du jour';
-    }
-    return this.sellsOnly() ? 'Votre cession' : 'Vos opportunités de reprise';
-  });
-  readonly matchesLink = computed(() => (this.usesTalentMarketplace() ? '/recherche' : '/ma'));
-  readonly maPrompt = computed(() =>
-    this.sellsOnly()
-      ? 'Publiez gratuitement votre annonce anonymisée pour être visible des repreneurs.'
-      : 'Consultez les entreprises à reprendre et débloquez les dossiers qui vous intéressent.'
-  );
-  readonly maCtaLabel = computed(() => (this.sellsOnly() ? 'Déposer mon annonce' : 'Voir les annonces'));
-  readonly maCtaLink = computed(() => (this.sellsOnly() ? '/ma/deposer' : '/ma'));
-
+  readonly firstName = computed(() => (this.currentUser()?.displayName ?? '').split(' ')[0] || 'et bienvenue');
   readonly profileComplete = computed(() => this.currentUser()?.profileComplete ?? 0);
   readonly activities = computed(() => this.notifications.notifications().slice(0, 3));
+  private readonly usesTeam = computed(() => FEATURES.associates && usesTeamMarketplace(this.currentUser()));
+  readonly showProUpsell = computed(() => this.usesTeam() && (this.currentUser()?.plan ?? 'FREE') === 'FREE');
 
-  // Profils proposés (entrepreneur/talent), annonces actives (acheteur) ou annonces publiées (vendeur).
-  private readonly opportunityCount = signal<number | null>(null);
-  readonly stats = computed<StatItem[]>(() => {
-    const opportunityCount = this.opportunityCount();
-    const opportunityLabel = this.usesTalentMarketplace()
-      ? 'Profils compatibles'
-      : this.sellsOnly() ? 'Mes annonces' : 'Entreprises à reprendre';
+  private readonly ownProject = signal<EditableProject | null>(null);
+  private readonly listings = signal<MaListingData[]>([]);
+  private readonly profiles = signal<MarketplaceProfile[]>([]);
+  private readonly unlockedCount = signal<number | null>(null);
+  private readonly myListingsCount = signal<number | null>(null);
 
-    return [
-      { label: 'Conversations', value: String(this.messaging.conversationThreads().length), icon: 'messages' },
-      { label: 'Messages non lus', value: String(this.messageUnreadCount()), icon: 'views' },
-      { label: opportunityLabel, value: opportunityCount === null ? '…' : String(opportunityCount), icon: 'target' },
-    ];
+  readonly subtitle = computed(() => {
+    const user = this.currentUser();
+    if (hasUsage(user, 'projet')) {
+      return 'Votre projet avance ici';
+    }
+    if (hasUsage(user, 'cession') && !hasUsage(user, 'reprise')) {
+      return 'Suivez votre cession et vos échanges';
+    }
+    return 'Retrouvez vos favoris, vos échanges et vos prochaines étapes';
   });
 
-  readonly quickActions = computed<Array<QuickActionItem & { path: string }>>(() => [
-    this.usesTalentMarketplace()
-      ? { label: 'Analyser mes matches', icon: 'target', path: '/recherche' }
-      : { label: 'Explorer le M&A', icon: 'target', path: '/ma' },
-    { label: 'Améliorer mon profil', icon: 'user', path: '/profil/modifier' },
-    // Statistiques : seulement pour les vendeurs et les pros, qui ont une page dédiée ; sinon, la messagerie.
-    this.sells()
-      ? { label: 'Comprendre mes statistiques', icon: 'chart', path: '/ma/statistiques' }
-      : { label: 'Voir mes conversations', icon: 'chart', path: '/messages' },
-  ]);
+  // Prochaine étape selon les objectifs : projet à présenter, profil d'associé à compléter, annonce à déposer.
+  readonly nextStep = computed<NextStep | null>(() => {
+    const user = this.currentUser();
+    if (!user || user.profileType === 'pro') {
+      return null;
+    }
+    const project = this.ownProject();
+    if (FEATURES.associates && hasUsage(user, 'projet') && !project?.isActive) {
+      const presented = isProjectPresented(project);
+      return {
+        eyebrow: 'Votre prochaine étape',
+        title: 'Présentez votre projet aux futurs associés',
+        text: 'Décrivez votre idée, votre avancement et les compétences recherchées. Un brouillon présenté suffit déjà pour écrire aux associés',
+        cta: presented ? 'Publier mon projet' : 'Compléter mon projet',
+        path: '/mon-projet',
+        steps: [
+          { label: 'Présentation', done: !!project && project.description.trim().length >= 50 },
+          { label: 'Compétences recherchées', done: !!project && project.skillsNeeded.length > 0 },
+          { label: 'Publication', done: !!project?.isActive },
+        ],
+      };
+    }
+    if (FEATURES.associates && hasUsage(user, 'associe') && !user.associateOfferedAt) {
+      const complete = isAssociateProfileComplete(user);
+      return {
+        eyebrow: 'Votre prochaine étape',
+        title: 'Proposez vos compétences aux porteurs de projet',
+        text: 'Un intitulé, vos compétences et une courte présentation suffisent pour écrire aux porteurs. Rendez ensuite votre profil visible si vous le souhaitez',
+        cta: complete ? 'Rendre mon profil visible' : 'Compléter mon profil d’associé',
+        path: '/profil/associe',
+        steps: [
+          { label: 'Intitulé', done: !!user.profileTitle?.trim() },
+          { label: 'Compétences', done: (user.skills?.length ?? 0) > 0 },
+          { label: 'Présentation', done: (user.bio?.trim().length ?? 0) >= 50 },
+        ],
+      };
+    }
+    if (hasUsage(user, 'cession') && this.myListingsCount() === 0) {
+      return {
+        eyebrow: 'Votre prochaine étape',
+        title: 'Déposez votre annonce, gratuitement',
+        text: 'Activité, chiffres, prix et coordonnées réservées aux repreneurs. Votre annonce reste anonyme et est relue avant publication',
+        cta: 'Déposer une annonce',
+        path: '/ma/deposer',
+        steps: [],
+      };
+    }
+    return null;
+  });
+
+  readonly tiles = computed<Tile[]>(() => {
+    const user = this.currentUser();
+    const quota = this.messaging.quota();
+    const tiles: Tile[] = [{ value: String(this.messaging.unreadCount()), label: 'messages non lus', path: '/messages', icon: 'messages' }];
+    if (quota?.contactsLimit !== null && quota?.contactsLimit !== undefined && hasUsage(user, 'projet')) {
+      tiles.push({ value: String(Math.max(0, quota.contactsLimit - quota.contactsUsed)), label: 'contacts disponibles ce mois-ci', path: '/recherche', icon: 'users' });
+    } else {
+      tiles.push({ value: String(this.favorites.count()), label: 'favoris enregistrés', path: '/favoris', icon: 'heart' });
+    }
+    if (FEATURES.associates && hasUsage(user, 'projet')) {
+      const project = this.ownProject();
+      tiles.push({ value: project ? (project.isActive ? 'Publié' : 'Brouillon') : 'À créer', label: 'mon projet', path: '/mon-projet', icon: 'file' });
+    } else if (hasUsage(user, 'cession')) {
+      tiles.push({ value: this.myListingsCount() === null ? '…' : String(this.myListingsCount()), label: 'annonces publiées', path: '/ma/mes-annonces', icon: 'building' });
+    } else {
+      tiles.push({ value: this.unlockedCount() === null ? '…' : String(this.unlockedCount()), label: 'dossiers débloqués', path: '/ma/dossiers', icon: 'building' });
+    }
+    return tiles;
+  });
+
+  readonly favoriteCards = computed(() => buildFavoriteCards(this.favorites.all(), this.listings(), this.profiles()).slice(0, 3));
+
+  // Suggestions : associés pour qui a un projet, projets pour qui veut en rejoindre un, sinon des entreprises.
+  private readonly suggestionSide = computed<'talent' | 'entrepreneur' | null>(() => {
+    const user = this.currentUser();
+    if (!this.usesTeam()) {
+      return null;
+    }
+    return hasUsage(user, 'projet') || !hasUsage(user, 'associe') ? 'talent' : 'entrepreneur';
+  });
+  readonly suggestionsTitle = computed(() =>
+    this.suggestionSide() === 'talent' ? 'Des associés à découvrir' : this.suggestionSide() === 'entrepreneur' ? 'Des projets qui recrutent' : 'Des entreprises à reprendre');
+  readonly suggestionsLink = computed(() => (this.suggestionSide() ? '/recherche' : '/ma'));
+  readonly suggestedProfiles = computed(() => {
+    const side = this.suggestionSide();
+    return side ? this.profiles().filter(profile => profile.profileType === side).sort((a, b) => b.match - a.match).slice(0, 3) : [];
+  });
+  readonly suggestedListings = computed(() => (this.suggestionSide() ? [] : this.listings().slice(0, 3)));
 
   constructor() {
-    void this.loadDashboardData();
+    void this.load();
   }
 
-  private async loadDashboardData(): Promise<void> {
-    await this.auth.ensureSessionReady();
-    const profileType = this.profileType();
-
-    if (!profileType) {
-      return;
-    }
-
-    if (!this.usesTalentMarketplace()) {
-      const listings = this.sellsOnly() ? await this.maService.getMyListings() : await this.maService.getListings();
-      this.opportunityCount.set(
-        this.sellsOnly() ? listings.length : listings.filter(listing => listing.status === 'active').length
-      );
-      return;
-    }
-
-    // Associés pour un porteur de projet, projets pour qui veut en rejoindre un.
-    const side = hasUsage(this.currentUser(), 'projet') ? 'talent' : 'entrepreneur';
-    const profiles = (await this.matchingService.getMarketplaceProfilesForSearch()).filter(profile => profile.profileType === side);
-    this.opportunityCount.set(profiles.length);
-    this.matches.set([...profiles].sort((a, b) => b.match - a.match).slice(0, 2));
+  kindLabel(kind: keyof typeof KIND_LABELS): string {
+    return KIND_LABELS[kind];
   }
 
   markActivityAsRead(notificationId: string): void {
     this.notifications.markAsRead(notificationId);
   }
 
+  private async load(): Promise<void> {
+    await this.auth.ensureSessionReady();
+    const user = this.currentUser();
+    if (!user) {
+      return;
+    }
+    void this.messaging.refreshQuota();
+    const [listings, profiles, project] = await Promise.all([
+      this.maService.getListingCards(),
+      // Profils et projets : suggestions, et cartes des favoris de projets et d'associés.
+      FEATURES.associates ? this.matchingService.getMarketplaceProfilesForSearch() : Promise.resolve<MarketplaceProfile[]>([]),
+      hasUsage(user, 'projet') ? this.projects.getOwnedProject(user.uid) : Promise.resolve(null),
+      this.favorites.ensureLoaded(),
+    ]);
+    this.listings.set(listings);
+    this.profiles.set(profiles);
+    this.ownProject.set(project);
+    if (hasUsage(user, 'cession')) {
+      this.myListingsCount.set((await this.maService.getMyListings()).length);
+    }
+    this.unlockedCount.set((await this.listingAccess.listMyUnlocked()).length);
+  }
 }

@@ -11,11 +11,13 @@ import { StatsService } from '../../core/services/stats.service';
 import { EditableProject, ProjectService } from '../../core/services/project.service';
 import { ProjectAccessRequest, ProjectAccessService } from '../../core/services/project-access.service';
 import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '../../core/legal/nda';
+import { SupabaseService } from '../../core/services/supabase.service';
+import { FavoriteButtonComponent } from '../../shared/components/favorite-button/favorite-button.component';
 
 @Component({
   selector: 'app-profil',
   standalone: true,
-  imports: [NgClass, RouterLink],
+  imports: [NgClass, RouterLink, FavoriteButtonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (isUnavailable()) {
@@ -117,17 +119,9 @@ import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '..
                           </svg>
                           Envoyer un message
                         </a>
-                        <button
-                          type="button"
-                          (click)="toggleBookmark()"
-                          class="inline-flex items-center justify-center gap-2 rounded-lg border px-6 py-3 font-semibold transition-all hover:scale-105 active:scale-95"
-                          [ngClass]="isBookmarked() ? 'border-accent bg-accent/10 text-accent' : 'border-border text-foreground'"
-                        >
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" [attr.fill]="isBookmarked() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
-                          </svg>
-                          {{ isBookmarked() ? 'Sauvegardé' : 'Sauvegarder' }}
-                        </button>
+                        @if (favoriteTarget(); as target) {
+                          <app-favorite-button [listingId]="target.id" [kind]="target.kind" [label]="publicProfile()?.displayName ?? 'ce profil'" [withText]="true" />
+                        }
                       }
                     </div>
                   </div>
@@ -542,6 +536,7 @@ export class ProfilComponent implements OnInit {
   private readonly matchingService = inject(MatchingService);
   private readonly projectService = inject(ProjectService);
   private readonly projectAccess = inject(ProjectAccessService);
+  private readonly supabase = inject(SupabaseService);
 
   // Partie confidentielle d'un projet (voir 2026-10-19-projets-confidentiels-nda.sql).
   readonly ndaVersion = NDA_VERSION;
@@ -555,7 +550,6 @@ export class ProfilComponent implements OnInit {
   readonly accessMessage = signal('');
 
   readonly activeTab = signal('presentation');
-  readonly isBookmarked = signal(false);
   readonly loadedPublicProfile = signal<MarketplaceProfile | undefined>(undefined);
   // Profil absent ou masqué par Supabase (rôle non complémentaire, voir 2026-10-12-profils-par-role.sql).
   readonly isUnavailable = signal(false);
@@ -671,6 +665,18 @@ export class ProfilComponent implements OnInit {
     }
     return null;
   });
+  // Favori : associé (son profil) ou projet (identifiant du projet ; en mode démo, celui de la fiche).
+  readonly favoriteTarget = computed<{ kind: 'associate' | 'project'; id: string } | null>(() => {
+    const profile = this.publicProfile();
+    if (this.isOwnProfile() || !profile) {
+      return null;
+    }
+    if (profile.profileType === 'talent') {
+      return { kind: 'associate', id: profile.id };
+    }
+    const projectId = profile.projectId ?? (this.supabase.isConfigured ? null : profile.id);
+    return profile.profileType === 'entrepreneur' && projectId ? { kind: 'project', id: projectId } : null;
+  });
   readonly isProjectProfile = computed(() => !this.isOwnProfile() && this.publicProfile()?.profileType === 'entrepreneur');
   readonly accessState = computed(() => this.myRequest()?.status ?? 'none');
   private readonly ndaParties = computed(() => ({
@@ -772,9 +778,6 @@ export class ProfilComponent implements OnInit {
     });
   }
 
-  toggleBookmark(): void {
-    this.isBookmarked.update(value => !value);
-  }
 
   private async loadProfile(): Promise<void> {
     await this.auth.ensureSessionReady();

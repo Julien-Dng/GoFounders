@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, signal } from '@angular/core';
-import { FavoritesService } from '../../../core/services/favorites.service';
+import { FavoriteKind, FavoritesService } from '../../../core/services/favorites.service';
 
 // Cœur « Ajouter aux favoris ». Placé au-dessus du lien qui couvre une carte (relative z-10).
 @Component({
@@ -29,13 +29,15 @@ import { FavoritesService } from '../../../core/services/favorites.service';
 export class FavoriteButtonComponent implements OnInit {
   private readonly favorites = inject(FavoritesService);
 
+  // Identifiant de l'élément : annonce, projet ou profil d'associé selon kind.
   readonly listingId = input.required<string>();
-  readonly label = input('cette entreprise');
+  readonly kind = input<FavoriteKind>('listing');
+  readonly label = input('cet élément');
   readonly withText = input(false);
 
   readonly busy = signal(false);
   readonly error = signal('');
-  readonly active = computed(() => this.favorites.isFavorite(this.listingId()));
+  readonly active = computed(() => this.favorites.isFavorite(this.listingId(), this.kind()));
 
   ngOnInit(): void {
     void this.favorites.ensureLoaded();
@@ -46,7 +48,7 @@ export class FavoriteButtonComponent implements OnInit {
     event.stopPropagation();
     this.busy.set(true);
     try {
-      const result = await this.favorites.toggle(this.listingId());
+      const result = await this.favorites.toggle(this.listingId(), this.kind());
       this.error.set(result.success ? '' : result.message);
     } finally {
       this.busy.set(false);

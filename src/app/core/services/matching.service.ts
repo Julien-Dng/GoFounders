@@ -173,6 +173,7 @@ export class MatchingService {
 
     return {
       id: project.id,
+      projectId: project.id,
       profileType: 'entrepreneur',
       displayName: projectName,
       title: `Fondateur · ${ownerName}`,

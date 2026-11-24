@@ -34,6 +34,8 @@ export interface MarketplaceProfile {
   featured?: boolean;
   // Profil (ou porteur du projet) vérifié par l'équipe GoFounders.
   verified?: boolean;
+  // Projets : identifiant du projet (favoris) ; absent quand la fiche est chargée par le profil du porteur.
+  projectId?: string;
 }
 
 export interface ConversationMessage {

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Tests de sécurité du compte multi-usages (2026-11-13-compte-multi-usages.sql, 2026-11-15-objectifs-automatiques.sql,
-# 2026-11-16-favoris.sql, 2026-11-17-visibilite-contact.sql), sur une base de test locale
+# 2026-11-16-favoris.sql, 2026-11-17-visibilite-contact.sql, 2026-11-24-favoris-membres.sql), sur une base de test locale
 # avec comptes-test.sql, annonces-demo.sql et demo-complete.sql. Chaque cas est annulé (ROLLBACK).
 # Usage : D=<dossier du socket> bash supabase/tests/compte-multi-usages.sh
 D=${D:-/var/tmp/pgtest}
@@ -97,3 +97,11 @@ echo "== Offre et facturation"
 r "Historique : ses propres paiements"           $T  "select count(*) > 0, bool_and(listing_title is not null) from list_my_payments()" "t|t"
 r "Historique : rien pour un autre membre"       $N  "select count(*) from list_my_payments()" 0
 r "Historique : visiteur refusé"                 "" "set local role anon; select count(*) from list_my_payments()" "ERROR:  permission denied"
+echo "== Favoris de projets et d'associés"
+r "Associé visible en favori"                    $LU "insert into member_favorites (user_id, kind, target_id) values ('$LU','associate','$A'); select count(*) from list_my_member_favorites()" 1
+r "Projet publié en favori"                      $LU "insert into member_favorites (user_id, kind, target_id) values ('$LU','project',(select id from projects where owner_id='$N')); select kind from list_my_member_favorites()" project
+r "Profil non associé : refusé"                  $LU "insert into member_favorites (user_id, kind, target_id) values ('$LU','associate','$K')" "ERROR:  new row violates row-level security"
+r "Projet en brouillon : refusé"                 $LU "$PROJET; set local request.jwt.claim.sub = '$A'; insert into member_favorites (user_id, kind, target_id) values ('$A','project',(select id from projects where owner_id='$LU'))" "ERROR:  new row violates row-level security"
+r "Au nom d'un autre : refusé"                   $LU "insert into member_favorites (user_id, kind, target_id) values ('$A','associate','$BR')" "ERROR:  new row violates row-level security"
+r "Invisibles pour la personne enregistrée"      $LU "insert into member_favorites (user_id, kind, target_id) values ('$LU','associate','$A'); set local request.jwt.claim.sub = '$A'; select count(*) from member_favorites" 0
+r "Associé retiré : disparaît de la liste"       $LU "insert into member_favorites (user_id, kind, target_id) values ('$LU','associate','$A'); set local request.jwt.claim.sub = '$A'; select set_associate_offer(false) is null; set local request.jwt.claim.sub = '$LU'; select count(*) from list_my_member_favorites()" "t 0"

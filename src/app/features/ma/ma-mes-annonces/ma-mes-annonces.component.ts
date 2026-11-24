@@ -26,9 +26,6 @@ import { VerifiedBadgeComponent } from '../../../shared/components/verified-badg
           <p class="text-muted-foreground">Suivez la relecture de vos annonces et les repreneurs qui ont ouvert votre dossier</p>
           <div class="flex flex-wrap gap-2">
             <a routerLink="/ma/statistiques" class="rounded-lg border border-border bg-white px-5 py-3 text-center text-sm font-semibold transition-colors hover:border-primary">Mes statistiques</a>
-            @if (canPublish()) {
-              <a routerLink="/ma/deposer" class="rounded-lg bg-accent px-5 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-accent/90">Déposer une annonce</a>
-            }
           </div>
         </div>
 

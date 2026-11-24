@@ -1,4 +1,7 @@
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router, Routes } from '@angular/router';
+import { hasUsage } from './core/models/user.model';
+import { AuthService } from './core/services/auth.service';
 import { authGuard } from './core/guards/auth.guard';
 import { featureGuard } from './core/guards/feature.guard';
 import { planGuard } from './core/guards/plan.guard';
@@ -132,10 +135,18 @@ export const routes: Routes = [
         canActivate: [authGuard],
         loadComponent: () => import('./features/ma/ma-deposer/ma-deposer.component').then(m => m.MaDeposerComponent)
       },
+      // Mes favoris : entreprises, projets et associés enregistrés (ancienne adresse /ma/favoris redirigée).
       {
-        path: 'ma/favoris',
+        path: 'favoris',
         canActivate: [authGuard],
-        loadComponent: () => import('./features/ma/ma-favoris/ma-favoris.component').then(m => m.MaFavorisComponent)
+        loadComponent: () => import('./features/favoris/favoris.component').then(m => m.FavorisComponent)
+      },
+      { path: 'ma/favoris', redirectTo: 'favoris', pathMatch: 'full' },
+      // Mes entreprises : les cédants arrivent sur leurs annonces, les autres sur leurs dossiers débloqués.
+      {
+        path: 'mes-entreprises',
+        canActivate: [authGuard, () => inject(Router).parseUrl(hasUsage(inject(AuthService).currentUser(), 'cession') ? '/ma/mes-annonces' : '/ma/dossiers')],
+        children: [],
       },
       {
         path: 'ma/dossiers',

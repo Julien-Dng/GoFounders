@@ -13,6 +13,7 @@ import {
   signal
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { FavoriteButtonComponent } from '../../shared/components/favorite-button/favorite-button.component';
 import { Subscription } from 'rxjs';
 import { MarketplaceProfile } from '../../core/data/mock-platform.data';
 import { ProfileType, MATCH_REASONS_UPSELL, canSeeMatchReasons, canUseAdvancedSearch, hasUsage } from '../../core/models/user.model';
@@ -24,7 +25,7 @@ type SearchProfileType = ProfileType;
 @Component({
   selector: 'app-recherche',
   standalone: true,
-  imports: [NgClass, RouterLink],
+  imports: [NgClass, RouterLink, FavoriteButtonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-secondary px-4 pb-12 pt-24 sm:px-6 lg:px-8">
@@ -268,6 +269,7 @@ type SearchProfileType = ProfileType;
                   [style.--reveal-delay]="revealDelay(profileIndex)"
                 >
                   <div class="mb-4 flex items-start justify-between">
+                    <app-favorite-button class="order-last ml-2 flex-shrink-0" [listingId]="profile.id" [kind]="profile.profileType === 'talent' ? 'associate' : 'project'" [label]="profile.displayName" />
                     <div class="flex items-center gap-3">
                       <div class="relative flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-lg font-semibold text-white">
                         <span>{{ profile.initials }}</span>

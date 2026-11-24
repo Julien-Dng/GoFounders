@@ -3,37 +3,60 @@ import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
 import { SupabaseService } from './supabase.service';
 
+export type FavoriteKind = 'listing' | 'project' | 'associate';
+
 export interface FavoriteResult {
   success: boolean;
   message: string;
 }
 
-interface FavoriteRow {
+export interface FavoriteEntry {
+  kind: FavoriteKind;
+  id: string;
+  at: string;
+}
+
+interface ListingFavoriteRow {
   listing_id: string;
   favorited_at: string;
 }
 
-const LOCAL_KEY = 'gofounders.favorites.';
+interface MemberFavoriteRow {
+  kind: 'project' | 'associate';
+  target_id: string;
+  favorited_at: string;
+}
 
-// Favoris d'entreprises (supabase/2026-11-16-favoris.sql) : lisibles par le seul membre, jamais par le cédant.
-// Un favori n'ouvre aucun droit et n'ajoute aucun objectif. Mode démo : stockés dans le navigateur.
+const LOCAL_KEY = 'gofounders.favorites.v2.';
+
+// Mes favoris : entreprises (listing_favorites, 2026-11-16-favoris.sql), projets et associés (member_favorites,
+// 2026-11-24-favoris-membres.sql). Lisibles par le seul membre ; un favori n'ouvre aucun droit et n'ajoute aucun
+// objectif. Mode démo : stockés dans le navigateur.
 @Injectable({ providedIn: 'root' })
 export class FavoritesService {
   private readonly auth = inject(AuthService);
   private readonly supabase = inject(SupabaseService);
   private readonly router = inject(Router);
 
-  // Annonce → date d'ajout, du plus récent au plus ancien.
+  // Clé « type:id » → date d'ajout.
   private readonly entries = signal<Map<string, string>>(new Map());
   private loadedFor: string | null = null;
   private loading: Promise<void> | null = null;
 
+  // Du plus récent au plus ancien.
+  readonly all = computed<FavoriteEntry[]>(() =>
+    [...this.entries().entries()]
+      .map(([key, at]) => {
+        const [kind, id] = key.split(':') as [FavoriteKind, string];
+        return { kind, id, at };
+      })
+      .sort((a, b) => b.at.localeCompare(a.at)));
   readonly count = computed(() => this.entries().size);
-  readonly orderedIds = computed(() =>
-    [...this.entries().entries()].sort((a, b) => b[1].localeCompare(a[1])).map(([id]) => id));
+  // Compatibilité : identifiants des entreprises enregistrées.
+  readonly orderedIds = computed(() => this.all().filter(entry => entry.kind === 'listing').map(entry => entry.id));
 
-  isFavorite(listingId: string): boolean {
-    return this.entries().has(listingId);
+  isFavorite(id: string, kind: FavoriteKind = 'listing'): boolean {
+    return this.entries().has(`${kind}:${id}`);
   }
 
   async ensureLoaded(): Promise<void> {
@@ -55,46 +78,53 @@ export class FavoritesService {
     return this.loading;
   }
 
-  async toggle(listingId: string): Promise<FavoriteResult> {
+  async toggle(id: string, kind: FavoriteKind = 'listing'): Promise<FavoriteResult> {
     const user = this.auth.currentUser();
 
     if (!user) {
       await this.router.navigate(['/connexion'], { queryParams: { returnUrl: this.router.url } });
-      return { success: false, message: 'Connectez-vous pour enregistrer cette entreprise.' };
+      return { success: false, message: 'Connectez-vous pour enregistrer ce favori.' };
     }
 
     await this.ensureLoaded();
-    const adding = !this.isFavorite(listingId);
+    const key = `${kind}:${id}`;
+    const adding = !this.entries().has(key);
     const previous = this.entries();
     const next = new Map(previous);
     if (adding) {
-      next.set(listingId, new Date().toISOString());
+      next.set(key, new Date().toISOString());
     } else {
-      next.delete(listingId);
+      next.delete(key);
     }
     // Affichage immédiat, annulé si l'enregistrement échoue.
     this.entries.set(next);
 
+    const done = { success: true, message: adding ? 'Ajouté à vos favoris' : 'Retiré de vos favoris' };
+
     if (!this.supabase.isConfigured) {
       localStorage.setItem(LOCAL_KEY + user.uid, JSON.stringify([...next.entries()]));
-      return { success: true, message: adding ? 'Ajoutée à vos favoris' : 'Retirée de vos favoris' };
+      return done;
     }
 
-    const { error } = adding
-      ? await this.supabase.client.from('listing_favorites').insert({ user_id: user.uid, listing_id: listingId })
-      : await this.supabase.client.from('listing_favorites').delete().eq('listing_id', listingId);
+    const { error } = kind === 'listing'
+      ? adding
+        ? await this.supabase.client.from('listing_favorites').insert({ user_id: user.uid, listing_id: id })
+        : await this.supabase.client.from('listing_favorites').delete().eq('listing_id', id)
+      : adding
+        ? await this.supabase.client.from('member_favorites').insert({ user_id: user.uid, kind, target_id: id })
+        : await this.supabase.client.from('member_favorites').delete().eq('kind', kind).eq('target_id', id);
 
     if (error && !(adding && error.code === '23505')) {
       this.entries.set(previous);
       return {
         success: false,
         message: error.message.includes('FAVORIS_LIMITE')
-          ? 'Vous avez atteint 200 favoris. Retirez-en quelques-uns pour en ajouter.'
+          ? 'Vous avez atteint 200 favoris de ce type. Retirez-en quelques-uns pour en ajouter.'
           : 'Impossible d’enregistrer ce favori pour le moment.',
       };
     }
 
-    return { success: true, message: adding ? 'Ajoutée à vos favoris' : 'Retirée de vos favoris' };
+    return done;
   }
 
   private async load(uid: string): Promise<void> {
@@ -108,9 +138,18 @@ export class FavoritesService {
       return;
     }
 
-    // Seules les annonces encore visibles reviennent (une annonce retirée disparaît de la liste).
-    const { data, error } = await this.supabase.client.rpc('list_my_favorite_listings');
-    const rows = error ? [] : ((data ?? []) as FavoriteRow[]);
-    this.entries.set(new Map(rows.map(row => [row.listing_id, row.favorited_at])));
+    // Seuls les éléments encore visibles reviennent (annonce retirée, projet en brouillon, associé masqué : absents).
+    const [listings, members] = await Promise.all([
+      this.supabase.client.rpc('list_my_favorite_listings'),
+      this.supabase.client.rpc('list_my_member_favorites'),
+    ]);
+    const map = new Map<string, string>();
+    for (const row of (listings.error ? [] : (listings.data ?? [])) as ListingFavoriteRow[]) {
+      map.set(`listing:${row.listing_id}`, row.favorited_at);
+    }
+    for (const row of (members.error ? [] : (members.data ?? [])) as MemberFavoriteRow[]) {
+      map.set(`${row.kind}:${row.target_id}`, row.favorited_at);
+    }
+    this.entries.set(map);
   }
 }
