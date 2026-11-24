@@ -128,6 +128,25 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
 
           <section class="rounded-3xl bg-white shadow-lg ring-1 ring-border p-6 sm:p-8">
             <div [formGroup]="profileForm" class="space-y-8">
+              @if (mode === 'associe') {
+                <!-- Photo : la même que sur le profil général. -->
+                <div class="flex items-center gap-5">
+                  <div class="h-24 w-24 flex-shrink-0 overflow-hidden rounded-2xl bg-primary text-2xl font-semibold text-white">
+                    @if (previewPhoto()) {
+                      <img [src]="previewPhoto()" alt="Votre photo" class="h-full w-full object-cover">
+                    } @else {
+                      <span class="flex h-full w-full items-center justify-center">{{ initials() }}</span>
+                    }
+                  </div>
+                  <div>
+                    <label for="associate-photo-input" class="cursor-pointer font-semibold text-accent hover:underline">{{ previewPhoto() ? 'Modifier la photo' : 'Ajouter une photo' }}</label>
+                    <input id="associate-photo-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="sr-only" (change)="onPhotoSelected($event)">
+                    <p class="mt-1 text-sm text-muted-foreground">JPG, PNG ou WebP, 5 Mo au plus</p>
+                    @if (photoMessage()) { <p class="mt-1 text-sm text-emerald-700">{{ photoMessage() }}</p> }
+                    @if (photoErrorMessage()) { <p class="mt-1 text-sm text-destructive">{{ photoErrorMessage() }}</p> }
+                  </div>
+                </div>
+              }
               @if (mode !== 'projet') {
               <div>
                 <h2 class="text-xl font-semibold text-primary">{{ mode === 'associe' ? 'Ce que vous proposez' : 'Informations principales' }}</h2>

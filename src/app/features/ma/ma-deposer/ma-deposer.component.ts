@@ -35,15 +35,24 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
           <p class="text-muted-foreground">{{ editingId() ? 'Après modification, votre annonce repasse en relecture avant d’être de nouveau visible (en général sous 24 h ouvrées)' : 'Gratuit pendant le lancement. Votre annonce reste anonyme et elle est relue avant publication' }}</p>
         </div>
 
-        <div class="mb-8">
-          <div class="mb-3 flex items-center justify-between">
-            <span class="text-sm font-semibold text-muted-foreground">Étape {{ currentStep() }} sur {{ totalSteps }}</span>
-            <span class="text-sm font-semibold text-accent">{{ progressPercent() }}%</span>
-          </div>
-          <div class="h-2 overflow-hidden rounded-full bg-muted">
-            <div class="h-full rounded-full bg-accent transition-all duration-300" [style.width]="progressPercent() + '%'"></div>
-          </div>
-        </div>
+        <!-- Étapes : on revient librement sur une étape déjà vue. -->
+        <ol class="mb-8 flex items-start" aria-label="Étapes du dépôt">
+          @for (label of stepLabels; track label; let i = $index; let last = $last) {
+            <li class="flex flex-1 items-start" [class.flex-none]="last">
+              <button type="button" (click)="goToStep(i + 1)" [disabled]="i + 1 > maxStepReached()" [attr.aria-current]="currentStep() === i + 1 ? 'step' : null"
+                      class="flex w-16 flex-col items-center text-center disabled:cursor-default sm:w-20">
+                <span class="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold transition-colors"
+                      [class]="currentStep() === i + 1 ? 'bg-accent text-white' : i + 1 < currentStep() ? 'bg-accent/15 text-accent' : 'bg-white text-muted-foreground ring-1 ring-border'">
+                  {{ i + 1 < currentStep() ? '✓' : i + 1 }}
+                </span>
+                <span class="mt-2 hidden text-xs font-semibold sm:block" [class]="currentStep() === i + 1 ? 'text-accent' : 'text-muted-foreground'">{{ label }}</span>
+              </button>
+              @if (!last) {
+                <span class="mt-[1.1rem] h-0.5 flex-1" [class]="i + 1 < currentStep() ? 'bg-accent' : 'bg-border'" aria-hidden="true"></span>
+              }
+            </li>
+          }
+        </ol>
 
         <div class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-6 sm:p-10">
           @if (!canPublish()) {
@@ -329,11 +338,23 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                         <p class="mt-4 text-sm text-muted-foreground">Inclus : {{ includedLabels() }}</p>
                       }
                     </div>
+                    <section class="mt-5 rounded-2xl bg-white p-5 ring-1 ring-border" aria-labelledby="recap-title">
+                      <h3 id="recap-title" class="font-semibold text-primary">Récapitulatif</h3>
+                      <dl class="mt-3 divide-y divide-border">
+                        @for (item of recap(); track item.step) {
+                          <div class="flex items-center justify-between gap-4 py-2.5">
+                            <dt class="w-32 flex-shrink-0 text-sm text-muted-foreground">{{ item.label }}</dt>
+                            <dd class="min-w-0 flex-1 truncate text-sm font-medium text-primary">{{ item.value }}</dd>
+                            <dd><button type="button" (click)="goToStep(item.step)" class="text-sm font-semibold text-accent hover:underline">Modifier<span class="sr-only"> : {{ item.label }}</span></button></dd>
+                          </div>
+                        }
+                      </dl>
+                    </section>
                     <div class="mt-5 rounded-2xl bg-white p-5 ring-1 ring-border">
                       <p class="font-semibold text-primary">Publication gratuite</p>
                       <p class="mt-1 text-base leading-relaxed text-muted-foreground">
                         Offre de lancement : la publication ne coûte rien. Votre annonce apparaît anonymisée sur la marketplace ;
-                        seuls les repreneurs avec un accès voient le dossier complet et peuvent vous contacter
+                        seuls les repreneurs qui débloquent votre dossier voient le détail et peuvent vous contacter. Elle est relue par notre équipe avant sa mise en ligne
                       </p>
                     </div>
                   </div>
@@ -490,7 +511,6 @@ export class MaDeposerComponent {
     }
   }
 
-  readonly progressPercent = computed(() => Math.round((this.currentStep() / this.totalSteps) * 100));
   readonly finalActionLabel = computed(() =>
     this.isSubmitting() ? 'Envoi…' : this.editingId() ? 'Enregistrer les modifications' : 'Envoyer pour publication (gratuit)'
   );
@@ -534,10 +554,30 @@ export class MaDeposerComponent {
     this.includedAssets.set(row.included_assets ?? []);
     this.channels.set(row.acquisition_channels ?? []);
     this.growthNotes.set(row.growth_notes ?? '');
+    // Modification : toutes les étapes sont accessibles directement.
+    this.maxStepReached.set(this.totalSteps);
+  }
+
+  readonly stepLabels = ['Activité', 'Chiffres', 'Ce qui est vendu', 'Prix', 'Confidentialité', 'Aperçu'];
+  readonly maxStepReached = signal(1);
+  // Récapitulatif de l'aperçu, avec un lien « Modifier » vers chaque étape.
+  readonly recap = computed(() => [
+    { step: 1, label: 'Activité', value: [this.sector(), this.region()].filter(Boolean).join(' · ') || 'À compléter' },
+    { step: 2, label: 'Chiffres', value: this.revenue() ? `CA ${this.revenue()}${this.margin() ? ' · marge ' + this.margin() : ''}` : 'À compléter' },
+    { step: 3, label: 'Ce qui est vendu', value: this.includedAssets().length ? this.includedLabels() : 'À préciser' },
+    { step: 4, label: 'Prix', value: this.priceMin() || this.priceMax() ? `${this.priceMin() || '…'} à ${this.priceMax() || '…'}` : 'À compléter' },
+    { step: 5, label: 'Confidentialité', value: 'Dossier réservé aux repreneurs qui le débloquent' },
+  ]);
+
+  goToStep(step: number): void {
+    if (step <= this.maxStepReached()) {
+      this.currentStep.set(step);
+    }
   }
 
   nextStep(): void {
     this.currentStep.update(step => Math.min(step + 1, this.totalSteps));
+    this.maxStepReached.update(max => Math.max(max, this.currentStep()));
   }
 
   previousStep(): void {

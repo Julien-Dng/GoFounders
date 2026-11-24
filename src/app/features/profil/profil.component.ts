@@ -173,6 +173,29 @@ import { FavoriteButtonComponent } from '../../shared/components/favorite-button
                         <p class="leading-relaxed text-foreground/80">{{ presentationText() }}</p>
                       </div>
 
+                      @if (projectProgress(); as progress) {
+                        <!-- Avancement du projet : étapes franchies d'après le stade déclaré. -->
+                        <section aria-labelledby="progress-title">
+                          <h3 id="progress-title" class="mb-4 text-xl font-semibold">Avancement</h3>
+                          <ol class="flex items-start">
+                            @for (step of progress; track step.label; let last = $last) {
+                              <li class="flex flex-1 items-start" [class.flex-none]="last">
+                                <span class="flex w-20 flex-col items-center text-center sm:w-24">
+                                  <span class="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold"
+                                        [class]="step.state === 'done' ? 'bg-accent text-white' : step.state === 'current' ? 'bg-white text-accent ring-2 ring-accent' : 'bg-white text-muted-foreground ring-1 ring-border'">
+                                    {{ step.state === 'done' ? '✓' : '' }}
+                                  </span>
+                                  <span class="mt-2 text-sm" [class]="step.state === 'current' ? 'font-semibold text-accent' : 'text-muted-foreground'">{{ step.label }}<span class="sr-only">{{ step.state === 'done' ? ' : franchie' : step.state === 'current' ? ' : étape actuelle' : ' : à venir' }}</span></span>
+                                </span>
+                                @if (!last) {
+                                  <span class="mt-4 h-0.5 flex-1" [class]="step.state === 'done' ? 'bg-accent' : 'bg-border'" aria-hidden="true"></span>
+                                }
+                              </li>
+                            }
+                          </ol>
+                        </section>
+                      }
+
                       <div class="rounded-2xl border border-border bg-secondary/40 p-5">
                         <div class="mb-3 text-sm font-semibold text-accent">Ce que {{ isOwnProfile() ? 'mon profil' : 'ce profil' }} apporte</div>
                         <div class="grid gap-3 sm:grid-cols-3">
@@ -678,6 +701,25 @@ export class ProfilComponent implements OnInit {
     }
     const projectId = profile.projectId ?? (this.supabase.isConfigured ? null : profile.id);
     return profile.profileType === 'entrepreneur' && projectId ? { kind: 'project', id: projectId } : null;
+  });
+  // Frise d'avancement d'un projet (Idée, MVP, En croissance, Établi) d'après son stade.
+  readonly projectProgress = computed<Array<{ label: string; state: 'done' | 'current' | 'todo' }> | null>(() => {
+    const profile = this.isOwnProfile() ? null : this.publicProfile();
+    if (profile?.profileType !== 'entrepreneur') {
+      return null;
+    }
+    const stage = (profile.stage ?? '').toLowerCase();
+    const index = stage.includes('établi') || stage.includes('etabli') || stage === 'established' ? 3
+      : stage.includes('croissance') || stage === 'growth' ? 2
+      : stage.includes('mvp') ? 1
+      : stage.includes('idée') || stage.includes('idee') || stage === 'idea' ? 0 : -1;
+    if (index < 0) {
+      return null;
+    }
+    return ['Idée', 'Premier produit (MVP)', 'En croissance', 'Établi'].map((label, position) => ({
+      label,
+      state: position < index ? 'done' as const : position === index ? 'current' as const : 'todo' as const,
+    }));
   });
   readonly isProjectProfile = computed(() => !this.isOwnProfile() && this.publicProfile()?.profileType === 'entrepreneur');
   readonly accessState = computed(() => this.myRequest()?.status ?? 'none');

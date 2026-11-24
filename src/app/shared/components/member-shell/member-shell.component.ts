@@ -5,6 +5,9 @@ import { filter, map } from 'rxjs';
 import { FEATURES } from '../../../core/config/features';
 import { AuthService } from '../../../core/services/auth.service';
 import { MessagingService } from '../../../core/services/messaging.service';
+import { MaService } from '../../../core/services/ma.service';
+import { MatchingService } from '../../../core/services/matching.service';
+import { MaListingData, MarketplaceProfile } from '../../../core/data/mock-platform.data';
 import { NotificationMenuComponent } from '../notification-menu/notification-menu.component';
 import { UserMenuComponent } from '../user-menu/user-menu.component';
 
@@ -37,7 +40,33 @@ interface ShellItem {
         <span class="brand-logo-mark h-8 w-8"><img src="/assets/images/gofounders-logo-256.png" alt="" class="h-full w-full object-contain"></span>
         <span class="font-display text-lg font-bold text-primary">GoFounders</span>
       </a>
-      <a routerLink="/ma" class="ml-auto hidden text-sm font-semibold text-muted-foreground transition-colors hover:text-primary sm:inline">Voir le site</a>
+      <!-- Recherche globale : entreprises, noms des projets et des associés, pages de l'espace membre. -->
+      <div class="relative ml-2 hidden max-w-md flex-1 md:block" (focusin)="openSearch()">
+        <label for="global-search" class="sr-only">Rechercher sur GoFounders</label>
+        <svg class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input id="global-search" type="search" autocomplete="off" [value]="query()" (input)="query.set($any($event.target).value); openSearch()" (keydown.enter)="goFirst()"
+               placeholder="Rechercher une entreprise, un projet, une page…" role="combobox" [attr.aria-expanded]="searchOpen() && !!query().trim()" aria-controls="global-search-results"
+               class="h-10 w-full rounded-lg border border-transparent bg-secondary pl-10 pr-3 text-sm outline-none transition-colors focus:border-accent focus:bg-white">
+        @if (searchOpen() && query().trim()) {
+          <div id="global-search-results" class="absolute left-0 right-0 top-full z-10 mt-2 max-h-[26rem] overflow-y-auto rounded-xl bg-white p-2 shadow-xl ring-1 ring-border" role="listbox">
+            @for (group of results(); track group.label) {
+              <p class="px-2 pb-1 pt-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">{{ group.label }}</p>
+              @for (item of group.items; track item.link) {
+                <a [routerLink]="item.link" (click)="closeSearch()" role="option" class="block rounded-lg px-2 py-2 hover:bg-secondary">
+                  <span class="block truncate text-sm font-semibold text-primary">{{ item.title }}</span>
+                  @if (item.subtitle) { <span class="block truncate text-xs text-muted-foreground">{{ item.subtitle }}</span> }
+                </a>
+              }
+            } @empty {
+              <p class="px-2 py-3 text-sm text-muted-foreground">Aucun résultat pour « {{ query().trim() }} »</p>
+            }
+            @if (associatesEnabled) {
+              <a routerLink="/recherche" (click)="closeSearch()" class="mt-1 block rounded-lg border-t border-border px-2 pb-1 pt-2.5 text-sm font-semibold text-accent hover:underline">Explorer les associés et projets <span aria-hidden="true">→</span></a>
+            }
+          </div>
+        }
+      </div>
+      <a routerLink="/ma" class="ml-auto hidden text-sm font-semibold text-muted-foreground transition-colors hover:text-primary lg:inline">Voir le site</a>
       <div class="ml-auto flex items-center gap-3 sm:ml-4">
         <app-notification-menu />
         <app-user-menu avatarClass="h-10 w-10" />
@@ -101,6 +130,8 @@ export class MemberShellComponent {
   private readonly auth = inject(AuthService);
   private readonly messaging = inject(MessagingService);
   private readonly router = inject(Router);
+  private readonly ma = inject(MaService);
+  private readonly matching = inject(MatchingService);
 
   readonly drawerOpen = signal(false);
   private readonly url = toSignal(
@@ -146,5 +177,83 @@ export class MemberShellComponent {
   @HostListener('document:keydown.escape')
   closeDrawer(): void {
     this.drawerOpen.set(false);
+    this.searchOpen.set(false);
+  }
+
+  // Recherche globale ------------------------------------------------------------------------------------------
+  readonly associatesEnabled = FEATURES.associates;
+  readonly query = signal('');
+  readonly searchOpen = signal(false);
+  private readonly searchListings = signal<MaListingData[]>([]);
+  private readonly searchProfiles = signal<MarketplaceProfile[]>([]);
+  private searchLoaded = false;
+
+  readonly results = computed<Array<{ label: string; items: Array<{ title: string; subtitle: string; link: string }> }>>(() => {
+    const words = this.normalize(this.query()).split(/\s+/).filter(Boolean);
+    if (!words.length) {
+      return [];
+    }
+    const matches = (text: string) => words.every(word => this.normalize(text).includes(word));
+    const pages = this.items()
+      .filter(item => matches(item.label))
+      .map(item => ({ title: item.label, subtitle: '', link: item.path }));
+    const listings = this.searchListings()
+      .filter(listing => matches([listing.title, listing.sector, listing.region].filter(Boolean).join(' ')))
+      .slice(0, 5)
+      .map(listing => ({ title: listing.title || `${listing.sector}, ${listing.region}`, subtitle: `${listing.sector} · ${listing.region}`, link: `/ma/annonce/${listing.id}` }));
+    // Noms et intitulés seulement : la recherche par compétences reste la recherche avancée de l'offre PRO.
+    const projects = this.searchProfiles()
+      .filter(profile => profile.profileType === 'entrepreneur' && matches(profile.displayName))
+      .slice(0, 4)
+      .map(profile => ({ title: profile.displayName, subtitle: [profile.sector, profile.location].filter(Boolean).join(' · '), link: `/profil/${profile.id}` }));
+    const associates = this.searchProfiles()
+      .filter(profile => profile.profileType === 'talent' && matches([profile.displayName, profile.title].join(' ')))
+      .slice(0, 4)
+      .map(profile => ({ title: profile.title || profile.displayName, subtitle: [profile.displayName, profile.location].filter(Boolean).join(' · '), link: `/profil/${profile.id}` }));
+    return [
+      { label: 'Entreprises', items: listings },
+      { label: 'Projets', items: projects },
+      { label: 'Associés', items: associates },
+      { label: 'Pages', items: pages },
+    ].filter(group => group.items.length > 0);
+  });
+
+  async openSearch(): Promise<void> {
+    this.searchOpen.set(true);
+    if (this.searchLoaded) {
+      return;
+    }
+    this.searchLoaded = true;
+    const [listings, profiles] = await Promise.all([
+      this.ma.getListingCards(),
+      FEATURES.associates ? this.matching.getMarketplaceProfilesForSearch() : Promise.resolve<MarketplaceProfile[]>([]),
+    ]);
+    this.searchListings.set(listings);
+    this.searchProfiles.set(profiles);
+  }
+
+  closeSearch(): void {
+    this.searchOpen.set(false);
+    this.query.set('');
+  }
+
+  goFirst(): void {
+    const first = this.results()[0]?.items[0];
+    if (first) {
+      void this.router.navigateByUrl(first.link);
+      this.closeSearch();
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  closeOnOutside(event: MouseEvent): void {
+    const target = event.target as HTMLElement | null;
+    if (this.searchOpen() && !target?.closest('#global-search, #global-search-results')) {
+      this.searchOpen.set(false);
+    }
+  }
+
+  private normalize(value: string): string {
+    return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   }
 }
