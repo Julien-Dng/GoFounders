@@ -15,6 +15,7 @@ import { KIND_LABELS, buildFavoriteCards } from '../favoris/favoris.component';
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
 
 interface NextStep {
+  id: 'projet' | 'associe' | 'cession';
   eyebrow: string;
   title: string;
   text: string;
@@ -45,6 +46,14 @@ interface Tile {
           <p class="mt-1 text-muted-foreground">{{ subtitle() }}</p>
         </div>
 
+        @if (lastDismissed()) {
+          <p class="flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm text-muted-foreground ring-1 ring-border" role="status">
+            Suggestion masquée
+            <span aria-hidden="true">·</span>
+            <button type="button" (click)="undoDismiss()" class="font-semibold text-accent hover:underline">Annuler</button>
+          </p>
+        }
+
         @if (nextStep(); as step) {
           <section class="rounded-2xl bg-accent/[0.06] p-6 ring-1 ring-accent/15 sm:p-7" aria-labelledby="next-step-title">
             <div class="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
@@ -52,7 +61,10 @@ interface Tile {
                 <p class="text-sm font-bold uppercase tracking-wide text-accent">{{ step.eyebrow }}</p>
                 <h2 id="next-step-title" class="mt-1 text-2xl text-primary">{{ step.title }}</h2>
                 <p class="mt-2 max-w-[60ch] text-base leading-relaxed text-muted-foreground">{{ step.text }}</p>
-                <a [routerLink]="step.path" class="mt-5 inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-3 font-semibold text-white transition-colors hover:bg-accent/90">{{ step.cta }} <span aria-hidden="true">→</span></a>
+                <div class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
+                  <a [routerLink]="step.path" class="inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-3 font-semibold text-white transition-colors hover:bg-accent/90">{{ step.cta }} <span aria-hidden="true">→</span></a>
+                  <button type="button" (click)="dismissStep(step.id)" class="text-sm font-semibold text-muted-foreground underline-offset-4 hover:text-primary hover:underline">Ne plus me proposer cette étape</button>
+                </div>
               </div>
               @if (step.steps.length) {
                 <ol class="flex items-start" aria-label="Étapes">
@@ -206,7 +218,7 @@ interface Tile {
               <div class="h-full rounded-full bg-accent" [style.width.%]="profileComplete()"></div>
             </div>
             <p class="mt-4 text-sm leading-relaxed text-muted-foreground">
-              {{ profileComplete() >= 100 ? 'Votre profil est complet' : 'Ajoutez quelques informations (parcours, compétences, objectifs) pour être davantage visible' }}
+              {{ profileComplete() >= 100 ? 'Votre profil est complet' : 'Ajoutez quelques informations (parcours, compétences, présentation) pour être davantage visible' }}
             </p>
             <a routerLink="/profil/modifier" class="mt-3 inline-block text-sm font-semibold text-accent hover:underline">Compléter mon profil <span aria-hidden="true">→</span></a>
           </section>
@@ -258,15 +270,22 @@ export class DashboardComponent {
   });
 
   // Prochaine étape selon les objectifs : projet à présenter, profil d'associé à compléter, annonce à déposer.
+  // Étapes proposées selon les objectifs ; le membre peut en masquer (sans toucher à ses objectifs ni à ses accès).
   readonly nextStep = computed<NextStep | null>(() => {
+    const dismissed = this.dismissedSteps();
+    return this.candidateSteps().find(step => !dismissed.includes(step.id)) ?? null;
+  });
+  private readonly candidateSteps = computed<NextStep[]>(() => {
     const user = this.currentUser();
+    const steps: NextStep[] = [];
     if (!user || user.profileType === 'pro') {
-      return null;
+      return steps;
     }
     const project = this.ownProject();
     if (FEATURES.associates && hasUsage(user, 'projet') && !project?.isActive) {
       const presented = isProjectPresented(project);
-      return {
+      steps.push({
+        id: 'projet',
         eyebrow: 'Votre prochaine étape',
         title: 'Présentez votre projet aux futurs associés',
         text: 'Décrivez votre idée, votre avancement et les compétences recherchées. Un brouillon présenté suffit déjà pour écrire aux associés',
@@ -277,11 +296,12 @@ export class DashboardComponent {
           { label: 'Compétences recherchées', done: !!project && project.skillsNeeded.length > 0 },
           { label: 'Publication', done: !!project?.isActive },
         ],
-      };
+      });
     }
     if (FEATURES.associates && hasUsage(user, 'associe') && !user.associateOfferedAt) {
       const complete = isAssociateProfileComplete(user);
-      return {
+      steps.push({
+        id: 'associe',
         eyebrow: 'Votre prochaine étape',
         title: 'Proposez vos compétences aux porteurs de projet',
         text: 'Un intitulé, vos compétences et une courte présentation suffisent pour écrire aux porteurs. Rendez ensuite votre profil visible si vous le souhaitez',
@@ -292,20 +312,51 @@ export class DashboardComponent {
           { label: 'Compétences', done: (user.skills?.length ?? 0) > 0 },
           { label: 'Présentation', done: (user.bio?.trim().length ?? 0) >= 50 },
         ],
-      };
+      });
     }
     if (hasUsage(user, 'cession') && this.myListingsCount() === 0) {
-      return {
+      steps.push({
+        id: 'cession',
         eyebrow: 'Votre prochaine étape',
         title: 'Déposez votre annonce, gratuitement',
         text: 'Activité, chiffres, prix et coordonnées réservées aux repreneurs. Votre annonce reste anonyme et est relue avant publication',
         cta: 'Déposer une annonce',
         path: '/ma/deposer',
         steps: [],
-      };
+      });
     }
-    return null;
+    return steps;
   });
+
+  // Suggestions masquées, gardées dans ce navigateur pour ce membre.
+  readonly dismissedSteps = signal<string[]>([]);
+  readonly lastDismissed = signal<string | null>(null);
+
+  dismissStep(id: string): void {
+    this.saveDismissed([...this.dismissedSteps(), id]);
+    this.lastDismissed.set(id);
+  }
+
+  undoDismiss(): void {
+    const id = this.lastDismissed();
+    if (id) {
+      this.saveDismissed(this.dismissedSteps().filter(item => item !== id));
+      this.lastDismissed.set(null);
+    }
+  }
+
+  private dismissedKey(): string {
+    return `gofounders.dismissed-steps.${this.currentUser()?.uid ?? 'anonyme'}`;
+  }
+
+  private saveDismissed(ids: string[]): void {
+    this.dismissedSteps.set(ids);
+    try {
+      localStorage.setItem(this.dismissedKey(), JSON.stringify(ids));
+    } catch {
+      // Stockage indisponible : la suggestion reste masquée jusqu'au rechargement.
+    }
+  }
 
   readonly tiles = computed<Tile[]>(() => {
     const user = this.currentUser();
@@ -365,6 +416,11 @@ export class DashboardComponent {
       return;
     }
     void this.messaging.refreshQuota();
+    try {
+      this.dismissedSteps.set(JSON.parse(localStorage.getItem(this.dismissedKey()) ?? '[]') as string[]);
+    } catch {
+      this.dismissedSteps.set([]);
+    }
     const [listings, profiles, project] = await Promise.all([
       this.maService.getListingCards(),
       // Profils et projets : suggestions, et cartes des favoris de projets et d'associés.

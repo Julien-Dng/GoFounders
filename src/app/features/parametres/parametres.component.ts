@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { USAGE_OPTIONS, Usage, usagesOf } from '../../core/models/user.model';
+import { RouterLink } from '@angular/router';
 import { FEATURES } from '../../core/config/features';
 import { AuthService } from '../../core/services/auth.service';
 import { passwordPolicyValidator } from '../../core/validators/password-policy.validator';
@@ -26,7 +25,7 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
       <div class="mx-auto max-w-6xl">
         <div class="mb-6 animate-fade-in-up">
           <h1 class="mb-2 text-3xl font-semibold text-primary sm:text-4xl">Paramètres</h1>
-          <p class="text-muted-foreground">Votre compte, vos notifications et vos objectifs</p>
+          <p class="text-muted-foreground">Votre compte et vos notifications</p>
         </div>
 
         <div class="max-w-3xl space-y-4 animate-fade-in-up delay-100">
@@ -198,45 +197,6 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
 
           </section>
           }
-          @if (tab() === 'objectifs') {
-          <!-- MES OBJECTIFS (colonne technique usages) : personnalisent le site, n'ouvrent aucun droit et ne suppriment rien. -->
-          @if (!isPro()) {
-            <section id="usages" class="scroll-mt-24 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6" aria-labelledby="usages-titre">
-              <h2 id="usages-titre" class="text-lg font-semibold">Mes objectifs</h2>
-              <p class="mt-1 text-sm text-muted-foreground">Ils personnalisent votre espace, sans modifier vos accès</p>
-              <div class="mt-4 grid gap-2 sm:grid-cols-2">
-                @for (option of usageOptions; track option.value) {
-                  <label class="flex cursor-pointer items-start gap-3 rounded-xl border p-3 transition-colors"
-                         [class]="draftUsages().includes(option.value) ? 'border-accent bg-accent/5' : 'border-border hover:border-accent/40'">
-                    <input type="checkbox" class="mt-1 h-4 w-4 flex-shrink-0 accent-accent" [checked]="draftUsages().includes(option.value)" (change)="toggleUsage(option.value)">
-                    <span>
-                      <span class="block text-sm font-semibold text-primary">{{ option.label }}</span>
-                      <span class="block text-sm text-muted-foreground">{{ option.description }}</span>
-                    </span>
-                  </label>
-                }
-              </div>
-              <div class="mt-4 flex flex-wrap items-center gap-3">
-                <button type="button" (click)="saveUsages()" [disabled]="busy() || !usagesChanged() || draftUsages().length === 0"
-                        class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:opacity-50">Enregistrer</button>
-                @if (draftUsages().length === 0) {
-                  <span class="text-sm text-destructive">Choisissez au moins un objectif</span>
-                }
-              </div>
-              <p class="mt-4 border-t border-border pt-4 text-sm text-muted-foreground">
-                Pour retirer un contenu :
-                <a routerLink="/ma/mes-annonces" class="font-semibold text-accent hover:underline">Mes annonces</a>
-                @if (associatesEnabled) {
-                  · <a routerLink="/mon-projet" class="font-semibold text-accent hover:underline">Mon projet</a>
-                  · <a routerLink="/profil/associe" class="font-semibold text-accent hover:underline">Mon profil d'associé</a>
-                }
-              </p>
-              @if (usagesFeedback(); as feedback) {
-                <p class="mt-3 text-sm" [class.text-success]="feedback.ok" [class.text-destructive]="!feedback.ok" role="status">{{ feedback.text }}</p>
-              }
-            </section>
-          }
-          }
         </div>
       </div>
     </div>
@@ -261,23 +221,14 @@ export class ParametresComponent implements OnInit {
   readonly visibilityFeedback = signal<Feedback | null>(null);
 
   readonly isPro = computed(() => this.auth.currentUser()?.profileType === 'pro');
-  readonly usageOptions = USAGE_OPTIONS;
   readonly associatesEnabled = FEATURES.associates;
-  // Onglets : Compte (e-mail, mot de passe, suppression), Notifications, Mes objectifs (membres uniquement).
-  readonly tab = signal<'compte' | 'notifications' | 'objectifs'>(inject(ActivatedRoute).snapshot.fragment === 'usages' ? 'objectifs' : 'compte');
+  // Onglets : Compte (e-mail, mot de passe, suppression) et Notifications. Les objectifs ne se gèrent plus ici :
+  // ils viennent de l'inscription et des actions, et les suggestions se masquent depuis le tableau de bord.
+  readonly tab = signal<'compte' | 'notifications'>('compte');
   readonly tabs = computed(() => [
     { value: 'compte' as const, label: 'Compte' },
     { value: 'notifications' as const, label: 'Notifications' },
-    ...(this.isPro() ? [] : [{ value: 'objectifs' as const, label: 'Mes objectifs' }]),
   ]);
-  private readonly savedUsages = computed(() => usagesOf(this.auth.currentUser()));
-  readonly draftUsages = signal<Usage[]>([]);
-  readonly usagesChanged = computed(() => {
-    const saved = this.savedUsages();
-    const draft = this.draftUsages();
-    return saved.length !== draft.length || draft.some(usage => !saved.includes(usage));
-  });
-  readonly usagesFeedback = signal<Feedback | null>(null);
   readonly emailNotifications = signal<boolean | null>(null);
   readonly emailFeedbackSwitch = signal<Feedback | null>(null);
 
@@ -288,7 +239,6 @@ export class ParametresComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.auth.ensureSessionReady();
-    this.draftUsages.set(usagesOf(this.auth.currentUser()));
     this.isVisible.set(await this.auth.getProfileVisibility());
     this.emailNotifications.set(await this.auth.getEmailNotifications());
   }
@@ -301,19 +251,6 @@ export class ParametresComponent implements OnInit {
       if (result.success) {
         this.emailNotifications.set(next);
       }
-    });
-  }
-
-  toggleUsage(usage: Usage): void {
-    this.usagesFeedback.set(null);
-    this.draftUsages.update(list => (list.includes(usage) ? list.filter(item => item !== usage) : [...list, usage]));
-  }
-
-  async saveUsages(): Promise<void> {
-    const ordered = USAGE_OPTIONS.map(option => option.value).filter(usage => this.draftUsages().includes(usage));
-    await this.run(async () => {
-      const result = await this.auth.setUsages(ordered);
-      this.usagesFeedback.set({ ok: result.success, text: result.message ?? '' });
     });
   }
 

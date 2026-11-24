@@ -155,3 +155,11 @@ membres, les règles « par rôle complémentaire » décrites plus haut.
 - **Mes entreprises** : onglets Favoris (`/ma/favoris`), Dossiers débloqués (`/ma/dossiers`), Mes annonces
   (`/ma/mes-annonces`). **Offre et facturation** (`/abonnement`) : formule FREE / PRO, historique des paiements
   (`list_my_payments`), factures Stripe.
+
+## Objectifs sans réglage (novembre 2026)
+
+- L'onglet « Mes objectifs » est retiré de Paramètres (Compte et Notifications seulement).
+- Les objectifs viennent de « Vous êtes plutôt… » à l'inscription, puis des actions confirmées.
+- Sur le tableau de bord, la carte « prochaine étape » propose « Ne plus me proposer cette étape » : la suggestion est
+  masquée (dans ce navigateur), avec « Suggestion masquée · Annuler » ; l'étape suivante apparaît, ou la carte disparaît.
+  Les objectifs, les accès, la visibilité et les contenus ne changent pas.
