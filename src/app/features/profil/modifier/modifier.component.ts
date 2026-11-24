@@ -10,12 +10,13 @@ import { downloadTextFile, ndaProofDocument } from '../../../core/legal/nda';
 import { ProjectAccessStatus } from '../../../core/models/supabase-database.model';
 import { MIN_PRESENTATION_LENGTH, PRO_CATEGORY_LABELS, ProCategory, hasUsage, isProjectPresented, usagesOf } from '../../../core/models/user.model';
 import { isEnabled } from '../../../core/config/features';
+import { TagInputComponent } from '../../../shared/components/tag-input/tag-input.component';
 import { ProfileVerificationCardComponent } from '../../../shared/components/profile-verification-card/profile-verification-card.component';
 
 @Component({
   selector: 'app-modifier-profil',
   standalone: true,
-  imports: [NgClass, ReactiveFormsModule, RouterLink, ProfileVerificationCardComponent],
+  imports: [NgClass, ReactiveFormsModule, RouterLink, ProfileVerificationCardComponent, TagInputComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   // Champ invalide après une tentative d'enregistrement : bordure rouge.
   styles: [`
@@ -200,25 +201,13 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
               <div class="grid gap-5 md:grid-cols-2">
                 <div>
                   <label for="profile-skills" class="mb-2 block text-sm font-semibold">Compétences</label>
-                  <textarea
-                    id="profile-skills"
-                    formControlName="skills"
-                    rows="4"
-                    class="w-full resize-none rounded-xl border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
-                    placeholder="Angular, Firebase, Sales B2B, Growth..."
-                  ></textarea>
-                  <p class="mt-2 text-sm text-muted-foreground">Séparez les compétences par des virgules</p>
+                  <app-tag-input inputId="profile-skills" formControlName="skills" placeholder="Angular, vente B2B, finance…" />
+                  <p class="mt-2 text-sm text-muted-foreground">Appuyez sur Entrée ou tapez une virgule pour ajouter</p>
                 </div>
 
                 <div>
                   <label for="profile-looking" class="mb-2 block text-sm font-semibold">Ce que vous recherchez</label>
-                  <textarea
-                    id="profile-looking"
-                    formControlName="lookingFor"
-                    rows="4"
-                    class="w-full resize-none rounded-xl border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
-                    placeholder="Co-fondateur technique, projet SaaS, associé sales..."
-                  ></textarea>
+                  <app-tag-input inputId="profile-looking" formControlName="lookingFor" placeholder="Co-fondateur technique, projet SaaS…" />
                   <p class="mt-2 text-sm text-muted-foreground">Ces tags aident à comprendre rapidement votre objectif</p>
                 </div>
               </div>
@@ -434,26 +423,14 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
 
                       <div>
                         <label for="project-looking-for" class="mb-2 block text-sm font-semibold">Profils recherchés</label>
-                        <textarea
-                          id="project-looking-for"
-                          formControlName="lookingFor"
-                          rows="3"
-                          class="w-full resize-none rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
-                          placeholder="CTO, développeur frontend, commercial..."
-                        ></textarea>
-                        <p class="mt-2 text-sm text-muted-foreground">Séparez les profils par des virgules</p>
+                        <app-tag-input inputId="project-looking-for" formControlName="lookingFor" placeholder="CTO, commercial, développeur…" />
+                        <p class="mt-2 text-sm text-muted-foreground">Appuyez sur Entrée ou tapez une virgule pour ajouter</p>
                       </div>
 
                       <div>
                         <label for="project-skills" class="mb-2 block text-sm font-semibold">Compétences recherchées <span class="font-normal text-muted-foreground">(au moins une)</span></label>
-                        <textarea
-                          id="project-skills"
-                          formControlName="skillsNeeded"
-                          rows="3"
-                          class="w-full resize-none rounded-xl border border-border bg-white px-4 py-3 outline-none transition-colors focus:border-accent"
-                          placeholder="Angular, UX/UI, vente B2B..."
-                        ></textarea>
-                        <p class="mt-2 text-sm text-muted-foreground">Séparez les compétences par des virgules</p>
+                        <app-tag-input inputId="project-skills" formControlName="skillsNeeded" placeholder="Angular, UX/UI, vente B2B…" />
+                        <p class="mt-2 text-sm text-muted-foreground">Appuyez sur Entrée ou tapez une virgule pour ajouter</p>
                       </div>
 
                       <div class="md:col-span-2">

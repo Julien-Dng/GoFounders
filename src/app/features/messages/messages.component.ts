@@ -13,6 +13,8 @@ import { MATCH_REASONS_UPSELL, canSeeMatchReasons } from '../../core/models/user
 import { AuthService } from '../../core/services/auth.service';
 import { MatchingService } from '../../core/services/matching.service';
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
+import { ProjectService } from '../../core/services/project.service';
+import { ProjectAccessService } from '../../core/services/project-access.service';
 import { ConversationThread, MessagingService } from '../../core/services/messaging.service';
 
 interface ConversationPreview {
@@ -61,7 +63,7 @@ interface ConversationPreview {
       <div class="mx-auto flex h-full w-full max-w-[1500px]">
 
       <!-- ZONE DE CHAT -->
-      <div class="flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border">
+      <div class="order-2 flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border">
 
         <!-- Top bar : infos conversation -->
         <div class="flex flex-shrink-0 items-center gap-3 border-b border-border bg-white px-4 py-3">
@@ -198,9 +200,10 @@ interface ConversationPreview {
 
       </div>
 
-      <div class="ml-3 flex w-72 flex-shrink-0 gap-3 xl:w-[37rem]">
+      <!-- Liste à gauche, conversation au centre, contexte (profil, projet) à droite sur grand écran. -->
+      <div class="contents">
         <!-- MINI PROFIL -->
-        <aside class="order-2 hidden h-full w-72 flex-shrink-0 overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border xl:block">
+        <aside class="order-3 ml-3 hidden h-full w-72 flex-shrink-0 overflow-y-auto rounded-2xl bg-white shadow-lg ring-1 ring-border 2xl:block">
           @if (selectedConv()) {
             <div class="h-20 bg-primary" aria-hidden="true"></div>
 
@@ -262,6 +265,37 @@ interface ConversationPreview {
                 </div>
               }
 
+              @if (partnerProject(); as project) {
+                <!-- Projet de l'interlocuteur : présentation (brouillon compris), jamais la partie confidentielle. -->
+                <section class="mt-4 rounded-xl border border-border p-3 text-left" aria-labelledby="conv-project-title">
+                  <p class="text-xs font-bold uppercase tracking-wide text-accent">Projet</p>
+                  <h4 id="conv-project-title" class="mt-1 font-semibold text-primary">{{ project.name }}</h4>
+                  <div class="mt-2 flex flex-wrap gap-1.5">
+                    @for (tag of project.tags; track tag) {
+                      <span class="rounded-md bg-secondary px-2 py-0.5 text-sm text-foreground">{{ tag }}</span>
+                    }
+                  </div>
+                  @if (project.lookingFor) {
+                    <p class="mt-2 text-sm text-foreground/85"><span class="font-semibold">Recherche :</span> {{ project.lookingFor }}</p>
+                  }
+                  @if (project.hasConfidential) {
+                    <div class="mt-3 border-t border-border pt-3">
+                      <p class="flex items-center gap-1.5 text-sm font-semibold text-primary">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        Partie confidentielle
+                      </p>
+                      <p class="mt-1 text-sm text-muted-foreground">{{ accessLabel() }}</p>
+                      @if (partnerAccess() !== 'approved' && partnerAccess() !== 'pending') {
+                        <a [routerLink]="['/profil', project.id]" class="mt-2 block rounded-lg border border-accent px-3 py-2 text-center text-sm font-semibold text-accent hover:bg-accent/5">Demander l'accès</a>
+                      } @else if (partnerAccess() === 'approved') {
+                        <a [routerLink]="['/profil', project.id]" class="mt-2 block text-sm font-semibold text-accent hover:underline">Lire la partie confidentielle <span aria-hidden="true">→</span></a>
+                      }
+                    </div>
+                  }
+                  <a [routerLink]="['/profil', project.id]" class="mt-3 inline-block text-sm font-semibold text-accent hover:underline">Voir le projet <span aria-hidden="true">→</span></a>
+                </section>
+              }
+
               @if (selectedConv()!.participantProfileId) {
                 <a [routerLink]="['/profil', selectedConv()!.participantProfileId]" class="mt-4 block rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-primary/90">Voir le profil complet</a>
               }
@@ -281,7 +315,7 @@ interface ConversationPreview {
         </aside>
 
         <!-- LISTE DES CONVERSATIONS -->
-        <aside class="order-1 flex min-h-0 w-72 flex-shrink-0 flex-col overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border">
+        <aside class="order-1 mr-3 flex min-h-0 w-72 flex-shrink-0 flex-col overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border">
 
         <div class="border-b border-border px-4 py-4">
           <h2 class="text-lg font-semibold">Messages</h2>
@@ -339,6 +373,8 @@ export class MessagesComponent implements OnInit {
   readonly reasonsUpsell = MATCH_REASONS_UPSELL;
   private readonly messagingService = inject(MessagingService);
   private readonly matchingService = inject(MatchingService);
+  private readonly projects = inject(ProjectService);
+  private readonly projectAccess = inject(ProjectAccessService);
 
   readonly conversations = signal<ConversationPreview[]>([]);
   readonly conversationsLoaded = signal(false);
@@ -366,6 +402,24 @@ export class MessagesComponent implements OnInit {
 
     if (participantId) {
       void this.loadCompatibility(participantId);
+    }
+  }, { allowSignalWrites: true });
+  // Projet de l'interlocuteur (porteur) et état de ma demande d'accès à sa partie confidentielle.
+  readonly partnerProject = signal<{ id: string; name: string; tags: string[]; lookingFor: string; hasConfidential: boolean } | null>(null);
+  readonly partnerAccess = signal<'none' | 'pending' | 'approved' | 'refused'>('none');
+  readonly accessLabel = computed(() => ({
+    none: 'Le détail du projet est confidentiel. L’accès est accordé par le porteur',
+    pending: 'Demande envoyée, en attente de la réponse du porteur',
+    approved: 'Accès accordé par le porteur',
+    refused: 'Le porteur n’a pas donné suite à votre demande',
+  })[this.partnerAccess()]);
+  private readonly partnerProjectEffect = effect(() => {
+    const participantId = this.selectedConv()?.participantProfileId;
+    const profile = this.selectedProfile();
+    this.partnerProject.set(null);
+    this.partnerAccess.set('none');
+    if (participantId) {
+      void this.loadPartnerProject(participantId, profile);
     }
   }, { allowSignalWrites: true });
   readonly selectedProfileSkills = computed(() => this.selectedProfile()?.skills.slice(0, 4) ?? []);
@@ -498,6 +552,39 @@ export class MessagesComponent implements OnInit {
     if (file) {
       console.log('Fichier sélectionné :', file.name);
     }
+  }
+
+  private async loadPartnerProject(participantId: string, profile: MarketplaceProfile | undefined): Promise<void> {
+    const project = await this.projects.getOwnedProject(participantId);
+    if (this.selectedConv()?.participantProfileId !== participantId) {
+      return;
+    }
+    if (project) {
+      this.partnerProject.set({
+        id: project.id,
+        name: project.name,
+        tags: [project.sector, this.stageLabel(project.stage)].filter(Boolean),
+        lookingFor: (project.lookingFor.length ? project.lookingFor : project.skillsNeeded).slice(0, 3).join(', '),
+        hasConfidential: true,
+      });
+    } else if (profile?.profileType === 'entrepreneur') {
+      // Mode démo ou fiche chargée par le projet : les informations publiques de la fiche suffisent.
+      this.partnerProject.set({
+        id: profile.projectId ?? profile.id,
+        name: profile.displayName,
+        tags: [profile.sector, profile.stage].filter(Boolean),
+        lookingFor: profile.lookingFor.slice(0, 3).join(', '),
+        hasConfidential: profile.hasConfidential !== false,
+      });
+    } else {
+      return;
+    }
+    const request = await this.projectAccess.getMyRequest(this.partnerProject()!.id);
+    this.partnerAccess.set(request?.status ?? 'none');
+  }
+
+  private stageLabel(stage: string): string {
+    return ({ idea: 'Idée', mvp: 'MVP', growth: 'En croissance', established: 'Établi' } as Record<string, string>)[stage] ?? stage;
   }
 
   private async loadCompatibility(participantId: string): Promise<void> {
