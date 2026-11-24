@@ -232,9 +232,6 @@ import { RevealDirective } from '../../../shared/directives/reveal.directive';
                     </li>
                   }
                 </ul>
-                <p class="mt-6 text-sm text-muted-foreground">
-                  Chiffres déclarés par les cédants. Prix indicatifs, non contractuels ; le bénéfice et le multiple sont calculés à partir du chiffre d'affaires et de la marge annoncés
-                </p>
               }
             </div>
           </div>
