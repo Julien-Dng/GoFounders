@@ -23,11 +23,16 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-secondary pb-12 pt-20">
-      <div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-        <div class="mb-10 text-center">
-          <h1 class="mb-2 text-4xl">{{ editingId() ? 'Modifier mon annonce' : 'Déposer une annonce' }}</h1>
-          <p class="text-muted-foreground">{{ editingId() ? 'Après modification, votre annonce repasse en relecture avant d’être de nouveau visible (en général sous 24 h ouvrées).' : 'Publication gratuite pendant le lancement. Votre annonce reste anonymisée et elle est relue par notre équipe avant sa mise en ligne.' }}</p>
+    <div class="min-h-screen bg-secondary px-4 pb-14 pt-24 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-3xl">
+        <div class="mb-10">
+          <nav class="mb-3 flex items-center gap-2 text-sm" aria-label="Fil d'Ariane">
+            <a routerLink="/ma/mes-annonces" class="font-semibold text-accent hover:underline">Mes entreprises</a>
+            <span class="text-muted-foreground" aria-hidden="true">›</span>
+            <span class="text-muted-foreground" aria-current="page">{{ editingId() ? 'Modifier mon annonce' : 'Déposer une annonce' }}</span>
+          </nav>
+          <h1 class="mb-2 text-3xl font-semibold text-primary sm:text-4xl">{{ editingId() ? 'Modifier mon annonce' : 'Déposer une annonce' }}</h1>
+          <p class="text-muted-foreground">{{ editingId() ? 'Après modification, votre annonce repasse en relecture avant d’être de nouveau visible (en général sous 24 h ouvrées)' : 'Gratuit pendant le lancement. Votre annonce reste anonyme et elle est relue avant publication' }}</p>
         </div>
 
         <div class="mb-8">

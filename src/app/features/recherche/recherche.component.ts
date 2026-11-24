@@ -30,19 +30,24 @@ type SearchProfileType = ProfileType;
   template: `
     <div class="min-h-screen bg-secondary px-4 pb-12 pt-24 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-[1600px]">
+        <!-- En-tête : associés ou projets, au choix (compte multi-usages). -->
+        <div class="mb-8">
+          <h1 class="text-3xl font-semibold text-primary sm:text-4xl">{{ visibleProfileType() === 'talent' ? 'Trouvez votre prochain associé' : 'Trouvez le projet qui vous correspond' }}</h1>
+          <p class="mt-2 text-muted-foreground">{{ visibleProfileType() === 'talent' ? 'Explorez des profils complémentaires, échangez et lancez votre projet ensemble' : 'Découvrez les projets qui recrutent et proposez vos compétences' }}</p>
+          <div class="mt-5 inline-grid grid-cols-2 gap-1 rounded-xl bg-white p-1 ring-1 ring-border" role="tablist" aria-label="Que cherchez-vous ?">
+            <button type="button" role="tab" [attr.aria-selected]="visibleProfileType() === 'talent'" (click)="showSide('talent')"
+                    class="rounded-lg px-5 py-2.5 font-semibold transition-colors"
+                    [class]="visibleProfileType() === 'talent' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-primary'">Associés disponibles</button>
+            <button type="button" role="tab" [attr.aria-selected]="visibleProfileType() === 'entrepreneur'" (click)="showSide('entrepreneur')"
+                    class="rounded-lg px-5 py-2.5 font-semibold transition-colors"
+                    [class]="visibleProfileType() === 'entrepreneur' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-primary'">Projets qui recrutent</button>
+          </div>
+        </div>
         <div class="flex flex-col gap-8 xl:flex-row">
           <aside class="w-full xl:w-[340px] xl:flex-shrink-0">
             <div class="sticky top-28 rounded-2xl bg-white p-6 shadow-lg ring-1 ring-border">
               <!-- Compte multi-usages : on passe des associés aux projets ; ce qui s'affiche dépend de ses actions. -->
-              <div class="mb-6 grid grid-cols-2 gap-1 rounded-xl bg-secondary p-1" role="tablist" aria-label="Que cherchez-vous ?">
-                <button type="button" role="tab" [attr.aria-selected]="visibleProfileType() === 'talent'" (click)="showSide('talent')"
-                        class="rounded-lg px-3 py-2 text-sm font-semibold transition-colors"
-                        [class]="visibleProfileType() === 'talent' ? 'bg-white text-primary shadow-sm' : 'text-muted-foreground hover:text-primary'">Associés</button>
-                <button type="button" role="tab" [attr.aria-selected]="visibleProfileType() === 'entrepreneur'" (click)="showSide('entrepreneur')"
-                        class="rounded-lg px-3 py-2 text-sm font-semibold transition-colors"
-                        [class]="visibleProfileType() === 'entrepreneur' ? 'bg-white text-primary shadow-sm' : 'text-muted-foreground hover:text-primary'">Projets</button>
-              </div>
-              <p class="-mt-3 mb-6 text-sm leading-relaxed text-muted-foreground">{{ audiencePanelDescription() }}</p>
+              <p class="mb-6 text-sm leading-relaxed text-muted-foreground">{{ audiencePanelDescription() }}</p>
 
               <div class="mb-6 flex items-center justify-between">
                 <h2 class="text-xl font-semibold">Filtres</h2>
@@ -260,7 +265,7 @@ type SearchProfileType = ProfileType;
               }
             </div>
 
-            <div class="relative grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <div class="relative grid grid-cols-1 gap-6 md:grid-cols-2 2xl:grid-cols-3">
               @for (profile of filteredProfiles(); track profile.id; let profileIndex = $index) {
                 <div
                   #searchCard
@@ -269,7 +274,6 @@ type SearchProfileType = ProfileType;
                   [style.--reveal-delay]="revealDelay(profileIndex)"
                 >
                   <div class="mb-4 flex items-start justify-between">
-                    <app-favorite-button class="order-last ml-2 flex-shrink-0" [listingId]="profile.id" [kind]="profile.profileType === 'talent' ? 'associate' : 'project'" [label]="profile.displayName" />
                     <div class="flex items-center gap-3">
                       <div class="relative flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-lg font-semibold text-white">
                         <span>{{ profile.initials }}</span>
@@ -307,11 +311,7 @@ type SearchProfileType = ProfileType;
                         </div>
                       </div>
                     </div>
-                    <button type="button" class="rounded-lg p-2 transition-colors hover:bg-secondary" aria-label="Sauvegarder ce profil">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
-                      </svg>
-                    </button>
+                    <app-favorite-button class="ml-2 flex-shrink-0" [listingId]="profile.id" [kind]="profile.profileType === 'talent' ? 'associate' : 'project'" [label]="profile.displayName" />
                   </div>
 
                   <div class="mb-3 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">

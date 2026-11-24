@@ -124,7 +124,7 @@ export class MemberShellComponent {
       { id: 'reprendre', label: 'Entreprises à reprendre', icon: 'search', path: '/ma', match: [] },
       { id: 'entreprises', label: 'Mes entreprises', icon: 'building', path: '/mes-entreprises', match: ['/mes-entreprises', '/ma/dossiers', '/ma/mes-annonces', '/ma/statistiques', '/ma/deposer', '/ma/vendue'] },
       { id: 'messages', label: 'Messages', icon: 'messages', path: '/messages', match: ['/messages'], badge: this.messaging.unreadCount() || undefined },
-      { id: 'profil', label: 'Mon profil', icon: 'user', path: this.profilePath(), match: ['/profil', '/mon-projet'] },
+      { id: 'profil', label: 'Mon profil', icon: 'user', path: this.profilePath(), match: [this.profilePath(), '/profil/modifier', '/profil/associe', '/mon-projet'] },
       { id: 'facturation', label: 'Offre et facturation', icon: 'card', path: '/abonnement', match: ['/abonnement', '/paiement'] },
       { id: 'parametres', label: 'Paramètres', icon: 'settings', path: '/parametres', match: ['/parametres'] },
     ];
@@ -136,6 +136,10 @@ export class MemberShellComponent {
 
   isActive(item: ShellItem): boolean {
     const path = this.url().split(/[?#]/)[0];
+    // Fiche d'un autre membre : rattachée à « Associés & projets ».
+    if (item.id === 'associes' && path.startsWith('/profil/') && !['/profil/modifier', '/profil/associe', this.profilePath()].includes(path)) {
+      return true;
+    }
     return item.match.some(prefix => path === prefix || path.startsWith(prefix + '/'));
   }
 

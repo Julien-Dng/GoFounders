@@ -25,19 +25,21 @@ import { FavoriteButtonComponent } from '../../shared/components/favorite-button
         <div class="max-w-md rounded-2xl bg-white shadow-lg ring-1 ring-border p-8 text-center" role="alert">
           <h1 class="mb-3 text-2xl font-semibold text-primary">Ce profil n'est pas accessible</h1>
           <p class="mb-6 text-sm leading-relaxed text-muted-foreground">
-            Il n'existe pas, ou il ne correspond pas à votre type de compte : les porteurs de projet voient les associés,
-            les associés voient les projets
+            Il n'existe pas, ou il n'est plus visible : son auteur l'a peut-être retiré de la recherche ou passé en brouillon
           </p>
           <a routerLink="/dashboard" class="inline-block rounded-lg bg-primary px-6 py-3 font-semibold text-white hover:bg-primary/90">Retour au tableau de bord</a>
         </div>
       </div>
     } @else {
-      <div class="min-h-screen bg-secondary pt-20">
-        <div class="h-40 bg-primary" aria-hidden="true"></div>
-
-        <div class="relative z-10 mx-auto -mt-12 max-w-[78rem] px-4 pb-12 sm:-mt-16 sm:px-6 lg:-mt-20 lg:px-8">
-          <div class="grid grid-cols-1 gap-8 xl:grid-cols-12">
-            <div class="xl:col-span-8">
+      <div class="min-h-screen bg-secondary pt-24">
+        <div class="relative z-10 mx-auto max-w-[78rem] px-4 pb-12 sm:px-6 lg:px-8">
+          @if (!isOwnProfile()) {
+            <a routerLink="/recherche" class="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-accent hover:underline">
+              <span aria-hidden="true">←</span> Retour aux résultats
+            </a>
+          }
+          <div class="grid grid-cols-1 gap-8 2xl:grid-cols-12">
+            <div class="2xl:col-span-8">
               <div class="mb-6 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6 sm:p-8">
                 <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
                   <div class="relative lg:-mt-1">
@@ -272,7 +274,7 @@ import { FavoriteButtonComponent } from '../../shared/components/favorite-button
               </div>
             </div>
 
-            <div class="space-y-6 xl:col-span-4">
+            <div class="space-y-6 2xl:col-span-4">
               <div class="rounded-2xl bg-white shadow-lg ring-1 ring-border p-6">
                 <h3 class="mb-4 text-lg font-semibold">Informations clés</h3>
                 <div class="space-y-4">

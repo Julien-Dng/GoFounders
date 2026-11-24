@@ -41,6 +41,16 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
             </a>
             <h1 class="text-3xl font-semibold text-primary sm:text-4xl">{{ heading().title }}</h1>
             <p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">{{ heading().subtitle }}</p>
+            @if (associatesEnabled && !isPro()) {
+              <!-- Trois pages, une même rubrique « Mon profil » -->
+              <nav class="mt-5 flex gap-1 overflow-x-auto border-b border-border" aria-label="Mon profil">
+                @for (item of profileTabs; track item.path) {
+                  <a [routerLink]="item.path" [attr.aria-current]="mode === item.mode ? 'page' : null"
+                     class="-mb-px whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors"
+                     [class]="mode === item.mode ? 'border-accent text-primary' : 'border-transparent text-muted-foreground hover:text-primary'">{{ item.label }}</a>
+                }
+              </nav>
+            }
           </div>
 
           @if (mode === 'profil') {
@@ -348,10 +358,10 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                       </p>
                     </div>
 
-                    <label class="inline-flex flex-shrink-0 items-center gap-3 rounded-full border border-border bg-white px-4 py-2 text-sm font-semibold">
-                      <input type="checkbox" formControlName="isActive" class="h-4 w-4 accent-accent">
-                      Publié dans la recherche
-                    </label>
+                    <span class="inline-flex flex-shrink-0 items-center rounded-full px-3 py-1 text-sm font-semibold"
+                          [class]="isProjectPublished() ? 'bg-emerald-50 text-emerald-800' : 'bg-secondary text-muted-foreground'">
+                      {{ isProjectPublished() ? 'Publié' : 'Brouillon' }}
+                    </span>
                   </div>
 
                   @if (isProjectLoading()) {
@@ -447,12 +457,12 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                       </div>
 
                       <div class="md:col-span-2">
-                        <label for="project-vitrine" class="flex items-start gap-3 rounded-xl border border-border bg-white px-4 py-3" [class]="isProjectPublished() ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'">
+                        <label for="project-vitrine" class="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-white px-4 py-3">
                           <input id="project-vitrine" type="checkbox" formControlName="publicListing" class="mt-1 h-4 w-4 accent-accent" aria-describedby="project-vitrine-help">
                           <span>
                             <span class="block font-semibold text-primary">Autoriser un aperçu anonyme sur la vitrine publique</span>
                             <span id="project-vitrine-help" class="mt-1 block text-sm leading-relaxed text-muted-foreground">
-                              Les visiteurs voient le secteur, le stade et les profils recherchés, jamais votre nom, celui du projet ni sa présentation{{ isProjectPublished() ? '' : '. Disponible quand le projet est publié' }}
+                              Les visiteurs voient le secteur, le stade et les profils recherchés, jamais votre nom, celui du projet ni sa présentation{{ isProjectPublished() ? '' : '. S’applique une fois le projet publié' }}
                             </span>
                           </span>
                         </label>
@@ -655,6 +665,18 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                   Voir mon profil
                 </a>
 
+                @if (mode === 'projet') {
+                  <div class="flex flex-col gap-3 sm:flex-row">
+                    <button type="button" (click)="saveProjectAs(false)" [disabled]="isSaving()"
+                            class="inline-flex items-center justify-center rounded-xl border border-primary px-6 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-white disabled:opacity-60">
+                      {{ isProjectPublished() ? 'Repasser en brouillon' : 'Enregistrer le brouillon' }}
+                    </button>
+                    <button type="button" (click)="saveProjectAs(true)" [disabled]="isSaving()"
+                            class="inline-flex items-center justify-center rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-accent/90 disabled:opacity-60">
+                      {{ isSaving() ? 'Enregistrement...' : isProjectPublished() ? 'Enregistrer et garder publié' : 'Publier mon projet' }}
+                    </button>
+                  </div>
+                } @else {
                 <button
                   type="button"
                   (click)="saveProfile()"
@@ -668,6 +690,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                     {{ heading().save }}
                   }
                 </button>
+                }
               </div>
             </div>
           </section>
@@ -701,6 +724,17 @@ export class ModifierComponent implements OnInit {
   // Trois pages, un même formulaire : le profil général (/profil/modifier), « Mon projet » (/mon-projet) et
   // « Mon profil d'associé » (/profil/associe). Chaque bouton mène à sa vraie destination.
   readonly associatesEnabled = isEnabled('associates');
+  readonly profileTabs = [
+    { path: '/profil/modifier', mode: 'profil', label: 'Profil général' },
+    { path: '/profil/associe', mode: 'associe', label: 'Profil d’associé' },
+    { path: '/mon-projet', mode: 'projet', label: 'Mon projet' },
+  ] as const;
+
+  // « Enregistrer le brouillon » / « Publier mon projet » : le statut suit le bouton choisi.
+  async saveProjectAs(publish: boolean): Promise<void> {
+    this.projectForm.controls.isActive.setValue(publish);
+    await this.saveProfile();
+  }
   readonly mode: 'profil' | 'projet' | 'associe' = inject(ActivatedRoute).snapshot.data['mode'] ?? 'profil';
   readonly heading = computed(() => {
     switch (this.mode) {
@@ -709,7 +743,7 @@ export class ModifierComponent implements OnInit {
       case 'associe':
         return { title: "Mon profil d'associé", subtitle: 'Présentez ce que vous pouvez apporter à un projet, puis choisissez si votre profil apparaît dans la recherche', save: 'Enregistrer' };
       default:
-        return { title: 'Modifier mon profil', subtitle: 'Ajoutez une bio, une photo et vos liens professionnels pour rendre votre profil plus crédible', save: 'Enregistrer les modifications' };
+        return { title: 'Mon profil', subtitle: 'Ajoutez une bio, une photo et vos liens professionnels pour rendre votre profil plus crédible', save: 'Enregistrer les modifications' };
     }
   });
   // Case « Rendre mon profil visible » : décochée tant que le membre ne l'a pas choisie. Vitrine : option en plus.
@@ -806,7 +840,7 @@ export class ModifierComponent implements OnInit {
     description: ['', [Validators.required, Validators.maxLength(900)]],
     lookingFor: ['', Validators.maxLength(260)],
     skillsNeeded: ['', Validators.maxLength(260)],
-    isActive: [true],
+    isActive: [false],
     openToEquity: [false],
     confidentialDetails: ['', Validators.maxLength(3000)],
     ndaRequired: [false],
@@ -824,16 +858,10 @@ export class ModifierComponent implements OnInit {
       const skills = this.projectForm.controls.skillsNeeded;
       skills.setValidators(isActive ? [Validators.required, Validators.maxLength(260)] : [Validators.maxLength(260)]);
       skills.updateValueAndValidity();
-      const vitrine = this.projectForm.controls.publicListing;
-      if (isActive) {
-        vitrine.enable({ emitEvent: false });
-      } else {
-        vitrine.setValue(false, { emitEvent: false });
-        vitrine.disable({ emitEvent: false });
-      }
+
     });
 
-  readonly isProjectPublished = toSignal(this.projectForm.controls.isActive.valueChanges, { initialValue: true });
+  readonly isProjectPublished = toSignal(this.projectForm.controls.isActive.valueChanges, { initialValue: false });
 
   readonly projectStages = [
     { value: 'idea', label: 'Idée' },
@@ -1096,7 +1124,7 @@ export class ModifierComponent implements OnInit {
         description: project?.description ?? '',
         lookingFor: (project?.lookingFor ?? this.currentUser()?.lookingFor ?? []).join(', '),
         skillsNeeded: (project?.skillsNeeded ?? []).join(', '),
-        isActive: project?.isActive ?? true,
+        isActive: project?.isActive ?? false,
         openToEquity: project?.openToEquity ?? false,
         confidentialDetails: project?.confidentialDetails ?? '',
         ndaRequired: project?.ndaRequired ?? false,
