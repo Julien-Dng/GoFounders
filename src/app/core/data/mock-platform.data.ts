@@ -36,6 +36,8 @@ export interface MarketplaceProfile {
   verified?: boolean;
   // Projets : identifiant du projet (favoris) ; absent quand la fiche est chargée par le profil du porteur.
   projectId?: string;
+  // Associés : prêt à entrer au capital avec un apport (yes, discuss, no ; absent = non précisé).
+  investmentReadiness?: 'yes' | 'discuss' | 'no';
 }
 
 export interface ConversationMessage {
@@ -102,6 +104,7 @@ export interface MaListingData {
 export const MARKETPLACE_PROFILES: MarketplaceProfile[] = [
   {
     id: 'talent-sophie-martin',
+    investmentReadiness: 'yes',
     profileType: 'talent',
     displayName: 'Sophie Martin',
     title: 'CTO freelance',
@@ -159,6 +162,7 @@ export const MARKETPLACE_PROFILES: MarketplaceProfile[] = [
   },
   {
     id: 'talent-claire-bernard',
+    investmentReadiness: 'discuss',
     profileType: 'talent',
     displayName: 'Claire Bernard',
     title: 'Product manager',

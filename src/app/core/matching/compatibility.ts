@@ -6,6 +6,8 @@ export interface ProjectSide {
   needs: string[];
   sector?: string;
   location?: string;
+  // Le porteur accepte un associé qui entrerait au capital avec un apport.
+  openToEquity?: boolean;
 }
 
 export interface TalentSide {
@@ -15,6 +17,8 @@ export interface TalentSide {
   text?: string;
   location?: string;
   availableNow: boolean;
+  // Prêt à entrer au capital avec un apport : yes, discuss, no ; absent = non précisé.
+  investment?: 'yes' | 'discuss' | 'no';
 }
 
 export interface CompatibilityResult {
@@ -23,6 +27,7 @@ export interface CompatibilityResult {
 }
 
 const WEIGHTS = { skills: 50, location: 20, availability: 15, sector: 15 } as const;
+// En plus : un bonus de 3 à 5 points quand l'apport de l'associé rencontre un projet ouvert à un apport (score plafonné à 100).
 
 // Valeurs génériques ou de remplissage, qui ne disent rien du besoin réel.
 const GENERIC_TERMS = new Set([
@@ -160,6 +165,12 @@ export function computeCompatibility(project: ProjectSide, talent: TalentSide): 
   } else if (containsTerm(normalize([...talent.offers, talent.text ?? ''].join(' ')), sectorKey)) {
     score += WEIGHTS.sector;
     reasons.push(`Expérience dans le secteur : ${project.sector}`);
+  }
+
+  // 5. Apport : petit bonus quand le projet est ouvert à un apport et que l'associé est prêt à investir (ou à en discuter).
+  if (project.openToEquity && (talent.investment === 'yes' || talent.investment === 'discuss')) {
+    score += talent.investment === 'yes' ? 5 : 3;
+    reasons.push(talent.investment === 'yes' ? 'Prêt à investir, projet ouvert à un apport' : 'Apport possible, à discuter');
   }
 
   return { score: Math.min(100, Math.max(0, score)), reasons };

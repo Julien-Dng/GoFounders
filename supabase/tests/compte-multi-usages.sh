@@ -1,6 +1,7 @@
 #!/bin/bash
 # Tests de sécurité du compte multi-usages (2026-11-13-compte-multi-usages.sql, 2026-11-15-objectifs-automatiques.sql,
-# 2026-11-16-favoris.sql, 2026-11-17-visibilite-contact.sql, 2026-11-24-favoris-membres.sql), sur une base de test locale
+# 2026-11-16-favoris.sql, 2026-11-17-visibilite-contact.sql, 2026-11-24-favoris-membres.sql,
+# 2026-11-25-apport-associe.sql), sur une base de test locale
 # avec comptes-test.sql, annonces-demo.sql et demo-complete.sql. Chaque cas est annulé (ROLLBACK).
 # Usage : D=<dossier du socket> bash supabase/tests/compte-multi-usages.sh
 D=${D:-/var/tmp/pgtest}
@@ -105,3 +106,9 @@ r "Projet en brouillon : refusé"                 $LU "$PROJET; set local reques
 r "Au nom d'un autre : refusé"                   $LU "insert into member_favorites (user_id, kind, target_id) values ('$A','associate','$BR')" "ERROR:  new row violates row-level security"
 r "Invisibles pour la personne enregistrée"      $LU "insert into member_favorites (user_id, kind, target_id) values ('$LU','associate','$A'); set local request.jwt.claim.sub = '$A'; select count(*) from member_favorites" 0
 r "Associé retiré : disparaît de la liste"       $LU "insert into member_favorites (user_id, kind, target_id) values ('$LU','associate','$A'); set local request.jwt.claim.sub = '$A'; select set_associate_offer(false) is null; set local request.jwt.claim.sub = '$LU'; select count(*) from list_my_member_favorites()" "t 0"
+echo "== Apport de l'associé"
+r "L'associé indique son apport"                 $A  "update profiles set investment_readiness = 'yes' where id='$A'; select investment_readiness from profiles where id='$A'" yes
+r "Valeur inconnue refusée"                      $A  "update profiles set investment_readiness = 'beaucoup' where id='$A'" "ERROR:  new row for relation \"profiles\" violates check"
+r "Lisible par un membre qui voit le profil"     $A  "update profiles set investment_readiness = 'discuss' where id='$A'; set local request.jwt.claim.sub = '$N'; select investment_readiness from profiles where id='$A'" discuss
+r "Jamais sur la vitrine publique"               $A  "select count(*) from information_schema.routines where routine_name = 'list_public_marketplace' and routine_definition ilike '%investment_readiness%'" 0
+r "Pas modifiable pour un autre membre"          $N  "update profiles set investment_readiness = 'yes' where id='$A'; select coalesce(investment_readiness,'-') from profiles where id='$A'" "-"

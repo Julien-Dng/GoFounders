@@ -8,7 +8,7 @@ import { ProjectService } from '../../../core/services/project.service';
 import { ProjectAccessRequest, ProjectAccessService } from '../../../core/services/project-access.service';
 import { downloadTextFile, ndaProofDocument } from '../../../core/legal/nda';
 import { ProjectAccessStatus } from '../../../core/models/supabase-database.model';
-import { MIN_PRESENTATION_LENGTH, PRO_CATEGORY_LABELS, ProCategory, hasUsage, isProjectPresented, usagesOf } from '../../../core/models/user.model';
+import { INVESTMENT_OPTIONS, InvestmentReadiness, MIN_PRESENTATION_LENGTH, PRO_CATEGORY_LABELS, ProCategory, hasUsage, isProjectPresented, usagesOf } from '../../../core/models/user.model';
 import { isEnabled } from '../../../core/config/features';
 import { TagInputComponent } from '../../../shared/components/tag-input/tag-input.component';
 import { ProfileVerificationCardComponent } from '../../../shared/components/profile-verification-card/profile-verification-card.component';
@@ -246,6 +246,26 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                     }
                   </ul>
                 </div>
+
+                <!-- Apport : miroir de « projet ouvert à un apport », sans montant (2026-11-25-apport-associe.sql). -->
+                <fieldset class="rounded-2xl border border-border p-5 sm:p-6">
+                  <legend class="px-1 font-semibold text-primary">Êtes-vous prêt à entrer au capital avec un apport ?</legend>
+                  <p class="text-sm text-muted-foreground">Facultatif et sans montant : il se discute avec le porteur. Visible des membres, jamais sur la vitrine publique</p>
+                  <div class="mt-3 grid gap-2 sm:grid-cols-2">
+                    @for (option of investmentOptions; track option.value) {
+                      <label class="flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium transition-colors"
+                             [class]="investment() === option.value ? 'border-accent bg-accent/5 text-primary' : 'border-border hover:border-accent/40'">
+                        <input type="radio" name="investment" class="h-4 w-4 accent-accent" [checked]="investment() === option.value" (change)="investment.set(option.value)">
+                        {{ option.label }}
+                      </label>
+                    }
+                    <label class="flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium transition-colors"
+                           [class]="investment() === null ? 'border-accent bg-accent/5 text-primary' : 'border-border hover:border-accent/40'">
+                      <input type="radio" name="investment" class="h-4 w-4 accent-accent" [checked]="investment() === null" (change)="investment.set(null)">
+                      Je préfère ne pas le préciser
+                    </label>
+                  </div>
+                </fieldset>
 
                 <div class="rounded-2xl border border-accent/20 bg-accent/[0.035] p-5 sm:p-6">
                   <label for="associate-offer" class="flex cursor-pointer items-start gap-3">
@@ -745,6 +765,8 @@ export class ModifierComponent implements OnInit {
   // Case « Rendre mon profil visible » : décochée tant que le membre ne l'a pas choisie. Vitrine : option en plus.
   readonly associateOffer = signal(!!this.auth.currentUser()?.associateOfferedAt);
   readonly associateVitrine = signal(false);
+  readonly investmentOptions = INVESTMENT_OPTIONS;
+  readonly investment = signal<InvestmentReadiness | null>(this.auth.currentUser()?.investmentReadiness ?? null);
   private savedVitrine = false;
 
   setAssociateOfferDraft(checked: boolean): void {
@@ -966,6 +988,7 @@ export class ModifierComponent implements OnInit {
       location: value.location,
       profileTitle: value.profileTitle,
       availabilityLabel: value.availabilityLabel,
+      ...(this.mode === 'associe' ? { investmentReadiness: this.investment() } : {}),
       ...(checkMa ? { maSector: maValue.sector, maBudget: maValue.budget, maRegion: maValue.region } : {}),
       ...(this.mode === 'profil' && this.isPro() ? { proCategory: this.proCategory() } : {}),
       bio: value.bio,

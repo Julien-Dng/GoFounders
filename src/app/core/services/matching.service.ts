@@ -147,6 +147,7 @@ export class MatchingService {
       verified: Boolean(profile.verified_at),
       availableNow: (profile.availability_label ?? '').toLowerCase().includes('disponible'),
       availabilityLabel: profile.availability_label?.trim() ?? '',
+      investmentReadiness: profile.investment_readiness ?? undefined,
       lookingFor,
       about: profile.bio?.trim() ?? '',
       projectSummary: profile.role === 'talent'
@@ -265,6 +266,7 @@ export class MatchingService {
           text: user.bio,
           location: user.location,
           availableNow: (user.availabilityLabel ?? '').toLowerCase().includes('disponible'),
+          investment: user.investmentReadiness,
         },
       });
     }
@@ -277,6 +279,7 @@ export class MatchingService {
           needs: [...(project?.skillsNeeded ?? []), ...(project?.lookingFor ?? []), ...(user.lookingFor ?? [])],
           sector: project?.sector,
           location: project?.location || user.location,
+          openToEquity: project?.openToEquity,
         },
       });
     }
@@ -293,6 +296,7 @@ export class MatchingService {
         text: profile.bio,
         location: profile.location,
         availableNow: profile.availableNow,
+        investment: profile.investmentReadiness,
       };
       const result = computeCompatibility(viewer.project, talent);
       return { ...profile, match: result.score, matchReasons: result.reasons };
@@ -303,6 +307,7 @@ export class MatchingService {
         needs: [...profile.skills, ...profile.lookingFor],
         sector: profile.sector,
         location: profile.location,
+        openToEquity: profile.openToEquity,
       };
       const result = computeCompatibility(project, viewer.talent);
       return { ...profile, match: result.score, matchReasons: result.reasons };

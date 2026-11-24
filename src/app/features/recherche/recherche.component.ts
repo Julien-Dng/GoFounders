@@ -16,7 +16,7 @@ import { RouterLink } from '@angular/router';
 import { FavoriteButtonComponent } from '../../shared/components/favorite-button/favorite-button.component';
 import { Subscription } from 'rxjs';
 import { MarketplaceProfile } from '../../core/data/mock-platform.data';
-import { ProfileType, MATCH_REASONS_UPSELL, canSeeMatchReasons, canUseAdvancedSearch, hasUsage } from '../../core/models/user.model';
+import { ProfileType, MATCH_REASONS_UPSELL, canSeeMatchReasons, canUseAdvancedSearch, hasUsage, investmentBadge } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { MatchingService } from '../../core/services/matching.service';
 
@@ -111,6 +111,22 @@ type SearchProfileType = ProfileType;
                     </div>
                   </label>
                 </div>
+
+                @if (visibleProfileType() === 'talent') {
+                  <div>
+                    <label class="flex cursor-pointer items-center justify-between gap-3">
+                      <span class="text-sm font-semibold">Prêt à investir</span>
+                      <div class="relative flex-shrink-0">
+                        <input type="checkbox" [checked]="investorsOnly()" (change)="investorsOnly.set(!investorsOnly())" class="peer sr-only" aria-describedby="investor-filter-help">
+                        <div class="h-6 w-11 rounded-full bg-border transition-colors peer-checked:bg-accent"></div>
+                        <div class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform peer-checked:translate-x-5"></div>
+                      </div>
+                    </label>
+                    <p id="investor-filter-help" class="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      Associés prêts à entrer au capital avec un apport, ou à en discuter. Les montants se discutent en privé ; GoFounders ne propose pas d'investissement
+                    </p>
+                  </div>
+                }
 
                 @if (visibleProfileType() === 'entrepreneur') {
                   <div>
@@ -305,6 +321,9 @@ type SearchProfileType = ProfileType;
                               NDA
                             </span>
                           }
+                          @if (profile.profileType === 'talent' && investmentBadge(profile.investmentReadiness); as badge) {
+                            <span class="whitespace-nowrap rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-0.5 text-sm font-semibold text-emerald-800">{{ badge }}</span>
+                          }
                           @if (profile.openToEquity) {
                             <span class="whitespace-nowrap rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-sm font-semibold text-accent">Associé avec apport</span>
                           }
@@ -380,6 +399,9 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly selectedLocation = signal('');
   readonly isAvailableNow = signal(false);
   readonly openToEquityOnly = signal(false);
+  // Associés prêts à investir (ou à en discuter).
+  readonly investorsOnly = signal(false);
+  investmentBadge = investmentBadge;
   readonly keywords = signal('');
   readonly selectedSkills = signal<string[]>([]);
   readonly minScore = signal(0);
@@ -399,6 +421,7 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
     const location = this.selectedLocation().trim().toLowerCase();
     const availableNowOnly = this.isAvailableNow();
     const equityOnly = this.openToEquityOnly() && targetType === 'entrepreneur';
+    const investorsOnly = this.investorsOnly() && targetType === 'talent';
     const advanced = this.canUseAdvanced();
     const keywords = advanced ? this.normalize(this.keywords()).split(/\s+/).filter(Boolean) : [];
     const skills = advanced ? this.selectedSkills().map(skill => this.normalize(skill)) : [];
@@ -410,7 +433,8 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
       const matchesStage = activeStages.length === 0 || activeStages.includes(profile.stage);
       const matchesLocation = location.length === 0 || profile.location.toLowerCase().includes(location);
       const matchesAvailability = !availableNowOnly || profile.availableNow;
-      const matchesEquity = !equityOnly || profile.openToEquity === true;
+      const matchesEquity = (!equityOnly || profile.openToEquity === true)
+        && (!investorsOnly || profile.investmentReadiness === 'yes' || profile.investmentReadiness === 'discuss');
       const profileSkills = profile.skills.map(skill => this.normalize(skill));
       const haystack = this.normalize([profile.displayName, profile.title, profile.bio, profile.sector, ...profile.skills, ...profile.lookingFor].join(' '));
       const matchesKeywords = keywords.every(keyword => haystack.includes(keyword));
@@ -466,6 +490,7 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
     || this.selectedStage().length > 0
     || this.selectedLocation().trim().length > 0
     || this.isAvailableNow()
+    || this.investorsOnly()
     || this.openToEquityOnly()
     || (this.canUseAdvanced() && (this.keywords().trim().length > 0 || this.selectedSkills().length > 0 || this.minScore() > 0))
   );
@@ -528,6 +553,7 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectedLocation.set('');
     this.isAvailableNow.set(false);
     this.openToEquityOnly.set(false);
+    this.investorsOnly.set(false);
     this.keywords.set('');
     this.selectedSkills.set([]);
     this.minScore.set(0);

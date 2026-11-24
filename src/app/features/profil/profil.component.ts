@@ -4,7 +4,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { MarketplaceProfile } from '../../core/data/mock-platform.data';
-import { MATCH_REASONS_UPSELL, canSeeMatchReasons, hasUsage, isAssociateProfileComplete, isProjectPresented, usageSummary } from '../../core/models/user.model';
+import { MATCH_REASONS_UPSELL, canSeeMatchReasons, hasUsage, investmentBadge, isAssociateProfileComplete, isProjectPresented, usageSummary } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { MatchingService } from '../../core/services/matching.service';
 import { StatsService } from '../../core/services/stats.service';
@@ -128,7 +128,7 @@ import { FavoriteButtonComponent } from '../../shared/components/favorite-button
                     </div>
                   </div>
 
-                  @if (!isOwnProfile()) {
+                  @if (!isOwnProfile() && matchReasons().length > 0) {
                     <div class="rounded-2xl border border-accent/15 bg-accent/5 p-4 lg:w-60">
                       <div class="mb-3 text-sm font-semibold text-accent">Pourquoi ça matche</div>
                       <div class="space-y-2">
@@ -762,18 +762,14 @@ export class ProfilComponent implements OnInit {
 
     return this.isOwnProfile()
       ? [...verified, 'Profil connecté', `Plan ${this.currentUser()?.plan ?? 'FREE'}`]
-      : [...verified, 'Actif récemment'];
+      : [...verified, ...(this.investmentLabel() ? [this.investmentLabel()!] : []), 'Actif récemment'];
   });
-  readonly matchReasons = computed(() => {
-    const profile = this.publicProfile();
-    const firstNeed = profile?.lookingFor?.[0];
-
-    return [
-      profile?.sector ? `Secteur ${profile.sector}` : 'Secteur cohérent',
-      firstNeed ? `Recherche ${firstNeed}` : 'Besoin aligné',
-      profile?.availableNow ? 'Disponible rapidement' : 'Échange qualifié',
-    ];
-  });
+  // Associé : prêt à entrer au capital avec un apport (sans montant ; membres connectés uniquement).
+  readonly investmentLabel = computed(() =>
+    this.publicProfile()?.profileType === 'talent' ? investmentBadge(this.publicProfile()?.investmentReadiness) : null);
+  // Raisons réelles du score (calcul par règles), réservées à l'offre PRO ; rien d'inventé sinon.
+  readonly matchReasons = computed(() =>
+    this.canSeeReasons() ? (this.publicProfile()?.matchReasons ?? []).slice(0, 4) : []);
   readonly contributionPoints = computed(() => {
     if (this.isOwnProfile()) {
       const user = this.currentUser();

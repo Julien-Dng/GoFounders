@@ -4,7 +4,7 @@ import { Timestamp } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { User as SupabaseAuthUser } from '@supabase/supabase-js';
 import { SupabaseProfileInsert, SupabaseProfileRow, SupabaseProjectInsert, PROFILE_COLUMNS } from '../models/supabase-database.model';
-import { Plan, ProCategory, ProfileType, Usage, User, isAssociateProfileComplete, primaryProfileType, usagesOf } from '../models/user.model';
+import { InvestmentReadiness, Plan, ProCategory, ProfileType, Usage, User, isAssociateProfileComplete, primaryProfileType, usagesOf } from '../models/user.model';
 import { validateRegistrationEmail } from '../validators/email-policy.validator';
 import { SupabaseService } from './supabase.service';
 
@@ -20,6 +20,7 @@ interface StoredUserRecord {
   location: string;
   profileType: ProfileType;
   usages?: Usage[];
+  investmentReadiness?: InvestmentReadiness;
   associateOfferedAt?: string;
   profileTitle?: string;
   bio?: string;
@@ -90,6 +91,8 @@ export interface UpdateProfilePayload {
   skills: string[];
   lookingFor: string[];
   availabilityLabel: string;
+  // Associés : prêt à entrer au capital avec un apport (null = non précisé) ; absent = inchangé.
+  investmentReadiness?: InvestmentReadiness | null;
   maSector?: string;
   maBudget?: string;
   maRegion?: string;
@@ -698,6 +701,7 @@ export class AuthService {
         skills: this.cleanTags(payload.skills) ?? [],
         looking_for: this.cleanTags(payload.lookingFor) ?? [],
         availability_label: this.cleanOptionalText(payload.availabilityLabel) ?? null,
+        ...(payload.investmentReadiness !== undefined ? { investment_readiness: payload.investmentReadiness } : {}),
         ma_sector: this.cleanOptionalText(payload.maSector) ?? null,
         ma_budget: this.cleanOptionalText(payload.maBudget) ?? null,
         ma_region: this.cleanOptionalText(payload.maRegion) ?? null,
@@ -981,6 +985,7 @@ export class AuthService {
       skills: this.cleanTags(payload.skills),
       lookingFor: this.cleanTags(payload.lookingFor),
       availabilityLabel: this.cleanOptionalText(payload.availabilityLabel),
+      ...(payload.investmentReadiness !== undefined ? { investmentReadiness: payload.investmentReadiness ?? undefined } : {}),
       maSector: this.cleanOptionalText(payload.maSector),
       maBudget: this.cleanOptionalText(payload.maBudget),
       maRegion: this.cleanOptionalText(payload.maRegion),
@@ -1153,6 +1158,7 @@ export class AuthService {
       profileType: user.profileType,
       usages: usagesOf(user),
       associateOfferedAt: user.associateOfferedAt,
+      investmentReadiness: user.investmentReadiness,
       profileTitle: user.profileTitle,
       bio: user.bio,
       skills: user.skills,
@@ -1199,6 +1205,7 @@ export class AuthService {
       maBudget: profile.ma_budget ?? undefined,
       profileVerifiedAt: profile.verified_at ?? undefined,
       associateOfferedAt: profile.associate_offered_at ?? undefined,
+      investmentReadiness: profile.investment_readiness ?? undefined,
       maRegion: profile.ma_region ?? undefined,
       githubUrl: profile.github_url ?? undefined,
       linkedinUrl: profile.linkedin_url ?? undefined,

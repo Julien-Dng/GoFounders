@@ -89,6 +89,17 @@ export function offersAssociateProfile(user: Pick<User, 'profileType' | 'associa
   return !!user && user.profileType !== 'pro' && !!user.associateOfferedAt && (user.skills?.length ?? 0) > 0;
 }
 
+// Apport de l'associé (2026-11-25-apport-associe.sql) : miroir de « projet ouvert à un apport ».
+export type InvestmentReadiness = 'yes' | 'discuss' | 'no';
+export const INVESTMENT_OPTIONS: ReadonlyArray<{ value: InvestmentReadiness; label: string; badge: string }> = [
+  { value: 'yes', label: 'Oui, prêt à investir', badge: 'Prêt à investir' },
+  { value: 'discuss', label: 'À discuter selon le projet', badge: 'Apport à discuter' },
+  { value: 'no', label: 'Non, compétences seulement', badge: 'Sans apport' },
+];
+export function investmentBadge(value: InvestmentReadiness | null | undefined): string | null {
+  return value === 'yes' || value === 'discuss' ? INVESTMENT_OPTIONS.find(option => option.value === value)!.badge : null;
+}
+
 // Prise de contact (2026-11-17-visibilite-contact.sql) : présentation d'au moins 50 caractères, vérifiée aussi par Supabase.
 export const MIN_PRESENTATION_LENGTH = 50;
 
@@ -161,6 +172,8 @@ export interface User {
   profileVerifiedAt?: string;
   // Profil d'associé proposé aux porteurs de projet : choix explicite, distinct de l'objectif « Rejoindre un projet ».
   associateOfferedAt?: string;
+  // Prêt à entrer au capital avec un apport (sans montant) ; non précisé si absent.
+  investmentReadiness?: InvestmentReadiness;
   maRegion?: string;
   githubUrl?: string;
   linkedinUrl?: string;
