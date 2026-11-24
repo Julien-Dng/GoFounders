@@ -152,7 +152,7 @@ export class MemberShellComponent {
       { id: 'dashboard', label: 'Tableau de bord', icon: 'home', path: '/dashboard', match: ['/dashboard'] },
       { id: 'favoris', label: 'Mes favoris', icon: 'heart', path: '/favoris', match: ['/favoris', '/ma/favoris'] },
       ...(FEATURES.associates ? [{ id: 'associes', label: 'Associés & projets', icon: 'users' as const, path: '/recherche', match: ['/recherche'] }] : []),
-      { id: 'reprendre', label: 'Entreprises à reprendre', icon: 'search', path: '/ma', match: ['/ma/annonce'] },
+      { id: 'reprendre', label: 'Explorer les entreprises', icon: 'search', path: '/ma', match: ['/ma/annonce'] },
       { id: 'entreprises', label: 'Mes entreprises', icon: 'building', path: '/mes-entreprises', match: ['/mes-entreprises', '/ma/dossiers', '/ma/mes-annonces', '/ma/statistiques', '/ma/deposer', '/ma/vendue'] },
       { id: 'messages', label: 'Messages', icon: 'messages', path: '/messages', match: ['/messages'], badge: this.messaging.unreadCount() || undefined },
       { id: 'profil', label: 'Mon profil', icon: 'user', path: this.profilePath(), match: [this.profilePath(), '/profil/modifier', '/profil/associe', '/mon-projet'] },
