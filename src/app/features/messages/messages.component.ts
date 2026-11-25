@@ -635,6 +635,12 @@ export class MessagesComponent implements OnInit {
             unread: 0,
             profile,
             messages: [],
+            // Même repère que les conversations existantes : « Projet et associés » ou « Professionnel ».
+            topic: profile.profileType === 'pro'
+              ? { label: 'Professionnel', link: null }
+              : profile.profileType === 'talent' || profile.profileType === 'entrepreneur'
+                ? { label: 'Projet et associés', link: null }
+                : undefined,
             draft: true,
           };
         } else {

@@ -445,6 +445,10 @@ export class MessagingService {
 
   // Identifiant du membre à contacter (profil, ou propriétaire d'un projet). Utilisé avant de créer la conversation.
   async resolveConversationParticipantId(targetProfileId: string): Promise<string> {
+    if (!this.supabase.isConfigured) {
+      return targetProfileId;
+    }
+
     const { data: profileData } = await this.supabase.client
       .from('profiles')
       .select('id')
