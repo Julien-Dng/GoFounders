@@ -80,9 +80,7 @@ interface ConversationPreview {
                   <div class="truncate text-xs font-semibold text-accent">{{ topic.label }}</div>
                 }
               }
-              @if (selectedConv()!.draft) {
-                <div class="text-sm text-muted-foreground">Nouvelle conversation : elle sera créée à l'envoi de votre premier message.</div>
-              } @else if (selectedProfile()?.title) {
+              @if (selectedProfile()?.title) {
                 <div class="truncate text-sm text-muted-foreground">{{ selectedProfile()!.title }}</div>
               }
             </div>
