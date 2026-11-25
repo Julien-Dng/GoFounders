@@ -171,7 +171,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
           <figure class="hero-enter relative mx-auto w-full max-w-xl sm:pb-12 sm:pr-10 lg:col-span-6 lg:row-span-2 lg:mr-0 lg:max-w-none" style="animation-delay: 180ms">
             <img src="/assets/images/hero/equipe-startup.webp" width="1100" height="760" fetchpriority="high"
                  alt="Une équipe travaille sur ses ordinateurs autour d'une grande table"
-                 class="aspect-[3/2] w-full rounded-2xl object-cover shadow-2xl">
+                 class="aspect-[2/1] w-full rounded-2xl object-cover shadow-2xl sm:aspect-[3/2]">
             <img src="/assets/images/hero/binome-ordinateur.webp" width="560" height="420" loading="lazy"
                  alt="Deux associés échangent devant un ordinateur"
                  class="hero-float-late absolute bottom-0 right-0 hidden aspect-[4/3] w-[44%] rounded-xl border-4 border-white object-cover shadow-2xl sm:block">
@@ -292,7 +292,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
           <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
             <div>
               <h2 appReveal id="latest-title" class="text-2xl text-primary sm:text-3xl">Des entreprises à reprendre</h2>
-              <p class="mt-1 text-base text-muted-foreground sm:text-lg">Une activité, un savoir-faire, une nouvelle étape</p>
+              <p class="mt-1 hidden text-base text-muted-foreground sm:block sm:text-lg">Une activité, un savoir-faire, une nouvelle étape</p>
             </div>
             <a routerLink="/ma" class="group hidden flex-shrink-0 font-semibold text-accent sm:inline-block">Toutes les entreprises&nbsp;<span class="arrow-nudge">→</span></a>
           </div>
@@ -300,7 +300,31 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
           @if (latestListings().length > 0) {
             <!-- Cartes d'annonce : secteur, titre, ancienneté et équipe, accroche (ordinateur), chiffres clés, prix.
                  Trois côte à côte sur ordinateur, deux sur tablette et téléphone. -->
-            <div class="mt-4 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 max-lg:[&>*:nth-child(3)]:hidden">
+            <!-- Téléphones : cartes compactes (secteur, titre, CA et prix). -->
+            <ul class="mt-3 space-y-2.5 sm:hidden">
+              @for (item of latestListings().slice(0, 2); track item.listing.id) {
+                <li>
+                  <a [routerLink]="['/ma/annonce', item.listing.id]" class="flex items-center gap-3 rounded-xl border border-border bg-white px-4 py-3 transition-colors hover:border-accent/40">
+                    <span class="min-w-0 flex-1">
+                      <span class="block truncate text-sm text-muted-foreground">{{ item.listing.sector }} · {{ item.listing.region }}</span>
+                      <span class="mt-0.5 block truncate text-base font-bold text-primary">{{ item.listing.title || item.listing.summary }}</span>
+                      <span class="tabular mt-2 grid grid-cols-2 gap-3">
+                        <span>
+                          <span class="block text-xs text-muted-foreground">CA annuel</span>
+                          <span class="block font-bold text-primary">{{ euros(item.metrics.revenue) }}</span>
+                        </span>
+                        <span>
+                          <span class="block text-xs text-muted-foreground">Prix demandé</span>
+                          <span class="block whitespace-nowrap font-bold text-amber-600">{{ priceRange(item.listing.priceMin, item.listing.priceMax) }}</span>
+                        </span>
+                      </span>
+                    </span>
+                    <span class="flex-shrink-0 text-xl text-accent" aria-hidden="true">→</span>
+                  </a>
+                </li>
+              }
+            </ul>
+            <div class="mt-4 hidden gap-3 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 max-lg:[&>*:nth-child(3)]:hidden">
               @for (item of latestListings(); track item.listing.id; let i = $index) {
                 <a appReveal [revealDelay]="i * 110" [routerLink]="['/ma/annonce', item.listing.id]"
                    class="lift group flex flex-col rounded-2xl border border-border bg-white p-4 transition-shadow hover:border-accent/40 hover:shadow-lg sm:p-6">
@@ -347,28 +371,47 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
               }
             </div>
           }
-          <div class="mt-4 text-center sm:hidden">
-            <a routerLink="/ma" class="inline-block rounded-lg bg-primary px-7 py-3.5 font-semibold text-white transition-colors hover:bg-primary/90">Explorer les entreprises</a>
-          </div>
+          <a routerLink="/ma" class="mt-3 inline-block text-sm font-semibold text-accent sm:hidden">Voir les entreprises&nbsp;→</a>
         </div>
       </section>
 
       @if (showAssociates) {
         <!-- Projets et associés : vrais profils de la vitrine publique (anonymisés), sinon exemples fictifs signalés. -->
-        <section class="relative overflow-hidden bg-secondary px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12" aria-labelledby="team-title">
+        <section class="relative overflow-hidden bg-secondary px-4 py-6 sm:px-6 sm:py-10 lg:px-8 lg:py-12" aria-labelledby="team-title">
           <svg class="pointer-events-none absolute -bottom-6 left-0 hidden h-24 w-[22rem] text-accent/50 lg:block" viewBox="0 0 300 80" fill="none" preserveAspectRatio="none" aria-hidden="true"><path d="M0 20 C90 10 200 30 300 78" stroke="currentColor" stroke-width="1.2"/></svg>
           <!-- Accroche à gauche, deux profils en lignes à droite (un projet et un associé quand c'est possible). -->
-          <div class="relative mx-auto grid max-w-[78rem] gap-5 lg:grid-cols-12 lg:items-center lg:gap-10">
+          <div class="relative mx-auto grid max-w-[78rem] gap-3 sm:gap-5 lg:grid-cols-12 lg:items-center lg:gap-10">
             <div class="lg:col-span-5">
-              <h2 appReveal id="team-title" class="text-2xl leading-tight text-primary sm:text-3xl">Le projet est là.<br> Il ne manque <span class="whitespace-nowrap">peut-être</span> que vous</h2>
-              <p class="mt-2 text-base text-muted-foreground sm:mt-3 sm:text-lg">Trouvez un associé ou rejoignez une équipe</p>
+              <h2 appReveal id="team-title" class="text-2xl leading-tight text-primary sm:text-3xl"><span class="sm:hidden">Un projet. Un associé.<br> Une nouvelle aventure</span><span class="hidden sm:inline">Le projet est là.<br> Il ne manque <span class="whitespace-nowrap">peut-être</span> que vous</span></h2>
+              <p class="mt-1 text-base text-muted-foreground sm:mt-3 sm:text-lg"><span class="sm:hidden">Trouvez les bonnes personnes pour avancer</span><span class="hidden sm:inline">Trouvez un associé ou rejoignez une équipe</span></p>
               <a [routerLink]="associatesHref()" class="group mt-4 hidden font-semibold text-accent sm:inline-block">Explorer les projets et associés&nbsp;<span class="arrow-nudge">→</span></a>
               @if (teamCardsAreExamples()) {
                 <p class="mt-2 hidden text-sm italic text-muted-foreground sm:block">Exemples fictifs</p>
               }
             </div>
 
-            <ul class="grid gap-3 sm:gap-4 lg:col-span-7">
+            <!-- Téléphones : lignes compactes, sans pastille ni étiquettes. -->
+            <ul class="space-y-2.5 sm:hidden">
+              @for (card of teamPreview(); track card.key) {
+                <li>
+                  <a [routerLink]="associatesHref()" class="flex items-center gap-3 rounded-xl bg-white px-4 py-3 ring-1 ring-border transition-colors hover:ring-accent/40">
+                    <span class="min-w-0 flex-1">
+                      <span class="block text-[0.7rem] font-bold uppercase tracking-wide" [class]="card.kind === 'project' ? 'text-accent' : 'text-primary/70'">{{ card.badge }}</span>
+                      <span class="block truncate text-base font-bold text-primary">{{ card.name }}</span>
+                      @if (card.subtitle) {
+                        <span class="block truncate text-sm text-muted-foreground">{{ card.subtitle }}</span>
+                      }
+                      @if (card.chips.length > 0) {
+                        <span class="block truncate text-sm text-muted-foreground">{{ card.chips.slice(0, 3).join(' · ') }}</span>
+                      }
+                    </span>
+                    <span class="flex-shrink-0 text-xl text-accent" aria-hidden="true">→</span>
+                  </a>
+                </li>
+              }
+            </ul>
+
+            <ul class="hidden gap-3 sm:grid sm:gap-4 lg:col-span-7">
               @for (card of teamPreview(); track card.key; let i = $index) {
                 <li appReveal [revealDelay]="i * 110">
                   <a [routerLink]="associatesHref()" class="lift group flex items-center gap-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-border hover:shadow-lg hover:ring-accent/40 sm:gap-5 sm:p-5">
@@ -395,10 +438,10 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
               }
             </ul>
 
-            <div class="text-center sm:hidden">
-              <a [routerLink]="associatesHref()" class="inline-block rounded-lg bg-accent px-6 py-3 font-semibold text-white">Tout explorer&nbsp;→</a>
+            <div class="sm:hidden">
+              <a [routerLink]="associatesHref()" class="inline-block text-sm font-semibold text-accent">Explorer les projets et associés&nbsp;→</a>
               @if (teamCardsAreExamples()) {
-                <p class="mt-2 text-sm italic text-muted-foreground">Exemples fictifs</p>
+                <p class="mt-1 text-xs italic text-muted-foreground">Exemples fictifs</p>
               }
             </div>
           </div>
@@ -407,7 +450,23 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
 
       <!-- Téléphones : fonctionnement et prix réunis dans un bloc court (étapes dépliables). -->
       <!-- Comment ça marche, en trois étapes (nouveau design) : sans icônes, séparées par des traits, dans un encadré bleu marine. -->
-      <section class="px-4 pt-6 sm:px-6 sm:pt-8 lg:px-8 lg:pt-10" aria-labelledby="simple-title">
+      <!-- Téléphones : trois étapes courtes, numéros bleus. -->
+      <section class="px-4 py-6 sm:hidden" aria-labelledby="steps-title-mobile">
+        <h2 id="steps-title-mobile" class="text-2xl text-primary">Comment ça marche ?</h2>
+        <ol class="mt-3 space-y-3">
+          @for (step of mobileSteps; track step.title; let i = $index) {
+            <li class="flex items-start gap-3">
+              <span class="tabular flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-white" aria-hidden="true">{{ i + 1 }}</span>
+              <div>
+                <h3 class="text-base font-bold text-primary">{{ step.title }}</h3>
+                <p class="text-sm text-muted-foreground">{{ step.text }}</p>
+              </div>
+            </li>
+          }
+        </ol>
+      </section>
+
+      <section class="hidden px-4 pt-6 sm:block sm:px-6 sm:pt-8 lg:px-8 lg:pt-10" aria-labelledby="simple-title">
         <!-- Encadré bleu marine : se distingue à la fois de la section projets (bleu clair) et des avis (blanc).
              Ordinateur : titre, phrase et bouton à gauche, étapes détaillées à droite. -->
         <div class="mx-auto grid max-w-[78rem] gap-6 rounded-2xl bg-primary px-5 py-7 text-white sm:px-8 sm:py-8 lg:grid-cols-12 lg:items-center lg:gap-12 lg:px-12 lg:py-10">
@@ -438,7 +497,21 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
 
       <!-- Tarifs en un bandeau, juste sous les étapes : les trois prix côte à côte (ordinateur), lien vers la page Tarifs.
            Le bouton de dépôt est dans le bandeau final « Vous pensez à passer la main ? ». -->
-      <section class="px-4 pt-3 sm:px-6 sm:pt-4 lg:px-8" aria-label="Tarifs">
+      <!-- Téléphones : tarifs en lignes, prix à droite. -->
+      <section class="bg-secondary px-4 py-6 sm:hidden" aria-labelledby="prices-title-mobile">
+        <h2 id="prices-title-mobile" class="text-2xl text-primary">Des tarifs simples</h2>
+        <dl class="mt-3 divide-y divide-border rounded-xl bg-white px-4 ring-1 ring-border">
+          @for (price of mobilePrices; track price.label) {
+            <div class="flex items-center justify-between gap-4 py-3">
+              <dt class="text-sm font-medium text-primary">{{ price.label }}</dt>
+              <dd class="tabular text-right text-sm font-bold text-primary">{{ price.value }}</dd>
+            </div>
+          }
+        </dl>
+        <a routerLink="/tarifs" class="mt-3 inline-block text-sm font-semibold text-accent">Comprendre les tarifs&nbsp;→</a>
+      </section>
+
+      <section class="hidden px-4 pt-3 sm:block sm:px-6 sm:pt-4 lg:px-8" aria-label="Tarifs">
         <div appReveal class="mx-auto grid max-w-[78rem] gap-4 rounded-2xl bg-[#EEF2FE] px-5 py-5 ring-1 ring-accent/15 sm:px-7 sm:py-6 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-center lg:gap-0">
           @for (price of priceBand; track price.label; let first = $first) {
             <div class="lg:px-6" [class]="first ? 'lg:pl-0' : 'lg:border-l lg:border-accent/15'">
@@ -453,23 +526,24 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
         </div>
       </section>
 
-      <div>
+      <!-- Téléphones : page courte, les avis restent sur tablette et ordinateur. -->
+      <div class="hidden sm:block">
         <app-success-stories />
       </div>
 
       <!-- Bandeau final pour les cédants (téléphone et ordinateur) : reprend l'idée de « Notre conviction » en une phrase. -->
-      <section class="px-4 pb-8 pt-2 sm:px-6 sm:pb-10 lg:px-8 lg:pb-12" aria-labelledby="sell-title">
-        <div appReveal class="relative mx-auto max-w-[78rem] overflow-hidden rounded-2xl bg-primary px-5 py-6 text-white sm:rounded-3xl sm:px-10 sm:py-8">
+      <section class="sm:px-6 sm:pb-10 sm:pt-2 lg:px-8 lg:pb-12" aria-labelledby="sell-title">
+        <div appReveal class="relative mx-auto max-w-[78rem] overflow-hidden bg-primary px-4 py-7 text-white sm:rounded-3xl sm:px-10 sm:py-8">
           <img src="/assets/images/provisoire/bureau-vue-dessus.jpg" alt="" aria-hidden="true" width="1400" height="933" loading="lazy" class="absolute inset-0 hidden h-full w-full object-cover sm:block">
           <div class="absolute inset-0 hidden sm:block" style="background: rgba(15, 27, 45, 0.86)" aria-hidden="true"></div>
-          <div class="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div class="relative flex flex-col gap-4 sm:gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h2 id="sell-title" class="text-2xl sm:text-3xl">Vous pensez à passer la main ?</h2>
-              <p class="mt-2 max-w-[56ch] text-base leading-relaxed text-white/75 sm:text-lg">Votre entreprise mérite mieux qu'une petite annonce. Publiez gratuitement, sans commission</p>
+              <p class="mt-2 max-w-[56ch] text-base leading-relaxed text-white/75 sm:text-lg"><span class="hidden sm:inline">Votre entreprise mérite mieux qu'une petite annonce. </span>Publiez gratuitement, sans commission</p>
             </div>
-            <div class="flex flex-shrink-0 flex-col gap-3 sm:flex-row sm:items-center">
+            <div class="flex flex-shrink-0 flex-col items-start gap-3 sm:flex-row sm:items-center">
               <a routerLink="/ma/deposer" class="rounded-lg bg-accent px-6 py-3.5 text-center font-semibold text-white transition-colors hover:bg-accent/90 sm:order-2">Déposer mon annonce</a>
-              <a routerLink="/estimation" class="rounded-lg border border-white/30 px-6 py-3.5 text-center font-semibold text-white transition-colors hover:border-white/70 sm:order-1">Estimer sa valeur d'abord</a>
+              <a routerLink="/estimation" class="hidden rounded-lg border border-white/30 px-6 py-3.5 text-center font-semibold text-white transition-colors hover:border-white/70 sm:order-1 sm:block">Estimer sa valeur d'abord</a>
             </div>
           </div>
         </div>
@@ -536,6 +610,25 @@ export class LandingComponent implements OnInit {
       ? [{ label: 'Associés et projets', value: 'Gratuit', note: `Offre PRO : ${OFFER_PRICES.PRO.label}` }]
       : []),
   ];
+  // Téléphones : tarifs en lignes et étapes courtes.
+  readonly mobilePrices = [
+    { label: 'Publier une entreprise', value: 'Gratuit' },
+    { label: 'Débloquer un dossier', value: `${OFFER_PRICES.INTRO.label} par entreprise` },
+    ...(FEATURES.associates ? [{ label: 'Associés et projets', value: 'Gratuit · Option PRO' }] : []),
+  ];
+  readonly mobileSteps = [
+    { title: 'Explorez', text: FEATURES.associates ? 'Entreprises, projets et associés' : 'Des entreprises à reprendre' },
+    { title: 'Entrez en contact', text: 'Présentez-vous à la bonne personne' },
+    { title: 'Avancez ensemble', text: 'Échangez directement dans la messagerie' },
+  ];
+
+  // « 380 k€ » et « 450 k€ » → « 380–450 k€ » (même unité), sinon « 800 k€ à 1,2 M€ ».
+  priceRange(min: string, max: string): string {
+    const unit = (value: string) => value.match(/\s*(k€|M€|€)$/)?.[1] ?? '';
+    const u = unit(min);
+    return u && u === unit(max) ? `${min.replace(/\s*(k€|M€|€)$/, '')}–${max}` : `${min} à ${max}`;
+  }
+
   readonly simpleIntro = FEATURES.associates
     ? 'Un seul compte gratuit pour reprendre ou céder une entreprise, trouver des associés ou rejoindre un projet'
     : 'Un compte gratuit pour reprendre ou céder une entreprise';
