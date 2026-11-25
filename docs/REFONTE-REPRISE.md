@@ -77,7 +77,7 @@ Pas de commission sur les ventes (une commission sur une cession de fonds de com
 | PRO associés | Porteur de projet | 49 € / mois | Inchangé (V6) |
 | Accompagnement PREMIUM | Tous | Sur devis | Formulaire sur `/tarifs`, demande envoyée aux admins (`premium_requests`) |
 
-- Nouveau rôle **`pro`** (« Je suis un professionnel » à l'inscription) : expert-comptable, avocat, notaire, cabinet de cession.
+- Nouveau rôle **`pro`** (« Je propose des services d’accompagnement » à l'inscription) : expert-comptable, avocat, notaire, cabinet de cession.
 - Un pro peut écrire à un acheteur seulement avec un compte pro actif ; il n'y a pas de liste des acheteurs (confidentialité).
 - Le quota d'analyses IA est vérifié par le back Python (`consume_ai_analysis`, erreur 402 au-delà de 3 par mois sans Plus).
 

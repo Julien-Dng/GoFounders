@@ -42,7 +42,7 @@ migration `supabase/2026-11-13-compte-multi-usages.sql`, tests `supabase/tests/`
 - `profiles.role` ne sert plus qu'à distinguer les **comptes pro** (`role = 'pro'`, type de compte à part) ; pour un membre
   il reprend son premier usage, à titre indicatif. Côté site : `usagesOf()`, `hasUsage()`, `canPublishMa()`,
   `canBuyMaDossier()` dans `user.model.ts` (plus de `RoleGuard`).
-- Inscription « Vous êtes plutôt… » à choix multiples (« Je suis un professionnel » exclusif).
+- Inscription « Vous êtes plutôt… » à choix multiples (« Je propose des services d’accompagnement », compte pro, exclusif).
 - Chaque conversation est rattachée (`conversations.context` : `projet`, `annonce` + `listing_id`, `pro`) ; le quota FREE
   (5 nouveaux contacts par mois) ne compte que les contacts « projet » ouverts par le porteur.
 - Sur le site, le mot **« talent » n'est jamais affiché** : on parle d'**« associé »**. La valeur technique `talent` reste dans le code.

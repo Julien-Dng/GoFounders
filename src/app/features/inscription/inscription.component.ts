@@ -494,7 +494,7 @@ export class InscriptionComponent {
 
   readonly totalSteps = 3;
   readonly currentStep = signal(1);
-  // Compte multi-usages : plusieurs choix possibles (« Je suis un professionnel » est exclusif).
+  // Compte multi-usages : plusieurs choix possibles (« Je propose des services d’accompagnement » est exclusif).
   // ?profil=buyer (depuis une annonce) : choix présélectionné, modifiable à l'étape 1.
   readonly selectedTypes = signal<ProfileType[]>(
     (['entrepreneur', 'talent', 'buyer', 'seller', 'pro'] as const)
@@ -623,7 +623,7 @@ export class InscriptionComponent {
     {
       id: 'pro',
       icon: 'pro',
-      title: 'Je suis un professionnel',
+      title: 'Je propose des services d’accompagnement',
       description: 'Expert-comptable, avocat, notaire ou cabinet de cession : compte à part, pour être visible et accompagner des cessions',
     },
     ];
