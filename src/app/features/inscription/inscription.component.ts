@@ -418,22 +418,6 @@ interface ProfileOption {
                 </div>
               }
 
-              @if (isSelected('talent') || isSelected('entrepreneur')) {
-                <label class="mt-6 flex cursor-pointer items-start gap-3 rounded-xl bg-secondary p-4">
-                  <input type="checkbox" formControlName="publicListing" class="mt-1 h-5 w-5 flex-shrink-0 accent-accent">
-                  <span>
-                    <span class="block font-semibold text-primary">Apparaître de façon anonyme sur la page « Trouver un associé »</span>
-                    <span class="text-sm text-muted-foreground">
-                      @if (isSelected('talent')) {
-                        Les visiteurs voient votre titre, vos compétences et votre disponibilité, jamais votre nom, votre photo ni votre ville
-                      } @else {
-                        Les visiteurs voient le secteur, le stade et les profils recherchés de votre projet, jamais votre nom, celui du projet ni sa description
-                      }
-                      Modifiable à tout moment dans les paramètres
-                    </span>
-                  </span>
-                </label>
-              }
 
               @if (detailsForm.invalid && detailsForm.touched) {
                 <p class="mt-5 text-sm text-destructive">
@@ -529,7 +513,6 @@ export class InscriptionComponent {
     talentHeadline: [''],
     talentSkill: [''],
     talentAvailability: [true],
-    publicListing: [false],
     maSector: [''],
     maBudget: [''],
     maRegion: [''],
@@ -736,7 +719,6 @@ export class InscriptionComponent {
           talentHeadline: this.detailsForm.controls.talentHeadline.getRawValue(),
           talentSkill: this.detailsForm.controls.talentSkill.getRawValue(),
           talentAvailability: this.detailsForm.controls.talentAvailability.getRawValue(),
-          publicListing: this.detailsForm.controls.publicListing.getRawValue(),
           maSector: this.detailsForm.controls.maSector.getRawValue(),
           maBudget: this.detailsForm.controls.maBudget.getRawValue(),
           maRegion: this.detailsForm.controls.maRegion.getRawValue(),
