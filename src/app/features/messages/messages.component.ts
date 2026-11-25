@@ -13,6 +13,7 @@ import { MATCH_REASONS_UPSELL, canSeeMatchReasons } from '../../core/models/user
 import { AuthService } from '../../core/services/auth.service';
 import { MatchingService } from '../../core/services/matching.service';
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
+import { ContactGateModalComponent } from '../../shared/components/contact-gate-modal/contact-gate-modal.component';
 import { QuotaLimitModalComponent } from '../../shared/components/quota-limit-modal/quota-limit-modal.component';
 import { ProjectService } from '../../core/services/project.service';
 import { ProjectAccessService } from '../../core/services/project-access.service';
@@ -36,7 +37,7 @@ interface ConversationPreview {
 @Component({
   selector: 'app-messages',
   standalone: true,
-  imports: [NgClass, RouterLink, AvatarComponent, QuotaLimitModalComponent],
+  imports: [NgClass, RouterLink, AvatarComponent, QuotaLimitModalComponent, ContactGateModalComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (conversationsLoaded() && conversations().length === 0) {
@@ -110,10 +111,9 @@ interface ConversationPreview {
 
           <!-- Barre de saisie -->
           <div class="bg-white border-t border-border p-3 flex-shrink-0 sm:p-4">
-            @if (sendError() && !quotaReached()) {
+            @if (sendError() && !quotaReached() && !contactGate()) {
               <div class="mb-3 flex flex-col gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between" role="alert">
                 <span>{{ sendError() }}</span>
-                <a routerLink="/tarifs" fragment="associes" class="font-semibold text-accent hover:underline">Voir l'offre PRO</a>
               </div>
             }
             <div class="flex items-center gap-2">
@@ -364,6 +364,9 @@ interface ConversationPreview {
     @if (quotaReached()) {
       <app-quota-limit-modal (closed)="quotaReached.set(false)" />
     }
+    @if (contactGate(); as kind) {
+      <app-contact-gate-modal [kind]="kind" (closed)="contactGate.set(null)" />
+    }
   `
 })
 export class MessagesComponent implements OnInit {
@@ -432,6 +435,7 @@ export class MessagesComponent implements OnInit {
   readonly sendError = this.messagingService.lastError;
   // Nouveau contact refusé (offre FREE) : fenêtre des offres plutôt qu'un compteur permanent.
   readonly quotaReached = this.messagingService.quotaReached;
+  readonly contactGate = this.messagingService.contactGate;
   readonly emojiPickerOpen = signal(false);
 
   readonly localMessages = signal<Record<string, ConversationMessage[]>>({});

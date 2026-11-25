@@ -84,6 +84,8 @@ export class MessagingService {
   readonly lastError = signal('');
   // Vrai quand Supabase refuse un nouveau contact (FREE_QUOTA_CONTACTS) : la page affiche la fenêtre des offres.
   readonly quotaReached = signal(false);
+  // Refus parce que le projet n'est pas présenté ou le profil d'associé pas complété : la page affiche une fenêtre.
+  readonly contactGate = signal<'projet' | 'associe' | null>(null);
   readonly unreadCount = computed(() =>
     this.conversationThreads().reduce((total, conversation) => total + conversation.unread, 0)
   );
@@ -342,6 +344,9 @@ export class MessagingService {
   private toErrorMessage(rawMessage: string | undefined, fallback: string): string {
     if (rawMessage === 'FREE_QUOTA_CONTACTS') {
       this.quotaReached.set(true);
+    }
+    if (rawMessage === 'PROJET_INCOMPLET' || rawMessage === 'PROFIL_ASSOCIE_INCOMPLET') {
+      this.contactGate.set(rawMessage === 'PROJET_INCOMPLET' ? 'projet' : 'associe');
     }
     return (rawMessage && QUOTA_ERROR_MESSAGES[rawMessage]) ?? fallback;
   }

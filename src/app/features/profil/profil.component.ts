@@ -13,13 +13,14 @@ import { ProjectAccessRequest, ProjectAccessService } from '../../core/services/
 import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '../../core/legal/nda';
 import { SupabaseService } from '../../core/services/supabase.service';
 import { FavoriteButtonComponent } from '../../shared/components/favorite-button/favorite-button.component';
+import { ContactGateKind, ContactGateModalComponent } from '../../shared/components/contact-gate-modal/contact-gate-modal.component';
 import { QuotaLimitModalComponent } from '../../shared/components/quota-limit-modal/quota-limit-modal.component';
 import { MessagingService } from '../../core/services/messaging.service';
 
 @Component({
   selector: 'app-profil',
   standalone: true,
-  imports: [NgClass, RouterLink, FavoriteButtonComponent, QuotaLimitModalComponent],
+  imports: [NgClass, RouterLink, FavoriteButtonComponent, QuotaLimitModalComponent, ContactGateModalComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (isUnavailable()) {
@@ -110,12 +111,6 @@ import { MessagingService } from '../../core/services/messaging.service';
                           </svg>
                           Modifier mon profil
                         </a>
-                      } @else if (contactGate()) {
-                        <!-- Pour écrire : projet présenté (vers un associé) ou profil d'associé complété (vers un porteur). -->
-                        <a [routerLink]="contactGate()!.path" class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-white transition-colors hover:bg-primary/90">
-                          {{ contactGate()!.label }}
-                        </a>
-                        <p class="text-sm text-muted-foreground sm:basis-full">{{ contactGate()!.hint }}</p>
                       } @else {
                         <button type="button" (click)="openConversation()" class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-white transition-all hover:scale-105 hover:bg-primary/90 active:scale-95">
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -526,6 +521,9 @@ import { MessagingService } from '../../core/services/messaging.service';
     @if (quotaModalOpen()) {
       <app-quota-limit-modal (closed)="quotaModalOpen.set(false)" />
     }
+    @if (gateModal(); as kind) {
+      <app-contact-gate-modal [kind]="kind" (closed)="gateModal.set(null)" />
+    }
   `
   ,
   styles: [`
@@ -570,12 +568,19 @@ export class ProfilComponent implements OnInit {
   private readonly messaging = inject(MessagingService);
   private readonly router = inject(Router);
   readonly quotaModalOpen = signal(false);
+  readonly gateModal = signal<ContactGateKind | null>(null);
 
   // Écrire à un associé compte comme nouveau contact pour un porteur en FREE : au-delà de la limite du mois,
   // la fenêtre des offres s'affiche au lieu d'ouvrir la conversation.
   async openConversation(): Promise<void> {
     const id = this.profileId();
     if (!id) {
+      return;
+    }
+    // Projet à finaliser (vers un associé) ou profil d'associé à compléter (vers un porteur) : fenêtre explicative.
+    const gate = this.contactGate();
+    if (gate) {
+      this.gateModal.set(gate.kind);
       return;
     }
     if (this.publicProfile()?.profileType === 'talent' && !(await this.messaging.canOpenNewContact(id))) {
@@ -699,16 +704,16 @@ export class ProfilComponent implements OnInit {
     && !!this.myProject()?.confidentialDetails?.trim()
   );
   // Ce qu'il manque pour écrire à ce membre (règles de 2026-11-17-visibilite-contact.sql, vérifiées aussi par Supabase).
-  readonly contactGate = computed<{ label: string; path: string; hint: string } | null>(() => {
+  readonly contactGate = computed<{ kind: ContactGateKind } | null>(() => {
     const profile = this.publicProfile();
     if (this.isOwnProfile() || !profile) {
       return null;
     }
     if (profile.profileType === 'talent' && !isProjectPresented(this.myProject())) {
-      return { label: 'Présenter mon projet pour lui écrire', path: '/mon-projet', hint: 'Un brouillon suffit : titre, courte présentation et compétences recherchées. Il ne sera lisible que par les associés à qui vous écrivez' };
+      return { kind: 'projet' };
     }
     if (profile.profileType === 'entrepreneur' && !isAssociateProfileComplete(this.currentUser())) {
-      return { label: 'Compléter mon profil d’associé pour lui écrire', path: '/profil/associe', hint: 'Intitulé, une compétence et une courte présentation. Vous n’avez pas besoin d’être visible dans la recherche' };
+      return { kind: 'associe' };
     }
     return null;
   });
