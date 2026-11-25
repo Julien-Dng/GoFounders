@@ -429,31 +429,6 @@ import { MessagingService } from '../../core/services/messaging.service';
                     <p class="mt-3 text-sm text-destructive" role="alert">{{ inviteMessage() }}</p>
                   }
                 </div>
-              } @else if (!isOwnProfile() && !isProjectProfile()) {
-                <div class="relative overflow-hidden rounded-2xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-300/25 dark:from-amber-500/15 dark:to-orange-500/10">
-                  <div class="relative z-10">
-                    <div class="mb-4 flex items-center gap-3">
-                      <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-accent">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                        </svg>
-                      </div>
-                      <h3 class="text-lg font-semibold dark:text-amber-50">Détails confidentiels</h3>
-                    </div>
-                    <p class="mb-4 text-sm leading-relaxed text-foreground/80 dark:text-amber-100/85">
-                      Accédez aux informations complètes en passant par un échange sécurisé et, si besoin, un cadre de confidentialité
-                    </p>
-                    <button type="button" (click)="openConversation()" class="flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 font-semibold text-white transition-colors hover:bg-accent/90">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                      </svg>
-                      Ouvrir un échange
-                    </button>
-                    <p class="mt-3 text-center text-sm text-muted-foreground dark:text-amber-100/70">Mise en relation avec des experts juridiques partenaires</p>
-                  </div>
-                  <div class="absolute -right-16 -top-16 h-32 w-32 rounded-full bg-accent/10"></div>
-                </div>
               }
 
               @if (!isOwnProfile()) {
