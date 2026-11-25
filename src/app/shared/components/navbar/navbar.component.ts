@@ -4,17 +4,19 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/ro
 import { FEATURES } from '../../../core/config/features';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs/operators';
-import { hasUsage } from '../../../core/models/user.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserMenuComponent } from '../user-menu/user-menu.component';
 import { NotificationMenuComponent } from '../notification-menu/notification-menu.component';
+import { MemberNavIconComponent } from '../member-nav-icon/member-nav-icon.component';
+import { MemberNavItem, buildMemberNav, isMemberNavActive } from '../../../core/config/member-nav';
+import { MessagingService } from '../../../core/services/messaging.service';
 
-type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles' | 'credit-card' | 'settings' | 'bars' | 'shield' | 'heart' | 'user';
+type DrawerIcon = 'home' | 'search' | 'users' | 'chart' | 'credit-card';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, UserMenuComponent, NotificationMenuComponent],
+  imports: [RouterLink, RouterLinkActive, UserMenuComponent, NotificationMenuComponent, MemberNavIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (!isHidden()) {
@@ -127,109 +129,90 @@ type DrawerIcon = 'home' | 'search' | 'users' | 'messages' | 'chart' | 'sparkles
         </div>
 
         <div class="flex-1 overflow-y-auto p-3 space-y-0.5">
-          @for (item of navItems(); track item.id) {
-            <a
-              [routerLink]="item.path"
-              routerLinkActive="bg-accent/10 text-accent"
-              [routerLinkActiveOptions]="{ exact: item.exact }"
-              (click)="drawerOpen.set(false)"
-              class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-foreground/70 hover:bg-secondary hover:text-foreground transition-all"
-            >
-              <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-secondary text-muted-foreground transition-colors group-hover:text-accent" aria-hidden="true">
-                @switch (item.icon) {
-                  @case ('home') {
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M3 10.5 12 3l9 7.5"/>
-                      <path d="M5 9.5V21h14V9.5"/>
-                    </svg>
+          @if (auth.isAuthenticated()) {
+            <!-- Membre : même navigation personnelle que le bandeau de l'espace membre (core/config/member-nav.ts) -->
+            <nav aria-label="Mon espace" class="space-y-0.5">
+              @for (item of memberItems(); track item.id) {
+                <a [routerLink]="item.path" (click)="drawerOpen.set(false)" [attr.aria-current]="isMemberActive(item) ? 'page' : null"
+                   class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
+                   [class]="isMemberActive(item) ? 'bg-accent text-white' : 'text-foreground/75 hover:bg-secondary hover:text-foreground'">
+                  <app-member-nav-icon [icon]="item.icon" />
+                  <span class="flex-1">{{ item.label }}</span>
+                  @if (item.badge) {
+                    <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-xs font-bold text-white">{{ item.badge }}<span class="sr-only"> non lus</span></span>
                   }
-                  @case ('search') {
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="11" cy="11" r="7"/>
-                      <path d="m20 20-3.5-3.5"/>
-                    </svg>
-                  }
-                  @case ('users') {
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                      <circle cx="9" cy="7" r="4"/>
-                      <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                    </svg>
-                  }
-                  @case ('messages') {
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
-                  }
-                  @case ('chart') {
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M3 3v18h18"/>
-                      <path d="m7 14 4-4 3 3 5-7"/>
-                    </svg>
-                  }
-                  @case ('sparkles') {
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="m12 3-1.9 5.1L5 10l5.1 1.9L12 17l1.9-5.1L19 10l-5.1-1.9z"/>
-                      <path d="M5 3v4"/>
-                      <path d="M19 17v4"/>
-                      <path d="M3 5h4"/>
-                      <path d="M17 19h4"/>
-                    </svg>
-                  }
-                  @case ('user') {
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M20 21a8 8 0 0 0-16 0"/>
-                      <circle cx="12" cy="8" r="4"/>
-                    </svg>
-                  }
-                  @case ('heart') {
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8 3.6 4.5 7.1 4.5c2 0 3.6 1.1 4.9 2.8 1.3-1.7 2.9-2.8 4.9-2.8 3.5 0 5.6 3.5 4.4 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/>
-                    </svg>
-                  }
-                  @case ('bars') {
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M4 20V10"/>
-                      <path d="M10 20V4"/>
-                      <path d="M16 20v-7"/>
-                      <path d="M22 20H2"/>
-                    </svg>
-                  }
-                  @case ('shield') {
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                      <path d="m9 12 2 2 4-4"/>
-                    </svg>
-                  }
-                  @case ('credit-card') {
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="2" y="5" width="20" height="14" rx="2"/>
-                      <path d="M2 10h20"/>
-                    </svg>
-                  }
-                  @case ('settings') {
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="12" r="3"/>
-                      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33 1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82 1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                    </svg>
-                  }
-                }
-              </span>
-              <span class="text-sm font-medium flex-1">{{ item.label }}</span>
-              @if (item.badge) {
-                <span class="w-5 h-5 bg-accent text-white rounded-full flex items-center justify-center text-xs font-bold">
-                  {{ item.badge }}
-                </span>
+                </a>
               }
-            </a>
+            </nav>
+            @if (siteLinks().length) {
+              <nav aria-label="Sur le site" class="mt-4 space-y-0.5 border-t border-border pt-4">
+                <p class="px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Sur le site</p>
+                @for (link of siteLinks(); track link.href) {
+                  <a [routerLink]="link.href" routerLinkActive="text-accent" [routerLinkActiveOptions]="{ exact: true }" (click)="drawerOpen.set(false)"
+                     class="block rounded-lg px-3 py-2 text-sm font-medium text-foreground/75 transition-colors hover:bg-secondary hover:text-foreground">{{ link.label }}</a>
+                }
+              </nav>
+            }
+          } @else {
+            @for (item of navItems(); track item.id) {
+              <a
+                [routerLink]="item.path"
+                routerLinkActive="bg-accent/10 text-accent"
+                [routerLinkActiveOptions]="{ exact: item.exact }"
+                (click)="drawerOpen.set(false)"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-foreground/70 hover:bg-secondary hover:text-foreground transition-all"
+              >
+                <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-secondary text-muted-foreground transition-colors group-hover:text-accent" aria-hidden="true">
+                  @switch (item.icon) {
+                    @case ('home') {
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 10.5 12 3l9 7.5"/>
+                        <path d="M5 9.5V21h14V9.5"/>
+                      </svg>
+                    }
+                    @case ('search') {
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="7"/>
+                        <path d="m20 20-3.5-3.5"/>
+                      </svg>
+                    }
+                    @case ('users') {
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                      </svg>
+                    }
+                    @case ('chart') {
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 3v18h18"/>
+                        <path d="m7 14 4-4 3 3 5-7"/>
+                      </svg>
+                    }
+                    @case ('credit-card') {
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="5" width="20" height="14" rx="2"/>
+                        <path d="M2 10h20"/>
+                      </svg>
+                    }
+                  }
+                </span>
+                <span class="text-sm font-medium flex-1">{{ item.label }}</span>
+                @if (item.badge) {
+                  <span class="w-5 h-5 bg-accent text-white rounded-full flex items-center justify-center text-xs font-bold">
+                    {{ item.badge }}
+                  </span>
+                }
+              </a>
+            }
           }
         </div>
 
         <div class="border-t border-border p-4">
           @if (auth.isAuthenticated()) {
             <a
-              [routerLink]="profileLink()"
+              [routerLink]="profilePath()"
               (click)="drawerOpen.set(false)"
               class="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
               [attr.aria-label]="'Voir le profil de ' + displayName()"
@@ -276,10 +259,6 @@ export class NavbarComponent {
     const photoUrl = this.photoUrl();
     return photoUrl.length > 0 && this.failedPhotoUrl() !== photoUrl;
   });
-  readonly profileLink = computed(() => {
-    const userId = this.auth.currentUser()?.uid;
-    return userId ? ['/profil', userId] : ['/dashboard'];
-  });
 
   constructor() {
     // Mode sombre retiré : on efface un ancien choix enregistré pour revenir au thème clair.
@@ -299,11 +278,6 @@ export class NavbarComponent {
   // (publication pour leurs clients) est proposé. L'assistant IA sort de la navigation (route conservée).
   private readonly hidesVendre = computed(() => this.auth.currentUser()?.profileType === 'pro' && !FEATURES.proAccount);
 
-  // « Mes annonces » et statistiques : membres qui ont choisi « Vendre une entreprise », et pros.
-  private readonly ownsListings = computed(() => {
-    const user = this.auth.currentUser();
-    return user?.profileType === 'pro' || hasUsage(user, 'cession');
-  });
 
   private readonly allNavLinks = [
     { href: '/ma', label: 'Annonces' },
@@ -319,54 +293,46 @@ export class NavbarComponent {
   readonly navLinks = computed(() =>
     this.allNavLinks
       .filter(link => !(link.href === '/recherche' && this.hidesRecherche()) && !(link.href === '/ma/deposer' && this.hidesVendre()) && !(link.href === '/pros' && !FEATURES.pros))
-      .map(link => (link.href === '/recherche' ? { ...link, href: this.associateHref() } : link))
+      .map(link => (link.href === '/recherche'
+        ? { ...link, href: this.associateHref(), label: this.auth.isAuthenticated() ? 'Associés & projets' : link.label }
+        : link))
   );
 
+  // Visiteurs : mêmes liens que le menu ordinateur.
   private readonly allNavItems: Array<{ id: string; label: string; icon: DrawerIcon; path: string; badge: number | null; exact: boolean }> = [
-    { id: 'accueil',    label: 'Tableau de bord', icon: 'home', path: '/dashboard',   badge: null, exact: true  },
+    { id: 'accueil',    label: 'Accueil',      icon: 'home', path: '/',            badge: null, exact: true  },
     { id: 'ma',         label: 'Annonces',     icon: 'search', path: '/ma',          badge: null, exact: true  },
     { id: 'vendre',     label: 'Vendre',       icon: 'chart', path: '/ma/deposer',  badge: null, exact: true  },
-    { id: 'recherche',  label: 'Associés & équipe', icon: 'users', path: '/recherche', badge: null, exact: true  },
-    { id: 'tarifs',     label: 'Tarifs',       icon: 'credit-card', path: '/tarifs',  badge: null, exact: true  },
-    // « Mes entreprises » : favoris, dossiers débloqués et annonces publiées (trois onglets).
-    { id: 'mes-entreprises', label: 'Mes entreprises', icon: 'heart', path: '/ma/favoris', badge: null, exact: true },
-    { id: 'statistiques', label: 'Mes statistiques', icon: 'bars', path: '/ma/statistiques', badge: null, exact: true },
+    { id: 'recherche',  label: 'Associés & équipe', icon: 'users', path: '/associes', badge: null, exact: true  },
     { id: 'annuaire',   label: 'Annuaire des pros', icon: 'users', path: '/pros',      badge: null, exact: true  },
-    { id: 'profil',     label: 'Mon profil',   icon: 'user', path: '/profil/modifier', badge: null, exact: false },
-    { id: 'messages',   label: 'Messages',     icon: 'messages', path: '/messages',    badge: null, exact: false },
-    { id: 'abonnement', label: 'Offre et facturation', icon: 'credit-card', path: '/abonnement', badge: null, exact: true  },
-    { id: 'parametres', label: 'Paramètres',   icon: 'settings', path: '/parametres',  badge: null, exact: true  },
-    { id: 'admin-annonces', label: 'Modération des annonces', icon: 'shield', path: '/admin/annonces', badge: null, exact: true },
-    { id: 'admin-profils', label: 'Profils à vérifier', icon: 'shield', path: '/admin/profils', badge: null, exact: true },
-    { id: 'verifications', label: 'Dossiers à vérifier', icon: 'shield', path: '/admin/verifications', badge: null, exact: true },
-    { id: 'admin-temoignages', label: 'Ventes à valider', icon: 'shield', path: '/admin/temoignages', badge: null, exact: true },
-    { id: 'admin-messages', label: 'Messages reçus', icon: 'shield', path: '/admin/messages', badge: null, exact: true },
+    { id: 'tarifs',     label: 'Tarifs',       icon: 'credit-card', path: '/tarifs',  badge: null, exact: true  },
   ];
 
   readonly navItems = computed(() =>
     this.allNavItems.filter(item =>
       !(item.id === 'recherche' && this.hidesRecherche())
       && !(item.id === 'vendre' && this.hidesVendre())
-      && !(item.id === 'statistiques' && !this.ownsListings())
-      && !((item.id === 'verifications' || item.id.startsWith('admin-')) && !this.auth.isAdmin())
       && !(item.id === 'annuaire' && !FEATURES.pros)
-      && !(item.id === 'verifications' && !FEATURES.sellerPaidOffers)
-      // Visiteurs : mêmes liens que le menu ordinateur, sans les pages de compte.
-      && !(['messages', 'abonnement', 'parametres', 'mes-entreprises', 'profil'].includes(item.id) && !this.auth.isAuthenticated())
-    ).map(item => {
-      if (item.id === 'recherche') {
-        return { ...item, path: this.associateHref() };
-      }
-      if (item.id === 'profil') {
-        const uid = this.auth.currentUser()?.uid;
-        return uid ? { ...item, path: `/profil/${uid}` } : item;
-      }
-      if (item.id === 'accueil') {
-        return this.auth.isAuthenticated() ? item : { ...item, label: 'Accueil', path: '/' };
-      }
-      return item;
-    })
+    )
   );
+
+  // Membre connecté : navigation personnelle partagée avec l'espace membre, puis les seuls liens du site qu'elle
+  // ne contient pas déjà (Vendre, Tarifs).
+  private readonly messaging = inject(MessagingService);
+  readonly profilePath = computed(() => {
+    const uid = this.auth.currentUser()?.uid;
+    return uid ? `/profil/${uid}` : '/profil/modifier';
+  });
+  readonly memberItems = computed<MemberNavItem[]>(() =>
+    buildMemberNav({ profilePath: this.profilePath(), isAdmin: this.auth.isAdmin(), unread: this.messaging.unreadCount() }));
+  readonly siteLinks = computed(() => {
+    const memberPaths = new Set(this.memberItems().map(item => item.path));
+    return this.navLinks().filter(link => !memberPaths.has(link.href));
+  });
+
+  isMemberActive(item: MemberNavItem): boolean {
+    return isMemberNavActive(item, this.currentUrl() ?? '', this.profilePath());
+  }
 
   private readonly currentUrl = toSignal(
     this.router.events.pipe(
