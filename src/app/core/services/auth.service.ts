@@ -75,7 +75,6 @@ export interface SignUpPayload {
   // Pro : nom du cabinet ou de l'activité, affiché comme intitulé du profil.
   proCompany?: string;
   // Porteur de projet ou associé : accord pour apparaître de façon anonyme sur /associes.
-  publicListing?: boolean;
 }
 
 export interface AuthResult {
@@ -339,35 +338,6 @@ export class AuthService {
       : { success: true, message: isVisible ? 'Votre profil apparaît de nouveau dans la recherche.' : 'Votre profil est masqué de la recherche.' };
   }
 
-  // Usages du membre (Paramètres) : personnalisation seulement, aucun droit (2026-11-13-compte-multi-usages.sql).
-  async setUsages(usages: Usage[]): Promise<AuthResult> {
-    const user = this._currentUser();
-    const cleaned = Array.from(new Set(usages));
-    if (!user || user.profileType === 'pro') {
-      return { success: false, message: 'Les objectifs ne concernent pas les comptes professionnels.' };
-    }
-
-    if (cleaned.length === 0) {
-      return { success: false, message: 'Choisissez au moins un objectif.' };
-    }
-
-    if (this.supabase.isConfigured) {
-      const { error } = await this.supabase.client.from('profiles').update({ usages: cleaned }).eq('id', user.uid);
-      if (error) {
-        return { success: false, message: 'Impossible d’enregistrer vos choix pour le moment.' };
-      }
-    } else {
-      const users = this.readUsers();
-      const index = users.findIndex(entry => entry.uid === user.uid);
-      if (index >= 0) {
-        users[index] = { ...users[index], usages: cleaned };
-        this.writeUsers(users);
-      }
-    }
-
-    this._currentUser.set({ ...user, usages: cleaned });
-    return { success: true, message: 'Vos choix sont enregistrés.' };
-  }
 
   // Objectif ajouté après une action confirmée (projet publié, annonce déposée, dossier débloqué). Avec Supabase,
   // les déclencheurs l'ont déjà ajouté : on recharge le profil. En mode local, on l'ajoute ici.
@@ -567,7 +537,6 @@ export class AuthService {
           ma_budget: this.initialMaField(payload, payload.maBudget) ?? '',
           ma_region: this.initialMaField(payload, payload.maRegion) ?? '',
           pro_category: payload.profileType === 'pro' ? payload.proCategory ?? '' : '',
-          public_listing: !!payload.publicListing && (this.has(payload, 'projet') || this.has(payload, 'associe')),
         },
       },
     });
@@ -640,7 +609,6 @@ export class AuthService {
           skills: this.buildInitialSkills(payload) ?? [],
           looking_for: this.buildInitialLookingFor(payload) ?? [],
           availability_label: this.has(payload, 'associe') && payload.talentAvailability ? 'Disponible rapidement' : null,
-          public_listing: !!payload.publicListing && (this.has(payload, 'projet') || this.has(payload, 'associe')),
           ma_sector: this.initialMaField(payload, payload.maSector) ?? null,
           ma_budget: this.initialMaField(payload, payload.maBudget) ?? null,
           ma_region: this.initialMaField(payload, payload.maRegion) ?? null,

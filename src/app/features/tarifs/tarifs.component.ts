@@ -5,7 +5,6 @@ import { AccountProduct, INTRO_SUMMARY, FREE_AI_ANALYSES_PER_MONTH, FREE_CONTACT
 import { FEATURES } from '../../core/config/features';
 import { hasBuyerPlus, isActiveUntil } from '../../core/models/user.model';
 import { PaymentService, PremiumTopic } from '../../core/services/payment.service';
-import { PricingFeature } from '../../shared/components/pricing-card/pricing-card.component';
 import { AuthService } from '../../core/services/auth.service';
 import { RevealDirective } from '../../shared/directives/reveal.directive';
 
@@ -34,6 +33,13 @@ interface Plan {
   href: string;
   reassurance: string;
   variant: 'free' | 'pro' | 'premium';
+}
+
+interface PricingFeature {
+  text: string;
+  included: boolean;
+  // Fonctionnalité annoncée mais pas encore disponible : affichée avec un badge « Bientôt ».
+  soon?: boolean;
 }
 
 @Component({

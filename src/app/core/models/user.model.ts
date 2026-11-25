@@ -6,13 +6,6 @@ import { Timestamp } from '@angular/fire/firestore';
 export type ProfileType = 'entrepreneur' | 'talent' | 'buyer' | 'seller' | 'pro';
 export type Usage = 'reprise' | 'cession' | 'projet' | 'associe';
 
-export const USAGE_OPTIONS: ReadonlyArray<{ value: Usage; label: string; description: string }> = [
-  { value: 'reprise', label: 'Reprendre une entreprise', description: 'Consulter les annonces et débloquer les dossiers qui vous intéressent' },
-  { value: 'cession', label: 'Vendre une entreprise', description: 'Publier gratuitement une annonce anonyme et échanger avec les repreneurs' },
-  { value: 'projet', label: 'Trouver des associés', description: 'Présenter votre projet et contacter les profils qui vous manquent' },
-  { value: 'associe', label: 'Rejoindre un projet', description: 'Proposer vos compétences et contacter des porteurs de projet' },
-];
-
 // Libellé court d'un usage, pour décrire un membre (« Porteur de projet, Repreneur »).
 export const USAGE_SHORT_LABELS: Record<Usage, string> = { projet: 'Porteur de projet', associe: 'Associé', reprise: 'Repreneur', cession: 'Cédant' };
 
@@ -50,9 +43,6 @@ export function hasUsage(user: Pick<User, 'profileType' | 'usages'> | null | und
   return usagesOf(user).includes(usage);
 }
 
-export function isProAccount(user: Pick<User, 'profileType'> | null | undefined): boolean {
-  return user?.profileType === 'pro';
-}
 export type Plan = 'FREE' | 'PRO' | 'PREMIUM';
 
 export const PROFILE_TYPE_LABELS: Record<ProfileType, string> = {

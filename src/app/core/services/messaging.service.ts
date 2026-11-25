@@ -1,7 +1,6 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { ConversationMessage, MarketplaceProfile } from '../data/mock-platform.data';
-import { Conversation, Message } from '../models/message.model';
 import { SupabaseProfileRow, PROFILE_COLUMNS } from '../models/supabase-database.model';
 import { User } from '../models/user.model';
 import { AuthService } from './auth.service';
@@ -102,14 +101,6 @@ export class MessagingService {
       this.activeUserId = userId;
       void this.handleUserChange(user);
     }, { allowSignalWrites: true });
-  }
-
-  async getConversations(_userId: string): Promise<Conversation[]> {
-    return [];
-  }
-
-  async getMessages(_conversationId: string): Promise<Message[]> {
-    return [];
   }
 
   async getConversationThreads(user: User): Promise<ConversationThread[]> {

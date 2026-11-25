@@ -1,7 +1,5 @@
 import { Injectable, inject } from '@angular/core';
 import { MARKETPLACE_PROFILES, MarketplaceProfile, findMarketplaceProfileById } from '../data/mock-platform.data';
-import { Match } from '../models/match.model';
-import { Profile } from '../models/project.model';
 import { SupabaseProfileRow, SupabaseProjectRow, PROFILE_COLUMNS, PROJECT_COLUMNS } from '../models/supabase-database.model';
 import { PROFILE_TYPE_LABELS, ProfileType, hasUsage, isFeaturedProjectPlan, offersAssociateProfile } from '../models/user.model';
 import { ProjectSide, TalentSide, computeCompatibility } from '../matching/compatibility';
@@ -14,14 +12,6 @@ export class MatchingService {
   private readonly supabase = inject(SupabaseService);
   private readonly auth = inject(AuthService);
   private readonly projects = inject(ProjectService);
-
-  async getMatchesForUser(_userId: string): Promise<Match[]> {
-    return [];
-  }
-
-  async getProfilesForSearch(_filters: ProfileSearchFilters): Promise<Profile[]> {
-    return [];
-  }
 
   // Profils proposés à l'utilisateur connecté : projets mis en avant d'abord, puis compatibilité décroissante.
   // Associés et projets que le membre a le droit de voir (règles Supabase fondées sur ses actions).
@@ -117,10 +107,6 @@ export class MatchingService {
       return undefined;
     }
   }
-
-  async acceptMatch(_matchId: string): Promise<void> {}
-
-  async rejectMatch(_matchId: string): Promise<void> {}
 
   private demoProfilesForAdminIfEmpty(profiles: MarketplaceProfile[]): MarketplaceProfile[] {
     return profiles.length === 0 && this.auth.isAdmin() ? MARKETPLACE_PROFILES : profiles;
@@ -317,12 +303,5 @@ export class MatchingService {
   }
 }
 
-export interface ProfileSearchFilters {
-  type?: string[];
-  sector?: string;
-  stage?: string;
-  location?: string;
-  availableOnly?: boolean;
-}
 
 type ViewerSide = { kind: 'project'; project: ProjectSide } | { kind: 'talent'; talent: TalentSide };

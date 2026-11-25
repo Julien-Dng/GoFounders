@@ -47,19 +47,6 @@ export interface ConversationMessage {
   time: string;
 }
 
-export interface ConversationData {
-  id: string;
-  participantProfileId: string;
-  participantName: string;
-  participantInitials: string;
-  participantRole: string;
-  time: string;
-  unread: number;
-  isOnline: boolean;
-  lastMessage: string;
-  messages: ConversationMessage[];
-}
-
 export interface MaListingData {
   id: string;
   sector: string;
@@ -507,41 +494,6 @@ export const MARKETPLACE_PROFILES: MarketplaceProfile[] = [
   },
 ];
 
-export const CONVERSATIONS: ConversationData[] = [
-  {
-    id: 'talent-sophie-martin',
-    participantProfileId: 'talent-sophie-martin',
-    participantName: 'Sophie Martin',
-    participantInitials: 'SM',
-    participantRole: 'CTO freelance',
-    time: '14:32',
-    unread: 2,
-    isOnline: true,
-    lastMessage: "Bonjour, votre projet m'intéresse beaucoup.",
-    messages: [
-      { id: 'msg-1', senderId: 'other', content: "Bonjour ! Votre projet m'intéresse beaucoup.", time: '14:30' },
-      { id: 'msg-2', senderId: 'me', content: "Merci, ravi de lire ça. Vous êtes disponible cette semaine ?", time: '14:31' },
-      { id: 'msg-3', senderId: 'other', content: "Oui, avec plaisir. Je peux me libérer jeudi après-midi.", time: '14:32' },
-    ],
-  },
-  {
-    id: 'talent-marc-laurent',
-    participantProfileId: 'talent-marc-laurent',
-    participantName: 'Marc Laurent',
-    participantInitials: 'ML',
-    participantRole: 'Commercial senior',
-    time: 'Hier',
-    unread: 0,
-    isOnline: false,
-    lastMessage: 'Quand êtes-vous disponible pour un échange ?',
-    messages: [
-      { id: 'msg-4', senderId: 'other', content: "Bonjour, votre recherche côté acquisition m'intéresse.", time: '11:18' },
-      { id: 'msg-5', senderId: 'me', content: 'Merci Marc, votre profil semble très aligné avec notre phase actuelle.', time: '11:25' },
-      { id: 'msg-6', senderId: 'other', content: 'Quand êtes-vous disponible pour un échange ?', time: '11:31' },
-    ],
-  },
-];
-
 export const MA_LISTINGS: MaListingData[] = [
   {
     id: 'MA-001',
@@ -671,10 +623,6 @@ export const MA_LISTINGS: MaListingData[] = [
 
 export function findMarketplaceProfileById(profileId: string): MarketplaceProfile | undefined {
   return MARKETPLACE_PROFILES.find(profile => profile.id === profileId);
-}
-
-export function findConversationById(conversationId: string): ConversationData | undefined {
-  return CONVERSATIONS.find(conversation => conversation.id === conversationId);
 }
 
 export function findMaListingById(listingId: string): MaListingData | undefined {

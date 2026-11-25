@@ -285,11 +285,6 @@ import { MessagingService } from '../../core/services/messaging.service';
                     </div>
                   }
 
-                  @if (activeTab() === 'avis') {
-                    <div class="rounded-2xl border border-border bg-secondary/50 p-8 text-center text-muted-foreground">
-                      Les recommandations et retours d'expérience seront ajoutés ici dans une prochaine itération
-                    </div>
-                  }
                 </div>
               </div>
             </div>
@@ -433,13 +428,13 @@ import { MessagingService } from '../../core/services/messaging.service';
 
               @if (!isOwnProfile()) {
                 <div class="text-center">
-                  <button type="button" class="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-destructive">
+                  <a routerLink="/contact" [queryParams]="{ sujet: 'probleme' }" class="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-destructive">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
                       <line x1="4" y1="22" x2="4" y2="15"/>
                     </svg>
                     Signaler ce profil
-                  </button>
+                  </a>
                 </div>
               }
             </div>
@@ -809,7 +804,6 @@ export class ProfilComponent implements OnInit {
     { id: 'presentation', label: 'Présentation' },
     { id: 'projet', label: 'Projet' },
     { id: 'experience', label: 'Expérience' },
-    { id: 'avis', label: 'Avis' },
   ];
 
   ngOnInit(): void {
