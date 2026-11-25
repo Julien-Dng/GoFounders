@@ -160,9 +160,9 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
               }
             </div>
 
-            <p class="hero-enter mt-4 text-center font-semibold text-white/85 sm:mt-5 sm:text-left" style="animation-delay: 260ms">
+            <p class="hero-enter mt-4 whitespace-nowrap text-center text-[clamp(0.75rem,3.9vw,1rem)] font-semibold text-white/85 sm:mt-5 sm:text-left sm:text-base" style="animation-delay: 260ms">
               <a routerLink="/ma/deposer" class="group underline underline-offset-4 decoration-white/40 hover:decoration-white">Vendre mon entreprise&nbsp;<span class="arrow-nudge">→</span></a>
-              <span class="mx-2 text-white/40" aria-hidden="true">·</span>
+              <span class="mx-1.5 text-white/40 sm:mx-2" aria-hidden="true">·</span>
               <a routerLink="/estimation" class="underline-offset-4 hover:underline">Estimer sa valeur</a>
             </p>
           </div>
@@ -538,7 +538,7 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
           <div class="absolute inset-0 hidden sm:block" style="background: rgba(15, 27, 45, 0.86)" aria-hidden="true"></div>
           <div class="relative flex flex-col gap-4 sm:gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h2 id="sell-title" class="text-2xl sm:text-3xl">Vous pensez à passer la main ?</h2>
+              <h2 id="sell-title" class="whitespace-nowrap text-[clamp(1.05rem,5.6vw,1.5rem)] sm:whitespace-normal sm:text-3xl">Vous pensez à passer la main ?</h2>
               <p class="mt-2 max-w-[56ch] text-base leading-relaxed text-white/75 sm:text-lg"><span class="hidden sm:inline">Votre entreprise mérite mieux qu'une petite annonce. </span>Publiez gratuitement, sans commission</p>
             </div>
             <div class="flex flex-shrink-0 flex-col items-start gap-3 sm:flex-row sm:items-center">
