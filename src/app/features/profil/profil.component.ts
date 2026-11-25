@@ -490,7 +490,7 @@ import { MessagingService } from '../../core/services/messaging.service';
       <app-quota-limit-modal (closed)="quotaModalOpen.set(false)" />
     }
     @if (gateModal(); as kind) {
-      <app-contact-gate-modal [kind]="kind" (closed)="gateModal.set(null)" />
+      <app-contact-gate-modal [kind]="kind" [returnTo]="'/profil/' + profileId()" [returnName]="publicProfile()?.displayName ?? null" (closed)="gateModal.set(null)" />
     }
   `
   ,

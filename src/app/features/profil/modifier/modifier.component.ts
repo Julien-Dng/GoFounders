@@ -2,7 +2,7 @@ import { NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, NgZone, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService, UpdateProfilePayload } from '../../../core/services/auth.service';
 import { ProjectService } from '../../../core/services/project.service';
 import { ProjectAccessRequest, ProjectAccessService } from '../../../core/services/project-access.service';
@@ -71,6 +71,26 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
             Ajoutez une photo nette, une bio concrète et quelques liens utiles. L'objectif n'est pas de faire long, mais de donner assez de signaux pour déclencher une conversation qualifiée
           </p>
         </div>
+        }
+
+        @if (returnTo) {
+          <!-- Arrivé depuis « Finalisez d'abord… » : on garde la personne à qui écrire en vue -->
+          <div class="mx-auto mb-6 flex max-w-3xl flex-col gap-3 rounded-2xl border px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+               [class]="returnReady() ? 'border-green-200 bg-green-50' : 'border-accent/20 bg-accent/5'" role="status">
+            <p class="text-sm font-medium" [class]="returnReady() ? 'text-green-800' : 'text-primary'">
+              @if (returnReady()) {
+                C’est prêt : vous pouvez écrire {{ returnName ? 'à ' + returnName : 'à ce membre' }}
+              } @else {
+                {{ mode === 'projet' ? 'Présentez votre projet' : 'Complétez votre profil d’associé' }} pour écrire {{ returnName ? 'à ' + returnName : 'à ce membre' }}, puis enregistrez{{ mode === 'projet' ? ' (le brouillon suffit)' : '' }}
+              }
+            </p>
+            <div class="flex flex-shrink-0 flex-wrap items-center gap-3">
+              @if (returnReady()) {
+                <button type="button" (click)="goWrite()" class="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent/90">Écrire {{ returnName ? 'à ' + returnName : 'maintenant' }}</button>
+              }
+              <button type="button" (click)="goBack()" class="text-sm font-semibold text-accent hover:underline">{{ returnIsConversation ? 'Revenir à la conversation' : 'Revenir à son profil' }}</button>
+            </div>
+          </div>
         }
 
         <div class="grid gap-6" [class]="mode === 'profil' ? 'xl:grid-cols-[340px_minmax(0,1fr)]' : 'mx-auto max-w-3xl'">
@@ -668,8 +688,11 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
               }
 
               @if (successMessage()) {
-                <div class="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
-                  {{ successMessage() }}
+                <div class="flex flex-col gap-3 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700 sm:flex-row sm:items-center sm:justify-between">
+                  <span>{{ successMessage() }}</span>
+                  @if (returnReady()) {
+                    <button type="button" (click)="goWrite()" class="flex-shrink-0 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent/90">Écrire {{ returnName ? 'à ' + returnName : 'maintenant' }}</button>
+                  }
                 </div>
               }
 
@@ -752,6 +775,26 @@ export class ModifierComponent implements OnInit {
     await this.saveProfile();
   }
   readonly mode: 'profil' | 'projet' | 'associe' = inject(ActivatedRoute).snapshot.data['mode'] ?? 'profil';
+
+  // Retour vers la personne à qui l'on voulait écrire (fenêtre « Finalisez d'abord… ») : fiche ou conversation.
+  private readonly router = inject(Router);
+  private readonly returnQuery = inject(ActivatedRoute).snapshot.queryParamMap;
+  readonly returnTo = safeReturnUrl(this.returnQuery.get('retour'));
+  readonly returnName = (this.returnQuery.get('pour') ?? '').trim().slice(0, 80) || null;
+  readonly returnIsConversation = !!this.returnTo?.startsWith('/messages');
+  readonly returnReady = signal(false);
+
+  goBack(): void {
+    if (this.returnTo) {
+      void this.router.navigateByUrl(this.returnTo);
+    }
+  }
+
+  // Depuis une fiche : la conversation s'ouvre directement.
+  goWrite(): void {
+    const profileId = this.returnTo?.match(/^\/profil\/([\w-]+)$/)?.[1];
+    void this.router.navigateByUrl(profileId ? `/messages?conversation=${profileId}` : this.returnTo ?? '/messages');
+  }
   readonly heading = computed(() => {
     switch (this.mode) {
       case 'projet':
@@ -1028,6 +1071,7 @@ export class ModifierComponent implements OnInit {
           }
           this.savedVitrine = vitrine;
         }
+        this.returnReady.set(this.associateChecklistDone());
         this.successMessage.set(this.associateOffer()
           ? 'Profil d’associé enregistré et visible des membres.'
           : this.associateChecklistDone()
@@ -1063,6 +1107,7 @@ export class ModifierComponent implements OnInit {
       }
       const value = this.projectForm.getRawValue();
       const presented = isProjectPresented({ name: value.name, description: value.description, skillsNeeded: this.splitTags(value.skillsNeeded) });
+      this.returnReady.set(presented);
       this.successMessage.set(published
         ? 'Projet publié : il est visible des membres dans la recherche.'
         : presented
@@ -1253,4 +1298,11 @@ export class ModifierComponent implements OnInit {
 
     return `https://${trimmedValue}`;
   }
+}
+
+// Seules les pages d'où l'on peut écrire sont acceptées (pas d'adresse extérieure).
+function safeReturnUrl(value: string | null): string | null {
+  return value && /^\/(profil\/[\w-]+|messages(\?conversation=[\w-]+)?)$/.test(value) && value !== '/profil/modifier' && value !== '/profil/associe'
+    ? value
+    : null;
 }

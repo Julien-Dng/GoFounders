@@ -363,13 +363,17 @@ interface ConversationPreview {
       <app-quota-limit-modal (closed)="quotaReached.set(false)" />
     }
     @if (contactGate(); as kind) {
-      <app-contact-gate-modal [kind]="kind" (closed)="contactGate.set(null)" />
+      <app-contact-gate-modal [kind]="kind" [returnTo]="currentUrl()" [returnName]="selectedProfile()?.displayName ?? null" (closed)="contactGate.set(null)" />
     }
   `
 })
 export class MessagesComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  // Retour vers cette conversation après avoir complété son projet ou son profil d'associé.
+  currentUrl(): string {
+    return this.router.url;
+  }
   private readonly auth = inject(AuthService);
   readonly canSeeReasons = computed(() => canSeeMatchReasons(this.auth.plan()));
   readonly reasonsUpsell = MATCH_REASONS_UPSELL;

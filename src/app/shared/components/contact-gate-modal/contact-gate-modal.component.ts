@@ -43,7 +43,7 @@ const CONTENT: Record<ContactGateKind, { title: string; text: string; points: st
             <li class="flex items-center gap-2 text-sm font-medium text-primary"><span class="text-accent" aria-hidden="true">✓</span>{{ point }}</li>
           }
         </ul>
-        <a [routerLink]="content().path" (click)="closed.emit()" class="mt-6 block rounded-lg bg-accent px-4 py-3 text-center font-semibold text-white transition-colors hover:bg-accent/90">{{ content().cta }}</a>
+        <a [routerLink]="content().path" [queryParams]="returnTo() ? { retour: returnTo(), pour: returnName() } : null" (click)="closed.emit()" class="mt-6 block rounded-lg bg-accent px-4 py-3 text-center font-semibold text-white transition-colors hover:bg-accent/90">{{ content().cta }}</a>
         <button type="button" (click)="closed.emit()" class="mt-3 w-full rounded-lg border border-border px-4 py-2.5 text-sm font-semibold text-primary hover:border-primary">Plus tard</button>
       </div>
     </div>
@@ -51,6 +51,9 @@ const CONTENT: Record<ContactGateKind, { title: string; text: string; points: st
 })
 export class ContactGateModalComponent implements OnInit, OnDestroy {
   readonly kind = input<ContactGateKind>('projet');
+  // Page à retrouver une fois le projet ou le profil complété (fiche de la personne ou conversation) et son nom.
+  readonly returnTo = input<string | null>(null);
+  readonly returnName = input<string | null>(null);
   readonly closed = output<void>();
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly document = inject(DOCUMENT);
