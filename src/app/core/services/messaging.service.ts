@@ -82,6 +82,8 @@ export class MessagingService {
   readonly conversationThreads = signal<ConversationThread[]>([]);
   readonly quota = signal<MessagingQuota | null>(null);
   readonly lastError = signal('');
+  // Vrai quand Supabase refuse un nouveau contact (FREE_QUOTA_CONTACTS) : la page affiche la fenêtre des offres.
+  readonly quotaReached = signal(false);
   readonly unreadCount = computed(() =>
     this.conversationThreads().reduce((total, conversation) => total + conversation.unread, 0)
   );
@@ -338,7 +340,53 @@ export class MessagingService {
   }
 
   private toErrorMessage(rawMessage: string | undefined, fallback: string): string {
+    if (rawMessage === 'FREE_QUOTA_CONTACTS') {
+      this.quotaReached.set(true);
+    }
     return (rawMessage && QUOTA_ERROR_MESSAGES[rawMessage]) ?? fallback;
+  }
+
+  // Avant d'écrire à un associé : un porteur en FREE qui a utilisé ses nouveaux contacts du mois ne peut pas en
+  // ouvrir un autre (une conversation déjà ouverte avec ce membre reste accessible). Supabase vérifie de toute façon.
+  async canOpenNewContact(targetProfileId: string): Promise<boolean> {
+    const user = this.auth.currentUser();
+    if (!user) {
+      return false;
+    }
+    if (this.supabase.isConfigured && this.conversationThreads().length === 0) {
+      await this.refreshConversationThreads();
+    }
+    if (this.conversationThreads().some(thread => thread.participantProfileId === targetProfileId)) {
+      return true;
+    }
+    if (!this.supabase.isConfigured) {
+      return this.canOpenNewContactLocally(user.uid, user.plan, targetProfileId);
+    }
+    await this.refreshQuota();
+    const quota = this.quota();
+    return !quota || quota.contactsLimit === null || quota.contactsUsed < quota.contactsLimit;
+  }
+
+  // Mode démo : mêmes règles, compteur dans le navigateur (5 nouveaux contacts par mois en FREE).
+  private canOpenNewContactLocally(uid: string, plan: string | undefined, targetProfileId: string): boolean {
+    if (plan && plan !== 'FREE') {
+      return true;
+    }
+    const key = `gofounders.demo-contacts.${uid}.${new Date().toISOString().slice(0, 7)}`;
+    let contacted: string[] = [];
+    try {
+      contacted = JSON.parse(localStorage.getItem(key) ?? '[]') as string[];
+    } catch {
+      contacted = [];
+    }
+    if (contacted.includes(targetProfileId)) {
+      return true;
+    }
+    if (contacted.length >= FREE_CONTACTS_PER_MONTH) {
+      return false;
+    }
+    localStorage.setItem(key, JSON.stringify([...contacted, targetProfileId]));
+    return true;
   }
 
   async refreshConversationThreads(): Promise<void> {

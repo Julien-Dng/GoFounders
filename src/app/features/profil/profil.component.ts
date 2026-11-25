@@ -1,7 +1,7 @@
 import { NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { MarketplaceProfile } from '../../core/data/mock-platform.data';
 import { MATCH_REASONS_UPSELL, canSeeMatchReasons, hasUsage, investmentBadge, isAssociateProfileComplete, isProjectPresented, usageSummary } from '../../core/models/user.model';
@@ -13,11 +13,13 @@ import { ProjectAccessRequest, ProjectAccessService } from '../../core/services/
 import { NDA_VERSION, downloadTextFile, ndaArticles, ndaProofDocument } from '../../core/legal/nda';
 import { SupabaseService } from '../../core/services/supabase.service';
 import { FavoriteButtonComponent } from '../../shared/components/favorite-button/favorite-button.component';
+import { QuotaLimitModalComponent } from '../../shared/components/quota-limit-modal/quota-limit-modal.component';
+import { MessagingService } from '../../core/services/messaging.service';
 
 @Component({
   selector: 'app-profil',
   standalone: true,
-  imports: [NgClass, RouterLink, FavoriteButtonComponent],
+  imports: [NgClass, RouterLink, FavoriteButtonComponent, QuotaLimitModalComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (isUnavailable()) {
@@ -115,12 +117,12 @@ import { FavoriteButtonComponent } from '../../shared/components/favorite-button
                         </a>
                         <p class="text-sm text-muted-foreground sm:basis-full">{{ contactGate()!.hint }}</p>
                       } @else {
-                        <a routerLink="/messages" [queryParams]="{ conversation: profileId() }" class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-white transition-all hover:scale-105 hover:bg-primary/90 active:scale-95">
+                        <button type="button" (click)="openConversation()" class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-white transition-all hover:scale-105 hover:bg-primary/90 active:scale-95">
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                           </svg>
                           Envoyer un message
-                        </a>
+                        </button>
                         @if (favoriteTarget(); as target) {
                           <app-favorite-button [listingId]="target.id" [kind]="target.kind" [label]="publicProfile()?.displayName ?? 'ce profil'" [withText]="true" />
                         }
@@ -446,13 +448,13 @@ import { FavoriteButtonComponent } from '../../shared/components/favorite-button
                     <p class="mb-4 text-sm leading-relaxed text-foreground/80 dark:text-amber-100/85">
                       Accédez aux informations complètes en passant par un échange sécurisé et, si besoin, un cadre de confidentialité
                     </p>
-                    <a routerLink="/messages" [queryParams]="{ conversation: profileId() }" class="flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 font-semibold text-white transition-colors hover:bg-accent/90">
+                    <button type="button" (click)="openConversation()" class="flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 font-semibold text-white transition-colors hover:bg-accent/90">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                         <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                       </svg>
                       Ouvrir un échange
-                    </a>
+                    </button>
                     <p class="mt-3 text-center text-sm text-muted-foreground dark:text-amber-100/70">Mise en relation avec des experts juridiques partenaires</p>
                   </div>
                   <div class="absolute -right-16 -top-16 h-32 w-32 rounded-full bg-accent/10"></div>
@@ -521,6 +523,9 @@ import { FavoriteButtonComponent } from '../../shared/components/favorite-button
         </div>
       }
     </dialog>
+    @if (quotaModalOpen()) {
+      <app-quota-limit-modal (closed)="quotaModalOpen.set(false)" />
+    }
   `
   ,
   styles: [`
@@ -562,6 +567,23 @@ export class ProfilComponent implements OnInit {
   private readonly projectService = inject(ProjectService);
   private readonly projectAccess = inject(ProjectAccessService);
   private readonly supabase = inject(SupabaseService);
+  private readonly messaging = inject(MessagingService);
+  private readonly router = inject(Router);
+  readonly quotaModalOpen = signal(false);
+
+  // Écrire à un associé compte comme nouveau contact pour un porteur en FREE : au-delà de la limite du mois,
+  // la fenêtre des offres s'affiche au lieu d'ouvrir la conversation.
+  async openConversation(): Promise<void> {
+    const id = this.profileId();
+    if (!id) {
+      return;
+    }
+    if (this.publicProfile()?.profileType === 'talent' && !(await this.messaging.canOpenNewContact(id))) {
+      this.quotaModalOpen.set(true);
+      return;
+    }
+    await this.router.navigate(['/messages'], { queryParams: { conversation: id } });
+  }
 
   // Partie confidentielle d'un projet (voir 2026-10-19-projets-confidentiels-nda.sql).
   readonly ndaVersion = NDA_VERSION;

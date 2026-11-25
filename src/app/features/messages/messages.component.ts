@@ -13,6 +13,7 @@ import { MATCH_REASONS_UPSELL, canSeeMatchReasons } from '../../core/models/user
 import { AuthService } from '../../core/services/auth.service';
 import { MatchingService } from '../../core/services/matching.service';
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
+import { QuotaLimitModalComponent } from '../../shared/components/quota-limit-modal/quota-limit-modal.component';
 import { ProjectService } from '../../core/services/project.service';
 import { ProjectAccessService } from '../../core/services/project-access.service';
 import { ConversationThread, MessagingService } from '../../core/services/messaging.service';
@@ -35,7 +36,7 @@ interface ConversationPreview {
 @Component({
   selector: 'app-messages',
   standalone: true,
-  imports: [NgClass, RouterLink, AvatarComponent],
+  imports: [NgClass, RouterLink, AvatarComponent, QuotaLimitModalComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (conversationsLoaded() && conversations().length === 0) {
@@ -109,14 +110,11 @@ interface ConversationPreview {
 
           <!-- Barre de saisie -->
           <div class="bg-white border-t border-border p-3 flex-shrink-0 sm:p-4">
-            @if (sendError()) {
+            @if (sendError() && !quotaReached()) {
               <div class="mb-3 flex flex-col gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between" role="alert">
                 <span>{{ sendError() }}</span>
                 <a routerLink="/tarifs" fragment="associes" class="font-semibold text-accent hover:underline">Voir l'offre PRO</a>
               </div>
-            }
-            @if (messageQuotaLabel()) {
-              <p class="mb-2 text-sm text-muted-foreground" aria-live="polite">{{ messageQuotaLabel() }}</p>
             }
             <div class="flex items-center gap-2">
 
@@ -363,6 +361,9 @@ interface ConversationPreview {
       </div>
     </div>
     }
+    @if (quotaReached()) {
+      <app-quota-limit-modal (closed)="quotaReached.set(false)" />
+    }
   `
 })
 export class MessagesComponent implements OnInit {
@@ -429,16 +430,8 @@ export class MessagesComponent implements OnInit {
   );
   readonly newMessage = signal('');
   readonly sendError = this.messagingService.lastError;
-  // Compteur visible pour les porteurs de projet en FREE (limite de nouveaux contacts ; null = illimité).
-  readonly messageQuotaLabel = computed(() => {
-    const quota = this.messagingService.quota();
-
-    if (!quota || quota.contactsLimit === null) {
-      return '';
-    }
-
-    return `Plan FREE : ${quota.contactsUsed}/${quota.contactsLimit} nouveaux contacts ce mois-ci · réponses illimitées`;
-  });
+  // Nouveau contact refusé (offre FREE) : fenêtre des offres plutôt qu'un compteur permanent.
+  readonly quotaReached = this.messagingService.quotaReached;
   readonly emojiPickerOpen = signal(false);
 
   readonly localMessages = signal<Record<string, ConversationMessage[]>>({});
