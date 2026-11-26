@@ -169,10 +169,10 @@ const EXAMPLE_TEAM_CARDS: TeamCard[] = [
 
           <!-- Photos : équipe au travail, et un binôme en médaillon (ordinateur et tablette ; une seule photo sur téléphone). -->
           <figure class="hero-enter relative mx-auto w-full max-w-xl sm:pb-12 sm:pr-10 lg:col-span-6 lg:row-span-2 lg:mr-0 lg:max-w-none" style="animation-delay: 180ms">
-            <img src="/assets/images/hero/equipe-startup.webp" width="1100" height="760" fetchpriority="high"
-                 alt="Une équipe travaille sur ses ordinateurs autour d'une grande table"
+            <img src="/assets/images/hero/equipe-startup.webp" width="1200" height="800" fetchpriority="high"
+                 alt="Une équipe échange autour d'une table de réunion, ordinateurs ouverts"
                  class="aspect-[2/1] w-full rounded-2xl object-cover shadow-2xl sm:aspect-[3/2]">
-            <img src="/assets/images/hero/binome-ordinateur.webp" width="560" height="420" loading="lazy"
+            <img src="/assets/images/hero/binome-ordinateur.webp" width="640" height="480" loading="lazy"
                  alt="Deux associés échangent devant un ordinateur"
                  class="hero-float-late absolute bottom-0 right-0 hidden aspect-[4/3] w-[44%] rounded-xl border-4 border-white object-cover shadow-2xl sm:block">
           </figure>

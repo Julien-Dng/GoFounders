@@ -1,8 +1,8 @@
 # Photos du haut de page
 
-Licence Unsplash : usage commercial gratuit, sans attribution obligatoire (https://unsplash.com/license).
+Fournies par le propriétaire du projet (novembre 2026).
 
-| Fichier | Photo d'origine |
+| Fichier | Contenu |
 |---|---|
-| `equipe-startup.webp` | https://unsplash.com/photos/people-sitting-down-near-table-with-assorted-laptop-computers-SYTO3xs06fU (Annie Spratt) |
-| `binome-ordinateur.webp` | https://unsplash.com/photos/two-women-sitting-on-chair-JaoVGh5aJ3E (#WOCinTech Chat) |
+| `equipe-startup.webp` | Équipe de quatre personnes autour d'une table de réunion, ordinateurs ouverts (1200 × 800) |
+| `binome-ordinateur.webp` | Deux associés échangent devant un ordinateur portable (640 × 480) |
