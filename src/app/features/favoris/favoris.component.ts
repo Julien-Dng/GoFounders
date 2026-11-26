@@ -124,7 +124,7 @@ export function buildFavoriteCards(
             </div>
           </div>
         } @else {
-          <ul class="mt-5 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
+          <ul class="mt-5 grid grid-cols-1 gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
             @for (card of cards(); track card.kind + card.id) {
               <li class="group relative flex flex-col rounded-2xl bg-white p-4 shadow-md ring-1 ring-border transition-shadow hover:shadow-lg sm:p-5">
                 <div class="flex items-start justify-between gap-3">

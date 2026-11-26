@@ -129,7 +129,7 @@ interface Tile {
             }
           </div>
           @if (favoriteCards().length) {
-            <ul class="mt-3 grid gap-3 sm:mt-4 sm:gap-4 md:grid-cols-3">
+            <ul class="mt-3 grid grid-cols-1 gap-3 sm:mt-4 sm:gap-4 md:grid-cols-3">
               @for (card of favoriteCards(); track card.kind + card.id) {
                 <li class="group relative flex flex-col rounded-2xl bg-white p-4 shadow-md sm:p-5 ring-1 ring-border transition-shadow hover:shadow-lg">
                   <span class="self-start rounded-md bg-accent/10 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-accent">{{ kindLabel(card.kind) }}</span>
@@ -159,9 +159,9 @@ interface Tile {
             <a [routerLink]="suggestionsLink()" class="text-sm font-semibold text-accent hover:underline">Voir tout <span aria-hidden="true">→</span></a>
           </div>
           @if (suggestedProfiles().length) {
-            <ul class="mt-4 grid gap-4 md:grid-cols-3">
+            <ul class="mt-4 grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3">
               @for (profile of suggestedProfiles(); track profile.id) {
-                <li class="group relative rounded-2xl bg-white p-5 shadow-md ring-1 ring-border transition-shadow hover:shadow-lg">
+                <li class="group relative min-w-0 rounded-2xl bg-white p-4 shadow-md ring-1 ring-border transition-shadow hover:shadow-lg sm:p-5">
                   <div class="flex items-start gap-3">
                     <app-avatar class="h-11 w-11 flex-shrink-0" [photoUrl]="profile.photoURL" [initials]="profile.initials" [name]="profile.displayName" />
                     <div class="min-w-0 flex-1">
@@ -173,7 +173,7 @@ interface Tile {
                         <p class="mt-0.5 truncate text-sm text-emerald-700">{{ profile.availabilityLabel }}</p>
                       }
                     </div>
-                    <span class="tabular text-sm font-bold text-accent">{{ profile.match }} %</span>
+                    <span class="tabular flex-shrink-0 whitespace-nowrap text-sm font-bold text-accent">{{ profile.match }} %</span>
                   </div>
                   <div class="mt-3 flex flex-wrap gap-1.5">
                     @for (skill of profile.skills.slice(0, 2); track skill) {
@@ -184,9 +184,9 @@ interface Tile {
               }
             </ul>
           } @else if (suggestedListings().length) {
-            <ul class="mt-4 grid gap-4 md:grid-cols-3">
+            <ul class="mt-4 grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3">
               @for (listing of suggestedListings(); track listing.id) {
-                <li class="group relative rounded-2xl bg-white p-5 shadow-md ring-1 ring-border transition-shadow hover:shadow-lg">
+                <li class="group relative min-w-0 rounded-2xl bg-white p-4 shadow-md ring-1 ring-border transition-shadow hover:shadow-lg sm:p-5">
                   <p class="text-sm text-muted-foreground">{{ listing.sector }} · {{ listing.region }}</p>
                   <h3 class="mt-1 font-bold leading-snug text-primary group-hover:text-accent">
                     <a [routerLink]="['/ma/annonce', listing.id]" class="after:absolute after:inset-0 after:rounded-2xl focus:outline-none">{{ listing.title || listing.sector }}</a>
