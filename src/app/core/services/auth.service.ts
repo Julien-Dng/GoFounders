@@ -339,6 +339,35 @@ export class AuthService {
   }
 
 
+  // Objectifs du membre (Paramètres) : personnalisation seulement, aucun droit (2026-11-13-compte-multi-usages.sql).
+  async setUsages(usages: Usage[]): Promise<AuthResult> {
+    const user = this._currentUser();
+    const cleaned = Array.from(new Set(usages));
+    if (!user || user.profileType === 'pro') {
+      return { success: false, message: 'Les objectifs ne concernent pas les comptes professionnels.' };
+    }
+    if (cleaned.length === 0) {
+      return { success: false, message: 'Choisissez au moins un objectif.' };
+    }
+
+    if (this.supabase.isConfigured) {
+      const { error } = await this.supabase.client.from('profiles').update({ usages: cleaned }).eq('id', user.uid);
+      if (error) {
+        return { success: false, message: 'Impossible d’enregistrer vos choix pour le moment.' };
+      }
+    } else {
+      const users = this.readUsers();
+      const index = users.findIndex(entry => entry.uid === user.uid);
+      if (index >= 0) {
+        users[index] = { ...users[index], usages: cleaned };
+        this.writeUsers(users);
+      }
+    }
+
+    this._currentUser.set({ ...user, usages: cleaned });
+    return { success: true, message: 'Vos objectifs sont enregistrés.' };
+  }
+
   // Objectif ajouté après une action confirmée (projet publié, annonce déposée, dossier débloqué). Avec Supabase,
   // les déclencheurs l'ont déjà ajouté : on recharge le profil. En mode local, on l'ajoute ici.
   async noteActionUsage(usage: Usage): Promise<void> {

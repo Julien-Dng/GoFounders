@@ -6,6 +6,14 @@ import { Timestamp } from '@angular/fire/firestore';
 export type ProfileType = 'entrepreneur' | 'talent' | 'buyer' | 'seller' | 'pro';
 export type Usage = 'reprise' | 'cession' | 'projet' | 'associe';
 
+// Objectifs (Paramètres) : personnalisent le site, n'ouvrent aucun droit.
+export const USAGE_OPTIONS: ReadonlyArray<{ value: Usage; label: string }> = [
+  { value: 'reprise', label: 'Reprendre une entreprise' },
+  { value: 'cession', label: 'Vendre une entreprise' },
+  { value: 'projet', label: 'Trouver des associés' },
+  { value: 'associe', label: 'Rejoindre un projet' },
+];
+
 // Libellé court d'un usage, pour décrire un membre (« Porteur de projet, Repreneur »).
 export const USAGE_SHORT_LABELS: Record<Usage, string> = { projet: 'Porteur de projet', associe: 'Associé', reprise: 'Repreneur', cession: 'Cédant' };
 
