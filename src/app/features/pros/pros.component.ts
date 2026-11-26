@@ -15,7 +15,7 @@ import { StatsService } from '../../core/services/stats.service';
     <div class="min-h-screen bg-secondary px-4 pb-16 pt-24 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-6xl">
         <div class="mb-8">
-          <h1 class="text-3xl font-semibold text-primary sm:text-4xl">Annuaire des professionnels</h1>
+          <h1 class="text-2xl font-semibold text-primary sm:text-4xl"><span class="sm:hidden">Annuaire des pros</span><span class="hidden sm:inline">Annuaire des professionnels</span></h1>
           <p class="mt-2 max-w-3xl text-muted-foreground">
             Experts-comptables, avocats, notaires et cabinets de cession qui accompagnent les cessions et les reprises
           </p>

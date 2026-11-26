@@ -23,24 +23,26 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-secondary px-4 pb-14 pt-24 sm:px-6 lg:px-8">
+    <div class="min-h-screen bg-secondary px-4 pb-14 pt-20 sm:px-6 sm:pt-24 lg:px-8">
       <div class="mx-auto max-w-6xl">
-        <div class="mb-10">
-          <nav class="mb-3 flex items-center gap-2 text-sm" aria-label="Fil d'Ariane">
+        <div class="mb-5 sm:mb-10">
+          <nav class="mb-3 hidden sm:flex items-center gap-2 text-sm" aria-label="Fil d'Ariane">
             <a routerLink="/ma/mes-annonces" class="font-semibold text-accent hover:underline">Mes entreprises</a>
             <span class="text-muted-foreground" aria-hidden="true">›</span>
             <span class="text-muted-foreground" aria-current="page">{{ editingId() ? 'Modifier mon annonce' : 'Déposer une annonce' }}</span>
           </nav>
-          <h1 class="mb-2 text-3xl font-semibold text-primary sm:text-4xl">{{ editingId() ? 'Modifier mon annonce' : 'Déposer une annonce' }}</h1>
-          <p class="text-muted-foreground">{{ editingId() ? 'Après modification, votre annonce repasse en relecture avant d’être de nouveau visible (en général sous 24 h ouvrées)' : 'Gratuit pendant le lancement. Votre annonce reste anonyme et elle est relue avant publication' }}</p>
+          <h1 class="mb-2 text-2xl font-semibold text-primary sm:text-4xl">{{ editingId() ? 'Modifier mon annonce' : 'Déposer une annonce' }}</h1>
+          <p class="text-sm text-muted-foreground sm:text-base">{{ editingId() ? 'Après modification, votre annonce repasse en relecture avant d’être de nouveau visible (en général sous 24 h ouvrées)' : 'Gratuit pendant le lancement. Votre annonce reste anonyme et elle est relue avant publication' }}</p>
         </div>
 
+        <!-- Téléphones : numéro et nom de l'étape au-dessus de la frise. -->
+        <p class="mb-2 text-base font-semibold text-primary sm:hidden"><span class="tabular text-accent">{{ currentStep() }}/{{ totalSteps }}</span> · {{ stepLabels[currentStep() - 1] }}</p>
         <!-- Étapes : on revient librement sur une étape déjà vue. -->
-        <ol class="mb-8 flex max-w-4xl items-start" aria-label="Étapes du dépôt">
+        <ol class="mb-5 sm:mb-8 flex max-w-4xl items-start" aria-label="Étapes du dépôt">
           @for (label of stepLabels; track label; let i = $index; let last = $last) {
             <li class="flex flex-1 items-start" [class.flex-none]="last">
               <button type="button" (click)="goToStep(i + 1)" [disabled]="i + 1 > maxStepReached()" [attr.aria-current]="currentStep() === i + 1 ? 'step' : null"
-                      class="flex w-16 flex-col items-center text-center disabled:cursor-default sm:w-20">
+                      class="flex w-9 flex-col items-center text-center disabled:cursor-default sm:w-20">
                 <span class="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold transition-colors"
                       [class]="currentStep() === i + 1 ? 'bg-accent text-white' : i + 1 < currentStep() ? 'bg-accent/15 text-accent' : 'bg-white text-muted-foreground ring-1 ring-border'">
                   {{ i + 1 < currentStep() ? '✓' : i + 1 }}
@@ -54,7 +56,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
           }
         </ol>
 
-        <div class="max-w-4xl rounded-2xl bg-white shadow-lg ring-1 ring-border p-6 sm:p-10">
+        <div class="max-w-4xl rounded-2xl bg-white shadow-lg ring-1 ring-border p-4 sm:p-10">
           @if (!canPublish()) {
             <div class="text-center">
               <h2 class="mb-2 text-2xl font-semibold">{{ proAccountOffered ? 'Compte pro requis' : 'Bientôt pour les cabinets' }}</h2>
@@ -74,13 +76,16 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
           } @else if (!checkoutRequested()) {
             <div class="space-y-8">
               @if (currentStep() === 1) {
-                <div class="rounded-2xl border border-accent/20 bg-accent/[0.04] p-5">
-                  <div class="flex flex-wrap items-center gap-2">
+                <div class="rounded-2xl border border-accent/20 bg-accent/[0.04] p-4 sm:p-5">
+                  <!-- Téléphones : aide de l'IA repliée (optionnelle). -->
+                  <button type="button" (click)="aiOpen.set(!aiOpen())" [attr.aria-expanded]="aiOpen()" class="flex w-full items-center gap-2 text-left sm:pointer-events-none">
                     <svg class="text-accent" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                       <path d="m12 3-1.9 5.1L5 10l5.1 1.9L12 17l1.9-5.1L19 10l-5.1-1.9z"/>
                     </svg>
-                    <h2 class="text-lg font-semibold text-primary">Préparer mon annonce avec l'IA</h2>
-                  </div>
+                    <h2 class="flex-1 text-base font-semibold text-primary sm:text-lg"><span class="sm:hidden">Gagner du temps avec l'IA <span class="font-normal text-muted-foreground">(optionnel)</span></span><span class="hidden sm:inline">Préparer mon annonce avec l'IA</span></h2>
+                    <svg class="flex-shrink-0 transition-transform sm:hidden" [class.rotate-180]="aiOpen()" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                  </button>
+                  <div [class]="aiOpen() || aiApplied() || aiError() ? '' : 'hidden sm:block'">
                   <p class="mt-1 text-sm leading-relaxed text-muted-foreground">
                     Décrivez votre entreprise comme à un ami : activité, chiffres, clients, raison de la vente. L'IA rédige une annonce anonymisée,
                     remplit le formulaire et vous signale ce qui pourrait permettre de vous reconnaître. Vous relisez et modifiez tout avant de publier.
@@ -122,6 +127,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                   } @else if (aiApplied()) {
                     <p class="mt-3 text-sm text-emerald-700" role="status">Annonce préparée : relisez les champs ci-dessous et à chaque étape</p>
                   }
+                  </div>
                 </div>
               }
               @switch (currentStep()) {
@@ -361,7 +367,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                 }
               }
 
-              <div class="flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
+              <div class="grid grid-cols-2 gap-3 border-t border-border pt-5 sm:flex sm:items-center sm:justify-between sm:pt-6">
                 <button type="button" (click)="previousStep()" [disabled]="currentStep() === 1" class="rounded-lg border border-border px-5 py-3 font-semibold transition-colors hover:border-primary disabled:cursor-not-allowed disabled:opacity-40">
                   Retour
                 </button>
@@ -433,6 +439,7 @@ export class MaDeposerComponent {
 
   readonly totalSteps = 6;
   readonly currentStep = signal(1);
+  readonly aiOpen = signal(false);
   readonly checkoutRequested = signal(false);
   readonly canPublish = computed(() => canPublishMa(this.auth.currentUser()));
   readonly isSubmitting = signal(false);

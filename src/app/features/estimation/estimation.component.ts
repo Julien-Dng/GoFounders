@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import {
   BUSINESS_KIND_LABELS,
@@ -15,21 +16,21 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
 @Component({
   selector: 'app-estimation',
   standalone: true,
-  imports: [RouterLink, FooterComponent],
+  imports: [NgClass, RouterLink, FooterComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-white">
-      <section class="px-4 pb-16 pt-24 sm:px-6 lg:px-8 lg:pt-32">
+      <section class="px-4 pb-12 pt-20 sm:px-6 sm:pb-16 sm:pt-24 lg:px-8 lg:pt-32">
         <div class="mx-auto max-w-[78rem]">
           <header class="max-w-[60ch]">
-            <h1 class="text-[2.25rem] leading-tight text-primary sm:text-5xl">Combien vaut votre entreprise ?</h1>
-            <p class="mt-4 text-lg leading-relaxed text-muted-foreground">
+            <h1 class="text-[1.9rem] leading-tight text-primary sm:text-5xl">Combien vaut votre entreprise&nbsp;?</h1>
+            <p class="mt-2 text-base leading-relaxed text-muted-foreground sm:mt-4 sm:text-lg">
               Une première fourchette en deux minutes, gratuite et sans inscription. Le calcul est expliqué ligne par ligne
             </p>
           </header>
 
-          <div class="mt-10 grid gap-10 lg:grid-cols-12">
-            <div class="space-y-6 lg:col-span-7">
+          <div class="mt-6 grid gap-6 sm:mt-10 sm:gap-10 lg:grid-cols-12">
+            <div class="space-y-4 sm:space-y-6 lg:col-span-7">
               <div>
                 <label for="est-kind" class="mb-1.5 block font-medium text-primary">Type d'activité</label>
                 <select id="est-kind" [value]="kind()" (change)="kind.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-3 text-base outline-none focus:border-accent">
@@ -39,7 +40,7 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
                 </select>
               </div>
 
-              <div class="grid gap-6 sm:grid-cols-2">
+              <div class="grid gap-4 sm:grid-cols-2 sm:gap-6">
                 <div>
                   <label for="est-revenue" class="mb-1.5 block font-medium text-primary">Chiffre d'affaires annuel (€)</label>
                   <input id="est-revenue" type="number" min="0" step="1000" inputmode="numeric" [value]="revenue() || ''" (input)="revenue.set(toNumber($event))" placeholder="Ex. 280000" class="tabular w-full rounded border border-input bg-white px-3 py-3 text-base outline-none focus:border-accent">
@@ -51,12 +52,20 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
                 </div>
               </div>
 
-              <div class="grid gap-6 sm:grid-cols-2">
+              <div class="grid gap-4 sm:grid-cols-2 sm:gap-6">
                 <div>
                   <label for="est-age" class="mb-1.5 block font-medium text-primary">Ancienneté (années)</label>
                   <input id="est-age" type="number" min="0" max="100" step="1" inputmode="numeric" [value]="age()" (input)="age.set(toNumber($event))" class="tabular w-full rounded border border-input bg-white px-3 py-3 text-base outline-none focus:border-accent">
                 </div>
-                <div>
+                <!-- Téléphones : croissance, récurrence et rôle du dirigeant regroupés sous « Affiner l'estimation ». -->
+                <button type="button" (click)="refineOpen.set(!refineOpen())" [attr.aria-expanded]="refineOpen()" class="flex w-full items-center gap-3 rounded-xl border border-border bg-white px-4 py-3 text-left sm:hidden">
+                  <span class="flex-1">
+                    <span class="block font-semibold text-primary">Affiner l'estimation</span>
+                    <span class="block text-sm text-muted-foreground">Croissance, revenus récurrents, votre rôle</span>
+                  </span>
+                  <svg class="flex-shrink-0 transition-transform" [class.rotate-180]="refineOpen()" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div [ngClass]="refineOpen() ? '' : 'max-sm:hidden'">
                   <label for="est-growth" class="mb-1.5 block font-medium text-primary">Évolution du chiffre d'affaires</label>
                   <select id="est-growth" [value]="growth()" (change)="growth.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-3 text-base outline-none focus:border-accent">
                     <option value="baisse">En baisse</option>
@@ -67,7 +76,7 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
                 </div>
               </div>
 
-              <div class="grid gap-6 sm:grid-cols-2">
+              <div class="grid gap-4 sm:grid-cols-2 sm:gap-6" [ngClass]="refineOpen() ? '' : 'max-sm:hidden'">
                 <div>
                   <label for="est-recurring" class="mb-1.5 block font-medium text-primary">Revenus récurrents</label>
                   <select id="est-recurring" [value]="recurring()" (change)="recurring.set($any($event.target).value)" class="w-full rounded border border-input bg-white px-3 py-3 text-base outline-none focus:border-accent">
@@ -88,10 +97,10 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
             </div>
 
             <aside class="lg:col-span-5" aria-live="polite">
-              <div class="rounded-xl border border-border bg-secondary p-6 lg:sticky lg:top-24">
+              <div class="rounded-xl border border-border bg-secondary p-5 sm:p-6 lg:sticky lg:top-24">
                 @if (result(); as estimate) {
                   <p class="text-muted-foreground">Valeur estimée de votre entreprise</p>
-                  <p class="tabular mt-2 text-[2.5rem] font-semibold leading-tight tracking-tight text-amber-600">{{ euros(estimate.valueLow) }} à {{ euros(estimate.valueHigh) }}</p>
+                  <p class="tabular mt-2 text-[1.9rem] sm:text-[2.5rem] font-semibold leading-tight tracking-tight text-amber-600">{{ euros(estimate.valueLow) }} à {{ euros(estimate.valueHigh) }}</p>
                   <p class="mt-2 text-sm text-muted-foreground">Estimation indicative, non contractuelle</p>
 
                   <dl class="tabular mt-6 space-y-2 border-t border-border pt-5 text-base">
@@ -99,7 +108,11 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
                     <div class="flex justify-between gap-4"><dt class="text-muted-foreground">Multiple appliqué</dt><dd class="font-semibold text-primary">{{ multiple(estimate.multipleLow) }} à {{ multiple(estimate.multipleHigh) }}</dd></div>
                   </dl>
 
-                  <div class="mt-5 border-t border-border pt-5">
+                  <button type="button" (click)="calcOpen.set(!calcOpen())" [attr.aria-expanded]="calcOpen()" class="mt-5 flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-white px-4 py-3 text-left font-semibold text-primary sm:hidden">
+                    Comprendre le calcul
+                    <svg class="flex-shrink-0 transition-transform" [class.rotate-180]="calcOpen()" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                  </button>
+                  <div class="mt-5 border-t border-border pt-5" [ngClass]="calcOpen() ? '' : 'max-sm:hidden'">
                     <p class="font-medium text-primary">Ce qui joue sur le multiple</p>
                     <ul class="mt-2 space-y-1.5 text-base">
                       @for (factor of estimate.factors; track factor.label) {
@@ -127,7 +140,7 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
             </aside>
           </div>
 
-          <section class="mt-16 max-w-[70ch] border-t border-border pt-8" aria-labelledby="method-title">
+          <section class="mt-16 max-w-[70ch] border-t border-border pt-8 max-sm:mt-6 max-sm:pt-5" [ngClass]="calcOpen() ? '' : 'max-sm:hidden'" aria-labelledby="method-title">
             <h2 id="method-title" class="text-2xl text-primary">Comment ce calcul fonctionne</h2>
             <p class="mt-3 text-base leading-relaxed text-muted-foreground">
               Les petites entreprises se vendent le plus souvent sur la base d'un multiple de leur bénéfice annuel. Nous partons d'une fourchette
@@ -143,6 +156,10 @@ import { FooterComponent } from '../../shared/components/footer/footer.component
   `,
 })
 export class EstimationComponent {
+  // Téléphones : questions d'affinage et explication du calcul repliées.
+  readonly refineOpen = signal(false);
+  readonly calcOpen = signal(false);
+
   readonly kindOptions = (Object.keys(BUSINESS_KIND_LABELS) as BusinessKind[]).map(value => ({ value, label: BUSINESS_KIND_LABELS[value] }));
 
   readonly kind = signal<BusinessKind>('saas');

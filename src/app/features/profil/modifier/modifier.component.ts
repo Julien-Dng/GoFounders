@@ -27,28 +27,32 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
     }
   `],
   template: `
-    <div class="min-h-screen bg-secondary px-4 pb-14 pt-24 sm:px-6 lg:px-8">
+    <div class="min-h-screen bg-secondary px-4 pb-14 pt-20 sm:px-6 sm:pt-24 lg:px-8">
       <div class="mx-auto w-full max-w-6xl">
-        <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div class="mb-5 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <a
               [routerLink]="profileLink()"
-              class="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-accent"
+              class="mb-4 hidden items-center gap-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-accent sm:inline-flex"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m15 18-6-6 6-6"/>
               </svg>
               Retour au profil
             </a>
-            <h1 class="text-3xl font-semibold text-primary sm:text-4xl">{{ heading().title }}</h1>
-            <p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">{{ heading().subtitle }}</p>
+            <h1 class="flex items-center justify-between gap-3 text-2xl font-semibold text-primary sm:text-4xl">{{ heading().title }}
+              @if (mode === 'projet') {
+                <span class="inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold sm:hidden" [class]="isProjectPublished() ? 'bg-emerald-50 text-emerald-800' : 'bg-white text-muted-foreground ring-1 ring-border'"><span class="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true"></span>{{ isProjectPublished() ? 'Publié' : 'Brouillon' }}</span>
+              }
+            </h1>
+            <p class="mt-2 hidden max-w-2xl text-sm leading-relaxed text-muted-foreground sm:block sm:text-base">{{ heading().subtitle }}</p>
             @if (associatesEnabled && !isPro()) {
               <!-- Trois pages, une même rubrique « Mon profil » -->
-              <nav class="mt-5 flex gap-1 overflow-x-auto overflow-y-hidden border-b border-border [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Mon profil">
+              <nav class="mt-3 grid grid-cols-3 sm:mt-5 sm:flex gap-1 overflow-x-auto overflow-y-hidden border-b border-border [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Mon profil">
                 @for (item of profileTabs; track item.path) {
                   <a [routerLink]="item.path" [attr.aria-current]="mode === item.mode ? 'page' : null"
-                     class="-mb-px whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors"
-                     [class]="mode === item.mode ? 'border-accent text-primary' : 'border-transparent text-muted-foreground hover:text-primary'">{{ item.label }}</a>
+                     class="-mb-px whitespace-nowrap border-b-2 px-2 py-2.5 text-center text-sm font-semibold transition-colors sm:px-4"
+                     [class]="mode === item.mode ? 'border-accent text-primary' : 'border-transparent text-muted-foreground hover:text-primary'"><span class="sm:hidden">{{ item.short }}</span><span class="hidden sm:inline">{{ item.label }}</span></a>
                 }
               </nav>
             }
@@ -391,7 +395,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                     <div>
                       <div class="text-sm font-semibold text-accent">{{ isProjectPublished() ? 'Publié : visible des membres' : 'Brouillon : non visible dans la recherche' }}</div>
                       <h2 class="mt-1 text-xl font-semibold text-primary">Présentation du projet</h2>
-                      <p class="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                      <p class="mt-1 hidden max-w-2xl text-sm leading-relaxed text-muted-foreground sm:block">
                         Un titre, une présentation d'au moins 50 caractères et une compétence recherchée suffisent pour écrire aux associés,
                         même en brouillon. Publié, votre projet apparaît dans la recherche et les recommandations
                       </p>
@@ -406,7 +410,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                       </p>
                     </div>
 
-                    <span class="inline-flex flex-shrink-0 items-center rounded-full px-3 py-1 text-sm font-semibold"
+                    <span class="hidden flex-shrink-0 items-center rounded-full px-3 py-1 text-sm font-semibold sm:inline-flex"
                           [class]="isProjectPublished() ? 'bg-emerald-50 text-emerald-800' : 'bg-secondary text-muted-foreground'">
                       {{ isProjectPublished() ? 'Publié' : 'Brouillon' }}
                     </span>
@@ -525,13 +529,16 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                       </div>
 
                       <div class="md:col-span-2 rounded-2xl border border-primary/15 bg-white p-4 sm:p-5">
-                        <div class="flex items-center gap-2">
+                        <button type="button" (click)="confidentialOpen.set(!confidentialOpen())" [attr.aria-expanded]="confidentialOpen()" class="flex w-full items-center gap-2 text-left sm:pointer-events-none">
                           <svg class="text-primary" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <rect x="3" y="11" width="18" height="11" rx="2"/>
                             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                           </svg>
-                          <h3 class="text-base font-semibold text-primary">Partie confidentielle</h3>
-                        </div>
+                          <h3 class="flex-1 text-base font-semibold text-primary">Partie confidentielle</h3>
+                          <svg class="transition-transform sm:hidden" [class.rotate-180]="confidentialOpen()" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                        </button>
+                        <!-- Téléphones : repliée par défaut. -->
+                        <div [ngClass]="confidentialOpen() ? '' : 'max-sm:hidden'">
                         <p class="mt-1 text-sm leading-relaxed text-muted-foreground">
                           Invisible dans la recherche. Un associé doit vous demander l'accès, et vous acceptez ou refusez chaque demande
                         </p>
@@ -579,6 +586,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                             </span>
                           </span>
                         </label>
+                        </div>
                       </div>
                     </div>
                   }
@@ -696,16 +704,18 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                 </div>
               }
 
-              <div class="flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
+              <!-- Téléphones : les deux boutons d'enregistrement côte à côte. -->
+              <div class="grid grid-cols-2 gap-3 border-t border-border pt-6 sm:flex sm:items-center sm:justify-between">
                 <a
                   [routerLink]="profileLink()"
                   class="inline-flex items-center justify-center rounded-xl border border-border px-5 py-3 text-sm font-semibold transition-colors hover:border-accent hover:text-accent"
+                  [ngClass]="mode === 'projet' ? 'max-sm:order-3 max-sm:col-span-2' : 'max-sm:order-2'"
                 >
                   Voir mon profil
                 </a>
 
                 @if (mode === 'projet') {
-                  <div class="flex flex-col gap-3 sm:flex-row">
+                  <div class="contents sm:flex sm:flex-row sm:gap-3">
                     <button type="button" (click)="saveProjectAs(false)" [disabled]="isSaving()"
                             class="inline-flex items-center justify-center rounded-xl border border-primary px-6 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-white disabled:opacity-60">
                       {{ isProjectPublished() ? 'Repasser en brouillon' : 'Enregistrer le brouillon' }}
@@ -721,7 +731,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                   (click)="saveProfile()"
                   [disabled]="isSaving()"
                   [ngClass]="isSaving() ? 'cursor-wait opacity-70' : ''"
-                  class="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary/90"
+                  class="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary/90 max-sm:order-1"
                 >
                   @if (isSaving()) {
                     Enregistrement...
@@ -764,9 +774,9 @@ export class ModifierComponent implements OnInit {
   // « Mon profil d'associé » (/profil/associe). Chaque bouton mène à sa vraie destination.
   readonly associatesEnabled = isEnabled('associates');
   readonly profileTabs = [
-    { path: '/profil/modifier', mode: 'profil', label: 'Profil général' },
-    { path: '/profil/associe', mode: 'associe', label: 'Profil d’associé' },
-    { path: '/mon-projet', mode: 'projet', label: 'Mon projet' },
+    { path: '/profil/modifier', mode: 'profil', label: 'Profil général', short: 'Général' },
+    { path: '/profil/associe', mode: 'associe', label: 'Profil d’associé', short: 'Associé' },
+    { path: '/mon-projet', mode: 'projet', label: 'Mon projet', short: 'Projet' },
   ] as const;
 
   // « Enregistrer le brouillon » / « Publier mon projet » : le statut suit le bouton choisi.
@@ -922,6 +932,8 @@ export class ModifierComponent implements OnInit {
 
     });
 
+  // Téléphones : partie confidentielle repliée tant qu'on ne l'ouvre pas.
+  readonly confidentialOpen = signal(false);
   readonly isProjectPublished = toSignal(this.projectForm.controls.isActive.valueChanges, { initialValue: false });
 
   readonly projectStages = [

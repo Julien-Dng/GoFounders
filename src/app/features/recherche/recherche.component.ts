@@ -33,15 +33,15 @@ type SearchProfileType = ProfileType;
       <div class="mx-auto max-w-[1600px]">
         <!-- En-tête : associés ou projets, au choix (compte multi-usages). -->
         <div class="mb-6 sm:mb-8">
-          <h1 class="text-2xl font-semibold text-primary sm:text-4xl">{{ visibleProfileType() === 'talent' ? 'Trouvez votre prochain associé' : 'Trouvez le projet qui vous correspond' }}</h1>
+          <h1 class="text-2xl font-semibold text-primary sm:text-4xl"><span class="sm:hidden">{{ visibleProfileType() === 'talent' ? 'Trouver un associé' : 'Trouver un projet' }}</span><span class="hidden sm:inline">{{ visibleProfileType() === 'talent' ? 'Trouvez votre prochain associé' : 'Trouvez le projet qui vous correspond' }}</span></h1>
           <p class="mt-2 text-muted-foreground">{{ visibleProfileType() === 'talent' ? 'Explorez des profils complémentaires, échangez et lancez votre projet ensemble' : 'Découvrez les projets qui recrutent et proposez vos compétences' }}</p>
-          <div class="mt-5 inline-grid grid-cols-2 gap-1 rounded-xl bg-white p-1 ring-1 ring-border" role="tablist" aria-label="Que cherchez-vous ?">
+          <div class="mt-4 grid w-full grid-cols-2 gap-1 sm:mt-5 sm:inline-grid sm:w-auto rounded-xl bg-white p-1 ring-1 ring-border" role="tablist" aria-label="Que cherchez-vous ?">
             <button type="button" role="tab" [attr.aria-selected]="visibleProfileType() === 'talent'" (click)="showSide('talent')"
                     class="rounded-lg px-5 py-2.5 font-semibold transition-colors"
-                    [class]="visibleProfileType() === 'talent' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-primary'">Associés disponibles</button>
+                    [class]="visibleProfileType() === 'talent' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-primary'">Associés<span class="hidden sm:inline"> disponibles</span></button>
             <button type="button" role="tab" [attr.aria-selected]="visibleProfileType() === 'entrepreneur'" (click)="showSide('entrepreneur')"
                     class="rounded-lg px-5 py-2.5 font-semibold transition-colors"
-                    [class]="visibleProfileType() === 'entrepreneur' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-primary'">Projets qui recrutent</button>
+                    [class]="visibleProfileType() === 'entrepreneur' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-primary'">Projets<span class="hidden sm:inline"> qui recrutent</span></button>
           </div>
         </div>
         <div class="flex flex-col gap-8 xl:flex-row">
@@ -237,7 +237,7 @@ type SearchProfileType = ProfileType;
           }
 
           <div class="min-w-0 flex-1">
-            <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="mb-4 flex flex-col gap-1 sm:mb-8 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div class="text-lg">
                 <span class="font-semibold text-primary">{{ filteredProfiles().length }}</span>
                 <span class="text-muted-foreground"> {{ searchResultLabel() }}</span>
@@ -245,7 +245,8 @@ type SearchProfileType = ProfileType;
               <span class="text-sm font-medium text-muted-foreground">{{ sortLabel() }}</span>
             </div>
 
-            <div class="relative mb-8 overflow-hidden rounded-lg bg-primary p-6 text-white">
+            <!-- Sélection « les plus alignés » : tablette et ordinateur (page courte sur téléphone). -->
+            <div class="relative mb-8 hidden overflow-hidden rounded-lg bg-primary p-6 text-white sm:block">
               <div class="mb-4 flex items-center gap-2">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
@@ -312,13 +313,13 @@ type SearchProfileType = ProfileType;
               @for (profile of filteredProfiles(); track profile.id; let profileIndex = $index) {
                 <div
                   #searchCard
-                  class="search-card-reveal flex min-h-[21.5rem] flex-col rounded-2xl bg-white p-6 shadow-lg ring-1 transition-all hover:shadow-xl"
+                  class="search-card-reveal flex flex-col rounded-2xl bg-white p-4 shadow-lg ring-1 transition-all hover:shadow-xl sm:min-h-[21.5rem] sm:p-6"
                   [ngClass]="profile.featured ? 'ring-accent/50' : 'ring-border'"
                   [style.--reveal-delay]="revealDelay(profileIndex)"
                 >
-                  <div class="mb-4 flex items-start justify-between">
+                  <div class="mb-3 flex items-start justify-between sm:mb-4">
                     <div class="flex items-center gap-3">
-                      <div class="relative flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-lg font-semibold text-white">
+                      <div class="relative flex h-12 w-12 sm:h-14 sm:w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-lg font-semibold text-white">
                         <span>{{ profile.initials }}</span>
                         @if (profile.photoURL) {
                           <img [src]="profile.photoURL" [alt]="'Photo de ' + profile.displayName" (error)="hideBrokenImage($event)" class="absolute inset-0 h-full w-full object-cover">
@@ -371,15 +372,15 @@ type SearchProfileType = ProfileType;
                   </div>
 
                   <div class="mb-2 text-sm font-semibold text-primary">{{ profile.title }}</div>
-                  <p class="mb-4 min-h-[2.75rem] line-clamp-2 text-sm leading-relaxed text-foreground/80">{{ profile.bio }}</p>
+                  <p class="mb-3 line-clamp-2 text-sm leading-relaxed text-foreground/80 sm:mb-4 sm:min-h-[2.75rem]" [ngClass]="profile.profileType === 'talent' ? 'max-sm:hidden' : ''">{{ profile.bio }}</p>
 
-                  <div class="mb-4 flex min-h-[2rem] flex-wrap gap-2">
+                  <div class="mb-3 flex flex-wrap gap-2 sm:mb-4 sm:min-h-[2rem] max-sm:[&>*:nth-child(n+4)]:hidden">
                     @for (skill of profile.skills; track skill) {
                       <span class="rounded-lg bg-secondary px-3 py-1 text-sm font-medium text-foreground">{{ skill }}</span>
                     }
                   </div>
 
-                  <div class="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+                  <div class="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3 sm:pt-4">
                     <div class="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-accent/10 px-3 py-1.5 text-accent" [title]="canSeeReasons() ? (profile.matchReasons ?? []).join(' · ') : reasonsUpsell">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
