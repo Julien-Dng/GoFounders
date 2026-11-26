@@ -61,7 +61,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
               @if (discoverActions().length) {
                 <!-- Usage pas encore choisi : un accès discret au formulaire, qui ne rend rien public. -->
                 <p class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                  <span class="text-muted-foreground">Autre usage :</span>
+                  <span class="text-muted-foreground">{{ discoverQuestion() }}</span>
                   @for (action of discoverActions(); track action.path) {
                     <a [routerLink]="action.path" class="font-semibold text-accent hover:underline">{{ action.label }}&nbsp;<span aria-hidden="true">→</span></a>
                   }
@@ -213,7 +213,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                   </div>
                   }
 
-                  <div>
+                  <div [ngClass]="showTeamFields() ? '' : 'md:col-span-2'">
                     <label for="profile-title" class="mb-2 block text-sm font-semibold">{{ mode === 'associe' ? 'Intitulé' : 'Titre du profil' }}</label>
                     <input
                       id="profile-title"
@@ -224,6 +224,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                     >
                   </div>
 
+                  @if (showTeamFields()) {
                   <div>
                     <label for="profile-availability" class="mb-2 block text-sm font-semibold">Disponibilité</label>
                     <input
@@ -234,6 +235,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                       placeholder="Disponible 2 jours par semaine"
                     >
                   </div>
+                  }
                 </div>
               </div>
 
@@ -245,7 +247,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                   rows="6"
                   maxlength="700"
                   class="w-full resize-none rounded-xl border border-border bg-secondary px-4 py-3 outline-none transition-colors focus:border-accent"
-                  placeholder="Présentez votre parcours, ce que vous construisez ou ce que vous pouvez apporter à un projet..."
+                  [placeholder]="showTeamFields() ? 'Présentez votre parcours, ce que vous construisez ou ce que vous pouvez apporter à un projet...' : 'Présentez votre parcours et ce qui vous amène sur GoFounders...'"
                 ></textarea>
                 <div class="mt-2 flex items-center justify-between text-sm text-muted-foreground">
                   <span>Un texte court, concret et humain fonctionne mieux qu'un CV complet</span>
@@ -253,6 +255,9 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                 </div>
               </div>
 
+              <!-- Compétences et recherche : pour les associés et les porteurs de projet. Un repreneur ou un cédant seul ne les
+                   voit pas sur son profil général (les valeurs déjà enregistrées sont conservées). -->
+              @if (showTeamFields()) {
               <div class="grid gap-5 md:grid-cols-2">
                 <div>
                   <label for="profile-skills" class="mb-2 block text-sm font-semibold">Compétences</label>
@@ -266,6 +271,7 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                   <p class="mt-2 text-sm text-muted-foreground">Ces tags aident à comprendre rapidement votre objectif</p>
                 </div>
               </div>
+              }
               }
 
               @if (mode === 'associe') {
@@ -810,6 +816,20 @@ export class ModifierComponent implements OnInit {
       ...(shown.has('associe') ? [] : [{ path: '/profil/associe', label: 'Créer mon profil d’associé' }]),
       ...(shown.has('projet') ? [] : [{ path: '/mon-projet', label: 'Présenter mon projet' }]),
     ];
+  });
+  readonly discoverQuestion = computed(() => {
+    const paths = this.discoverActions().map(action => action.path);
+    return paths.length > 1
+      ? 'Vous cherchez aussi un associé ou un projet ?'
+      : paths[0] === '/mon-projet' ? 'Vous cherchez aussi des associés ?' : 'Vous voulez aussi rejoindre un projet ?';
+  });
+  // Profil général d'un repreneur ou d'un cédant seul : sans disponibilité, compétences ni recherche d'associé.
+  readonly showTeamFields = computed(() => {
+    if (this.mode !== 'profil' || this.isPro() || !this.associatesEnabled) {
+      return true;
+    }
+    const flags = this.tabFlags();
+    return flags.associe || flags.projet;
   });
   // Onglet de la page ouverte devenu masqué (objectif retiré, aucun contenu) : retour sur « Profil général ».
   private tabWasShown = false;
