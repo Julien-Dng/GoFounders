@@ -3,7 +3,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { FEATURES } from '../../core/config/features';
 import { AuthService } from '../../core/services/auth.service';
-import { USAGE_OPTIONS, Usage, usagesOf } from '../../core/models/user.model';
+import { USAGE_OPTIONS, Usage, profileTabsFor, usagesOf } from '../../core/models/user.model';
+import { ProjectService } from '../../core/services/project.service';
 import { passwordPolicyValidator } from '../../core/validators/password-policy.validator';
 import { PasswordCriteriaComponent } from '../../shared/components/password-criteria/password-criteria.component';
 
@@ -135,10 +136,15 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
 
             } @else {
               <p class="text-sm text-muted-foreground">
-                Votre visibilité se règle là où elle s'applique :
-                @if (associatesEnabled) {
-                  <a routerLink="/profil/associe" class="font-semibold text-accent hover:underline">Mon profil d'associé</a> (visible dans la recherche, aperçu sur la vitrine) et
-                  <a routerLink="/mon-projet" class="font-semibold text-accent hover:underline">Mon projet</a> (publié ou brouillon).
+                <!-- Seulement les rubriques qui concernent le membre (mêmes règles que les onglets de « Mon profil »). -->
+                @if (associatesEnabled && (tabFlags().associe || tabFlags().projet)) {
+                  Votre visibilité se règle là où elle s'applique :
+                  @if (tabFlags().associe) {
+                    <a routerLink="/profil/associe" class="font-semibold text-accent hover:underline">Mon profil d'associé</a> (visible dans la recherche, aperçu sur la vitrine){{ tabFlags().projet ? ' et' : '.' }}
+                  }
+                  @if (tabFlags().projet) {
+                    <a routerLink="/mon-projet" class="font-semibold text-accent hover:underline">Mon projet</a> (publié ou brouillon).
+                  }
                 }
                 Vos conversations en cours continuent dans tous les cas
               </p>
@@ -190,8 +196,9 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
                   <svg class="mt-0.5 flex-shrink-0 text-accent" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
                   Cela personnalise votre expérience (suggestions et contenus), sans modifier vos accès
                 </p>
-                @if (associatesEnabled) {
+                @if (associatesEnabled && (tabFlags().associe || tabFlags().projet)) {
                   <ul class="mt-4 divide-y divide-border border-t border-border">
+                    @if (tabFlags().associe) {
                     <li>
                       <a routerLink="/profil/associe" class="flex items-center gap-3 py-3">
                         <svg class="flex-shrink-0 text-muted-foreground" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="8" r="4"/></svg>
@@ -199,6 +206,8 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
                         <span class="text-muted-foreground" aria-hidden="true">›</span>
                       </a>
                     </li>
+                    }
+                    @if (tabFlags().projet) {
                     <li>
                       <a routerLink="/mon-projet" class="flex items-center gap-3 py-3">
                         <svg class="flex-shrink-0 text-muted-foreground" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
@@ -206,6 +215,7 @@ const DELETE_CONFIRMATION = 'SUPPRIMER';
                         <span class="text-muted-foreground" aria-hidden="true">›</span>
                       </a>
                     </li>
+                    }
                   </ul>
                 }
                 <button type="button" (click)="saveUsages()" [disabled]="busy() || !usagesChanged()" class="mt-4 w-full rounded-lg bg-accent px-5 py-3 font-semibold text-white transition-colors hover:bg-accent/90 disabled:opacity-50">Enregistrer</button>
@@ -276,6 +286,10 @@ export class ParametresComponent implements OnInit {
   readonly associatesEnabled = FEATURES.associates;
   // Mes objectifs : cochés à l'inscription, ajoutés par les actions, modifiables ici. Aucun droit n'en dépend.
   readonly usageOptions = USAGE_OPTIONS;
+  // Rubriques qui concernent le membre : objectif enregistré ou contenu déjà commencé (profileTabsFor).
+  private readonly projects = inject(ProjectService);
+  private readonly ownsProject = signal(false);
+  readonly tabFlags = computed(() => profileTabsFor(this.auth.currentUser(), this.ownsProject()));
   readonly usages = signal<Usage[]>(usagesOf(this.auth.currentUser()));
   readonly usagesChanged = computed(() => {
     const saved = usagesOf(this.auth.currentUser());
@@ -306,6 +320,10 @@ export class ParametresComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     await this.auth.ensureSessionReady();
     this.usages.set(usagesOf(this.auth.currentUser()));
+    const uid = this.auth.currentUser()?.uid;
+    if (uid && this.associatesEnabled && !this.isPro()) {
+      this.ownsProject.set(!!(await this.projects.getOwnedProject(uid)));
+    }
     this.isVisible.set(await this.auth.getProfileVisibility());
     this.emailNotifications.set(await this.auth.getEmailNotifications());
   }

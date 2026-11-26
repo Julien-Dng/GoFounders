@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { RouterLink } from '@angular/router';
 import { MaListingData, MarketplaceProfile } from '../../core/data/mock-platform.data';
 import { FEATURES } from '../../core/config/features';
-import { hasUsage, isAssociateProfileComplete, isProjectPresented, usesTeamMarketplace } from '../../core/models/user.model';
+import { hasUsage, isAssociateProfileComplete, isProjectPresented, usesTeamMarketplace, profileTabsFor } from '../../core/models/user.model';
 import { AuthService } from '../../core/services/auth.service';
 import { FavoritesService } from '../../core/services/favorites.service';
 import { ListingAccessService } from '../../core/services/listing-access.service';
@@ -381,7 +381,7 @@ export class DashboardComponent {
     } else {
       tiles.push({ value: String(this.favorites.count()), label: 'favoris enregistrés', path: '/favoris', icon: 'heart' });
     }
-    if (FEATURES.associates && hasUsage(user, 'projet')) {
+    if (FEATURES.associates && profileTabsFor(user, !!this.ownProject()).projet) {
       const project = this.ownProject();
       tiles.push({ value: project ? (project.isActive ? 'Publié' : 'Brouillon') : 'À créer', label: 'mon projet', path: '/mon-projet', icon: 'file' });
     } else if (hasUsage(user, 'cession')) {
@@ -439,7 +439,8 @@ export class DashboardComponent {
       this.maService.getListingCards(),
       // Profils et projets : suggestions, et cartes des favoris de projets et d'associés.
       FEATURES.associates ? this.matchingService.getMarketplaceProfilesForSearch() : Promise.resolve<MarketplaceProfile[]>([]),
-      hasUsage(user, 'projet') ? this.projects.getOwnedProject(user.uid) : Promise.resolve(null),
+      // Projet existant (brouillon compris) : la tuile « mon projet » reste, même sans l'objectif (profileTabsFor).
+      FEATURES.associates && user.profileType !== 'pro' ? this.projects.getOwnedProject(user.uid) : Promise.resolve(null),
       this.favorites.ensureLoaded(),
     ]);
     this.listings.set(listings);
