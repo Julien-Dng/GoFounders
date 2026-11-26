@@ -1,4 +1,4 @@
-import { NgClass } from '@angular/common';
+import { NgClass, NgTemplateOutlet } from '@angular/common';
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -14,6 +14,7 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FavoriteButtonComponent } from '../../shared/components/favorite-button/favorite-button.component';
+import { BottomSheetComponent } from '../../shared/components/bottom-sheet/bottom-sheet.component';
 import { Subscription } from 'rxjs';
 import { MarketplaceProfile } from '../../core/data/mock-platform.data';
 import { ProfileType, MATCH_REASONS_UPSELL, canSeeMatchReasons, canUseAdvancedSearch, hasUsage, investmentBadge } from '../../core/models/user.model';
@@ -25,14 +26,14 @@ type SearchProfileType = ProfileType;
 @Component({
   selector: 'app-recherche',
   standalone: true,
-  imports: [NgClass, RouterLink, FavoriteButtonComponent],
+  imports: [NgClass, NgTemplateOutlet, RouterLink, FavoriteButtonComponent, BottomSheetComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-secondary px-4 pb-12 pt-24 sm:px-6 lg:px-8">
+    <div class="min-h-screen bg-secondary px-4 pb-12 pt-20 sm:px-6 sm:pt-24 lg:px-8">
       <div class="mx-auto max-w-[1600px]">
         <!-- En-tête : associés ou projets, au choix (compte multi-usages). -->
-        <div class="mb-8">
-          <h1 class="text-3xl font-semibold text-primary sm:text-4xl">{{ visibleProfileType() === 'talent' ? 'Trouvez votre prochain associé' : 'Trouvez le projet qui vous correspond' }}</h1>
+        <div class="mb-6 sm:mb-8">
+          <h1 class="text-2xl font-semibold text-primary sm:text-4xl">{{ visibleProfileType() === 'talent' ? 'Trouvez votre prochain associé' : 'Trouvez le projet qui vous correspond' }}</h1>
           <p class="mt-2 text-muted-foreground">{{ visibleProfileType() === 'talent' ? 'Explorez des profils complémentaires, échangez et lancez votre projet ensemble' : 'Découvrez les projets qui recrutent et proposez vos compétences' }}</p>
           <div class="mt-5 inline-grid grid-cols-2 gap-1 rounded-xl bg-white p-1 ring-1 ring-border" role="tablist" aria-label="Que cherchez-vous ?">
             <button type="button" role="tab" [attr.aria-selected]="visibleProfileType() === 'talent'" (click)="showSide('talent')"
@@ -44,15 +45,16 @@ type SearchProfileType = ProfileType;
           </div>
         </div>
         <div class="flex flex-col gap-8 xl:flex-row">
-          <aside class="w-full xl:w-[340px] xl:flex-shrink-0">
-            <div class="sticky top-28 rounded-2xl bg-white p-6 shadow-lg ring-1 ring-border">
+          <ng-template #filtersPanel let-inSheet>
               <!-- Compte multi-usages : on passe des associés aux projets ; ce qui s'affiche dépend de ses actions. -->
               <p class="mb-6 text-sm leading-relaxed text-muted-foreground">{{ audiencePanelDescription() }}</p>
 
-              <div class="mb-6 flex items-center justify-between">
-                <h2 class="text-xl font-semibold">Filtres</h2>
-                <button type="button" (click)="resetFilters()" class="text-sm font-medium text-accent hover:underline">Réinitialiser</button>
-              </div>
+              @if (!inSheet) {
+                <div class="mb-6 flex items-center justify-between">
+                  <h2 class="text-xl font-semibold">Filtres</h2>
+                  <button type="button" (click)="resetFilters()" class="text-sm font-medium text-accent hover:underline">Réinitialiser</button>
+                </div>
+              }
 
               <div class="space-y-6">
                 <div>
@@ -206,8 +208,33 @@ type SearchProfileType = ProfileType;
                   }
                 </div>
               </div>
-            </div>
-          </aside>
+          </ng-template>
+
+          @if (wide()) {
+            <aside class="w-[340px] flex-shrink-0">
+              <div class="sticky top-28 rounded-2xl bg-white p-6 shadow-lg ring-1 ring-border">
+                <ng-container *ngTemplateOutlet="filtersPanel; context: { $implicit: false }" />
+              </div>
+            </aside>
+          } @else {
+            <!-- Téléphones et tablettes : les filtres s'ouvrent à la demande, dans un panneau. -->
+            <button type="button" (click)="filtersOpen.set(true)" class="-mb-4 inline-flex items-center justify-center gap-2 self-start rounded-xl bg-white px-4 py-2.5 font-semibold text-primary shadow-sm ring-1 ring-border hover:ring-accent/40">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+              Filtres
+              @if (activeFilterCount()) {
+                <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-xs font-bold text-white">{{ activeFilterCount() }}</span>
+              }
+            </button>
+            @if (filtersOpen()) {
+              <app-bottom-sheet [title]="visibleProfileType() === 'talent' ? 'Filtrer les associés' : 'Filtrer les projets'" (closed)="filtersOpen.set(false)">
+                <ng-container *ngTemplateOutlet="filtersPanel; context: { $implicit: true }" />
+                <div sheetFooter class="flex items-center gap-4">
+                  <button type="button" (click)="resetFilters()" class="px-2 py-3 font-semibold text-accent hover:underline">Effacer</button>
+                  <button type="button" (click)="filtersOpen.set(false)" class="flex-1 rounded-lg bg-accent px-4 py-3 font-semibold text-white hover:bg-accent/90">Voir les {{ filteredProfiles().length }} {{ visibleProfileType() === 'talent' ? 'associés' : 'projets' }}</button>
+                </div>
+              </app-bottom-sheet>
+            }
+          }
 
           <div class="min-w-0 flex-1">
             <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -485,6 +512,28 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
       ? 'Les associés les plus alignés avec votre projet'
       : 'Les projets les plus alignés avec votre profil'
   );
+  // Filtres en panneau sous 1280 px (même seuil que la colonne de filtres).
+  private readonly wideQuery = window.matchMedia('(min-width: 1280px)');
+  readonly wide = signal(this.wideQuery.matches);
+  private readonly onWideChange = (event: MediaQueryListEvent) => {
+    this.wide.set(event.matches);
+    if (event.matches) {
+      this.filtersOpen.set(false);
+    }
+  };
+  readonly filtersOpen = signal(false);
+  readonly activeFilterCount = computed(() =>
+    [
+      this.selectedSector() !== 'Tous',
+      this.selectedStage().length > 0,
+      this.selectedLocation().trim().length > 0,
+      this.isAvailableNow(),
+      this.investorsOnly(),
+      this.openToEquityOnly(),
+      this.canUseAdvanced() && (this.keywords().trim().length > 0 || this.selectedSkills().length > 0 || this.minScore() > 0),
+    ].filter(Boolean).length
+  );
+
   readonly hasActiveFilters = computed(() =>
     this.selectedSector() !== 'Tous'
     || this.selectedStage().length > 0
@@ -572,6 +621,7 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.wideQuery.addEventListener('change', this.onWideChange);
     void this.loadProfiles();
   }
 
@@ -602,6 +652,7 @@ export class RechercheComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.wideQuery.removeEventListener('change', this.onWideChange);
     this.cardsChangesSubscription?.unsubscribe();
     this.intersectionObserver?.disconnect();
   }
