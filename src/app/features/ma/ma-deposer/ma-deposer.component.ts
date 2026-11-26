@@ -37,8 +37,11 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
 
         <!-- Téléphones : numéro et nom de l'étape au-dessus de la frise. -->
         <p class="mb-2 text-base font-semibold text-primary sm:hidden"><span class="tabular text-accent">{{ currentStep() }}/{{ totalSteps }}</span> · {{ stepLabels[currentStep() - 1] }}</p>
+        <div class="mb-5 h-2 overflow-hidden rounded-full bg-white ring-1 ring-border sm:hidden" role="progressbar" [attr.aria-valuenow]="currentStep()" aria-valuemin="1" [attr.aria-valuemax]="totalSteps" aria-label="Avancement du dépôt">
+          <div class="h-full rounded-full bg-accent transition-all" [style.width.%]="currentStep() / totalSteps * 100"></div>
+        </div>
         <!-- Étapes : on revient librement sur une étape déjà vue. -->
-        <ol class="mb-5 sm:mb-8 flex max-w-4xl items-start" aria-label="Étapes du dépôt">
+        <ol class="mb-8 hidden sm:flex max-w-4xl items-start" aria-label="Étapes du dépôt">
           @for (label of stepLabels; track label; let i = $index; let last = $last) {
             <li class="flex flex-1 items-start" [class.flex-none]="last">
               <button type="button" (click)="goToStep(i + 1)" [disabled]="i + 1 > maxStepReached()" [attr.aria-current]="currentStep() === i + 1 ? 'step' : null"
@@ -328,9 +331,13 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                 }
                 @case (6) {
                   <div>
-                    <h2 class="mb-2 text-2xl">6. Aperçu et publication</h2>
-                    <p class="mb-6 text-muted-foreground">Relisez votre annonce avant de la publier</p>
-                    <div class="rounded-2xl bg-secondary p-6">
+                    <h2 class="mb-2 text-xl sm:text-2xl">6. Aperçu et publication</h2>
+                    <p class="mb-5 text-muted-foreground sm:mb-6">Relisez votre annonce avant de la publier</p>
+                    <div class="rounded-2xl bg-secondary p-4 sm:p-6">
+                      <div class="mb-3 flex items-center justify-between gap-3">
+                        <span class="rounded-md bg-accent/10 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-accent">Aperçu anonyme</span>
+                        <button type="button" (click)="goToStep(1)" class="text-sm font-semibold text-accent hover:underline">Modifier</button>
+                      </div>
                       <p class="text-sm font-semibold text-muted-foreground">{{ listingTypeLabel() }} · {{ region() || 'Région à préciser' }}</p>
                       <p class="mt-1 text-xl font-bold text-primary">{{ listingTitle() || sector() || 'Titre à préciser' }}</p>
                       <p class="mt-2 text-base text-foreground/80">{{ teaser() || 'Accroche à compléter' }}</p>
@@ -344,19 +351,31 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                         <p class="mt-4 text-sm text-muted-foreground">Inclus : {{ includedLabels() }}</p>
                       }
                     </div>
-                    <section class="mt-5 rounded-2xl bg-white p-5 ring-1 ring-border" aria-labelledby="recap-title">
+                    <!-- Ce qui reste réservé : jamais montré sans engagement de confidentialité et paiement. -->
+                    <div class="mt-4 rounded-2xl border border-border bg-white p-4 sm:p-5">
+                      <div class="flex items-center justify-between gap-3">
+                        <span class="inline-flex items-center gap-1.5 rounded-md bg-primary/10 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-primary">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                          Dossier réservé
+                        </span>
+                        <button type="button" (click)="goToStep(5)" class="text-sm font-semibold text-accent hover:underline">Modifier</button>
+                      </div>
+                      <p class="mt-2 font-semibold text-primary">Description détaillée, raison de la cession et coordonnées</p>
+                      <p class="mt-1 text-sm text-muted-foreground">Visibles seulement des repreneurs qui acceptent l'engagement de confidentialité et débloquent votre dossier</p>
+                    </div>
+                    <section class="mt-5 rounded-2xl bg-white p-4 ring-1 ring-border sm:p-5" aria-labelledby="recap-title">
                       <h3 id="recap-title" class="font-semibold text-primary">Récapitulatif</h3>
                       <dl class="mt-3 divide-y divide-border">
                         @for (item of recap(); track item.step) {
                           <div class="flex items-center justify-between gap-4 py-2.5">
-                            <dt class="w-32 flex-shrink-0 text-sm text-muted-foreground">{{ item.label }}</dt>
+                            <dt class="w-24 flex-shrink-0 text-sm text-muted-foreground sm:w-32">{{ item.label }}</dt>
                             <dd class="min-w-0 flex-1 truncate text-sm font-medium text-primary">{{ item.value }}</dd>
                             <dd><button type="button" (click)="goToStep(item.step)" class="text-sm font-semibold text-accent hover:underline">Modifier<span class="sr-only"> : {{ item.label }}</span></button></dd>
                           </div>
                         }
                       </dl>
                     </section>
-                    <div class="mt-5 rounded-2xl bg-white p-5 ring-1 ring-border">
+                    <div class="mt-5 rounded-2xl bg-white p-4 ring-1 ring-border sm:p-5">
                       <p class="font-semibold text-primary">Publication gratuite</p>
                       <p class="mt-1 text-base leading-relaxed text-muted-foreground">
                         Offre de lancement : la publication ne coûte rien. Votre annonce apparaît anonymisée sur la marketplace ;
@@ -368,7 +387,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
               }
 
               <div class="grid grid-cols-2 gap-3 border-t border-border pt-5 sm:flex sm:items-center sm:justify-between sm:pt-6">
-                <button type="button" (click)="previousStep()" [disabled]="currentStep() === 1" class="rounded-lg border border-border px-5 py-3 font-semibold transition-colors hover:border-primary disabled:cursor-not-allowed disabled:opacity-40">
+                <button type="button" (click)="previousStep()" [disabled]="currentStep() === 1" class="rounded-lg border border-border px-5 py-3 font-semibold transition-colors hover:border-primary disabled:cursor-not-allowed disabled:opacity-40" [class]="currentStep() === totalSteps ? 'max-sm:order-2 max-sm:col-span-2 max-sm:border-0 max-sm:py-2 max-sm:text-accent' : ''">
                   Retour
                 </button>
 
@@ -377,7 +396,7 @@ import { formatMultiple } from '../../../core/ma/listing-metrics';
                     Continuer
                   </button>
                 } @else {
-                  <button type="button" (click)="submitListing()" [disabled]="isSubmitting()" class="rounded-lg bg-accent px-5 py-3 font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-wait disabled:opacity-60">
+                  <button type="button" (click)="submitListing()" [disabled]="isSubmitting()" class="max-sm:order-1 max-sm:col-span-2 rounded-lg bg-accent px-5 py-3 font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-wait disabled:opacity-60">
                     {{ finalActionLabel() }}
                   </button>
                 }
