@@ -26,6 +26,7 @@ from (values
   (18, '2026-11-16-favoris.sql',                     exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'listing_favorites')),
   (19, '2026-11-17-visibilite-contact.sql',          exists (select 1 from pg_proc where proname = 'project_presented')),
   (20, '2026-11-24-favoris-membres.sql',             exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'member_favorites')),
-  (21, '2026-11-25-apport-associe.sql',              exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'investment_readiness'))
+  (21, '2026-11-25-apport-associe.sql',              exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'investment_readiness')),
+  (22, '2026-11-26-profil-associe-commence.sql',     exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'associate_started_at'))
 ) as check_list(ordre, migration, passee)
 order by ordre;

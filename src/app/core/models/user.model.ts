@@ -94,6 +94,28 @@ export const INVESTMENT_OPTIONS: ReadonlyArray<{ value: InvestmentReadiness; lab
   { value: 'discuss', label: 'À discuter selon le projet', badge: 'Apport à discuter' },
   { value: 'no', label: 'Non, compétences seulement', badge: 'Sans apport' },
 ];
+// Profil d'associé commencé : un champ propre à l'associé a été renseigné par le membre (proposition du profil, réponse
+// sur l'apport ou premier enregistrement du formulaire). Les champs partagés avec le profil général (intitulé,
+// présentation, compétences), en partie préremplis à l'inscription, ne comptent pas.
+export function hasStartedAssociateProfile(user: Pick<User, 'associateStartedAt' | 'associateOfferedAt' | 'investmentReadiness'> | null | undefined): boolean {
+  return !!user && (!!user.associateStartedAt || !!user.associateOfferedAt || !!user.investmentReadiness);
+}
+
+// Onglets de « Mon profil » : objectif choisi OU contenu déjà commencé. Retirer l'objectif garde l'onglet tant qu'un
+// contenu existe ; rien n'est supprimé, dépublié ni masqué. Aucun droit n'en dépend. Comptes pro : aucun de ces onglets.
+export function profileTabsFor(
+  user: Pick<User, 'profileType' | 'usages' | 'associateStartedAt' | 'associateOfferedAt' | 'investmentReadiness'> | null | undefined,
+  ownsProject: boolean,
+): { associe: boolean; projet: boolean } {
+  if (!user || user.profileType === 'pro') {
+    return { associe: false, projet: false };
+  }
+  return {
+    associe: hasUsage(user, 'associe') || hasStartedAssociateProfile(user),
+    projet: hasUsage(user, 'projet') || ownsProject,
+  };
+}
+
 export function investmentBadge(value: InvestmentReadiness | null | undefined): string | null {
   return value === 'yes' || value === 'discuss' ? INVESTMENT_OPTIONS.find(option => option.value === value)!.badge : null;
 }
@@ -170,6 +192,8 @@ export interface User {
   profileVerifiedAt?: string;
   // Profil d'associé proposé aux porteurs de projet : choix explicite, distinct de l'objectif « Rejoindre un projet ».
   associateOfferedAt?: string;
+  // Premier enregistrement de « Mon profil d'associé » (2026-11-26-profil-associe-commence.sql) : garde l'onglet affiché.
+  associateStartedAt?: string;
   // Prêt à entrer au capital avec un apport (sans montant) ; non précisé si absent.
   investmentReadiness?: InvestmentReadiness;
   maRegion?: string;

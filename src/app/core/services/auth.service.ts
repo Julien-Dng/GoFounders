@@ -22,6 +22,7 @@ interface StoredUserRecord {
   usages?: Usage[];
   investmentReadiness?: InvestmentReadiness;
   associateOfferedAt?: string;
+  associateStartedAt?: string;
   profileTitle?: string;
   bio?: string;
   skills?: string[];
@@ -92,6 +93,8 @@ export interface UpdateProfilePayload {
   availabilityLabel: string;
   // Associés : prêt à entrer au capital avec un apport (null = non précisé) ; absent = inchangé.
   investmentReadiness?: InvestmentReadiness | null;
+  // Enregistrement depuis « Mon profil d'associé » : marque le profil d'associé comme commencé (onglet conservé).
+  associateStarted?: boolean;
   maSector?: string;
   maBudget?: string;
   maRegion?: string;
@@ -699,6 +702,7 @@ export class AuthService {
         looking_for: this.cleanTags(payload.lookingFor) ?? [],
         availability_label: this.cleanOptionalText(payload.availabilityLabel) ?? null,
         ...(payload.investmentReadiness !== undefined ? { investment_readiness: payload.investmentReadiness } : {}),
+        ...(payload.associateStarted && !activeUser.associateStartedAt ? { associate_started_at: new Date().toISOString() } : {}),
         ma_sector: this.cleanOptionalText(payload.maSector) ?? null,
         ma_budget: this.cleanOptionalText(payload.maBudget) ?? null,
         ma_region: this.cleanOptionalText(payload.maRegion) ?? null,
@@ -983,6 +987,7 @@ export class AuthService {
       lookingFor: this.cleanTags(payload.lookingFor),
       availabilityLabel: this.cleanOptionalText(payload.availabilityLabel),
       ...(payload.investmentReadiness !== undefined ? { investmentReadiness: payload.investmentReadiness ?? undefined } : {}),
+      ...(payload.associateStarted ? { associateStartedAt: users[userIndex].associateStartedAt ?? new Date().toISOString() } : {}),
       maSector: this.cleanOptionalText(payload.maSector),
       maBudget: this.cleanOptionalText(payload.maBudget),
       maRegion: this.cleanOptionalText(payload.maRegion),
@@ -1155,6 +1160,7 @@ export class AuthService {
       profileType: user.profileType,
       usages: usagesOf(user),
       associateOfferedAt: user.associateOfferedAt,
+      associateStartedAt: user.associateStartedAt,
       investmentReadiness: user.investmentReadiness,
       profileTitle: user.profileTitle,
       bio: user.bio,
@@ -1202,6 +1208,7 @@ export class AuthService {
       maBudget: profile.ma_budget ?? undefined,
       profileVerifiedAt: profile.verified_at ?? undefined,
       associateOfferedAt: profile.associate_offered_at ?? undefined,
+      associateStartedAt: profile.associate_started_at ?? undefined,
       investmentReadiness: profile.investment_readiness ?? undefined,
       maRegion: profile.ma_region ?? undefined,
       githubUrl: profile.github_url ?? undefined,

@@ -1,5 +1,5 @@
 import { NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, NgZone, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, NgZone, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -8,7 +8,7 @@ import { ProjectService } from '../../../core/services/project.service';
 import { ProjectAccessRequest, ProjectAccessService } from '../../../core/services/project-access.service';
 import { downloadTextFile, ndaProofDocument } from '../../../core/legal/nda';
 import { ProjectAccessStatus } from '../../../core/models/supabase-database.model';
-import { INVESTMENT_OPTIONS, InvestmentReadiness, MIN_PRESENTATION_LENGTH, PRO_CATEGORY_LABELS, ProCategory, hasUsage, isProjectPresented, usagesOf } from '../../../core/models/user.model';
+import { INVESTMENT_OPTIONS, InvestmentReadiness, MIN_PRESENTATION_LENGTH, PRO_CATEGORY_LABELS, ProCategory, hasUsage, isProjectPresented, profileTabsFor, usagesOf } from '../../../core/models/user.model';
 import { isEnabled } from '../../../core/config/features';
 import { TagInputComponent } from '../../../shared/components/tag-input/tag-input.component';
 import { ProfileVerificationCardComponent } from '../../../shared/components/profile-verification-card/profile-verification-card.component';
@@ -47,14 +47,26 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
             </h1>
             <p class="mt-2 hidden max-w-2xl text-sm leading-relaxed text-muted-foreground sm:block sm:text-base">{{ heading().subtitle }}</p>
             @if (associatesEnabled && !isPro()) {
-              <!-- Trois pages, une même rubrique « Mon profil » -->
-              <nav class="mt-3 grid grid-cols-3 sm:mt-5 sm:flex gap-1 overflow-x-auto overflow-y-hidden border-b border-border [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Mon profil">
-                @for (item of profileTabs; track item.path) {
+              <!-- Une même rubrique « Mon profil » : seuls les onglets qui concernent le membre (objectif choisi ou contenu
+                   déjà commencé, voir profileTabsFor) ; l'onglet de la page ouverte reste affiché (accès direct). -->
+              @if (visibleTabs().length > 1) {
+              <nav class="mt-3 flex gap-1 overflow-x-auto overflow-y-hidden border-b border-border [scrollbar-width:none] sm:mt-5 [&::-webkit-scrollbar]:hidden" aria-label="Mon profil">
+                @for (item of visibleTabs(); track item.path) {
                   <a [routerLink]="item.path" [attr.aria-current]="mode === item.mode ? 'page' : null"
-                     class="-mb-px whitespace-nowrap border-b-2 px-2 py-2.5 text-center text-sm font-semibold transition-colors sm:px-4"
+                     class="-mb-px flex-1 whitespace-nowrap border-b-2 px-2 py-2.5 text-center text-sm font-semibold transition-colors sm:flex-none sm:px-4"
                      [class]="mode === item.mode ? 'border-accent text-primary' : 'border-transparent text-muted-foreground hover:text-primary'"><span class="sm:hidden">{{ item.short }}</span><span class="hidden sm:inline">{{ item.label }}</span></a>
                 }
               </nav>
+              }
+              @if (discoverActions().length) {
+                <!-- Usage pas encore choisi : un accès discret au formulaire, qui ne rend rien public. -->
+                <p class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                  <span class="text-muted-foreground">Autre usage :</span>
+                  @for (action of discoverActions(); track action.path) {
+                    <a [routerLink]="action.path" class="font-semibold text-accent hover:underline">{{ action.label }}&nbsp;<span aria-hidden="true">→</span></a>
+                  }
+                </p>
+              }
             }
           </div>
 
@@ -315,16 +327,21 @@ import { ProfileVerificationCardComponent } from '../../../shared/components/pro
                 </div>
               }
 
-              @if (mode === 'profil' && !isPro() && associatesEnabled) {
-                <div class="grid gap-3 sm:grid-cols-2">
-                  <a routerLink="/mon-projet" class="group rounded-2xl border border-border p-4 transition-colors hover:border-accent">
-                    <span class="block font-semibold text-primary group-hover:text-accent">Mon projet&nbsp;<span aria-hidden="true">→</span></span>
-                    <span class="mt-1 block text-sm text-muted-foreground">Présenter votre projet et trouver des associés</span>
-                  </a>
-                  <a routerLink="/profil/associe" class="group rounded-2xl border border-border p-4 transition-colors hover:border-accent">
-                    <span class="block font-semibold text-primary group-hover:text-accent">Mon profil d'associé&nbsp;<span aria-hidden="true">→</span></span>
-                    <span class="mt-1 block text-sm text-muted-foreground">Proposer vos compétences aux porteurs de projet</span>
-                  </a>
+              @if (mode === 'profil' && !isPro() && associatesEnabled && (tabFlags().projet || tabFlags().associe)) {
+                <!-- Mêmes règles que les onglets : seulement les rubriques qui concernent le membre. -->
+                <div class="grid gap-3" [ngClass]="tabFlags().projet && tabFlags().associe ? 'sm:grid-cols-2' : ''">
+                  @if (tabFlags().projet) {
+                    <a routerLink="/mon-projet" class="group rounded-2xl border border-border p-4 transition-colors hover:border-accent">
+                      <span class="block font-semibold text-primary group-hover:text-accent">Mon projet&nbsp;<span aria-hidden="true">→</span></span>
+                      <span class="mt-1 block text-sm text-muted-foreground">Présenter votre projet et trouver des associés</span>
+                    </a>
+                  }
+                  @if (tabFlags().associe) {
+                    <a routerLink="/profil/associe" class="group rounded-2xl border border-border p-4 transition-colors hover:border-accent">
+                      <span class="block font-semibold text-primary group-hover:text-accent">Mon profil d'associé&nbsp;<span aria-hidden="true">→</span></span>
+                      <span class="mt-1 block text-sm text-muted-foreground">Proposer vos compétences aux porteurs de projet</span>
+                    </a>
+                  }
                 </div>
               }
 
@@ -779,6 +796,35 @@ export class ModifierComponent implements OnInit {
     { path: '/mon-projet', mode: 'projet', label: 'Mon projet', short: 'Projet' },
   ] as const;
 
+  // Onglets selon les objectifs et les contenus déjà créés (profileTabsFor). Un projet existant, même en brouillon,
+  // garde l'onglet « Mon projet » ; il est cherché pour toutes les pages de la rubrique.
+  readonly ownsProject = signal(false);
+  readonly tabFlags = computed(() => profileTabsFor(this.currentUser(), this.ownsProject()));
+  readonly visibleTabs = computed(() => {
+    const flags = this.tabFlags();
+    return this.profileTabs.filter(item => item.mode === 'profil' || item.mode === this.mode || flags[item.mode]);
+  });
+  readonly discoverActions = computed(() => {
+    const shown = new Set<string>(this.visibleTabs().map(item => item.mode));
+    return [
+      ...(shown.has('associe') ? [] : [{ path: '/profil/associe', label: 'Créer mon profil d’associé' }]),
+      ...(shown.has('projet') ? [] : [{ path: '/mon-projet', label: 'Présenter mon projet' }]),
+    ];
+  });
+  // Onglet de la page ouverte devenu masqué (objectif retiré, aucun contenu) : retour sur « Profil général ».
+  private tabWasShown = false;
+  private readonly hiddenTabEffect = effect(() => {
+    if (this.mode === 'profil' || this.isPro()) {
+      return;
+    }
+    const shown = this.tabFlags()[this.mode];
+    if (shown) {
+      this.tabWasShown = true;
+    } else if (this.tabWasShown) {
+      void this.router.navigateByUrl('/profil/modifier');
+    }
+  });
+
   // « Enregistrer le brouillon » / « Publier mon projet » : le statut suit le bouton choisi.
   async saveProjectAs(publish: boolean): Promise<void> {
     this.projectForm.controls.isActive.setValue(publish);
@@ -1043,7 +1089,7 @@ export class ModifierComponent implements OnInit {
       location: value.location,
       profileTitle: value.profileTitle,
       availabilityLabel: value.availabilityLabel,
-      ...(this.mode === 'associe' ? { investmentReadiness: this.investment() } : {}),
+      ...(this.mode === 'associe' ? { investmentReadiness: this.investment(), associateStarted: true } : {}),
       ...(checkMa ? { maSector: maValue.sector, maBudget: maValue.budget, maRegion: maValue.region } : {}),
       ...(this.mode === 'profil' && this.isPro() ? { proCategory: this.proCategory() } : {}),
       bio: value.bio,
@@ -1113,6 +1159,7 @@ export class ModifierComponent implements OnInit {
       if (!(await this.saveProject())) {
         return;
       }
+      this.ownsProject.set(true);
       const published = this.projectForm.controls.isActive.value;
       if (published) {
         await this.auth.noteActionUsage('projet');
@@ -1176,13 +1223,16 @@ export class ModifierComponent implements OnInit {
   private async loadProject(): Promise<void> {
     await this.auth.ensureSessionReady();
 
-    if (this.mode !== 'projet') {
-      return;
-    }
-
     const ownerId = this.currentUser()?.uid;
 
     if (!ownerId) {
+      return;
+    }
+
+    if (this.mode !== 'projet') {
+      if (this.associatesEnabled && !this.isPro()) {
+        this.ownsProject.set(!!(await this.projects.getOwnedProject(ownerId)));
+      }
       return;
     }
 
@@ -1191,6 +1241,7 @@ export class ModifierComponent implements OnInit {
     try {
       const project = await this.projects.getOwnedProject(ownerId);
       this.projectId.set(project?.id ?? null);
+      this.ownsProject.set(!!project);
       this.accessRequests.set(project ? await this.projectAccess.listForProject(project.id) : []);
       this.projectForm.patchValue({
         name: project?.name ?? this.currentUser()?.profileTitle ?? '',

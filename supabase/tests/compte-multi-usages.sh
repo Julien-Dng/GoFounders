@@ -1,7 +1,7 @@
 #!/bin/bash
 # Tests de sécurité du compte multi-usages (2026-11-13-compte-multi-usages.sql, 2026-11-15-objectifs-automatiques.sql,
 # 2026-11-16-favoris.sql, 2026-11-17-visibilite-contact.sql, 2026-11-24-favoris-membres.sql,
-# 2026-11-25-apport-associe.sql), sur une base de test locale
+# 2026-11-25-apport-associe.sql, 2026-11-26-profil-associe-commence.sql), sur une base de test locale
 # avec comptes-test.sql, annonces-demo.sql et demo-complete.sql. Chaque cas est annulé (ROLLBACK).
 # Usage : D=<dossier du socket> bash supabase/tests/compte-multi-usages.sh
 D=${D:-/var/tmp/pgtest}
@@ -112,3 +112,8 @@ r "Valeur inconnue refusée"                      $A  "update profiles set inves
 r "Lisible par un membre qui voit le profil"     $A  "update profiles set investment_readiness = 'discuss' where id='$A'; set local request.jwt.claim.sub = '$N'; select investment_readiness from profiles where id='$A'" discuss
 r "Jamais sur la vitrine publique"               $A  "select count(*) from information_schema.routines where routine_name = 'list_public_marketplace' and routine_definition ilike '%investment_readiness%'" 0
 r "Pas modifiable pour un autre membre"          $N  "update profiles set investment_readiness = 'yes' where id='$A'; select coalesce(investment_readiness,'-') from profiles where id='$A'" "-"
+
+echo "== Profil d'associé commencé (2026-11-26-profil-associe-commence.sql) =="
+r "Le membre marque son profil d'associé commencé" $N  "update profiles set associate_started_at = now() where id='$N'; select associate_started_at is not null from profiles where id='$N'" t
+r "Commencé n'ouvre aucun droit d'associé"        $N  "update profiles set associate_started_at = now(), skills = array['Vente'] where id='$N'; select public.is_associate('$N')" f
+r "Pas modifiable pour un autre membre"          $N  "update profiles set associate_started_at = now() where id='$A' and associate_started_at is null; select count(*) from profiles where id='$A' and associate_started_at > now() - interval '1 minute'" 0

@@ -5,7 +5,7 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 // Colonnes de profiles lisibles depuis l'appli : toutes sauf l'email (2026-10-12-profils-par-role.sql).
 // Un select('*') sur profiles est refusé par Supabase.
 export const PROFILE_COLUMNS =
-  'id, display_name, role, usages, plan, ma_access, ma_access_expires_at, is_admin, location, title, bio, photo_url, github_url, linkedin_url, website_url, skills, looking_for, availability_label, ma_sector, ma_budget, ma_region, buyer_plus_until, pro_directory_until, pro_account_until, pro_category, verified_at, associate_offered_at, investment_readiness, created_at, updated_at';
+  'id, display_name, role, usages, plan, ma_access, ma_access_expires_at, is_admin, location, title, bio, photo_url, github_url, linkedin_url, website_url, skills, looking_for, availability_label, ma_sector, ma_budget, ma_region, buyer_plus_until, pro_directory_until, pro_account_until, pro_category, verified_at, associate_offered_at, associate_started_at, investment_readiness, created_at, updated_at';
 
 export interface SupabaseProfileRow {
   id: string;
@@ -39,6 +39,7 @@ export interface SupabaseProfileRow {
   verified_at?: string | null;
   // Profil d'associé proposé aux porteurs de projet (set_associate_offer, 2026-11-15-objectifs-automatiques.sql).
   associate_offered_at?: string | null;
+  associate_started_at?: string | null;
   // Prêt à entrer au capital avec un apport (2026-11-25-apport-associe.sql) : yes, discuss, no ou non précisé.
   investment_readiness?: 'yes' | 'discuss' | 'no' | null;
   created_at: string;
