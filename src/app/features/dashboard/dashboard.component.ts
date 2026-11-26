@@ -236,10 +236,9 @@ interface Tile {
         </div>
 
         @if (showProUpsell()) {
-          <a routerLink="/tarifs" fragment="associes" class="flex items-center gap-3 rounded-2xl bg-accent/[0.06] px-5 py-4 ring-1 ring-accent/15 transition-colors hover:bg-accent/10">
-            <svg class="text-accent" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>
+          <a routerLink="/tarifs" fragment="associes" class="flex items-center justify-between gap-3 rounded-2xl bg-accent/[0.06] px-4 py-3 text-sm ring-1 ring-accent/15 transition-colors hover:bg-accent/10 sm:justify-start sm:px-5 sm:py-4 sm:text-base">
             <span class="font-semibold text-primary">Besoin de plus de contacts ?</span>
-            <span class="font-semibold text-accent">Découvrir PRO <span aria-hidden="true">→</span></span>
+            <span class="whitespace-nowrap font-semibold text-accent">Découvrir PRO&nbsp;<span aria-hidden="true">→</span></span>
           </a>
         }
       </div>
