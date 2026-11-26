@@ -34,7 +34,7 @@ import { MessagingService } from '../../core/services/messaging.service';
         </div>
       </div>
     } @else {
-      <div class="min-h-screen bg-secondary pt-24">
+      <div class="min-h-screen bg-secondary pt-20 sm:pt-24">
         <div class="relative z-10 mx-auto max-w-[78rem] px-4 pb-12 sm:px-6 lg:px-8">
           @if (!isOwnProfile()) {
             <a routerLink="/recherche" class="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-accent hover:underline">
@@ -43,10 +43,11 @@ import { MessagingService } from '../../core/services/messaging.service';
           }
           <div class="grid grid-cols-1 gap-8 2xl:grid-cols-12">
             <div class="2xl:col-span-8">
-              <div class="mb-6 rounded-2xl bg-white shadow-lg ring-1 ring-border p-6 sm:p-8">
-                <div class="flex flex-col gap-6 lg:flex-row lg:items-start">
+              <div class="mb-5 rounded-2xl bg-white shadow-lg ring-1 ring-border p-5 sm:mb-6 sm:p-8">
+                <!-- Téléphones : photo à gauche, nom et actions à droite. -->
+                <div class="flex flex-col gap-4 max-sm:flex-row max-sm:flex-wrap max-sm:items-start sm:gap-6 lg:flex-row lg:items-start">
                   <div class="relative lg:-mt-1">
-                    <div class="h-28 w-28 overflow-hidden rounded-2xl bg-primary text-3xl font-semibold text-white sm:h-32 sm:w-32 sm:text-4xl">
+                    <div class="h-20 w-20 overflow-hidden rounded-2xl bg-primary text-2xl font-semibold text-white sm:h-32 sm:w-32 sm:text-4xl">
                       @if (profilePhotoUrl()) {
                         <img [src]="profilePhotoUrl()" [alt]="'Photo de profil de ' + profileName()" class="h-full w-full object-cover">
                       } @else {
@@ -56,7 +57,7 @@ import { MessagingService } from '../../core/services/messaging.service';
                       }
                     </div>
                     @if (isVerified()) {
-                      <div class="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary" title="Profil vérifié par GoFounders">
+                      <div class="absolute -bottom-2 -right-2 flex h-8 w-8 items-center sm:h-10 sm:w-10 justify-center rounded-full bg-primary" title="Profil vérifié par GoFounders">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="#2563EB" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Profil vérifié">
                           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                           <polyline points="22 4 12 14.01 9 11.01"/>
@@ -65,10 +66,10 @@ import { MessagingService } from '../../core/services/messaging.service';
                     }
                   </div>
 
-                  <div class="flex-1 pt-2">
+                  <div class="min-w-0 flex-1 sm:pt-2">
                     <div class="mb-3">
                       <div class="mb-2 flex flex-wrap items-center gap-x-3 gap-y-2">
-                        <h1 class="text-3xl">{{ profileName() }}</h1>
+                        <h1 class="text-2xl sm:text-3xl">{{ profileName() }}</h1>
                         <span class="inline-flex whitespace-nowrap rounded-full bg-primary px-3 py-1 text-sm font-semibold text-white">{{ profileRole() }}</span>
                       </div>
                       <div class="mb-3 flex items-center gap-2 text-muted-foreground">
@@ -100,7 +101,7 @@ import { MessagingService } from '../../core/services/messaging.service';
                       }
                     </div>
 
-                    <div class="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                    <div class="mt-5 flex items-center gap-3 sm:mt-7 sm:flex-wrap">
                       @if (isOwnProfile()) {
                         <a routerLink="/profil/modifier" class="inline-flex items-center justify-center gap-2 rounded-full border border-accent/25 bg-accent/10 px-5 py-2.5 text-sm font-semibold text-accent transition-all  hover:bg-accent hover:text-white  hover:shadow-accent/20 active:translate-y-0">
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -110,14 +111,16 @@ import { MessagingService } from '../../core/services/messaging.service';
                           Modifier mon profil
                         </a>
                       } @else {
-                        <button type="button" (click)="openConversation()" class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-white transition-all hover:scale-105 hover:bg-primary/90 active:scale-95">
+                        <button type="button" (click)="openConversation()" class="inline-flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary px-4 py-3 sm:flex-none sm:px-6 font-semibold text-white transition-all hover:scale-105 hover:bg-primary/90 active:scale-95">
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                           </svg>
                           Envoyer un message
                         </button>
                         @if (favoriteTarget(); as target) {
-                          <app-favorite-button [listingId]="target.id" [kind]="target.kind" [label]="publicProfile()?.displayName ?? 'ce profil'" [withText]="true" />
+                          <!-- Téléphones : cœur seul à côté du bouton. -->
+                          <app-favorite-button class="sm:hidden" [listingId]="target.id" [kind]="target.kind" [label]="publicProfile()?.displayName ?? 'ce profil'" />
+                          <app-favorite-button class="hidden sm:inline-flex" [listingId]="target.id" [kind]="target.kind" [label]="publicProfile()?.displayName ?? 'ce profil'" [withText]="true" />
                         }
                       }
                     </div>
@@ -146,7 +149,7 @@ import { MessagingService } from '../../core/services/messaging.service';
                       <button
                         type="button"
                         (click)="activeTab.set(tab.id)"
-                        class="relative px-5 py-4 font-semibold transition-all sm:px-6"
+                        class="relative px-4 py-3.5 font-semibold transition-all sm:px-6 sm:py-4"
                         [class.text-accent]="activeTab() === tab.id"
                         [class.text-muted-foreground]="activeTab() !== tab.id"
                         [class.hover:text-foreground]="activeTab() !== tab.id"
@@ -160,7 +163,7 @@ import { MessagingService } from '../../core/services/messaging.service';
                   </div>
                 </div>
 
-                <div class="p-6 sm:p-8">
+                <div class="p-5 sm:p-8">
                   @if (activeTab() === 'presentation') {
                     <div class="space-y-8">
                       <div>
