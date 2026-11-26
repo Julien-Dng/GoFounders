@@ -48,9 +48,9 @@ interface PricingFeature {
   imports: [RouterLink, RevealDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-secondary px-4 pb-20 pt-24 sm:px-6 lg:px-8 lg:pt-32">
+    <div class="min-h-screen bg-secondary px-4 pb-20 pt-20 sm:px-6 lg:px-8 lg:pt-32">
       <div class="mx-auto max-w-[78rem]">
-        <header class="mx-auto max-w-[62ch] text-center">
+        <header class="mx-auto hidden max-w-[62ch] text-center sm:block">
           <h1 class="text-[2.25rem] leading-tight text-primary sm:text-5xl">Des offres adaptées à votre projet</h1>
           <p class="mt-4 text-lg leading-relaxed text-muted-foreground">
             @if (features.associates) {
@@ -77,6 +77,61 @@ interface PricingFeature {
           }
         </header>
 
+        <!-- Téléphones : les offres en un coup d'œil (céder, reprendre, associés), le détail reste plus bas. -->
+        <div class="sm:hidden">
+          <h1 class="text-3xl text-primary">Des tarifs simples</h1>
+          <p class="mt-1 text-base text-muted-foreground">Un seul compte, selon vos besoins</p>
+
+          <h2 class="mt-6 text-xl text-primary">Reprendre ou céder</h2>
+          <div class="mt-3 space-y-3">
+            @for (card of mobileMaCards; track card.title) {
+              <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-border">
+                <div class="flex gap-3">
+                  <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent" aria-hidden="true">
+                    @if (card.icon === 'shop') {
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9l1.5-5h13L20 9"/><path d="M4 9h16v2a3 3 0 0 1-5.3 1.9A3 3 0 0 1 12 14a3 3 0 0 1-2.7-1.1A3 3 0 0 1 4 11z"/><path d="M5 13.5V20h14v-6.5"/></svg>
+                    } @else {
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1M10 21v-3h4v3"/></svg>
+                    }
+                  </span>
+                  <div class="min-w-0">
+                    <h3 class="text-lg font-bold text-primary">{{ card.title }}</h3>
+                    <p class="tabular font-bold text-accent">{{ card.price }}</p>
+                    <ul class="mt-2 space-y-1 text-sm text-foreground/85">
+                      @for (feature of card.features; track feature) {
+                        <li class="flex gap-2"><svg class="mt-0.5 flex-shrink-0 text-accent" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span>{{ feature }}</span></li>
+                      }
+                    </ul>
+                  </div>
+                </div>
+                <a [routerLink]="card.href" class="mt-4 block rounded-lg px-4 py-2.5 text-center font-semibold text-white transition-colors" [class]="card.icon === 'shop' ? 'bg-primary hover:bg-primary/90' : 'bg-accent hover:bg-accent/90'">{{ card.cta }}</a>
+              </div>
+            }
+          </div>
+
+          @if (features.associates) {
+            <h2 class="mt-7 text-xl text-primary">Associés et projets</h2>
+            <div class="mt-3 grid grid-cols-2 gap-3">
+              @for (card of mobilePlanCards; track card.plan.name) {
+                <div class="flex flex-col rounded-2xl bg-white p-3.5 shadow-sm ring-1" [class]="card.plan.variant === 'pro' ? 'ring-2 ring-accent' : 'ring-border'">
+                  <h3 class="text-base font-bold text-primary">{{ card.plan.name }}</h3>
+                  <p class="tabular font-bold text-accent">{{ card.price }}</p>
+                  <ul class="mt-2 flex-1 space-y-1 text-sm text-foreground/85">
+                    @for (feature of card.features; track feature) {
+                      <li class="flex gap-1.5"><svg class="mt-0.5 flex-shrink-0 text-accent" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span>{{ feature }}</span></li>
+                    }
+                  </ul>
+                  <a [routerLink]="planHref(card.plan)" [queryParams]="planParams(card.plan)" class="mt-3 block rounded-lg px-3 py-2.5 text-center text-sm font-semibold transition-colors" [class]="card.plan.variant === 'pro' ? 'bg-accent text-white hover:bg-accent/90' : 'border border-primary text-primary hover:bg-primary hover:text-white'">{{ card.cta }}</a>
+                </div>
+              }
+            </div>
+            <ul class="mt-3 space-y-1.5 rounded-xl bg-accent/5 px-4 py-3 text-sm text-primary ring-1 ring-accent/15">
+              <li class="flex gap-2"><svg class="mt-0.5 flex-shrink-0 text-accent" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>Échanges gratuits pour rejoindre un projet</li>
+              <li class="flex gap-2"><svg class="mt-0.5 flex-shrink-0 text-accent" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>{{ plans[1].name }} n’inclut pas les dossiers d’entreprise</li>
+            </ul>
+          }
+        </div>
+
         @if (statusMessage() && !statusProduct()) {
           <div class="mx-auto mt-8 max-w-3xl rounded-xl border px-5 py-4 text-base" [class]="statusIsError() ? 'border-red-200 bg-red-50 text-red-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'" role="status">
             {{ statusMessage() }}
@@ -85,14 +140,14 @@ interface PricingFeature {
 
         @if (tab() === 'reprise') {
         <div id="panneau-reprise" role="tabpanel" aria-labelledby="onglet-reprise">
-        <section id="repreneurs" class="mt-16 scroll-mt-24" aria-labelledby="reprise-title">
-          <div class="mx-auto max-w-[62ch] text-center">
+        <section id="repreneurs" class="mt-6 scroll-mt-24 sm:mt-16" aria-labelledby="reprise-title">
+          <div class="mx-auto hidden max-w-[62ch] text-center sm:block">
             <h2 id="reprise-title" class="text-3xl text-primary sm:text-4xl">Reprendre ou céder une entreprise</h2>
             <p class="mt-3 text-lg leading-relaxed text-muted-foreground">
               Publier une annonce est gratuit, sans commission sur la vente. {{ introSummary }}
             </p>
           </div>
-          <div class="mx-auto mt-10 grid max-w-4xl gap-6 md:grid-cols-2">
+          <div class="mx-auto mt-10 hidden max-w-4xl gap-6 sm:grid md:grid-cols-2">
             @for (offer of mainOffers(); track offer.title; let first = $first; let i = $index) {
               <div [id]="first ? 'cedants' : null" class="flex scroll-mt-24">
                 <div appReveal [revealDelay]="i * 120" class="lift flex flex-col rounded-2xl bg-white p-7 shadow-lg" [class]="first ? 'w-full ring-1 ring-border' : 'w-full ring-2 ring-accent'">
@@ -162,7 +217,7 @@ interface PricingFeature {
         }
 
         @if (tab() === 'associes' && features.associates) {
-        <div id="panneau-associes" role="tabpanel" aria-labelledby="onglet-associes">
+        <div id="panneau-associes" class="hidden sm:block" role="tabpanel" aria-labelledby="onglet-associes">
           <section id="associes" class="mt-16 scroll-mt-24" aria-labelledby="associes-title">
             <div class="mx-auto max-w-[62ch] text-center">
               <h2 id="associes-title" class="text-3xl text-primary sm:text-4xl">Trouver un associé, créer une équipe</h2>
@@ -671,6 +726,16 @@ export class TarifsComponent {
       reassurance: 'Premier échange gratuit',
       variant: 'premium',
     },
+  ];
+
+  // Téléphones : résumé des offres (mêmes prix que les cartes détaillées).
+  readonly mobileMaCards = [
+    { icon: 'shop', title: 'Céder', price: 'Gratuit pendant le lancement', features: ['Annonce anonymisée', 'Sans commission'], cta: 'Publier mon annonce', href: '/ma/deposer' },
+    { icon: 'building', title: 'Reprendre', price: `${OFFER_PRICES.INTRO.label} par entreprise`, features: ['Dossier complet et contact', 'Paiement unique', 'Confidentialité requise'], cta: 'Explorer les entreprises', href: '/ma' },
+  ];
+  readonly mobilePlanCards = [
+    { plan: this.plans[0], price: 'Gratuit', features: [`${FREE_CONTACTS_PER_MONTH} nouveaux contacts par mois pour les porteurs`, 'Réponses illimitées'], cta: 'Commencer' },
+    { plan: this.plans[1], price: OFFER_PRICES.PRO.label, features: ['Contacts illimités', 'Recherche avancée'], cta: 'Découvrir PRO' },
   ];
 
   readonly comparisonRows: string[][] = [

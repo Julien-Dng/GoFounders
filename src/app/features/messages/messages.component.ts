@@ -61,11 +61,18 @@ interface ConversationPreview {
         </div>
       </div>
     } @else {
-    <div class="mt-16 h-[calc(100vh-64px)] bg-secondary px-4 py-4 sm:px-6 lg:px-8">
+    <div class="box-border h-[100dvh] bg-secondary px-3 pb-3 pt-[4.25rem] sm:px-6 sm:pb-4 sm:pt-20 lg:px-8">
       <div class="mx-auto flex h-full w-full max-w-[1500px]">
 
       <!-- ZONE DE CHAT -->
-      <div class="order-2 flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border">
+      <!-- Téléphones et tablettes : une seule colonne, la liste ou la conversation ouverte. -->
+      <div class="order-2 flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border" [ngClass]="selectedConv() ? '' : 'max-md:hidden'">
+        @if (selectedConv()) {
+          <button type="button" (click)="backToList()" class="flex flex-shrink-0 items-center gap-1.5 border-b border-border bg-secondary/60 px-4 py-2 text-left text-sm font-semibold text-accent md:hidden">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+            Messages
+          </button>
+        }
 
         <!-- Top bar : infos conversation -->
         <div class="flex flex-shrink-0 items-center gap-3 border-b border-border bg-white px-4 py-3">
@@ -84,10 +91,24 @@ interface ConversationPreview {
                 <div class="truncate text-sm text-muted-foreground">{{ selectedProfile()!.title }}</div>
               }
             </div>
+            @if (!partnerProject() && selectedConv()!.participantProfileId) {
+              <a [routerLink]="['/profil', selectedConv()!.participantProfileId]" class="flex-shrink-0 text-sm font-semibold text-accent hover:underline 2xl:hidden">Voir le profil</a>
+            }
           } @else {
             <span class="text-muted-foreground text-sm">Sélectionnez une conversation</span>
           }
         </div>
+
+        @if (selectedConv()) {
+          <!-- Sans le panneau de droite : projet de l'interlocuteur ou lien vers son profil. -->
+          @if (partnerProject(); as project) {
+            <div class="flex flex-shrink-0 items-center gap-2 border-b border-border bg-accent/[0.04] px-4 py-2 text-sm 2xl:hidden">
+              <svg class="flex-shrink-0 text-accent" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+              <span class="min-w-0 flex-1 truncate font-semibold text-primary">Projet : {{ project.name }}</span>
+              <a [routerLink]="['/profil', project.id]" class="flex-shrink-0 font-semibold text-accent hover:underline">Voir le projet</a>
+            </div>
+          }
+        }
 
         <!-- Messages -->
         @if (selectedConv()) {
@@ -106,6 +127,22 @@ interface ConversationPreview {
               </div>
             }
           </div>
+
+          @if (partnerProject()?.hasConfidential) {
+            <details class="group flex-shrink-0 border-t border-border bg-white px-4 py-2.5 2xl:hidden">
+              <summary class="flex cursor-pointer list-none items-center gap-2 text-sm font-semibold text-primary">
+                <svg class="text-accent" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <span class="flex-1">Projet et confidentialité</span>
+                <svg class="transition-transform group-open:rotate-180" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+              </summary>
+              <p class="mt-2 text-sm text-muted-foreground">{{ accessLabel() }}</p>
+              @if (partnerAccess() !== 'approved' && partnerAccess() !== 'pending') {
+                <a [routerLink]="['/profil', partnerProject()!.id]" class="mt-2 inline-block text-sm font-semibold text-accent hover:underline">Demander l'accès <span aria-hidden="true">→</span></a>
+              } @else if (partnerAccess() === 'approved') {
+                <a [routerLink]="['/profil', partnerProject()!.id]" class="mt-2 inline-block text-sm font-semibold text-accent hover:underline">Lire la partie confidentielle <span aria-hidden="true">→</span></a>
+              }
+            </details>
+          }
 
           <!-- Barre de saisie -->
           <div class="bg-white border-t border-border p-3 flex-shrink-0 sm:p-4">
@@ -138,7 +175,7 @@ interface ConversationPreview {
                 class="flex-1 px-4 py-2.5 bg-secondary border border-border rounded-xl focus:border-accent outline-none transition-colors text-sm min-w-0"
               >
 
-              <div class="relative flex-shrink-0">
+              <div class="relative hidden flex-shrink-0 sm:block">
                 <button
                   type="button"
                   (click)="toggleEmojiPicker($event)"
@@ -174,9 +211,11 @@ interface ConversationPreview {
                 type="button"
                 (click)="sendMessage()"
                 [disabled]="!newMessage().trim()"
-                class="px-5 py-2.5 bg-primary text-white rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+                class="px-3.5 py-2.5 sm:px-5 bg-primary text-white rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+                aria-label="Envoyer"
               >
-                Envoyer
+                <svg class="sm:hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>
+                <span class="hidden sm:inline">Envoyer</span>
               </button>
 
             </div>
@@ -190,7 +229,7 @@ interface ConversationPreview {
               </svg>
             </div>
             <h3 class="text-base font-semibold text-foreground/40 mb-1">Aucune conversation ouverte</h3>
-            <p class="text-sm text-foreground/30">Sélectionnez un contact dans la liste à droite</p>
+            <p class="text-sm text-foreground/30">Sélectionnez une conversation dans la liste</p>
           </div>
         }
 
@@ -311,7 +350,7 @@ interface ConversationPreview {
         </aside>
 
         <!-- LISTE DES CONVERSATIONS -->
-        <aside class="order-1 mr-3 flex min-h-0 w-72 flex-shrink-0 flex-col overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border">
+        <aside class="order-1 flex min-h-0 w-full flex-shrink-0 flex-col overflow-hidden rounded-2xl bg-white shadow-lg ring-1 ring-border md:mr-3 md:w-72" [ngClass]="selectedConv() ? 'max-md:hidden' : ''">
 
         <div class="border-b border-border px-4 py-4">
           <h2 class="text-lg font-semibold">Messages</h2>
@@ -472,6 +511,12 @@ export class MessagesComponent implements OnInit {
   @HostListener('document:click')
   closeEmojiPicker(): void {
     this.emojiPickerOpen.set(false);
+  }
+
+  // Téléphones : retour à la liste des conversations.
+  backToList(): void {
+    this.selectedConversationId.set(null);
+    void this.router.navigate([], { relativeTo: this.route, queryParams: { conversation: null }, queryParamsHandling: 'merge' });
   }
 
   selectConversation(conv: ConversationPreview): void {

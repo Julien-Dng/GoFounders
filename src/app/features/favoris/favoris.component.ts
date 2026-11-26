@@ -77,15 +77,16 @@ export function buildFavoriteCards(
   imports: [RouterLink, FavoriteButtonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-secondary px-4 pb-16 pt-24 sm:px-6 lg:px-8">
+    <div class="min-h-screen bg-secondary px-4 pb-16 pt-20 sm:px-6 sm:pt-24 lg:px-8">
       <div class="mx-auto max-w-6xl">
-        <h1 class="text-3xl font-semibold text-primary sm:text-4xl">Mes favoris</h1>
+        <h1 class="text-2xl font-semibold text-primary sm:text-4xl">Mes favoris</h1>
         <p class="mt-2 text-muted-foreground">Entreprises, projets et associés : retrouvez tout ce que vous avez enregistré</p>
 
-        <div class="mt-6 flex flex-wrap gap-2" role="tablist" aria-label="Type de favori">
+        <!-- Téléphones : les quatre filtres en deux lignes égales. -->
+        <div class="mt-5 grid grid-cols-2 gap-2 sm:mt-6 sm:flex sm:flex-wrap" role="tablist" aria-label="Type de favori">
           @for (option of filters; track option.value) {
             <button type="button" role="tab" [attr.aria-selected]="filter() === option.value" (click)="filter.set(option.value)"
-                    class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors"
+                    class="inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors"
                     [class]="filter() === option.value ? 'bg-primary text-white' : 'bg-white text-primary ring-1 ring-border hover:text-accent'">
               {{ option.label }}
               <span class="rounded-full px-1.5 text-xs" [class]="filter() === option.value ? 'bg-white/20' : 'bg-secondary'">{{ countOf(option.value) }}</span>
@@ -100,17 +101,19 @@ export function buildFavoriteCards(
             <input id="favoris-search" type="search" [value]="query()" (input)="query.set($any($event.target).value)" placeholder="Rechercher dans mes favoris…"
                    class="h-12 w-full rounded-xl border border-border bg-white pl-11 pr-4 text-base outline-none focus:border-accent">
           </div>
-          <label for="favoris-sort" class="sr-only">Trier</label>
-          <select id="favoris-sort" [value]="sort()" (change)="sort.set($any($event.target).value)" class="h-12 rounded-xl border border-border bg-white px-4 text-base outline-none focus:border-accent sm:w-52">
-            <option value="recent">Ajout récent</option>
-            <option value="alpha">Ordre alphabétique</option>
-          </select>
+          <div class="flex items-center gap-3">
+            <label for="favoris-sort" class="flex-shrink-0 text-sm font-medium text-muted-foreground sm:sr-only">Trier par</label>
+            <select id="favoris-sort" [value]="sort()" (change)="sort.set($any($event.target).value)" class="h-12 w-full rounded-xl border border-border bg-white px-4 text-base outline-none focus:border-accent sm:w-52">
+              <option value="recent">Ajout récent</option>
+              <option value="alpha">Ordre alphabétique</option>
+            </select>
+          </div>
         </div>
 
         @if (!loaded()) {
           <p class="py-16 text-center text-muted-foreground" role="status">Chargement…</p>
         } @else if (cards().length === 0) {
-          <div class="mt-6 rounded-2xl bg-white p-10 text-center shadow-lg ring-1 ring-border">
+          <div class="mt-5 rounded-2xl bg-white p-6 text-center shadow-lg ring-1 ring-border sm:mt-6 sm:p-10">
             <h2 class="text-2xl text-primary">{{ allCards().length === 0 ? 'Aucun favori pour le moment' : 'Aucun favori ne correspond' }}</h2>
             <p class="mx-auto mt-3 max-w-[50ch] text-base leading-relaxed text-muted-foreground">
               Touchez le cœur sur une entreprise, un projet ou un profil d'associé pour le retrouver ici
@@ -121,9 +124,9 @@ export function buildFavoriteCards(
             </div>
           </div>
         } @else {
-          <ul class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <ul class="mt-5 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
             @for (card of cards(); track card.kind + card.id) {
-              <li class="group relative flex flex-col rounded-2xl bg-white p-5 shadow-md ring-1 ring-border transition-shadow hover:shadow-lg">
+              <li class="group relative flex flex-col rounded-2xl bg-white p-4 shadow-md ring-1 ring-border transition-shadow hover:shadow-lg sm:p-5">
                 <div class="flex items-start justify-between gap-3">
                   <span class="rounded-md bg-accent/10 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-accent">{{ kindLabel(card.kind) }}</span>
                   <app-favorite-button [listingId]="card.id" [kind]="card.kind" [label]="card.title" />

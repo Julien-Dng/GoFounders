@@ -39,10 +39,10 @@ interface Tile {
   imports: [RouterLink, AvatarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-secondary px-4 pb-14 pt-24 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-6xl space-y-6">
+    <div class="min-h-screen bg-secondary px-4 pb-14 pt-20 sm:px-6 sm:pt-24 lg:px-8">
+      <div class="mx-auto max-w-6xl space-y-5 sm:space-y-6">
         <div>
-          <h1 class="text-3xl font-semibold text-primary sm:text-4xl">Bonjour, {{ firstName() }}</h1>
+          <h1 class="text-2xl font-semibold text-primary sm:text-4xl">Bonjour, {{ firstName() }}</h1>
           <p class="mt-1 text-muted-foreground">{{ subtitle() }}</p>
         </div>
 
@@ -55,19 +55,29 @@ interface Tile {
         }
 
         @if (nextStep(); as step) {
-          <section class="rounded-2xl bg-accent/[0.06] p-6 ring-1 ring-accent/15 sm:p-7" aria-labelledby="next-step-title">
-            <div class="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
+          <section class="rounded-2xl bg-accent/[0.06] p-4 ring-1 ring-accent/15 sm:p-7" aria-labelledby="next-step-title">
+            <div class="grid gap-4 sm:gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
               <div>
                 <p class="text-sm font-bold uppercase tracking-wide text-accent">{{ step.eyebrow }}</p>
-                <h2 id="next-step-title" class="mt-1 text-2xl text-primary">{{ step.title }}</h2>
-                <p class="mt-2 max-w-[60ch] text-base leading-relaxed text-muted-foreground">{{ step.text }}</p>
-                <div class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
+                <h2 id="next-step-title" class="mt-1 flex items-center justify-between gap-3 text-xl text-primary sm:text-2xl">{{ step.title }}
+                  @if (step.steps.length) {
+                    <span class="tabular flex-shrink-0 rounded-full bg-accent/10 px-2.5 py-0.5 text-sm font-bold text-accent sm:hidden">{{ stepsDone(step.steps) }}/{{ step.steps.length }}</span>
+                  }
+                </h2>
+                <p class="mt-1.5 max-w-[60ch] text-sm leading-relaxed text-muted-foreground sm:mt-2 sm:text-base">{{ step.text }}</p>
+                @if (step.steps.length) {
+                  <!-- Téléphones : barre d'avancement au lieu de la frise. -->
+                  <div class="mt-3 h-2 overflow-hidden rounded-full bg-white sm:hidden" role="progressbar" [attr.aria-valuenow]="stepsDone(step.steps)" aria-valuemin="0" [attr.aria-valuemax]="step.steps.length" aria-label="Avancement">
+                    <div class="h-full rounded-full bg-accent" [style.width.%]="stepsDone(step.steps) / step.steps.length * 100"></div>
+                  </div>
+                }
+                <div class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 sm:mt-5">
                   <a [routerLink]="step.path" class="inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-3 font-semibold text-white transition-colors hover:bg-accent/90">{{ step.cta }} <span aria-hidden="true">→</span></a>
                   <button type="button" (click)="dismissStep(step.id)" class="text-sm font-semibold text-muted-foreground underline-offset-4 hover:text-primary hover:underline">Ne plus me proposer cette étape</button>
                 </div>
               </div>
               @if (step.steps.length) {
-                <ol class="flex items-start" aria-label="Étapes">
+                <ol class="hidden items-start sm:flex" aria-label="Étapes">
                   @for (item of step.steps; track item.label; let i = $index; let last = $last) {
                     <li class="flex items-start">
                       <span class="flex w-24 flex-col items-center text-center sm:w-28">
@@ -88,10 +98,11 @@ interface Tile {
           </section>
         }
 
-        <div class="grid gap-4 sm:grid-cols-3">
+        <!-- Téléphones : deux chiffres côte à côte. -->
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 max-sm:[&>*:nth-child(3)]:hidden">
           @for (tile of tiles(); track tile.label) {
-            <a [routerLink]="tile.path" class="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-md ring-1 ring-border transition-shadow hover:shadow-lg">
-              <span class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent" aria-hidden="true">
+            <a [routerLink]="tile.path" class="flex items-start gap-3 rounded-2xl bg-white p-4 shadow-md sm:items-center sm:gap-4 sm:p-5 ring-1 ring-border transition-shadow hover:shadow-lg">
+              <span class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent sm:h-11 sm:w-11" aria-hidden="true">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                   @switch (tile.icon) {
                     @case ('messages') { <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/> }
@@ -104,7 +115,7 @@ interface Tile {
               </span>
               <span class="min-w-0">
                 <span class="tabular block text-2xl font-bold leading-tight text-primary">{{ tile.value }}</span>
-                <span class="block text-sm text-muted-foreground">{{ tile.label }}</span>
+                <span class="block text-sm leading-snug text-muted-foreground">{{ tile.label }}</span>
               </span>
             </a>
           }
@@ -118,11 +129,11 @@ interface Tile {
             }
           </div>
           @if (favoriteCards().length) {
-            <ul class="mt-4 grid gap-4 md:grid-cols-3">
+            <ul class="mt-3 grid gap-3 sm:mt-4 sm:gap-4 md:grid-cols-3">
               @for (card of favoriteCards(); track card.kind + card.id) {
-                <li class="group relative flex flex-col rounded-2xl bg-white p-5 shadow-md ring-1 ring-border transition-shadow hover:shadow-lg">
+                <li class="group relative flex flex-col rounded-2xl bg-white p-4 shadow-md sm:p-5 ring-1 ring-border transition-shadow hover:shadow-lg">
                   <span class="self-start rounded-md bg-accent/10 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-accent">{{ kindLabel(card.kind) }}</span>
-                  <h3 class="mt-3 text-lg font-bold leading-snug text-primary group-hover:text-accent">
+                  <h3 class="mt-2 text-base font-bold leading-snug text-primary group-hover:text-accent sm:mt-3 sm:text-lg">
                     <a [routerLink]="card.link" class="after:absolute after:inset-0 after:rounded-2xl focus:outline-none focus-visible:underline">{{ card.title }}</a>
                   </h3>
                   <p class="text-sm text-muted-foreground">{{ card.subtitle }}</p>
@@ -131,7 +142,7 @@ interface Tile {
                   } @else if (card.detail) {
                     <p class="mt-2 text-sm text-foreground/80">{{ card.detail }}</p>
                   }
-                  <span class="mt-auto self-end pt-3 text-accent" aria-hidden="true">→</span>
+                  <span class="absolute right-4 top-4 text-accent sm:static sm:mt-auto sm:self-end sm:pt-3" aria-hidden="true">→</span>
                 </li>
               }
             </ul>
@@ -189,8 +200,8 @@ interface Tile {
           }
         </section>
 
-        <div class="grid gap-6 lg:grid-cols-[3fr_2fr]">
-          <section class="rounded-2xl bg-white p-6 shadow-md ring-1 ring-border" aria-labelledby="activity-title">
+        <div class="grid gap-5 sm:gap-6 lg:grid-cols-[3fr_2fr]">
+          <section class="rounded-2xl bg-white p-4 shadow-md ring-1 ring-border sm:p-6" aria-labelledby="activity-title">
             <h2 id="activity-title" class="text-xl text-primary">Activité récente</h2>
             <ul class="mt-4 space-y-3">
               @for (activity of activities(); track activity.id) {
@@ -212,7 +223,7 @@ interface Tile {
             </ul>
           </section>
 
-          <section class="rounded-2xl bg-white p-6 shadow-md ring-1 ring-border" aria-labelledby="profile-title">
+          <section class="rounded-2xl bg-white p-4 shadow-md ring-1 ring-border sm:p-6" aria-labelledby="profile-title">
             <h2 id="profile-title" class="text-xl text-primary">Votre profil · <span class="text-accent">{{ profileComplete() }} %</span></h2>
             <div class="mt-4 h-2 overflow-hidden rounded-full bg-secondary" role="progressbar" [attr.aria-valuenow]="profileComplete()" aria-valuemin="0" aria-valuemax="100" aria-label="Complétion du profil">
               <div class="h-full rounded-full bg-accent" [style.width.%]="profileComplete()"></div>
@@ -356,6 +367,10 @@ export class DashboardComponent {
     } catch {
       // Stockage indisponible : la suggestion reste masquée jusqu'au rechargement.
     }
+  }
+
+  stepsDone(steps: ReadonlyArray<{ done: boolean }>): number {
+    return steps.filter(item => item.done).length;
   }
 
   readonly tiles = computed<Tile[]>(() => {
